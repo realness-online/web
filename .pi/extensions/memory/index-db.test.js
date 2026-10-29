@@ -17,6 +17,7 @@ import { spawnSync as spawn_sync } from 'node:child_process'
 import { sessionJsonlToHtml } from '../../runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-html.js'
 import { compress_session_chunk } from '../../runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-gzip.js'
 import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { indexSessions, openIndex, readSession, recall, stats, toMatchQuery } from './index-db.js'
 process.env.PI_SESSION_READER = resolve(import.meta.dirname, '../../runtime/node_modules/.bin/pi-session-read')
 
@@ -152,7 +153,8 @@ const writeFixture = dir => {
 }
 /** @returns {string} */
 const tempRoot = () => {
-  const scratch = join(process.cwd(), 'artifacts', 'memory')
+  // The harness root's artifacts, not cwd: run from here, cwd/artifacts ships.
+  const scratch = fileURLToPath(new URL('../../../artifacts/memory', import.meta.url))
   mkdirSync(scratch, {
     recursive: true
   })
@@ -258,6 +260,7 @@ test('installed decoder preserves compressed recall without fork sources', async
     recursive: true
   })
   copyFileSync(join(import.meta.dirname, 'index-db.js'), join(extension, 'index-db.js'))
+  copyFileSync(join(import.meta.dirname, 'months.js'), join(extension, 'months.js'))
   const file = writeFixture(checkout)
   const expected = await readSession(file)
   const compressed = file.replace(/\.jsonl$/, '.html.gz')

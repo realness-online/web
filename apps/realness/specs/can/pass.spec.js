@@ -59,6 +59,14 @@ it('an expired pass, or one claiming a longer life, is refused', () => {
   assert.throws(() => open_pass(long, secret, options), /expired or invalid/)
 })
 
+it('a pass from an issuer whose clock runs a little ahead still opens', () => {
+  const ahead = sign_pass({ aud: 'realness-test' }, secret, {
+    life_s: 60,
+    now: now + 2_000
+  })
+  assert.equal(open_pass(ahead, secret, options).aud, 'realness-test')
+})
+
 it('a short secret signs nothing and opens nothing', () => {
   assert.throws(
     () => sign_pass({ aud: 'realness-test' }, 'short', { life_s: 60, now }),

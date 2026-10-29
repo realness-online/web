@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { run } from '../../../src/command/command.js'
-import { is_actor } from '../../../src/harness/settings.js'
+import { run } from '#root/src/command/command.js'
+import { is_actor } from '#root/src/harness/settings.js'
 
 const args = process.argv.slice(2)
 /** @type {Parameters<typeof run>[1]} */

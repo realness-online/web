@@ -5,6 +5,10 @@ import {
   KEY,
   paste_encode
 } from '../../../src/app/terminal/ghostty-vt.js'
+import {
+  control_bytes,
+  meta_bytes
+} from '../../../src/app/terminal/terminal.js'
 
 const engine = await load_engine(wasm_bytes)
 const term = engine.terminal(120, 30)
@@ -58,5 +62,50 @@ describe('key encoding on a pi screen', () => {
     expect(
       new TextDecoder().decode(paste_encode(engine, 'hello\nworld', false))
     ).toBe('hello\rworld')
+  })
+})
+
+describe('editor keys a browser would otherwise drop', () => {
+  const key = (code, mods = {}) => ({
+    code,
+    key: '',
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    ...mods
+  })
+  it.each([
+    ['C-SPC sets the Emacs mark', key('Space', { ctrlKey: true }), '\x00'],
+    ['C-/ undoes in Emacs', key('Slash', { ctrlKey: true }), '\x1f'],
+    ['C-[ is Escape', key('BracketLeft', { ctrlKey: true }), '\x1b'],
+    ['C-] is group separator', key('BracketRight', { ctrlKey: true }), '\x1d']
+  ])('%s', (_, event, want) => {
+    expect(control_bytes(event)).toBe(want)
+  })
+  it.each([
+    [
+      'M-< goes to the top',
+      key('Comma', { altKey: true, shiftKey: true }),
+      '\x1b<'
+    ],
+    [
+      'M-> goes to the end',
+      key('Period', { altKey: true, shiftKey: true }),
+      '\x1b>'
+    ],
+    ['M-1 is a digit argument', key('Digit1', { altKey: true }), '\x1b1'],
+    [
+      'M-x on Option ignores the typed symbol',
+      key('KeyX', { altKey: true, key: '≈' }),
+      '\x1bx'
+    ]
+  ])('%s', (_, event, want) => {
+    expect(meta_bytes(event)).toBe(want)
+  })
+  it('leaves Cmd and plain keys alone', () => {
+    expect(meta_bytes(key('KeyX', { altKey: true, metaKey: true }))).toBe(null)
+    expect(control_bytes(key('KeyA', { ctrlKey: true }))).toBe(null)
+    expect(meta_bytes(key('KeyX'))).toBe(null)
   })
 })

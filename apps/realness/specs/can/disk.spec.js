@@ -30,29 +30,24 @@ it('disk refuses keys that escape its root', async () => {
   await assert.rejects(store.get('people/../../outside'), /escapes the root/)
 })
 
-it('gzip_at_rest packs shrinkable text on disk yet serves plain bytes and version', async () => {
+it('a .gz key is gzip on disk yet serves plain bytes and the plain version', async () => {
   const dir = `${base}${randomUUID()}`
-  const key = 'people/+1/poster.html'
+  const key = 'people/+1/poster.html.gz'
   const plain = 'repeat. '.repeat(400)
-  const store = disk(dir, { gzip_at_rest: true })
+  const store = disk(dir)
   const version = await store.put(key, plain)
   assert.equal(version, await store.stat(key))
-  assert.equal((await store.walk('people/+1/'))['poster.html'], version)
+  assert.equal((await store.walk('people/+1/'))['poster.html.gz'], version)
   const { body, version: got } = await store.get(key)
   assert.equal(got, version)
   assert.equal(body.toString(), plain)
   const stored = await readFile(join(dir, key))
-  assert.ok(!stored.equals(Buffer.from(plain)))
   assert.equal(stored.subarray(0, 2).toString('hex'), '1f8b')
 })
 
-it('gzip_at_rest leaves short text and binary bytes plain and readable', async () => {
-  const store = disk(`${base}${randomUUID()}`, { gzip_at_rest: true })
-  await store.put('people/+1/tiny.html', 'hi')
-  assert.equal((await store.get('people/+1/tiny.html')).body.toString(), 'hi')
+it('other keys keep their bytes as given', async () => {
+  const store = disk(`${base}${randomUUID()}`)
   const binary = Buffer.from([0x1f, 0x8b, 1, 2, 3])
   await store.put('people/+1/logo.png', binary)
-  assert.deepEqual((await store.get('people/+1/logo.png')).body, binary)
-  // a small png must not be misread as gzip even when its bytes look packed
   assert.deepEqual((await store.get('people/+1/logo.png')).body, binary)
 })

@@ -40,6 +40,57 @@ const KEY_MAP = {
   Delete: KEY.DELETE
 }
 
+/** The keyboard's own character for a physical key, unshifted and shifted. */
+const CODE_CHARS = {
+  Space: [' ', ' '],
+  Comma: [',', '<'],
+  Period: ['.', '>'],
+  Slash: ['/', '?'],
+  Semicolon: [';', ':'],
+  Quote: ["'", '"'],
+  BracketLeft: ['[', '{'],
+  BracketRight: [']', '}'],
+  Backslash: ['\\', '|'],
+  Minus: ['-', '_'],
+  Equal: ['=', '+'],
+  Backquote: ['`', '~']
+}
+const ESC = '\x1b'
+
+/** The character a key types, from its physical code, so Option's symbols do not stand in. */
+const code_char = event => {
+  const letter = /^Key([A-Z])$/.exec(event.code)?.[1]
+  if (letter) return event.shiftKey ? letter : letter.toLowerCase()
+  const digit = /^Digit(\d)$/.exec(event.code)?.[1]
+  if (digit) return event.shiftKey ? event.key : digit
+  const chars = CODE_CHARS[event.code]
+  return chars ? chars[event.shiftKey ? 1 : 0] : null
+}
+
+/** Option as Meta, as a terminal does: ESC, then the key (M-x, M-<). */
+export const meta_bytes = event => {
+  if (!event.altKey || event.ctrlKey || event.metaKey) return null
+  const char = code_char(event)
+  return char ? ESC + char : null
+}
+
+/** Control with a symbol: C-SPC, C-/, C-[, C-], C-\\ - what Emacs and Vim expect. */
+const CONTROL_SYMBOL = {
+  Space: '\x00',
+  Digit2: '\x00',
+  Slash: '\x1f',
+  Minus: '\x1f',
+  BracketLeft: ESC,
+  BracketRight: '\x1d',
+  Backslash: '\x1c'
+}
+export const control_bytes = event => {
+  if (!event.ctrlKey || event.metaKey) return null
+  const bytes = CONTROL_SYMBOL[event.code]
+  if (!bytes) return null
+  return event.altKey ? ESC + bytes : bytes
+}
+
 const LETTER_KEY = {}
 'abcdefghijklmnopqrstuvwxyz'.split('').forEach((letter, index) => {
   LETTER_KEY[letter] = LETTER_KEY_START + index
@@ -446,6 +497,25 @@ const bind_keyboard = ({
       return
     }
     if (event.metaKey) return
+    const alt_letter = /^Key([A-Z])$/.exec(event.code)?.[1]?.toLowerCase()
+    if (event.altKey && !event.ctrlKey && alt_letter) {
+      event.preventDefault()
+      send(
+        encoder.encode({
+          key: LETTER_KEY[alt_letter],
+          mods: ALT_MODIFIER | (event.shiftKey ? 1 : 0),
+          utf8: event.shiftKey ? alt_letter.toUpperCase() : alt_letter,
+          unshifted_codepoint: alt_letter.codePointAt(0)
+        })
+      )
+      return
+    }
+    const special = control_bytes(event) ?? meta_bytes(event)
+    if (special) {
+      event.preventDefault()
+      send(new TextEncoder().encode(special))
+      return
+    }
     const letter = event.key.toLowerCase()
     if (event.ctrlKey && LETTER_KEY[letter]) {
       event.preventDefault()

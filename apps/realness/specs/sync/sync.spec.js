@@ -3,10 +3,12 @@
  */
 import { after, before, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdir, rm } from 'node:fs/promises'
+import { mkdir, readFile, rm } from 'node:fs/promises'
+import { join } from 'node:path'
 import { request } from 'node:http'
 import { randomUUID } from 'node:crypto'
 import { disk } from '#root/src/can/disk.js'
+import { store_of } from '#root/src/can/store.js'
 import { dev_issuer } from '../../src/sync/dev-token.js'
 import { rights } from '../../src/sync/rights.js'
 import { sync_service } from '../../src/sync/server.js'
@@ -19,7 +21,7 @@ const B = '+15555550101'
 const dir = out_path(`sync-test-${randomUUID()}`)
 const issuer = dev_issuer()
 const lines = []
-const storage = disk(dir)
+const storage = store_of(disk(dir))
 const cache = rights(storage)
 let server
 let base
@@ -557,23 +559,31 @@ it('HEAD answers a file with its etag and meta, and no body', async () => {
   )
 })
 
-it('gzip HTML is served as gzip HTML; other bytes are left alone', async () => {
-  const { gzipSync } = await import('node:zlib')
+it('a file is stored as .gz and served as gzip under its plain name', async () => {
+  const { gzipSync, gunzipSync } = await import('node:zlib')
   await call('PUT', `people/${A}/posters/5.html`, {
-    headers: as(A),
+    headers: { ...as(A), 'content-encoding': 'gzip' },
     body: gzipSync('<p>hi</p>')
   })
   const html = await call('GET', `people/${A}/posters/5.html`, {
     headers: as(A)
   })
   assert.equal(html.headers.get('content-encoding'), 'gzip')
+  assert.equal(html.headers.get('content-type'), 'text/html; charset=utf-8')
   assert.equal(await html.text(), '<p>hi</p>')
-  await call('PUT', `people/${A}/vault/a.gz`, {
-    headers: as(A),
-    body: gzipSync('x')
-  })
+  assert.equal(
+    gunzipSync(
+      await readFile(join(dir, `people/${A}/posters/5.html.gz`))
+    ).toString(),
+    '<p>hi</p>'
+  )
+  const listed = await call('GET', `people/${A}/posters/`, { headers: as(A) })
+  assert.ok((await listed.json()).files.includes('5.html'))
+  const bytes = gzipSync('x')
+  await call('PUT', `people/${A}/vault/a.gz`, { headers: as(A), body: bytes })
   const raw = await call('GET', `people/${A}/vault/a.gz`, { headers: as(A) })
-  assert.equal(raw.headers.get('content-encoding'), null)
+  assert.equal(raw.headers.get('content-type'), 'application/octet-stream')
+  assert.deepEqual(Buffer.from(await raw.arrayBuffer()), bytes)
 })
 
 it('a gzip write is checked against its plain hash, stored, and read back plain', async () => {
@@ -630,7 +640,7 @@ it('a wrong hash, bad gzip, or unknown encoding writes nothing', async () => {
 })
 
 it('a gzip bomb past the limit is refused', async () => {
-  const bomb = gzip_sync(Buffer.alloc(11 * 1024 * 1024))
+  const bomb = gzip_sync(Buffer.alloc(81 * 1024 * 1024))
   const put = await status('PUT', `people/${A}/vault/bomb.bin`, {
     headers: { ...as(A), 'content-encoding': 'gzip' },
     body: bomb

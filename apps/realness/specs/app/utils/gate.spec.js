@@ -9,6 +9,8 @@ import {
 import {
   choose_actor,
   gate_api,
+  load_layout,
+  save_layout,
   open_terminal,
   start_actor
 } from '@/utils/gate'
@@ -45,6 +47,18 @@ after_each(() => {
 })
 
 describe('realness gate', () => {
+  it('keeps and loads the pane layout through the gate', async () => {
+    const layout = { split: 'row', panes: [{ session: null }] }
+    fetch.mockImplementation(async (url, init = {}) => {
+      calls.push({ url, method: init.method ?? 'GET', init })
+      return new Response(init.body ?? JSON.stringify({ layout: null }))
+    })
+    expect(await load_layout(user, 'a-1')).toBeNull()
+    expect(await save_layout(user, 'a-1', layout)).toEqual(layout)
+    expect(calls[1].url).toBe(`${cloud_gate}/v1/actors/a-1/layout`)
+    expect(calls[1].method).toBe('POST')
+  })
+
   it('calls the halo API through the gate with the Firebase token', async () => {
     await gate_api(user, '/v1/actors')
     expect(calls[0].url).toBe(`${cloud_gate}/v1/actors`)

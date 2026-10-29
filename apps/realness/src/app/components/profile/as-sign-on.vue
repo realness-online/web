@@ -13,23 +13,29 @@
   })
 
   const working = ref(false)
-  const { nameless, on_signed_on, on_name_valid } = use_sign_on({
+  const profile = use_sign_on_profile()
+  const { loaded } = profile
+  const { nameless, pending, on_signed_on, on_name_valid } = use_sign_on({
     current_user,
-    profile: use_sign_on_profile(),
+    profile,
     emit
   })
 </script>
 
 <template>
   <section id="sign-on">
-    <template v-if="nameless && current_user">
+    <p v-if="pending" id="sign-on-pending" role="status">
+      Checking your profile...
+    </p>
+    <template v-else-if="nameless && current_user">
       <p id="name-prompt">What should we call you?</p>
       <name-as-form @valid="on_name_valid" />
     </template>
     <mobile-as-form
-      v-else-if="!nameless || !current_user"
+      v-else-if="!current_user"
       @signed-on="on_signed_on"
       @working="working = $event" />
+    <p v-else id="sign-on-pending" role="status">Signing you in...</p>
   </section>
 </template>
 

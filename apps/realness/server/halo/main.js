@@ -4,26 +4,27 @@ import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { dirname, join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { parseArgs as parse_args } from 'node:util'
-import { Door } from '../../src/halo/door.js'
-import { ChromePool, render_page } from '../../src/halo/chrome-pool.js'
-import { WebEngine } from '../../src/halo/web-engine.js'
-import { ChromeLeases } from '../../src/halo/chrome-leases.js'
-import { Loops } from '../../src/halo/loops.js'
-import { HaloStatus } from '../../src/halo/status.js'
-import { ActorRequests } from '../../src/halo/requests.js'
-import { SyncSites } from '../../src/halo/sync-sites.js'
+import { Door } from '#root/src/halo/door.js'
+import { ChromePool, render_page } from '#root/src/halo/chrome-pool.js'
+import { WebEngine } from '#root/src/halo/web-engine.js'
+import { ChromeLeases } from '#root/src/halo/chrome-leases.js'
+import { Loops } from '#root/src/halo/loops.js'
+import { HaloStatus } from '#root/src/halo/status.js'
+import { ActorRequests } from '#root/src/halo/requests.js'
+import { SyncSites } from '#root/src/halo/sync-sites.js'
 import { hostname } from 'node:os'
 import {
   existsSync as exists_sync,
   readFileSync as read_file_sync
 } from 'node:fs'
-import { SyncMirror } from '../../src/halo/sync-mirror.js'
-import { logger } from '../../src/halo/log.js'
-import * as pty from '../../src/halo/pty.js'
-import * as server from '../../src/halo/server.js'
-import { ActorStore, ACTOR_MIB } from '../../src/halo/actors.js'
-import { AppStore } from '../../src/halo/apps.js'
-import { Parker } from '../../src/halo/parking.js'
+import { SyncMirror } from '#root/src/halo/sync-mirror.js'
+import { logger } from '#root/src/halo/log.js'
+import * as pty from '#root/src/halo/pty.js'
+import * as server from '#root/src/halo/server.js'
+import { ActorStore, ACTOR_MIB } from '#root/src/halo/actors.js'
+import { BoxStore } from '#root/src/halo/box.js'
+import { AppStore } from '#root/src/halo/apps.js'
+import { Parker } from '#root/src/halo/parking.js'
 import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
 import { issue_model_pass } from '#root/src/proxy/model-pass.js'
@@ -60,6 +61,9 @@ const { positionals, values } = parse_args({
     'api-listen': { type: 'string' },
     'site-url': { type: 'string' },
     environment: { type: 'string' },
+    runtime: { type: 'string', default: 'firecracker' },
+    'host-vault': { type: 'string' },
+    'host-owner': { type: 'string' },
     rebuild: { type: 'boolean', default: false },
     park: { type: 'boolean', default: false }
   }
@@ -81,22 +85,37 @@ const sync_url =
 const site_sync_url = environment?.services?.site_sync_url ?? sync_url
 const site_public = environment?.services?.sites_url || site_sync_url
 
-const store = new ActorStore({
-  volume: values.volume,
-  template: values.template,
-  kernel: values.kernel,
-  firecracker: values.firecracker,
-  guest_mac: values['guest-mac'],
-  guest_cid: Number(values['guest-cid']),
-  vsock_port: Number(values['vsock-port']),
-  vcpus: Number(values.vcpu),
-  mib: Number(values['mem-mib']),
-  tap_prefix: values['tap-prefix'],
-  seed_tap: values['seed-tap'],
-  boot_timeout: Number(values['boot-timeout']),
-  api_timeout: Number(values['api-timeout']),
-  sync_url: environment?.services?.actor_sync_url ?? sync_url
-})
+const { runtime } = values
+const store =
+  runtime === 'box'
+    ? new BoxStore({
+        volume: values.volume,
+        template: values.template,
+        vsock_port: Number(values['vsock-port']),
+        boot_timeout: Number(values['boot-timeout']),
+        api_timeout: Number(values['api-timeout']),
+        sync_url: environment?.services?.actor_sync_url ?? sync_url,
+        host_vault:
+          values['host-vault'] && values['host-owner']
+            ? { path: values['host-vault'], owner: values['host-owner'] }
+            : null
+      })
+    : new ActorStore({
+        volume: values.volume,
+        template: values.template,
+        kernel: values.kernel,
+        firecracker: values.firecracker,
+        guest_mac: values['guest-mac'],
+        guest_cid: Number(values['guest-cid']),
+        vsock_port: Number(values['vsock-port']),
+        vcpus: Number(values.vcpu),
+        mib: Number(values['mem-mib']),
+        tap_prefix: values['tap-prefix'],
+        seed_tap: values['seed-tap'],
+        boot_timeout: Number(values['boot-timeout']),
+        api_timeout: Number(values['api-timeout']),
+        sync_url: environment?.services?.actor_sync_url ?? sync_url
+      })
 const warning = store.reflink_warning()
 if (warning) LOG.warn(warning)
 

@@ -10,21 +10,32 @@ The copy can open this actor's own dev server (http://<this actor's address>:<po
 It lasts 30 minutes, or until `realness chrome return`; a returned copy is destroyed.
 """
 import json
+import os
 import socket
 import sys
 
-HOST_CID = 2
-DOOR_PORT = 54
+DOOR_SOCKET = "/run/realness/door.sock"
+
+
+def door_socket():
+    """The halo door: vsock on Firecracker, a unix socket inside a box."""
+    family = socket.AF_UNIX if os.path.exists(DOOR_SOCKET) else socket.AF_VSOCK
+    return socket.socket(family, socket.SOCK_STREAM)
+
+
+def door_address(sock):
+    return DOOR_SOCKET if sock.family == socket.AF_UNIX else (2, 54)
+
 
 op = "chrome-return" if sys.argv[1:2] == ["return"] else "chrome-lease"
 if sys.argv[1:2] not in ([], ["return"], ["lease"]):
     sys.exit("usage: realness chrome [lease|return]")
 
-sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
+sock = door_socket()
 # The halo's first lease boots Chrome once (about 20 s); later ones restore in seconds.
 sock.settimeout(180)
 try:
-    sock.connect((HOST_CID, DOOR_PORT))
+    sock.connect(door_address(sock))
 except OSError as error:
     sys.exit(f"realness chrome: the halo did not answer ({error})")
 with sock:

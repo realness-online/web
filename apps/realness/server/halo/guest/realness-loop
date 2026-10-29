@@ -8,18 +8,28 @@ Asks the halo through the door (guest-initiated vsock to CID 2, port 54).
 The halo bounds depth, fan-out, runs, and time; see vault/Projects/realness.md.
 """
 import json
+import os
 import socket
 import sys
 
-HOST_CID = 2
-DOOR_PORT = 54
+DOOR_SOCKET = "/run/realness/door.sock"
+
+
+def door_socket():
+    """The halo door: vsock on Firecracker, a unix socket inside a box."""
+    family = socket.AF_UNIX if os.path.exists(DOOR_SOCKET) else socket.AF_VSOCK
+    return socket.socket(family, socket.SOCK_STREAM)
+
+
+def door_address(sock):
+    return DOOR_SOCKET if sock.family == socket.AF_UNIX else (2, 54)
 
 
 def door(request, timeout):
-    sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
+    sock = door_socket()
     sock.settimeout(timeout)
     try:
-        sock.connect((HOST_CID, DOOR_PORT))
+        sock.connect(door_address(sock))
     except OSError as error:
         sys.exit(f"realness loop: the halo did not answer ({error})")
     with sock:

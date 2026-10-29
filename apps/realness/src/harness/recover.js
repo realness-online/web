@@ -1,5 +1,6 @@
 /** Read-only recovery through the normal sync client; no storage credential. */
 import { execFile as exec_file } from 'node:child_process'
+import { connect as net_connect } from 'node:net'
 import { existsSync as exists_sync } from 'node:fs'
 import {
   mkdir,
@@ -8,10 +9,17 @@ import {
   utimes,
   writeFile as write_file
 } from 'node:fs/promises'
-import { dirname, basename, join } from 'node:path'
+import { dirname, basename, join, relative } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { client } from '#root/src/files/client.js'
-import { apply_deferred, syncs_of } from './harness.js'
+import {
+  apply_deferred,
+  is_past_session,
+  outermost,
+  sync_exclusions_of,
+  syncs_of,
+  within
+} from './harness.js'
 import { plans_path, state_path, runtime_sessions_path } from './settings.js'
 import { prepare_actor_state } from './state.js'
 import { limit_path } from '#root/src/files/paths.js'
@@ -20,8 +28,23 @@ import { light_policy, light_skips, write_skipped } from './light.js'
 import { HTTP } from '#root/lib/http.js'
 /* eslint-disable no-await-in-loop -- paths pull one at a time to bound memory on a small VM */
 
-/** Node has no AF_VSOCK socket API; socat supplies only the socket transport. */
-export const door_pass = (op = 'recovery-pass') =>
+/**
+ * Node has no AF_VSOCK socket API; socat supplies only the socket transport.
+ * REALNESS_DOOR_SOCK points the door at its unix socket (the box's directory
+ * is mounted at /box), reached with node's own net. REALNESS_RECOVERY_PASS
+ * skips the door: the halo signed the pass when it launched this recovery.
+ */
+export const door_pass = (op = 'recovery-pass') => {
+  if (process.env.REALNESS_RECOVERY_PASS && op === 'recovery-pass')
+    return Promise.resolve(process.env.REALNESS_RECOVERY_PASS)
+  const request = () =>
+    process.env.REALNESS_DOOR_SOCK
+      ? ask_unix_door(process.env.REALNESS_DOOR_SOCK, op)
+      : ask_vsock_door(op)
+  return request().catch(error => Promise.reject(error))
+}
+
+const ask_vsock_door = op =>
   new Promise((resolve, reject) => {
     const child = exec_file(
       'socat',
@@ -41,6 +64,34 @@ export const door_pass = (op = 'recovery-pass') =>
     else reject(new Error('socat has no stdin'))
   })
 
+const ask_unix_door = (path, op) =>
+  new Promise((resolve, reject) => {
+    const socket = net_connect(path)
+    const timer = setTimeout(() => {
+      socket.destroy()
+      reject(new Error('halo door timed out'))
+    }, 10000)
+    socket.on('connect', () => socket.write(`${JSON.stringify({ op })}\n`))
+    socket.on('data', chunk => {
+      clearTimeout(timer)
+      socket.destroy()
+      try {
+        const answer = JSON.parse(chunk.toString().split('\n')[0])
+        if (!answer.ok)
+          return reject(
+            new Error(answer.error || 'halo door did not issue a pass')
+          )
+        resolve(answer.pass)
+      } catch (error) {
+        reject(error)
+      }
+    })
+    socket.on('error', error => {
+      clearTimeout(timer)
+      reject(error)
+    })
+  })
+
 /**
  * Pull the harness back onto a light VM. Returns `[count, applied]`, with a
  * `light` property when the run used the path-limited light mode.
@@ -55,7 +106,8 @@ export const recover = async (
     fetcher = fetch,
     starter = exists_sync(join(STARTER_DIRECTORY, STARTER_FILE))
       ? STARTER_DIRECTORY
-      : null
+      : null,
+    keep_local = []
   } = {}
 ) => {
   const state = await prepare_actor_state(root, { state: state_option })
@@ -81,12 +133,21 @@ export const recover = async (
   })
   const exclude = path => !limit_path(path)
   let count = 0
+  /**
+   * Paths this machine already holds as the main copy (the host vault): recovery
+   * never writes there, whatever the store has.
+   */
   const pull = async (remote, local, options = {}) => {
+    const prefix = relative(root, local)
+    if (prefix && within(keep_local, prefix)) return
+    const inner = options.exclude ?? exclude
     const report = await store.sync(local, remote, {
       state,
       pull_only: true,
-      exclude,
-      ...options
+      ...options,
+      exclude: (path, is_dir) =>
+        within(keep_local, prefix ? `${prefix}/${path}` : path) ||
+        inner(path, is_dir)
     })
     count += report.pulled.length + report.adopted.length
   }
@@ -99,6 +160,8 @@ export const recover = async (
       throw error
     }
   }
+  /** Plan `!path` exclusions: never pulled, even when the store still holds them. */
+  const excluded = new Set()
   const pull_path = async (path, base_url = base) => {
     const base = base_url
     if (!limit_path(path)) throw new Error(`unsafe path limit: ${path}`)
@@ -108,11 +171,18 @@ export const recover = async (
     } catch (error) {
       if (error.status !== HTTP.NOT_FOUND) throw error
     }
-    if (names && Object.keys(names).length)
+    if (names && Object.keys(names).length) {
+      const kept = Object.fromEntries(
+        Object.entries(names).filter(
+          ([name]) => !within(excluded, `${path}/${name}`)
+        )
+      )
       return pull(`${base}${path}/`, join(root, path), {
-        remote_files: names,
-        baseline: true
+        remote_files: kept,
+        baseline: true,
+        exclude: name => within(excluded, `${path}/${name}`)
       })
+    }
     let version
     try {
       version = await store.version(`${base}${path}`)
@@ -170,11 +240,16 @@ export const recover = async (
         starter,
         baseline: true,
         remote_files,
-        exclude: path => !limit_path(path) || keep.has(path)
+        exclude: path =>
+          !limit_path(path) || keep.has(path) || is_past_session(path)
       })
     } else {
       await write_skipped(state, [])
-      await pull(saved, root, { starter, baseline: true })
+      await pull(saved, root, {
+        starter,
+        baseline: true,
+        exclude: path => !limit_path(path) || is_past_session(path)
+      })
     }
     light = { skipped: skips.length }
   } else {
@@ -187,13 +262,18 @@ export const recover = async (
     const paths = new Set()
     for (const name of Object.keys(names).filter(
       name => name.endsWith('.md') && !name.includes('/')
-    ))
-      for (const path of syncs_of(
-        await read_file(join(root, folder, name), 'utf8')
-      ))
-        if (limit_path(path)) paths.add(path)
-
-    for (const path of paths) await pull_path(path)
+    )) {
+      const text = await read_file(join(root, folder, name), 'utf8').catch(
+        error => {
+          if (error.code === 'ENOENT') return ''
+          throw error
+        }
+      )
+      for (const path of syncs_of(text)) if (limit_path(path)) paths.add(path)
+      for (const path of sync_exclusions_of(text)) excluded.add(path)
+    }
+    for (const path of outermost([...paths]))
+      if (!within(excluded, path)) await pull_path(path)
   }
   const session_folder = runtime_sessions_path(root)
   const times = await store
@@ -209,7 +289,11 @@ export const recover = async (
   const pending = await optional(`${saved}.pi/agent/deferred.json`)
   const applied = await apply_deferred(
     root,
-    pending ? JSON.parse(pending.toString()) : {}
+    Object.fromEntries(
+      Object.entries(pending ? JSON.parse(pending.toString()) : {}).filter(
+        ([path]) => !within(keep_local, path)
+      )
+    )
   )
   return Object.assign(/** @type {[number, string[]]} */ ([count, applied]), {
     light
@@ -231,7 +315,11 @@ if (process.argv[1] === file_url_to_path(import.meta.url)) {
     setuid(owner.uid)
   }
   const state = await prepare_actor_state(root)
-  const recovered = await recover(url, door_pass, root, { state })
+  const keep_local = (process.env.REALNESS_KEEP_LOCAL ?? '')
+    .split(',')
+    .map(path => path.trim())
+    .filter(Boolean)
+  const recovered = await recover(url, door_pass, root, { state, keep_local })
   const [count, applied] = recovered
   await mkdir(join(state, 'recovery'), { recursive: true })
   await write_file(join(state, 'recovery/url'), `${url}\n`)

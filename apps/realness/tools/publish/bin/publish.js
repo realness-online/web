@@ -28,10 +28,10 @@ import {
   read_app,
   scan_vault,
   write_app
-} from '../../../src/publish/sources.js'
-import { build_app } from '../../../src/publish/view.js'
-import { publish_app, unpublish_app } from '../../../src/publish/publish.js'
-import { publish_github } from '../../../src/publish/github.js'
+} from '#root/src/publish/sources.js'
+import { build_app } from '#root/src/publish/view.js'
+import { publish_app, unpublish_app } from '#root/src/publish/publish.js'
+import { publish_github } from '#root/src/publish/github.js'
 import { SYNC_URL } from '#root/src/files/client.js'
 import { person } from '#root/src/harness/settings.js'
 
@@ -102,14 +102,14 @@ const commands = {
       const { items, copies } = await scan_vault(vault)
       for (const [id, path] of items) console.log(`${id}  ${path}`)
       for (const copy of copies) console.log(`copy of ${copy.id}  ${copy.path}`)
-    } else if (action === 'mint') {
+    } else if (action === 'mint')
       console.log(
         await mint_item(vault, words[0], {
           author: person(root),
           type: values.type
         })
       )
-    } else if (action === 'settle') {
+    else if (action === 'settle') {
       const scan = await scan_vault(vault)
       for (const copy of scan.copies)
         console.log(

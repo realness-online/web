@@ -38,6 +38,8 @@
  * @property {string} [root]
  * @property {string} [path]
  * @property {boolean} [full]
+ * @property {string} [months] sealed months; beside the index by default
+ * @property {Date} [now]
  * @property {(done: number, total: number, file: string) => void} [onProgress]
  * @typedef {object} RecallOptions
  * @property {string} [path]
@@ -48,6 +50,7 @@
  * @property {string} [exclude_session]
  */
 import { DatabaseSync } from 'node:sqlite'
+import { load as load_months, month_of, seal as seal_months, sealed_months } from './months.js'
 import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
 import { createHash } from 'node:crypto'
@@ -123,6 +126,7 @@ const listSessionFiles = (root = SESSIONS_DIR) => {
     })) {
       const path = join(dir, entry.name)
       if (entry.isDirectory()) walk(path)
+      else if (/\.turns\.html(\.gz)?$/.test(entry.name)) continue
       else if (entry.name.endsWith('.jsonl') || entry.name.endsWith('.html') || entry.name.endsWith('.html.gz'))
         found.push(path)
     }
@@ -392,6 +396,7 @@ const dropSession = (db, file) => {
  */
 export const indexSessions = async (options = {}) => {
   const root = options.root ?? SESSIONS_DIR
+  const months = options.months ?? join(dirname(options.path ?? DB_PATH), 'memory', 'turns')
   const db = openIndex(options.path)
   const files = listSessionFiles(root)
   /** @type {Map<string, number>} */
@@ -436,9 +441,13 @@ export const indexSessions = async (options = {}) => {
       indexed += 1
       total += turns.length
     }
-    const present = new Set(files)
+    const present = new Set([...files, ...sealed_months(months).values()])
+    /** @type {Set<string>} months whose sealed turns a drop below removed */
+    const reload = new Set()
     for (const file of known.keys()) {
       if (present.has(file)) continue
+      const month = month_of(file)
+      if (month) reload.add(month)
       db.exec('BEGIN')
       try {
         dropSession(db, file)
@@ -449,6 +458,8 @@ export const indexSessions = async (options = {}) => {
         throw error
       }
     }
+    seal_months(db, { root, folder: months, files, now: options.now })
+    total += load_months(db, { root, folder: months, force: reload })
     if (options.full) db.exec("INSERT INTO turn_fts(turn_fts) VALUES ('optimize')")
   } finally {
     db.close()
@@ -616,7 +627,7 @@ export const stats = (path = DB_PATH) => {
   try {
     const turns = Number(/** @type {{ n: number; }} */ (db.prepare('SELECT COUNT(*) AS n FROM turn').get()).n)
     const sessions = Number(
-      /** @type {{ n: number; }} */ (db.prepare('SELECT COUNT(*) AS n FROM session_file').get()).n
+      /** @type {{ n: number; }} */ (db.prepare('SELECT COUNT(DISTINCT session_file) AS n FROM turn').get()).n
     )
     return {
       path,

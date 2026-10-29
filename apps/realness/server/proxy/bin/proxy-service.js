@@ -6,7 +6,7 @@ import {
   existsSync as exists_sync,
   readFileSync as read_file_sync
 } from 'node:fs'
-import { phone_identity } from '../../../src/proxy/identity.js'
+import { phone_identity } from '#root/src/proxy/identity.js'
 import {
   agent_handler,
   checkout_handler,
@@ -14,17 +14,18 @@ import {
   proxy_handler,
   usage_handler,
   webhook_handler
-} from '../../../src/proxy/server.js'
-import { usage_ledger } from '../../../src/proxy/usage.js'
+} from '#root/src/proxy/server.js'
+import { usage_ledger } from '#root/src/proxy/usage.js'
 import {
   PAY_URL,
   billing_store,
   plan_source,
   price_lookup,
   stripe_api
-} from '../../../src/proxy/billing.js'
+} from '#root/src/proxy/billing.js'
 import { export_traces, otel_config } from '#root/src/telemetry/otlp.js'
 import { disk } from '#root/src/can/disk.js'
+import { store_of } from '#root/src/can/store.js'
 import { create_gcs, gcloud_token, metadata_token } from '#root/src/can/gcs.js'
 import { out_path } from '#root/lib/output.js'
 
@@ -38,20 +39,21 @@ const key =
   (key_file && exists_sync(key_file)
     ? read_file_sync(key_file, 'utf8').trim()
     : '')
-const storage =
+const storage = store_of(
   (env.STORE ?? (env.K_SERVICE ? 'gcs' : 'disk')) === 'disk'
     ? disk(env.PROXY_DIR ?? out_path('proxy-data'))
     : create_gcs({
         bucket,
         token: env.K_SERVICE ? metadata_token() : gcloud_token()
       })
+)
 const ledger = usage_ledger(storage)
 const billing = billing_store(storage)
 const plan_for = plan_source(billing, env)
 const identify_phone = phone_identity({
   project,
   bucket,
-  storage: env.PINS_DIR ? disk(env.PINS_DIR) : storage
+  storage: env.PINS_DIR ? store_of(disk(env.PINS_DIR)) : storage
 })
 const pay_url = env.PAY_URL ?? PAY_URL
 const stripe = env.STRIPE_SECRET_KEY?.trim()

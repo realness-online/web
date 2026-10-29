@@ -229,6 +229,10 @@ it('home-only skills stay home', () => {
   )
   assert.equal(ships(join('.pi', 'skills', 'web-md', 'SKILL.md')), true)
   assert.equal(ships(join('extensions', 'x', 'node_modules', 'y.js')), false)
+  assert.equal(
+    ships(join('.pi', 'extensions', 'memory', 'artifacts', 'memory', 'x.db')),
+    false
+  )
   assert.equal(ships(join('bin', '.DS_Store')), false)
   assert.equal(ships('.bash_history'), false)
 })

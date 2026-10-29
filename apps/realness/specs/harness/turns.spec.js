@@ -71,6 +71,32 @@ it('a turn logs a selected single file', async () => {
   assert.deepEqual(logged, [join(harness, 'AGENTS.md')])
 })
 
+it('a turn ignores trees sync never carries', async () => {
+  const harness = join(root, 'own')
+  const state = join(root, 'own-state')
+  await files(harness, {
+    '.ignore': '',
+    'vault/plans/p.md': 'p',
+    'AGENTS.md': 'a',
+    'apps/npm-bin/cmd.js': 'v1',
+    '.pi/agent/npm/pkg.js': 'v1'
+  })
+  await turn_start({ root: harness, state, session: 's.jsonl' })
+  await writeFile(join(harness, 'apps/npm-bin/cmd.js'), 'v2')
+  await writeFile(join(harness, '.pi/agent/npm/pkg.js'), 'v2')
+  await writeFile(join(harness, 'AGENTS.md'), 'a2')
+  const logged = await turn_end({
+    root: harness,
+    state,
+    session: 's.jsonl',
+    turn: 1
+  })
+  assert.deepEqual(
+    logged.map(path => path.slice(harness.length + 1)),
+    ['AGENTS.md']
+  )
+})
+
 it('turn_end without a turn_start logs nothing', async () => {
   assert.deepEqual(
     await turn_end({

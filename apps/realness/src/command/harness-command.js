@@ -23,7 +23,8 @@ const report_harness = (
   const reports = {
     ...(harness && {
       'harness history': harness.sessions,
-      harness: harness.files
+      harness: harness.files,
+      ...(harness.memory && { 'harness memory': harness.memory })
     }),
     ...Object.fromEntries(
       Object.entries(synced).map(([path, report]) => [

@@ -10,7 +10,9 @@ const PREVIEW_TOKEN = 'firebaseStorageDownloadTokens'
 
 /** The app's parser reads compressed posters the same way. */
 const as_html = stored =>
-  stored[0] === 60 ? stored.toString('utf8') : unzip_sync(stored).toString('utf8')
+  stored[0] === 60
+    ? stored.toString('utf8')
+    : unzip_sync(stored).toString('utf8')
 
 /**
  * The statements in one statements file, shaped the way the thought rulebook
@@ -49,9 +51,9 @@ const author_statements = async author => {
 }
 
 /**
- * The public URL of a print's PNG preview, or null when it has none. The
- * previews script puts a PNG and a Firebase download token beside each
- * poster; that URL serves without auth, which is what Stripe needs.
+ * The public URL of a print's JPEG preview, or null when it has none. The
+ * previews script puts a JPEG and a Firebase download token for each
+ * poster in the `prints/` folder; that URL serves without auth, which is what Stripe needs.
  * A storage hiccup must not stop a sale, so it answers null too.
  * @param {string} poster_id - e.g. `/+16282281824/posters/1712000000000`
  * @returns {Promise<string | null>}
@@ -60,7 +62,7 @@ export const print_preview_url = async poster_id => {
   const [, author, type, created] = poster_id.split('/')
   if (!author || type !== 'posters' || !created) return null
   try {
-    const path = `people/${author}/posters/${created}.png`
+    const path = `prints/${author}/${created}.jpg`
     const file = bucket.file(path)
     if (!(await file.exists())[0]) return null
     const [metadata] = await file.getMetadata()
@@ -113,7 +115,9 @@ export const print_details = async poster_id => {
  * @returns {string}
  */
 const thought_from = (statements, poster_id) =>
-  thought_text(thought_for_poster([{ id: poster_id }, ...statements], poster_id))
+  thought_text(
+    thought_for_poster([{ id: poster_id }, ...statements], poster_id)
+  )
 
 /**
  * One row per print for a list, in the order the stamps are given. The author's

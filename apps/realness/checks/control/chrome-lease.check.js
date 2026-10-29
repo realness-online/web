@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
 import { createHmac as create_hmac } from 'node:crypto'
+import { secret_path } from '#root/src/settings/secrets.js'
 import {
   existsSync as exists_sync,
   readFileSync as read_file_sync
 } from 'node:fs'
 import assert from 'node:assert/strict'
 import { after, test } from 'node:test'
-import { out_path } from '#root/lib/output.js'
 
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const owner = '+14156667777'
-const secret_path = out_path('halo-pass-secret')
+const secret_path = secret_path('halo-pass-secret')
 const secret =
   process.env.HALO_PASS_SECRET ??
   (exists_sync(secret_path) ? read_file_sync(secret_path, 'utf8').trim() : null)
@@ -93,7 +93,7 @@ test(
   async () => {
     assert.ok(
       secret,
-      'HALO_PASS_SECRET or artifacts/realness/halo-pass-secret required'
+      'HALO_PASS_SECRET or .pi/agent/secrets/halo-pass-secret required'
     )
     const [actor, other] = await Promise.all([create(), create()])
     const marker = `c2-dev-server-${Date.now()}`

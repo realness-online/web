@@ -1,10 +1,11 @@
 const reveal = () => {
-  if (document.documentElement.dataset.diagrams === 'pending') {
+  if (document.documentElement.dataset.diagrams === 'pending')
     document.documentElement.dataset.diagrams = 'ready'
-  }
 }
 
-const articles = [...document.querySelectorAll('section > article:has(> template)')]
+const articles = [
+  ...document.querySelectorAll('section > article:has(> template)')
+]
 for (const article of articles) {
   const figure = article.querySelector(':scope > figure')
   if (!figure || figure.querySelector('img, pre.mermaid')) continue
@@ -15,19 +16,18 @@ for (const article of articles) {
 }
 
 const watch = [...document.querySelectorAll('pre.mermaid')]
-if (!watch.length) {
-  reveal()
-} else {
+if (!watch.length) reveal()
+else
   requestAnimationFrame(() => {
-    if (watch.every((diagram) => diagram.querySelector('svg'))) reveal()
+    if (watch.every(diagram => diagram.querySelector('svg'))) reveal()
     else {
       const observer = new MutationObserver(() => {
-        if (watch.every((diagram) => diagram.querySelector('svg'))) {
+        if (watch.every(diagram => diagram.querySelector('svg'))) {
           observer.disconnect()
           reveal()
         }
       })
-      for (const diagram of watch) observer.observe(diagram, { childList: true })
+      for (const diagram of watch)
+        observer.observe(diagram, { childList: true })
     }
   })
-}

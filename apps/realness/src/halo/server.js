@@ -16,6 +16,7 @@ import { limit_path } from '#root/src/files/paths.js'
 import { can } from '#root/src/can/can.js'
 import { app_auth, ENTER, without_app_cookie } from './app-auth.js'
 import { logger } from './log.js'
+import { read_layout, write_layout } from './layout.js'
 import { chat_handlers } from './chat.js'
 import { startup_handlers } from './startup.js'
 import * as vsock from './vsock.js'
@@ -594,6 +595,10 @@ const route_reads = ({
     json(response, HTTP.OK, { events: store.trace_of(id) })
     return true
   }
+  if (action === 'layout') {
+    json(response, HTTP.OK, { layout: read_layout(store.get(id).dir) })
+    return true
+  }
   if (action === undefined) {
     json(response, HTTP.OK, store.get(id))
     return true
@@ -656,6 +661,13 @@ const route_actor_writes = async ({
   }
   if (action === 'reload') {
     json(response, HTTP.OK, await store.reload(id))
+    return true
+  }
+  if (action === 'layout') {
+    const payload = await read_json(request)
+    json(response, HTTP.OK, {
+      layout: write_layout(store.get(id).dir, payload.layout)
+    })
     return true
   }
   if (action === 'export') {

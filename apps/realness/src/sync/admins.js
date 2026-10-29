@@ -1,15 +1,38 @@
 /**
- * Global admins: phone numbers as `tel:` links in `admins.html`, at the
- * bucket root. `can()` denies that key to everyone, so only someone with
- * the bucket's own key edits it. Read at most every 30 seconds.
+ * Global admins: the people listed in `admins.html`, at the bucket root.
+ * `can()` denies that key to everyone, so only someone with the bucket's own
+ * key edits it. Read at most every 30 seconds.
  *
- *   <a href="tel:+14156667777">+14156667777</a> Scott
+ * The page is an Organization whose people are members, each showing its
+ * telephone as text, so it is read by the microdata reader that reads an
+ * org's members page (src/can/members.js):
+ *
+ *   <p itemprop="founder" itemscope itemtype="https://schema.org/Person">
+ *     <span itemprop="name">Scott</span> <span itemprop="telephone">+1 415 666-7777</span>
+ *   </p>
+ *
+ * The founder and every member are admins.
+ *
+ * Pages written before microdata, with `<a href="tel:...">` links, still
+ * grant their admins. A malformed page grants nobody.
  */
-const TEL = /href="tel:(\+[1-9]\d{6,14})"/g
-const FRESH_MS = 30_000
+import { read_members } from '#root/src/can/members.js'
 
-export const read_admins = html =>
-  new Set([...html.matchAll(TEL)].map(([, phone]) => phone))
+const TEL = /href="tel:(\+[1-9]\d{6,14})"/g
+
+/** Every admin phone on the page; nobody when the page cannot be read. */
+export const read_admins = html => {
+  let people = []
+  try {
+    people = read_members(html).people
+  } catch {
+    people = []
+  }
+  if (people.length) return new Set(people.map(person => person.phone))
+  return new Set([...html.matchAll(TEL)].map(([, phone]) => phone))
+}
+
+const FRESH_MS = 30_000
 
 /**
  * A cached admins list. The page is read at most once per FRESH_MS.

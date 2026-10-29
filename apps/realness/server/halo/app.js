@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { parseArgs as parse_args } from 'node:util'
-import { AppStore } from '../../src/halo/apps.js'
+import { AppStore } from '#root/src/halo/apps.js'
 
 const { positionals, values } = parse_args({
   allowPositionals: true,

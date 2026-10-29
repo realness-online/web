@@ -124,9 +124,13 @@ const granted = (action, owner, parts, me, grants) => {
   )
 }
 
+/** st2: stored under a person, reached only as `usage/+A/...` and the like. */
+const PERSONAL_FOLDERS = new Set(['usage', 'billing', 'subscriptions'])
+
 const people_allowed = (action, owner, rest, me, grants) => {
   if (!owner) return action === 'list' && Boolean(me.phone)
   if (!PHONE.test(owner)) return false
+  if (PERSONAL_FOLDERS.has(rest[0])) return false
   if (me.phone === owner) return true
   if (is_public(action, rest)) return true
   if (me.owner !== owner) return false

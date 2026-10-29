@@ -48,7 +48,9 @@
     <p v-else :role="progress?.state === 'failed' ? 'alert' : 'status'">
       {{ label }}
     </p>
-    <time :datetime="`PT${seconds}S`">{{ seconds }} s</time>
+    <time v-if="!problem || seconds" :datetime="`PT${seconds}S`"
+      >{{ seconds }} s</time
+    >
     <button v-if="problem" type="button" @click="emit('retry')">Retry</button>
   </section>
 </template>

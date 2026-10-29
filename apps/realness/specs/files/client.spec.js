@@ -21,6 +21,7 @@ import { compress_session_chunk } from '../../../../.pi/runtime/node_modules/@ea
 import { DatabaseSync } from 'node:sqlite'
 import { gunzipSync } from 'node:zlib'
 import { disk } from '#root/src/can/disk.js'
+import { store_of } from '#root/src/can/store.js'
 import { homedir } from 'node:os'
 import {
   client,
@@ -37,7 +38,7 @@ const A = '+15555550100'
 const B = '+15555550101'
 const root = out_path(`client-test-${randomUUID()}/`)
 const issuer = dev_issuer()
-const storage = disk(join(root, 'bucket'))
+const storage = store_of(disk(join(root, 'bucket')))
 let server
 let url
 
@@ -295,15 +296,16 @@ it('the folder holds only its own files; the record lives in state', async () =>
   assert.deepEqual(Object.keys(saved.files), ['note.md'])
 })
 
-it('an upload carries its plain version, packed only when gzip shrinks it', async () => {
+it('an upload is always one gzip piece, the same bytes each time, with its plain version', () => {
   const text = Buffer.from('a line that repeats\n'.repeat(40))
-  const packed = await packed_upload(text)
+  const packed = packed_upload(text)
   assert.equal(packed.headers['x-version'], version_sync(text))
   assert.equal(packed.headers['content-encoding'], 'gzip')
   assert.deepEqual(gunzipSync(packed.body), text)
-  const tiny = await packed_upload(Buffer.from('hi'))
-  assert.equal(tiny.headers['content-encoding'], undefined)
-  assert.equal(tiny.body.toString(), 'hi')
+  assert.deepEqual(packed_upload(text).body, packed.body)
+  const tiny = packed_upload(Buffer.from('hi'))
+  assert.equal(tiny.headers['content-encoding'], 'gzip')
+  assert.equal(gunzipSync(tiny.body).toString(), 'hi')
 })
 
 it("a pushed file's etag is its local hash", async () => {
@@ -446,7 +448,7 @@ it('s1: two copies of one session merge into one file, each entry once', async (
   await a.sync(dir, 'can://~/s1/')
   await a.put('can://~/s1/a.jsonl', theirs)
   await a.put('can://~/s1/b.html', as_html(theirs))
-  await a.put('can://~/s1/c.html.gz', compress_session_chunk(as_html(theirs)))
+  await a.put('can://~/s1/c.html', as_html(theirs))
   await writeFile(join(dir, 'a.jsonl'), ours)
   await writeFile(join(dir, 'b.html'), as_html(ours))
   await writeFile(
@@ -459,7 +461,7 @@ it('s1: two copies of one session merge into one file, each entry once', async (
     ])
   )
   const report = await a.sync(dir, 'can://~/s1/')
-  assert.deepEqual(report.merged, ['a.jsonl', 'b.html', 'c.html.gz'])
+  assert.deepEqual(report.merged, ['a.jsonl', 'b.html', 'c.html'])
   assert.deepEqual(report.kept_both, [])
   const merged = ours + session_rows(entry('e3', 'e1', 'from vm'))
   assert.equal(await readFile(join(dir, 'a.jsonl'), 'utf8'), merged)
@@ -474,6 +476,37 @@ it('s1: two copies of one session merge into one file, each entry once', async (
     []
   )
   assert.deepEqual((await a.sync(dir, 'can://~/s1/')).unchanged.length, 3)
+})
+
+it('gz2b: a chained session syncs as one gzip piece under its .html name', async () => {
+  const a = as(A)
+  const html = session_jsonl_to_html(
+    session_rows(head, entry('e1', null, 'hi')),
+    'g1'
+  )
+  const more = session_jsonl_to_html(
+    session_rows(entry('e2', 'e1', 'again')),
+    'g1'
+  )
+  const dir = await local('g1', {
+    'x.html.gz': Buffer.concat([
+      compress_session_chunk(html),
+      compress_session_chunk(more)
+    ]),
+    'open.html.gz': compress_session_chunk(html).subarray(0, 12)
+  })
+  const report = await a.sync(dir, 'can://~/g1/')
+  assert.deepEqual(report.pushed, ['x.html'])
+  assert.deepEqual(report.held, ['open.html'])
+  const stored = await readFile(
+    join(root, 'bucket', `people/${A}/g1/x.html.gz`)
+  )
+  assert.equal(gunzipSync(stored).toString(), html + more)
+  assert.equal(stored.indexOf(Buffer.from([0x1f, 0x8b]), 2), -1, 'one piece')
+  assert.equal((await a.sync(dir, 'can://~/g1/')).pushed.length, 0)
+  const fresh = await local('g1-fresh', {})
+  await a.sync(fresh, 'can://~/g1/')
+  assert.equal(await readFile(join(fresh, 'x.html'), 'utf8'), html + more)
 })
 
 it('s1: a .html that is not a session, or another session, still keeps both', async () => {
@@ -966,4 +999,12 @@ it('sy16: a dry run lists every push, pull, delete, and conflict; writes nothing
   const real = await store.sync(here, remote, { deletes: 'all' })
   for (const kind of ['pushed', 'pulled', 'deleted', 'kept_both'])
     assert.deepEqual(real[kind], dry[kind], kind)
+})
+
+it('a file too big plain but small packed still syncs', async () => {
+  const a = as(A)
+  const dir = await local('roomy', { 'big.txt': 'x'.repeat(11 * 1024 * 1024) })
+  const report = await a.sync(dir, 'can://~/roomy/')
+  assert.deepEqual(report.too_big, [])
+  assert.deepEqual(report.pushed, ['big.txt'])
 })

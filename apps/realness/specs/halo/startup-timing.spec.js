@@ -318,14 +318,13 @@ it('failed guest readiness records failure, not initialization success', async t
   assert.equal(event.ms, 40)
 })
 
-it('temporary idle skips user snapshot creation and preserves the disk', async t => {
+it('memory idle snapshots the actor and preserves the disk', async t => {
   const store = fixture(t)
   const actor = await store.create('+14156667777')
   state.calls = []
   await store.idle(actor.id)
-  assert.deepEqual(state.calls, ['pause'])
+  assert.deepEqual(state.calls, ['pause', 'save snapshot'])
   assert.equal(state.running, false)
-  assert.equal(existsSync(join(actor.dir, 'state')), false)
   assert.equal(readFileSync(join(actor.dir, 'rootfs.ext4'), 'utf8'), 'disk')
 })
 

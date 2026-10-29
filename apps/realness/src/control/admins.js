@@ -3,15 +3,20 @@
  * Sync reads it (src/sync/admins.js) and `can()` denies the key to everyone,
  * so only the bucket owner's credentials write it. This is that writer.
  *
- *   <ul><li><a href="tel:+14156667777">+14156667777</a> Scott</li></ul>
+ * The page is an Organization whose people are members, read by the same
+ * microdata reader as an org's members page (src/can/members.js):
  *
- * The phone shows as the link's text and the name follows it, so the page
- * reads plainly. Who is an admin comes from `href` alone; text never grants.
+ *   <p><span itemprop="name">Scott</span> <span itemprop="telephone">+1 415 666 7777</span></p>
+ *
+ * What the page shows is what admits: the telephone is on a span, whose
+ * microdata value is its text, laid out as +1 415 666-7777 while the phone
+ * is stored as digits. Sync's reader accepts an older page of tel: links.
  *
  * Writes are conditional on the version that was read, so two operators
  * cannot silently overwrite each other. Removing the last admin is refused.
  */
 import { read_admins } from '#root/src/sync/admins.js'
+import { read_members } from '#root/src/can/members.js'
 import { escape, unescape } from '#root/lib/items.js'
 
 const PHONE = /^\+[1-9]\d{6,14}$/
@@ -19,28 +24,66 @@ const ENTRY =
   /<a\b[^>]*href="tel:(\+[1-9]\d{6,14})"[^>]*>([\s\S]*?)<\/a>([^<]*)/g
 const TAGS = /<[^>]*>/g
 
-/**
- * Every admin and its name; the first link for a phone wins. The name is the
- * text after the link, or, in pages written before, the link's own text.
- */
-export const parse_admins = html => {
+/** Admins still in tel: links, the shape pages were written in before microdata. */
+const legacy_admins = html => {
   const found = new Map()
   for (const [, phone, label, after] of html.matchAll(ENTRY)) {
     if (found.has(phone)) continue
     const shown = unescape(label.replace(TAGS, '')).trim()
-    const name = unescape(after).trim() || shown
-    found.set(phone, name)
+    found.set(phone, unescape(after).trim() || shown)
   }
   return [...found].map(([phone, name]) => ({ phone, name }))
 }
 
-/** The page sync reads; `read_admins` must see exactly these phones. */
+/**
+ * Every admin and its name, in page order: the founder and the members alike.
+ * Reads the microdata page, and an older tel: page when there are no people.
+ */
+export const parse_admins = html => {
+  let people = []
+  try {
+    people = read_members(html).people
+  } catch {
+    people = []
+  }
+  const admins = people.map(({ phone, name }) => ({ phone, name }))
+  return admins.length ? admins : legacy_admins(html)
+}
+
+/** A displayed number, laid out for reading, never for parsing. */
+const shown_phone = phone => {
+  const [, code, area = '', head = '', tail = ''] =
+    /^\+(\d)(\d{3})(\d{3})(\d{4})$/.exec(phone) ?? []
+  return code ? `+${code} ${area} ${head}-${tail}` : phone
+}
+
+const person_html = (role, { phone, name }, tag) =>
+  `<${tag} itemprop="${role}" itemscope itemtype="https://schema.org/Person">${
+    name ? `<span itemprop="name">${escape(name)}</span> ` : ''
+  }<span itemprop="telephone">${shown_phone(phone)}</span></${tag}>`
+
+/**
+ * The page sync reads; `read_admins` must see exactly these phones. The first
+ * admin leads as the organization's founder, the rest follow as members, and
+ * everyone on it is an admin.
+ */
 export const render_admins = list => {
-  const items = list.map(
-    ({ phone, name }) =>
-      `  <li><a href="tel:${phone}">${phone}</a>${name ? ` ${escape(name)}` : ''}</li>`
-  )
-  return `<!doctype html>\n<title>Admins</title>\n<ul>\n${items.join('\n')}\n</ul>\n`
+  const [admin, ...others] = list
+  if (!admin) throw new Error('an admins page needs one admin')
+  return `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Admins</title></head>
+<body>
+<article itemscope itemtype="https://schema.org/Organization">
+<h1 itemprop="name">Realness admins</h1>
+${person_html('founder', admin, 'p')}
+<ul>
+${others.map(person => person_html('member', person, 'li')).join('\n')}
+</ul>
+</article>
+</body>
+</html>
+`
 }
 
 const check_phone = phone => {

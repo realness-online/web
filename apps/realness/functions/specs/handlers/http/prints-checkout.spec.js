@@ -24,9 +24,8 @@ vi.mock('#utils/log.js', () => ({
   log_info: mock_log_info
 }))
 
-const { prints_checkout_handler } = await import(
-  '#handlers/http/prints-checkout.js'
-)
+const { prints_checkout_handler } =
+  await import('#handlers/http/prints-checkout.js')
 
 const fake_res = () => ({
   status: vi.fn().mockReturnThis(),
@@ -68,7 +67,10 @@ describe('#handlers/http/prints-checkout', () => {
   it('GET lists all three editions and the paid ones for one poster', async () => {
     mock_amounts.mockResolvedValue([500, 50000])
     const res = fake_res()
-    await prints_checkout_handler({ method: 'GET', query: { poster_id: POSTER } }, res)
+    await prints_checkout_handler(
+      { method: 'GET', query: { poster_id: POSTER } },
+      res
+    )
     expect(mock_amounts).toHaveBeenCalledWith(POSTER)
     expect(res.json).toHaveBeenCalledWith({
       amounts: [500, 10000, 50000],
@@ -105,15 +107,23 @@ describe('#handlers/http/prints-checkout', () => {
     const res = fake_res()
     await prints_checkout_handler(request(500), res)
     expect(res.status).toHaveBeenCalledWith(400)
-    expect(res.json).toHaveBeenCalledWith({ error: 'Print edition already sold' })
+    expect(res.json).toHaveBeenCalledWith({
+      error: 'Print edition already sold'
+    })
     expect(mock_create).not.toHaveBeenCalled()
   })
 
   it('offers $100 on the poster whose $5 edition sold', async () => {
     mock_amounts.mockResolvedValue([500])
-    mock_create.mockResolvedValue({ url: 'https://checkout.stripe.com/x', id: 'cs_1' })
+    mock_create.mockResolvedValue({
+      url: 'https://checkout.stripe.com/x',
+      id: 'cs_1'
+    })
     const res = fake_res()
-    await prints_checkout_handler({ ...request(10000), headers: { origin: 'http://localhost:5173' } }, res)
+    await prints_checkout_handler(
+      { ...request(10000), headers: { origin: 'http://localhost:5173' } },
+      res
+    )
     expect(mock_create).toHaveBeenCalledWith({
       poster_id: POSTER,
       amount: 10000,
@@ -121,19 +131,27 @@ describe('#handlers/http/prints-checkout', () => {
       image: null
     })
     expect(res.json).toHaveBeenCalledWith({
-      url: 'https://checkout.stripe.com/x', amount: 10000, currency: 'usd'
+      url: 'https://checkout.stripe.com/x',
+      amount: 10000,
+      currency: 'usd'
     })
     expect(mock_log_info).toHaveBeenCalledWith(
-      'print checkout created', expect.objectContaining({ poster_id: POSTER, session: 'cs_1' })
+      'print checkout created',
+      expect.objectContaining({ poster_id: POSTER, session: 'cs_1' })
     )
   })
 
   it('continues offering $500 after a $500 sale', async () => {
     mock_amounts.mockResolvedValue([500, 10000, 50000])
-    mock_create.mockResolvedValue({ url: 'https://checkout.stripe.com/x', id: 'cs_2' })
+    mock_create.mockResolvedValue({
+      url: 'https://checkout.stripe.com/x',
+      id: 'cs_2'
+    })
     const res = fake_res()
     await prints_checkout_handler(request(50000), res)
-    expect(mock_create).toHaveBeenCalledWith(expect.objectContaining({ amount: 50000 }))
+    expect(mock_create).toHaveBeenCalledWith(
+      expect.objectContaining({ amount: 50000 })
+    )
   })
 
   it('carries the print picture when a preview exists', async () => {
@@ -141,7 +159,10 @@ describe('#handlers/http/prints-checkout', () => {
     mock_file.getMetadata.mockResolvedValue([
       { metadata: { firebaseStorageDownloadTokens: 'tok-1' } }
     ])
-    mock_create.mockResolvedValue({ url: 'https://checkout.stripe.com/x', id: 'cs_1' })
+    mock_create.mockResolvedValue({
+      url: 'https://checkout.stripe.com/x',
+      id: 'cs_1'
+    })
     const res = fake_res()
     await prints_checkout_handler(request(500), res)
     expect(mock_create).toHaveBeenCalledWith({
@@ -149,13 +170,16 @@ describe('#handlers/http/prints-checkout', () => {
       amount: 500,
       origin: undefined,
       image:
-        'https://firebasestorage.googleapis.com/v0/b/realness-online.appspot.com/o/people%2F%2B14155550142%2Fposters%2F1712000000000.png?alt=media&token=tok-1'
+        'https://firebasestorage.googleapis.com/v0/b/realness-online.appspot.com/o/prints%2F%2B14155550142%2F1712000000000.jpg?alt=media&token=tok-1'
     })
   })
 
   it('sells without a picture when the preview cannot be read', async () => {
     mock_file.exists.mockRejectedValue(new Error('storage down'))
-    mock_create.mockResolvedValue({ url: 'https://checkout.stripe.com/x', id: 'cs_1' })
+    mock_create.mockResolvedValue({
+      url: 'https://checkout.stripe.com/x',
+      id: 'cs_1'
+    })
     const res = fake_res()
     await prints_checkout_handler(request(500), res)
     expect(mock_create).toHaveBeenCalledWith(
@@ -169,9 +193,15 @@ describe('#handlers/http/prints-checkout', () => {
   it('returns 502 and logs when Stripe fails', async () => {
     mock_amounts.mockRejectedValue(new Error('rate limited'))
     const res = fake_res()
-    await prints_checkout_handler({ method: 'GET', query: { poster_id: POSTER } }, res)
+    await prints_checkout_handler(
+      { method: 'GET', query: { poster_id: POSTER } },
+      res
+    )
     expect(res.status).toHaveBeenCalledWith(502)
     expect(res.json).toHaveBeenCalledWith({ error: 'Checkout unavailable' })
-    expect(mock_log_error).toHaveBeenCalledWith('print checkout failed', expect.any(Error))
+    expect(mock_log_error).toHaveBeenCalledWith(
+      'print checkout failed',
+      expect.any(Error)
+    )
   })
 })

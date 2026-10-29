@@ -64,6 +64,6 @@ export const create_templates = (site, poster_sizes, watch = false) => {
     /** @param {import('./types.js').SitemapEntry[]} urls */
     sitemap(urls) {
       return sitemap(site, urls)
-    },
+    }
   }
 }

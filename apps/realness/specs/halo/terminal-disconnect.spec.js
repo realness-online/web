@@ -25,7 +25,9 @@ const wait_for = async predicate => {
   assert.ok(predicate(), 'disconnect completed')
 }
 
-it('last terminal disconnect stops once, retains disk, and permits repeated reconnects', async t => {
+// sp1: closing the tab leaves every shell running; the sweep idles the actor
+// later. A disconnect only releases the hold, once, and never stops it.
+it('the last terminal disconnect releases the actor without stopping it', async t => {
   const sockets = new Set()
   const guest = create_server(socket => {
     sockets.add(socket)
@@ -71,15 +73,16 @@ it('last terminal disconnect stops once, retains disk, and permits repeated reco
   await wait_for(() => work === 1)
   assert.equal(stops.length, 0, 'another terminal keeps the actor running')
   second.destroy()
-  await wait_for(() => stops.length === 1)
-  assert.equal(work, 0)
+  await wait_for(() => work === 0)
   for (let i = 0; i < 20; i++) {
     const socket = await attach()
+    assert.equal(work, 1, 'an attached terminal holds the actor')
     socket.destroy()
-    await wait_for(() => stops.length === i + 2)
-    assert.equal(work, 0)
+    await wait_for(() => work === 0)
   }
-  assert.ok(stops.every(stop => stop.id === 'a-one' && stop.tier === 'disk'))
+  await new Promise(done => setTimeout(done, 20))
+  assert.equal(work, 0, 'nothing released twice')
+  assert.deepEqual(stops, [], 'a disconnect never stops the actor')
 })
 
 it('a quiet terminal stops holding the halo; typing holds it again', async t => {

@@ -180,10 +180,6 @@
       border-radius: base-line;
       background: var(--code-surface);
       overflow: auto;
-      /* Nothing to say: no box at all. */
-      &:not(:has(> section, > p:not(:empty), > :not(section, p))) {
-        display: none;
-      }
       & > section[aria-label='Connection status'] {
         flex-direction: row;
         flex-wrap: wrap;
@@ -233,9 +229,6 @@
       inset-block: auto;
       top: var(--visible-top, 0px);
       block-size: var(--visible-height, 100dvh);
-    }
-    aside#chat-panel > aside:not(:has(> p:not(:empty), > section, > *:not(p))) {
-      display: none;
     }
     aside#chat-panel > form[data-chat] {
       padding-block-end: base-line * 0.25;

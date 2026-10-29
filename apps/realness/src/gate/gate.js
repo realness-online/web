@@ -133,7 +133,23 @@ const view_route = async (views, path, request, response, phone) => {
  * @param {string} pass
  * @param {boolean} [streaming] headers are already sent: a refusal becomes an error record
  */
-const forward = (request, response, where, pass, streaming = false) =>
+/** Connection-level failures: nothing is listening yet, not a refusal. */
+const UNREACHABLE = new Set([
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'EHOSTUNREACH',
+  'ENOTFOUND',
+  'ETIMEDOUT'
+])
+
+const forward = (
+  request,
+  response,
+  where,
+  pass,
+  streaming = false,
+  unreachable = () => 'halo unreachable'
+) =>
   /** @type {Promise<void>} */
   (
     new Promise(done => {
@@ -180,15 +196,17 @@ const forward = (request, response, where, pass, streaming = false) =>
         }
       )
       upstream.on('error', () => {
+        const text = unreachable()
         if (streaming) {
-          response.end(record({ type: 'error', text: 'halo unreachable' }))
+          response.end(record({ type: 'error', text }))
           return done()
         }
         if (!response.headersSent)
-          response.writeHead(HTTP.BAD_GATEWAY, {
-            'content-type': 'text/plain; charset=utf-8'
+          response.writeHead(HTTP.UNAVAILABLE, {
+            'content-type': 'text/plain; charset=utf-8',
+            'retry-after': String(RETRY_AFTER_S)
           })
-        response.end('halo unreachable\n')
+        response.end(`${text}\n`)
         done()
       })
       response.on('close', () => upstream.destroy())
@@ -204,7 +222,8 @@ const forward = (request, response, where, pass, streaming = false) =>
  *   origins: string[],
  *   wake?: (options?: { watch?: (event: object) => void }) => Promise<void>,
  *   log?: (line: string) => void,
- *   views?: ReturnType<typeof make_views>
+ *   views?: ReturnType<typeof make_views>,
+ *   unreachable?: () => string
  * }} options
  */
 export const make_gate = ({
@@ -214,7 +233,8 @@ export const make_gate = ({
   origins,
   wake = async () => {},
   log = console.info,
-  views = make_views()
+  views = make_views(),
+  unreachable = () => 'halo unreachable'
 }) => {
   const plain = (response, status, text) =>
     response
@@ -272,7 +292,8 @@ export const make_gate = ({
         response,
         await halo_for({ phone: who.phone, ...(actor ? { actor } : {}) }),
         issue_halo_pass(who, secret),
-        response.headersSent
+        response.headersSent,
+        unreachable
       )
     } catch (error) {
       log(`gate: api refused: ${error.message}`)
@@ -321,10 +342,15 @@ export const make_gate = ({
         actor,
         pass: issue_halo_pass(who, secret),
         cols: Number(url.searchParams.get('cols') ?? DEFAULT_COLS),
-        rows: Number(url.searchParams.get('rows') ?? DEFAULT_ROWS)
+        rows: Number(url.searchParams.get('rows') ?? DEFAULT_ROWS),
+        ...(url.searchParams.get('session')
+          ? { session: url.searchParams.get('session') }
+          : {})
       })
     } catch (error) {
       log(`gate: ${actor} refused: ${error.message}`)
+      if (UNREACHABLE.has(error.code))
+        return refuse(socket, HTTP.UNAVAILABLE, `${unreachable()}\n`)
       return refuse(socket, HTTP.BAD_GATEWAY, `${error.message}\n`)
     }
 

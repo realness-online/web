@@ -20,6 +20,7 @@ import { dirname, join, relative, sep } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import {
   harness_exclude,
+  is_own,
   plan_syncs,
   refused,
   whole_enabled
@@ -54,8 +55,17 @@ const snapshot = async root => {
       }
     }
   }
-  if (await whole_enabled(root)) await visit(root)
-  else
+  if (await whole_enabled(root)) {
+    const entries = await readdir(root, { withFileTypes: true }).catch(() => [])
+    for (const entry of entries) {
+      if (!is_own(entry.name)) continue
+      const target = join(root, entry.name)
+      const info = await stat(target).catch(() => null)
+      if (!info) continue
+      if (info.isDirectory()) await visit(target)
+      else if (info.isFile()) found[target] = `${info.mtimeMs}:${info.size}`
+    }
+  } else
     for (const [path] of await plan_syncs(root)) {
       if (refused(path)) continue
       const target = join(root, path)

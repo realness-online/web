@@ -95,6 +95,8 @@ export const browser_settings = mode => {
 
 export const local_settings = {
   cloud: environments.local,
+  /** A rebaseline uses a new name; never reuse an iCloud path. */
+  sync_store: 'Realness-sync-2',
   halo_port: 8080,
   api_port: 18080,
   terminal_port: 18081,

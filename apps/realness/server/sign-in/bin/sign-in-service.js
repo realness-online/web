@@ -2,14 +2,14 @@
 import { execFile as exec_file } from 'node:child_process'
 import { createServer as create_server } from 'node:http'
 import { disk } from '#root/src/can/disk.js'
-import { out_path } from '#root/lib/output.js'
+import { sign_in_dir } from '#root/src/settings/secrets.js'
 import { sign_in_issuer } from '#root/src/sign-in/issuer.js'
 import { sign_in_handler } from '#root/src/sign-in/server.js'
 
 const { env } = process
 const project = env.IDENTITY_PROJECT
 if (!project) throw new Error('sign-in needs IDENTITY_PROJECT')
-const storage = disk(env.SIGN_IN_DIR ?? out_path('sign-in'))
+const storage = disk(env.SIGN_IN_DIR ?? sign_in_dir())
 const issuer = await sign_in_issuer(storage, { project })
 const handler = sign_in_handler({
   issuer,

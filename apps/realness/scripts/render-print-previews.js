@@ -1,11 +1,10 @@
 /**
- * Render a PNG preview for every print the shop lists, and upload it beside
- * the poster (`people/<author>/posters/<created>.png`) with a Firebase
- * download token, which is what the checkout function hands to Stripe.
- *
- * The shop lists the live `posters/` folder's plain `<created>.html`
- * files - the app's directory listing skips dashed (layer) filenames and
- * dedupes timestamps, so previews beside the posters are invisible to it.
+ * Render a JPEG preview for every poster and upload it to the prints folder
+ * (`prints/<author>/<created>.jpg`) with a Firebase download token,
+ * which is what the checkout function hands to Stripe. Prints live apart
+ * from posters so the posters folder holds only the poster files.
+ * A poster is for sale when its JPEG exists, so never render part of the
+ * shop with --limit while the rest still waits on a full run.
  *
  * Builds dist first (`vp run build`), serves it locally, and drives the
  * poster driver through the devtools protocol - the same page the app's
@@ -13,6 +12,9 @@
  *
  * Usage:
  *   npm run prints:previews -- [--limit N] [--force] [--no-upload]
+ *
+ * --limit renders N posters but lists nothing new for sale, because the run
+ * could not know which posters it has not seen.
  *
  * Env:
  *   CHROME_PATH      Chromium browser (defaults to Brave)
@@ -48,7 +50,7 @@ const BRAVE = '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
 export const parse_args = args => {
   const at = args.indexOf('--limit')
   return {
-    limit: Number(at === -1 ? 0 : args[at + 1]),
+    limit: at === -1 ? 'all' : Number(args[at + 1]),
     force: args.includes('--force'),
     upload: !args.includes('--no-upload')
   }
@@ -137,19 +139,19 @@ export const upload_preview = (destination, file, run = gcloud) =>
     'cp',
     file,
     destination,
-    '--content-type=image/png',
+    '--content-type=image/jpeg',
     `--custom-metadata=firebaseStorageDownloadTokens=${random_uuid()}`
   ])
 
 /**
- * Write a preview PNG from its data URL.
+ * Write a preview JPEG from its data URL.
  * @param {string} out_dir
  * @param {number} created
  * @param {string} data_url
  */
 export const write_preview = (out_dir, created, data_url) => {
   fs.mkdirSync(out_dir, { recursive: true })
-  const file = path.join(out_dir, `${created}.png`)
+  const file = path.join(out_dir, `${created}.jpg`)
   fs.writeFileSync(file, Buffer.from(data_url.split(',')[1], 'base64'))
   return file
 }
@@ -199,14 +201,14 @@ export const main = async ({
   if (!fs.existsSync(chrome_path))
     throw new Error(`CHROME_PATH not found: ${chrome_path}`)
   const owner = author()
-  const prefix = `gs://${bucket}/people${owner}/posters/`
+  const posters_prefix = `gs://${bucket}/people${owner}/posters/`
+  const prints_prefix = `gs://${bucket}/prints${owner}/`
 
-  const listing = list(prefix)
-  const prints = stamps(listing, 'html')
-  if (!prints.length) throw new Error(`no prints found under ${prefix}`)
-  const existing = new Set(upload ? stamps(listing, 'png') : [])
+  const prints = stamps(list(posters_prefix), 'html')
+  if (!prints.length) throw new Error(`no prints found under ${posters_prefix}`)
+  const existing = new Set(upload ? stamps(list(prints_prefix), 'jpg') : [])
   const wanted = prints.filter(created => force || !existing.has(created))
-  const batch = limit > 0 ? wanted.slice(0, limit) : wanted
+  const batch = limit === 'all' ? wanted : wanted.slice(0, limit)
 
   console.info(
     `${LABEL}: ${prints.length} prints, ${existing.size} previews, ` +
@@ -233,9 +235,9 @@ export const main = async ({
         const result = await evaluate(
           `window.poster_driver.render_stored(${JSON.stringify(itemid)})`
         )
-        if (!result?.png) throw new Error('render returned no png')
-        const file = write_preview(out_dir, created, result.png)
-        if (upload) put(`${prefix}${created}.png`, file)
+        if (!result?.jpeg) throw new Error('render returned no jpeg')
+        const file = write_preview(out_dir, created, result.jpeg)
+        if (upload) put(`${prints_prefix}${created}.jpg`, file)
         rendered.push(created)
         console.info(
           `${LABEL}: ${created} ${result.width}x${result.height}` +

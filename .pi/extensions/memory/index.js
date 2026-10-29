@@ -14,6 +14,8 @@
  * @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI
  * @typedef {import("./index-db.js").Result} Result
  */
+import { existsSync } from 'node:fs'
+import { relative, sep } from 'node:path'
 import { Type } from 'typebox'
 import { StringEnum } from '@earendil-works/pi-ai'
 import { DB_PATH, indexSessions, recall, stats } from './index-db.js'
@@ -22,6 +24,18 @@ import { DB_PATH, indexSessions, recall, stats } from './index-db.js'
  * @param {Result[]} results
  * @returns {string}
  */
+/**
+ * m0: a sealed month's session may not be on this device. Sync carries a
+ * packed session under its plain `.html` name, so fetch that.
+ * @param {string} file
+ * @returns {string}
+ */
+const fetch_hint = file => {
+  if (existsSync(file)) return ''
+  const plain = file.replace(/\.html\.gz$/, '.html')
+  const remote = relative(process.cwd(), plain).split(sep).join('/')
+  return `\n   not on this device: realness cp can://~/harness/${remote} ${plain}`
+}
 const formatResults = (query, results) => {
   if (!results.length) {
     return `No past sessions match "${query}".`
@@ -38,7 +52,7 @@ const formatResults = (query, results) => {
     const snippet = text.length > 160 ? `${text.slice(0, 159)}…` : text
     const file =
       home && hit.session_file.startsWith(home) ? `~${hit.session_file.slice(home.length)}` : hit.session_file
-    return `${i + 1}. ${when}  ${project}\n   ${snippet}\n   ${file}`
+    return `${i + 1}. ${when}  ${project}\n   ${snippet}\n   ${file}${fetch_hint(hit.session_file)}`
   })
   const noun = results.length === 1 ? 'match' : 'matches'
   return `${results.length} ${noun} for "${query}"\n\n${blocks.join('\n\n')}`

@@ -11,8 +11,19 @@ import socket
 import sys
 import re
 
-HOST_CID = 2
-DOOR_PORT = 54
+DOOR_SOCKET = "/run/realness/door.sock"
+
+
+def door_socket():
+    """The halo door: vsock on Firecracker, a unix socket inside a box."""
+    family = socket.AF_UNIX if os.path.exists(DOOR_SOCKET) else socket.AF_VSOCK
+    return socket.socket(family, socket.SOCK_STREAM)
+
+
+def door_address(sock):
+    return DOOR_SOCKET if sock.family == socket.AF_UNIX else (2, 54)
+
+
 SITE_ROOT = "/realness/work/site"
 SITE_ID = os.path.join(SITE_ROOT, ".realness-site-id")
 
@@ -20,10 +31,10 @@ path = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else "/realness/site")
 if not os.path.isfile(os.path.join(path, "index.html")):
     sys.exit(f"realness publish: {path} has no index.html; build the site first")
 
-sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
+sock = door_socket()
 sock.settimeout(120)
 try:
-    sock.connect((HOST_CID, DOOR_PORT))
+    sock.connect(door_address(sock))
 except OSError as error:
     sys.exit(f"realness publish: the halo did not answer ({error})")
 with sock:

@@ -93,3 +93,25 @@ it('work is held per key: a second release, or another key, does not free the ac
   assert.equal(store.is_busy('a-1'), false)
   assert.deepEqual(store.activity(), { actors: 0, kinds: {} })
 })
+
+it('sweep removes an incomplete directory, owner or not', async () => {
+  const store = fake([{ id: 'a-half', state: 'incomplete', created: '' }])
+  const applied = []
+  await store.sweep({ now, apply: (r, step) => applied.push([r.id, step]) })
+  assert.deepEqual(applied, [['a-half', 'remove']])
+})
+
+it('a tight volume drops idle actors to disk early and skips new snapshots', async () => {
+  const store = fake([
+    record('a-run', 'running', MEMORY_AFTER),
+    record('a-idle', 'idle', MEMORY_AFTER)
+  ])
+  store.mib = 1536
+  store.free_bytes = () => 512 * 1024 * 1024
+  const applied = []
+  await store.sweep({ now, apply: (r, step) => applied.push([r.id, step]) })
+  assert.deepEqual(applied, [
+    ['a-run', 'disk'],
+    ['a-idle', 'disk']
+  ])
+})

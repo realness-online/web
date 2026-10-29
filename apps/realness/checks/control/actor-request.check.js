@@ -1,12 +1,12 @@
+import { secret_path } from '#root/src/settings/secrets.js'
 import assert from 'node:assert/strict'
 import { createHmac as create_hmac } from 'node:crypto'
 import { readFileSync as read_file_sync } from 'node:fs'
 import { reader, actors, request_actor } from '../../src/control/reads.js'
-import { out_path } from '#root/lib/output.js'
 
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const owner = '+14156667777'
-const secret = read_file_sync(out_path('halo-pass-secret'), 'utf8').trim()
+const secret = read_file_sync(secret_path('halo-pass-secret'), 'utf8').trim()
 const pass = () => {
   const body = Buffer.from(
     JSON.stringify({

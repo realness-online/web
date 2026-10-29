@@ -5,7 +5,7 @@ import {
   PRICE_KEY,
   WEBHOOK_EVENTS,
   stripe_api
-} from '../../../src/proxy/billing.js'
+} from '#root/src/proxy/billing.js'
 
 const project = process.env.PROJECT ?? 'realness-development'
 const region = process.env.REGION ?? 'us-central1'

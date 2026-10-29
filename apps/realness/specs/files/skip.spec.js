@@ -65,3 +65,8 @@ it('ordinary files sync', () => {
   ])
     assert.ok(!skipped(path), path)
 })
+
+it('lc1: a secrets folder never syncs', () => {
+  assert.ok(skipped('.pi/agent/secrets/halo-pass-secret'))
+  assert.ok(skipped('vault/secrets/note.md'))
+})

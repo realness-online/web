@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
 import assert from 'node:assert/strict'
+import { secret_path } from '#root/src/settings/secrets.js'
 import { createHmac as create_hmac } from 'node:crypto'
 import {
   existsSync as exists_sync,
   readFileSync as read_file_sync
 } from 'node:fs'
 import { after, before, describe, test } from 'node:test'
-import { out_path } from '#root/lib/output.js'
 import { development_settings } from '#root/src/settings/environments.js'
 
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const PROXY = development_settings.services.starter_proxy_url
 const owner = '+14156667777'
-const secret_path = out_path('halo-pass-secret')
+const secret_path = secret_path('halo-pass-secret')
 const secret =
   process.env.HALO_PASS_SECRET ??
   (exists_sync(secret_path) ? read_file_sync(secret_path, 'utf8').trim() : null)

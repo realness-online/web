@@ -7,7 +7,7 @@ import {
 
 const print = (overrides = {}) => ({
   id: '1712000000000',
-  image: 'https://storage.example/print.png?token=abc',
+  image: 'https://storage.example/print.jpg?token=abc',
   thought: 'the harbor at first light',
   dates: ['2026-09-22T02:42:22Z'],
   ...overrides
@@ -22,7 +22,7 @@ describe('scripts/print-pages', () => {
     expect(pages[0].title).toBe('Hand-finished print - Realness Online')
     expect(pages[0].og_title).toBe('Hand-finished print - Realness Online')
     expect(pages[0].og_image).toBe(
-      'https://storage.example/print.png?token=abc'
+      'https://storage.example/print.jpg?token=abc'
     )
     expect(pages[0].description).toBe(
       'the harbor at first light - Recorded sale date: 2026-09-22'

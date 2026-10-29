@@ -11,9 +11,10 @@
  *   compose(key, sources, { if_version, if_absent })  key becomes sources' bytes joined
  *
  * The bytes are the truth: a version is their hash, never stored. A body
- * sent with `encoding: 'gzip'` is unpacked before it lands. With
- * `gzip_at_rest` set, text that gzip shrinks is kept packed on disk and
- * unpacked on the way out, so its version is still the plain bytes' hash.
+ * sent with `encoding: 'gzip'` is unpacked before it lands. A `.gz` key is
+ * gzip at rest: a gzip body is kept as sent, a plain one is zipped, reads
+ * unpack it, its version is the plain bytes' hash, and
+ * `get(key, { raw: true })` hands back the stored bytes.
  * Conflict checks hash the bytes at write time; listings reuse a hash while
  * the stored file's size and mtime hold, so they read no bodies.
  *
@@ -28,7 +29,6 @@ import {
   rename,
   rm,
   stat,
-  utimes,
   writeFile as write_file
 } from 'node:fs/promises'
 import { dirname, join, resolve, sep } from 'node:path'
@@ -56,12 +56,12 @@ const INDEX = '.index'
 const RESERVED = [META, INDEX]
 const missing = error => ['ENOENT', 'ENOTDIR', 'EISDIR'].includes(error.code)
 
-const TEXT = /\.(html|md|jsonl|json|svg|txt|css|js|xml|csv|ya?ml)$/i
 const GZIP_MAGIC = Buffer.from('1f8b', 'hex')
+const GZ = /\.gz$/
 
-/** Unpack a text body stored packed under gzip_at_rest; others pass through. */
-const to_plain = (key, body, gzip_at_rest) =>
-  gzip_at_rest && TEXT.test(key) && body.subarray(0, 2).equals(GZIP_MAGIC)
+/** Unpack a `.gz` body; others pass through. */
+const to_plain = (key, body) =>
+  GZ.test(key) && body.subarray(0, 2).equals(GZIP_MAGIC)
     ? gunzip_sync(body)
     : body
 
@@ -106,13 +106,6 @@ const read_json = async path => {
   }
 }
 
-/** Text bodies packed when gzip_at_rest and packing makes them smaller. */
-const packed = (key, body, gzip_at_rest) => {
-  if (!gzip_at_rest || !TEXT.test(key)) return body
-  const small = gzip_sync(Buffer.from(body))
-  return small.length < Buffer.byteLength(body) ? small : body
-}
-
 /** A folder's direct files and folders, hiding temp files and reserved ones. */
 const list_in = async (root, at, prefix) => {
   const trimmed = prefix.replace(/\/$/, '')
@@ -141,41 +134,7 @@ const list_in = async (root, at, prefix) => {
   }
 }
 
-/**
- * Pack every plain text file under root in place, as gzip_at_rest would have.
- * Versions hash the plain bytes, so nothing re-syncs; mtimes are kept.
- * @returns {Promise<{ packed: string[], saved: number }>}
- */
-export const pack = async (root_path, { dry_run = false } = {}) => {
-  const root = resolve(root_path)
-  const report = { packed: [], saved: 0 }
-  const entries = await readdir(root, { recursive: true, withFileTypes: true })
-  for (const entry of entries) {
-    const path = join(entry.parentPath, entry.name)
-    const key = path.slice(root.length + 1)
-    if (!entry.isFile() || !TEXT.test(key) || entry.name.endsWith('.tmp'))
-      continue
-    if (RESERVED.some(name => key === name || key.startsWith(name + sep)))
-      continue
-    // eslint-disable-next-line no-await-in-loop -- one file in memory at a time
-    const body = await read_file(path)
-    if (body.subarray(0, 2).equals(GZIP_MAGIC)) continue
-    const small = packed(key, body, true)
-    if (small === body) continue
-    report.packed.push(key)
-    report.saved += body.length - small.length
-    if (dry_run) continue
-    // eslint-disable-next-line no-await-in-loop -- keep the write beside its read
-    const { atime, mtime } = await stat(path)
-    // eslint-disable-next-line no-await-in-loop -- one file at a time
-    await atomic_write(path, small)
-    // eslint-disable-next-line no-await-in-loop -- restore the time it had
-    await utimes(path, atime, mtime)
-  }
-  return report
-}
-
-export const disk = (root_path, { gzip_at_rest = false } = {}) => {
+export const disk = root_path => {
   const root = resolve(root_path)
   const serial = serializer()
   /** @type {Map<string, { size: number, mtime: number, version: string }>} */
@@ -190,12 +149,15 @@ export const disk = (root_path, { gzip_at_rest = false } = {}) => {
       ? atomic_write(meta_at(key), JSON.stringify(meta))
       : rm(meta_at(key), { force: true })
 
-  const get = async key => {
+  /** @param {string} key @param {{ raw?: boolean }} [options] */
+  const get = async (key, { raw = false } = {}) => {
     try {
       const stored = await read_file(at(key))
-      const body = to_plain(key, stored, gzip_at_rest)
+      const body = to_plain(key, stored)
+      const packed = body !== stored
       return {
-        body,
+        body: raw ? stored : body,
+        ...(raw && { packed }),
         version: await version_of(body),
         meta: await read_meta(key)
       }
@@ -210,7 +172,7 @@ export const disk = (root_path, { gzip_at_rest = false } = {}) => {
     const known = hashes.get(key)
     if (known && known.size === info.size && known.mtime === info.mtimeMs)
       return known.version
-    const plain = to_plain(key, await read_file(at(key)), gzip_at_rest)
+    const plain = to_plain(key, await read_file(at(key)))
     const version = await version_of(plain)
     hashes.set(key, { size: info.size, mtime: info.mtimeMs, version })
     return version
@@ -254,8 +216,16 @@ export const disk = (root_path, { gzip_at_rest = false } = {}) => {
       throw new Conflict(`${key} is at ${current}`)
   }
 
-  const write = async (key, body, meta) => {
-    await atomic_write(at(key), packed(key, body, gzip_at_rest))
+  /**
+   * `sent` is the gzip a client sent for a `.gz` key, kept as it came.
+   * @param {string} key
+   * @param {Buffer | string} body
+   * @param {Record<string, string>} [meta]
+   * @param {Buffer | null} [sent]
+   */
+  const write = async (key, body, meta, sent = null) => {
+    const stored = GZ.test(key) ? (sent ?? gzip_sync(Buffer.from(body))) : body
+    await atomic_write(at(key), stored)
     if (meta !== undefined) await write_meta(key, meta)
     return version_of(Buffer.from(body))
   }
@@ -271,10 +241,16 @@ export const disk = (root_path, { gzip_at_rest = false } = {}) => {
     put: (key, body, options = {}) =>
       serial(key, async () => {
         await check(key, options)
-        const plain = options.encoding === 'gzip' ? gunzip_sync(body) : body
+        const sent_gzip = options.encoding === 'gzip'
+        const plain = sent_gzip ? gunzip_sync(body) : body
         const meta = merged_meta(await read_meta(key), options.meta)
         const old = await before(key)
-        const version = await write(key, plain, meta)
+        const version = await write(
+          key,
+          plain,
+          meta,
+          sent_gzip ? Buffer.from(body) : null
+        )
         await index.moved(key, old, version)
         return version
       }),
@@ -291,7 +267,7 @@ export const disk = (root_path, { gzip_at_rest = false } = {}) => {
      */
     compose: (key, sources, options = {}) =>
       serial(key, async () => {
-        const files = await Promise.all(sources.map(get))
+        const files = await Promise.all(sources.map(source => get(source)))
         const gone = sources.find((name, index) => !files[index])
         if (gone) throw new Conflict(`${gone} is missing`)
         await check(key, options)

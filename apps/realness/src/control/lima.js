@@ -10,21 +10,25 @@ import {
   readFile as read_file,
   writeFile as write_file
 } from 'node:fs/promises'
+import { spawn } from 'node:child_process'
 import { basename, join } from 'node:path'
 import { run, attempt, stream } from './exec.js'
 import { ROOT } from './paths.js'
 import { out_root, sync_dir } from '#root/src/settings/output.js'
 
 /**
- * The VM template names its halo folders as {{project}}, {{out}}, and
- * {{sync}} (where local sync keeps files), so no
+ * The VM template names its halo folders as {{project}}, {{out}},
+ * {{sync}} (where local sync keeps files), and {{vault}}, so no
  * checkout path is written into the repository. Each must be filled.
  */
+/** The harness vault beside this checkout: the main copy of the owner's notes. */
+const VAULT = join(ROOT, '..', '..', 'vault')
+
 export const render_vm_config = (
   template,
-  { project = ROOT, out = out_root(), sync = sync_dir() } = {}
+  { project = ROOT, out = out_root(), sync = sync_dir(), vault = VAULT } = {}
 ) => {
-  const values = { project, out, sync }
+  const values = { project, out, sync, vault }
   for (const [name, value] of Object.entries(values))
     if (typeof value !== 'string' || !value.startsWith('/'))
       throw new Error(`lima: ${name} folder must be an absolute path: ${value}`)
@@ -62,6 +66,10 @@ const write_vm_config = async (
 }
 
 export const limaTarget = config => {
+  /**
+   * @param {string} [command]
+   * @param {{ user?: string | null }} [options]
+   */
   const shellArgs = (command, { user = null } = {}) => {
     const args = ['shell', `--workdir=${config.workdir}`, config.vm]
     if (!command) return args
@@ -124,6 +132,36 @@ export const limaTarget = config => {
         'limactl',
         shellArgs(`bash ${config.workdir}/${path}`, { user })
       )
+    },
+
+    /**
+     * lc1: write a secret as a root-only file in the guest. The value goes
+     * over stdin, never in a command line or a shared folder.
+     * @param {string} path
+     * @param {string} value
+     * @returns {Promise<void>}
+     */
+    install(path, value) {
+      return new Promise((done, fail) => {
+        const child = spawn(
+          'limactl',
+          shellArgs(
+            `umask 077 && mkdir -p "$(dirname '${path}')" && cat > '${path}'`,
+            { user: 'root' }
+          ),
+          { stdio: ['pipe', 'ignore', 'pipe'] }
+        )
+        /** @type {string} */
+        let error = ''
+        child.stderr.on('data', chunk => (error += chunk))
+        child.on('error', fail)
+        child.on('close', code =>
+          code === 0
+            ? done()
+            : fail(new Error(`install ${path}: ${error.trim()}`))
+        )
+        child.stdin.end(value)
+      })
     },
 
     /** A command's output, or "" if it failed. For checks. */

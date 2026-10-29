@@ -98,6 +98,7 @@ BASE_PACKAGES=(
   python3-yaml
   ca-certificates curl git ripgrep fd-find jq unzip
   less
+  neovim emacs-nox
 )
 
 log "apt: ${BASE_PACKAGES[*]}"
@@ -108,7 +109,11 @@ chroot "$TREE" env DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 \
 
 log "installed packages: $(chroot "$TREE" dpkg-query -f '.\n' -W | wc -l)"
 
-chroot "$TREE" dpkg-query -W systemd git socat python3 fd-find > /dev/null \
+log "dbus reads the actor's machine-id through /etc"
+mkdir -p "$TREE/var/lib/dbus"
+ln -sfn /etc/machine-id "$TREE/var/lib/dbus/machine-id"
+
+chroot "$TREE" dpkg-query -W systemd git socat python3 fd-find neovim emacs-nox > /dev/null \
   || { echo "dpkg does not agree the base packages installed" >&2; exit 1; }
 
 log "enabling units"
@@ -148,6 +153,15 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
 for command in pi pi-session-read; do
   ln -sf "/usr/local/lib/realness-pi/node_modules/.bin/$command" "$TREE/usr/local/bin/$command"
 done
+
+APPS_TAR="${APPS_TAR:-$OUT/realness-apps.tar.gz}"
+[ -f "$APPS_TAR" ] || { echo "run tools/control/scripts/harness-stage.sh <env> on the Mac first" >&2; exit 1; }
+log "apps: source for reference at /apps, read-only to the actor"
+rm -rf "$TREE/apps"
+mkdir -p "$TREE/apps"
+tar xzf "$APPS_TAR" -C "$TREE/apps"
+chown -R 0:0 "$TREE/apps"
+chmod -R a-w,a+rX "$TREE/apps"
 
 AGENT_BROWSER_VERSION="${AGENT_BROWSER_VERSION:-0.31.1}"
 log "agent-browser $AGENT_BROWSER_VERSION (leases Chrome)"

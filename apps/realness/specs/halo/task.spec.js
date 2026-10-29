@@ -1,4 +1,4 @@
-import { zipped_storage } from '../harness/zipped-storage.js'
+import { store_of } from '#root/src/can/store.js'
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
@@ -29,7 +29,7 @@ const PLAN =
   '# Realness\n\n## Nodes\n\n| a |\n\n## Syncs\n\n- work/demo\n- `bin/`\n\n## Notes\n\n- x\n'
 
 before(async () => {
-  storage = zipped_storage(disk(join(dir, 'bucket')))
+  storage = store_of(disk(join(dir, 'bucket')))
   const put = (path, body) =>
     storage.put(`people/${phone}/harness/${path}`, body)
   await put('.ignore', '')

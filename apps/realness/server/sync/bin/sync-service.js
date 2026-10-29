@@ -16,10 +16,11 @@ import { google_certs } from '#root/src/can/index.js'
 import { disk } from '#root/src/can/disk.js'
 import { create_gcs, gcloud_token, metadata_token } from '#root/src/can/gcs.js'
 import { token_trust } from '#root/src/sign-in/trust.js'
-import { dev_issuer } from '../../../src/sync/dev-token.js'
-import { rights } from '../../../src/sync/rights.js'
-import { sync_service } from '../../../src/sync/server.js'
-import { gce_statuses } from '../../../src/sync/halo-power.js'
+import { dev_issuer } from '#root/src/sync/dev-token.js'
+import { rights } from '#root/src/sync/rights.js'
+import { sync_service } from '#root/src/sync/server.js'
+import { store_of } from '#root/src/can/store.js'
+import { gce_statuses } from '#root/src/sync/halo-power.js'
 import { sync_dir } from '#root/src/settings/output.js'
 
 const dev = process.argv.includes('--dev')
@@ -31,7 +32,7 @@ const open_store = () => {
   const kind = process.env.STORE ?? 'disk'
   if (kind === 'disk') {
     const dir = sync_dir()
-    return { storage: disk(dir, { gzip_at_rest: true }), where: dir }
+    return { storage: disk(dir), where: dir }
   }
   if (kind === 'gcs') {
     const bucket = process.env.GCS_BUCKET
@@ -46,7 +47,9 @@ const open_store = () => {
   throw new Error(`unknown STORE=${kind}; use disk or gcs`)
 }
 
-const { storage, where } = open_store()
+/** gz1, st1, st2: every file is `name.gz`, grouped under people and server/. */
+const { storage: bytes, where } = open_store()
+const storage = store_of(bytes)
 let project = process.env.PROJECT
 let certs
 let issuer

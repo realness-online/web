@@ -89,32 +89,29 @@
       key_commands?.unregister_handler(command)
   })
 
-  /** Option+Tab moves between chat and terminal, read by physical key in
-      capture so the TUI never sees it. Pi binds no Alt+Tab, and keeps Tab
-      and Shift+Tab. */
+  /** Plain Tab hops chat -> terminal; Option+Tab hops either way. Inside
+      the terminal, Tab and Shift+Tab stay pi's. Read by physical key in
+      capture so the TUI never sees the hop. */
   const on_key = event => {
     if (
-      event.code === 'Tab' &&
-      event.altKey &&
-      !event.ctrlKey &&
-      !event.metaKey &&
-      shows.value.chat &&
-      shows.value.tui
-    ) {
-      const input = document.querySelector(
-        '#chat-panel textarea[name="message"]'
-      )
-      const canvas = document.querySelector('#tui-pane canvas')
-      const target = new Map([
-        [input, canvas],
-        [canvas, input]
-      ]).get(event.target)
-      if (target) {
-        event.preventDefault()
-        event.stopImmediatePropagation()
-        target.focus()
-      }
-    }
+      event.code !== 'Tab' ||
+      event.ctrlKey ||
+      event.metaKey ||
+      !shows.value.chat ||
+      !shows.value.tui
+    )
+      return
+    const input = document.querySelector('#chat-panel textarea[name="message"]')
+    const canvas = document.querySelector('#tui-pane canvas')
+    const from_input = event.target === input
+    const from_canvas = event.target === canvas
+    const hop = event.altKey
+      ? from_input || from_canvas
+      : !event.shiftKey && from_input
+    if (!hop) return
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    ;(from_input ? canvas : input).focus()
   }
 
   on_mounted(() =>

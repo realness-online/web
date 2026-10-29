@@ -3,6 +3,22 @@ import { start_actor } from '@/utils/gate'
 import { readable_error } from '@/utils/chat'
 
 const NOT_FOUND = 404
+const UNAVAILABLE = 503
+const RETRY_MS = 5000
+
+/** Resolves after `ms`, or rejects when `signal` aborts. */
+const pause = (ms, signal) =>
+  new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, ms)
+    signal.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer)
+        reject(new DOMException('Startup cancelled', 'AbortError'))
+      },
+      { once: true }
+    )
+  })
 
 /**
  * One startup observer per pane; Retry rejoins a live job, never fabricates stages.
@@ -50,13 +66,28 @@ export const use_actor_startup = (user, { set_working = () => {} } = {}) => {
         progress.value = { ...event, source: 'halo' }
       if (event.type === 'error') failed = true
     }
-    const request = () =>
+    const ask = () =>
       start_actor(user.value, {
         actor: target,
         startup_id: startup_id.value ?? undefined,
         signal: observing.signal,
         on_progress
       })
+    /** While Realness is not answering yet, say why and ask again. */
+    const request = async () => {
+      for (;;) {
+        try {
+          const ready = await ask()
+          problem.value = ''
+          return ready
+        } catch (error) {
+          if (error.status !== UNAVAILABLE || observing.signal.aborted)
+            throw error
+          problem.value = readable_error(error.message)
+          await pause(RETRY_MS, observing.signal)
+        }
+      }
+    }
     pending = (async () => {
       try {
         let ready

@@ -9,7 +9,7 @@
  *
  * Without --write it only counts what it would adopt.
  */
-import { create_gcs, gcloud_token } from '../../../src/can/gcs.js'
+import { create_gcs, gcloud_token } from '#root/src/can/gcs.js'
 
 const CONCURRENCY = 8
 const args = process.argv.slice(2)

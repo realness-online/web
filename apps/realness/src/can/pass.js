@@ -6,6 +6,8 @@ import { MS_PER_SECOND } from '#root/lib/units.js'
 
 const SECRET_BYTES = 32
 const PART = /^[A-Za-z0-9_-]+$/
+/** An issuer's clock may run this far ahead of the verifier's. */
+const CLOCK_SKEW_S = 30
 
 /** Throws unless the secret is long enough to sign with. */
 export const check_secret = (secret, name = 'pass') => {
@@ -42,7 +44,8 @@ export const sign_pass = (claims, secret, { life_s, now = Date.now() }) => {
 
 /**
  * The claims of a pass signed with `secret` for `audience` and still inside
- * `life_s`; a pass claiming a longer life is refused. `name` words the errors.
+ * `life_s`; a pass claiming a longer life, past CLOCK_SKEW_S, is refused.
+ * `name` words the errors.
  * @param {unknown} pass
  * @param {string} secret
  * @param {{ audience: string, life_s: number, name?: string, now?: number }} options
@@ -70,7 +73,7 @@ export const open_pass = (
     claims?.aud !== audience ||
     !Number.isSafeInteger(claims.exp) ||
     claims.exp <= seconds ||
-    claims.exp > seconds + life_s
+    claims.exp > seconds + life_s + CLOCK_SKEW_S
   )
     throw new Error(`expired or invalid ${name}`)
   return claims

@@ -1,16 +1,25 @@
-import { ref, watchEffect as watch_effect } from 'vue'
+import { computed, ref, watchEffect as watch_effect } from 'vue'
 
 /**
  * Phone and name steps; the caller owns authentication and profile storage.
- * @param {{ current_user: import('vue').Ref<unknown>, profile: { is_valid_name: import('vue').Ref<boolean>, load: () => Promise<unknown>, save: () => Promise<void> }, emit: (event: 'signed_in' | 'showing_mobile', ...args: boolean[]) => void }} options
+ * The name step waits for the profile load, so a good stored name skips it.
+ * @param {{ current_user: import('vue').Ref<unknown>, profile: { loaded: import('vue').Ref<boolean>, is_valid_name: import('vue').Ref<boolean>, load: () => Promise<unknown>, save: () => Promise<void> }, emit: (event: 'signed_in' | 'showing_mobile', ...args: boolean[]) => void }} options
  */
 export const use_sign_on = ({ current_user, profile, emit }) => {
   const nameless = ref(false)
+  const pending = computed(() => !!current_user.value && !profile.loaded.value)
+
+  const decide = () => {
+    if (!profile.loaded.value) return
+    if (profile.is_valid_name.value) {
+      nameless.value = false
+      emit('signed_in')
+    } else nameless.value = true
+  }
 
   const on_signed_on = async () => {
-    const loaded = await profile.load()
-    if (loaded && profile.is_valid_name.value) emit('signed_in')
-    else nameless.value = true
+    await profile.load()
+    decide()
   }
 
   const on_name_valid = async () => {
@@ -19,13 +28,17 @@ export const use_sign_on = ({ current_user, profile, emit }) => {
   }
 
   watch_effect(() => {
-    if (current_user.value && !profile.is_valid_name.value)
-      nameless.value = true
+    if (!current_user.value) return
+    if (!profile.loaded.value) {
+      void profile.load()
+      return
+    }
+    decide()
   })
 
   watch_effect(() => {
     emit('showing_mobile', !nameless.value)
   })
 
-  return { nameless, on_signed_on, on_name_valid }
+  return { nameless, pending, on_signed_on, on_name_valid }
 }

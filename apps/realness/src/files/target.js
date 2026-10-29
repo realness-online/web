@@ -1,5 +1,6 @@
 import { local_settings } from '#root/src/settings/environments.js'
 import { token_source, person_keychain } from '#root/src/sign-on/node/login.js'
+import { sign_in_dir } from '#root/src/settings/secrets.js'
 import { disk } from '#root/src/can/disk.js'
 import { sign_in_issuer } from '#root/src/sign-in/issuer.js'
 import { local_person, local_person_file } from '#root/src/harness/settings.js'
@@ -8,7 +9,6 @@ import { join } from 'node:path'
 import { SYNC_URL } from '#root/src/files/client.js'
 import { HTTP } from '#root/lib/http.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
-import { out_path } from '#root/src/settings/output.js'
 
 const PROBE_MS = 300
 const REFRESH_MARGIN_S = 120
@@ -53,7 +53,7 @@ export const local_owner = (root = join(project_root, '..', '..')) => {
  */
 export const local_token_source = ({
   phone,
-  storage = disk(out_path('sign-in')),
+  storage = disk(sign_in_dir()),
   project = local_settings.cloud.project
 } = {}) => {
   /** @type {Awaited<ReturnType<typeof sign_in_issuer>> | undefined} */

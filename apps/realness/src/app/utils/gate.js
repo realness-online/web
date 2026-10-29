@@ -29,13 +29,30 @@ export const gate_fetch = async (user, path, init = {}) => {
       (await response.text()).trim() || 'Realness is starting; try again'
     )
   if (!response.ok)
-    throw refused(response.status, `Realness answered ${response.status}`)
+    throw refused(
+      response.status,
+      (await response.text()).trim() || `Realness answered ${response.status}`
+    )
   return response
 }
 
 /** One halo API call through the gate; resolves to its JSON. */
 export const gate_api = async (user, path, init = {}) =>
   (await gate_fetch(user, path, init)).json()
+
+/** The pane layout the halo kept for an actor, or null. */
+export const load_layout = async (user, actor) =>
+  (await gate_api(user, `/v1/actors/${actor}/layout`)).layout
+
+/** Keep the page's pane layout on the halo, so another tab restores it. */
+export const save_layout = async (user, actor, layout) =>
+  (
+    await gate_api(user, `/v1/actors/${actor}/layout`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ layout })
+    })
+  ).layout
 
 /** The person's most recently used actor, or a new one. */
 export const choose_actor = async user => {
@@ -93,12 +110,20 @@ export const start_actor = async (
   }
 }
 
-/** A terminal socket to `actor`; the token rides as the second subprotocol. */
-export const open_terminal = async (user, actor, { cols, rows }) => {
+/**
+ * A terminal socket to `actor`; the token rides as the second subprotocol.
+ * `session` names a split pane's own shell; without one it is Pi's terminal.
+ */
+export const open_terminal = async (user, actor, { cols, rows, session }) => {
   const token = await user.getIdToken()
   if (!token) throw refused(UNAUTHORIZED, 'sign in first')
   const url = new URL(`${gate_url()}/pty`)
   url.protocol = url.protocol === 'http:' ? 'ws:' : 'wss:'
-  url.search = new URLSearchParams({ actor, cols, rows }).toString()
+  url.search = new URLSearchParams({
+    actor,
+    cols,
+    rows,
+    ...(session ? { session } : {})
+  }).toString()
   return new WebSocket(url, ['realness', token])
 }

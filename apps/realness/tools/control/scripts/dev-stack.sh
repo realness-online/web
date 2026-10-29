@@ -9,8 +9,10 @@ unset local_values
 VOL="${VOL:-/opt/fc/actors}"
 IMAGE="$VOL/xfs.img"
 MOUNT="$VOL/mnt"
-SIZE="${SIZE:-6G}"
+SIZE="${SIZE:-10G}"
 PORT="${PORT:-$halo_port}"
+RUNTIME="${RUNTIME:-box}"
+BOX_VOL="${BOX_VOL:-/opt/fc/boxes}"
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 
@@ -38,11 +40,20 @@ if [ ! -e "$IMAGE" ]; then
   echo "new actors volume: $IMAGE ($SIZE, sparse)"
   truncate -s "$SIZE" "$IMAGE"
   mkfs.xfs -q -f "$IMAGE"
+elif [ "$(stat -c %s "$IMAGE")" -lt "$size_bytes" ]; then
+  echo "growing actors volume to $SIZE"
+  truncate -s "$SIZE" "$IMAGE"
+  grow=1
 fi
 
 if ! mountpoint -q "$MOUNT"; then
   echo "mounting $IMAGE at $MOUNT"
   mount -o loop "$IMAGE" "$MOUNT"
+fi
+
+if [ "${grow:-0}" = 1 ]; then
+  losetup -c "$(findmnt -no SOURCE "$MOUNT")"
+  xfs_growfs -d "$MOUNT" > /dev/null
 fi
 
 fstrim "$MOUNT" || true
@@ -52,9 +63,9 @@ echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail 
 
 ACTOR_HOST_PORTS="18095 $site_port $actor_proxy_port $actor_sync_port" bash "$DIR/server/halo/scripts/net-up.sh"
 
-secret_file="$OUT/halo-pass-secret"
+secret_file=/etc/realness/halo-pass-secret
 if [ ! -f "$secret_file" ]; then
-  echo "missing $secret_file: generate a 32-byte secret before starting the local halo" >&2
+  echo "missing $secret_file: halo up installs it from .pi/agent/secrets" >&2
   exit 1
 fi
 export HALO_PASS_SECRET="$(< "$secret_file")"
@@ -80,8 +91,8 @@ for attempt in {1..30}; do
   sleep 1
 done
 kill -0 "$(< "$site_sync_pid")" || { echo 'site sync failed to start' >&2; exit 1; }
-model_secret_file="$OUT/model-pass-secret"
-[ -s "$model_secret_file" ] || { echo "missing $model_secret_file: generate a 32-byte secret" >&2; exit 1; }
+model_secret_file=/etc/realness/model-pass-secret
+[ -s "$model_secret_file" ] || { echo "missing $model_secret_file: halo up installs it from .pi/agent/secrets" >&2; exit 1; }
 export MODEL_PASS_SECRET="$(< "$model_secret_file")"
 [ "${#MODEL_PASS_SECRET}" -ge 32 ] || { echo "model pass secret is too short" >&2; exit 1; }
 
@@ -95,4 +106,12 @@ nohup node "$DIR/server/halo/scripts/port-forward.js" "$actor_sync_port" host.li
 echo $! > "$sync_forward_pid"
 
 cd "$DIR"
-exec node server/halo/main.js serve --environment local --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"
+if [ "$RUNTIME" = box ]; then
+  mkdir -p "$BOX_VOL"
+  vault_args=()
+  if [ -n "${HOST_OWNER:-}" ] && [ -d /host/vault ]; then
+    vault_args=(--host-vault /host/vault --host-owner "$HOST_OWNER")
+  fi
+  exec node server/halo/main.js serve --environment local --runtime box --volume "$BOX_VOL" --listen 0.0.0.0 --port "$PORT" --boot-timeout "${ACTOR_BOOT_TIMEOUT:-120}" "${vault_args[@]}"
+fi
+exec node server/halo/main.js serve --environment local --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT" --mem-mib "${ACTOR_MIB:-1536}" --boot-timeout "${ACTOR_BOOT_TIMEOUT:-240}"

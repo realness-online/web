@@ -1,5 +1,5 @@
 document.addEventListener('click', event => {
-  const target = event.target
+  const { target } = event
   if (!(target instanceof Element)) return
   const link = target.closest('a[data-reveal-target]')
   if (!link) return

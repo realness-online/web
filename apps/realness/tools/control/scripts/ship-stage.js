@@ -93,7 +93,9 @@ export const ships = path => {
     name === '.DS_Store' ||
     name.startsWith('._') ||
     is_history(name) ||
-    parts.includes('node_modules')
+    parts.includes('node_modules') ||
+    // Scratch from a test run inside .pi; it is never part of the harness.
+    (parts[0] === '.pi' && parts.includes('artifacts'))
   )
     return false
   if (

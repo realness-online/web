@@ -10,14 +10,13 @@ article:has(> details) {
   scroll-margin-top: 4rem;
 }
 
-
-html[data-diagrams="pending"] {
+html[data-diagrams='pending'] {
   body {
     visibility: hidden;
   }
 
   main::before {
-    content: "";
+    content: '';
     position: fixed;
     inset: 0;
     background: var(--surface);
@@ -30,8 +29,8 @@ section {
     position: relative;
     cursor: pointer;
 
-    & a[itemprop="url"]::after {
-      content: "";
+    & a[itemprop='url']::after {
+      content: '';
       position: absolute;
       inset: 0;
       z-index: 1;
@@ -46,7 +45,6 @@ section {
     position: static;
   }
 }
-
 
 @view-transition {
   navigation: auto;
@@ -160,7 +158,6 @@ section {
   }
 }
 
-
 details[open] {
   > summary figure > pre.mermaid {
     display: none;
@@ -192,11 +189,11 @@ section {
       outline: none;
     }
 
-    &[aria-pressed="false"] {
+    &[aria-pressed='false'] {
       cursor: zoom-in;
     }
 
-    &[aria-pressed="false"] svg {
+    &[aria-pressed='false'] svg {
       width: auto;
       max-width: 100% !important;
       max-height: 80dvh;
@@ -213,7 +210,7 @@ section {
   }
 }
 
-section[itemprop="articleBody"] table {
+section[itemprop='articleBody'] table {
   width: min(100vw - var(--base-line) * 2, 80rem);
   margin-inline: calc(50% - min(50vw - var(--base-line), 40rem));
 }

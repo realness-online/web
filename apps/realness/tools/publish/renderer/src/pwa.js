@@ -27,22 +27,36 @@ export const build_pwa = async site => {
       theme_color: '#2c2c26',
       background_color: '#2c2c26',
       icons: [
-        { src: '/192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-        { src: '/512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+        {
+          src: '/192.png',
+          sizes: '192x192',
+          type: 'image/png',
+          purpose: 'any maskable'
+        },
+        {
+          src: '/512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any maskable'
+        }
       ]
     }
   })
-  await resolve_config({
-    configFile: false,
-    root: resolve('.'),
-    base: '/',
-    publicDir: 'static',
-    build: { outDir: 'dist' },
-    plugins
-  }, 'build')
+  await resolve_config(
+    {
+      configFile: false,
+      root: resolve('.'),
+      base: '/',
+      publicDir: 'static',
+      build: { outDir: 'dist' },
+      plugins
+    },
+    'build'
+  )
   const plugin = plugins.find(plugin => plugin.name === 'vite-plugin-pwa')
   if (!plugin) throw new Error('the PWA plugin did not load')
   const bundle = plugin.api.generateBundle({})
-  for (const asset of Object.values(bundle)) await write_file(join('dist', asset.fileName), asset.source)
+  for (const asset of Object.values(bundle))
+    await write_file(join('dist', asset.fileName), asset.source)
   await plugin.api.generateSW()
 }

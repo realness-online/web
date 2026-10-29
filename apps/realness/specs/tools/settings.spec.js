@@ -232,7 +232,7 @@ it('a cloud halo reads only the services of its own environment', () => {
   )
 })
 
-it('local sync keeps files in iCloud Realness-sync when it exists', async () => {
+it('local sync keeps files in the configured iCloud store when it exists', async () => {
   const { mkdtemp, mkdir, rm } = await import('node:fs/promises')
   const { icloud_sync, out_path, sync_dir } =
     await import('../../src/settings/output.js')
@@ -240,6 +240,7 @@ it('local sync keeps files in iCloud Realness-sync when it exists', async () => 
   try {
     assert.equal(sync_dir({ HOME: home }), out_path('sync-data'))
     await mkdir(icloud_sync(home), { recursive: true })
+    assert.match(icloud_sync(home), /Realness-sync-2$/)
     assert.equal(sync_dir({ HOME: home }), icloud_sync(home))
     assert.equal(sync_dir({ HOME: home, SYNC_DIR: '/x/y' }), '/x/y')
   } finally {

@@ -397,7 +397,7 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
       const version = await hash_of(plain)
       const stored = sent_gzip
         ? { body: Buffer.from(body), encoding: 'gzip' }
-        : at_rest(key, plain, options.gzip)
+        : at_rest(key, plain, options.gzip || key.endsWith('.gz'))
       const current = options.if_absent ? null : await head(key)
       const upload = upload_of(
         `${prefix}${key}`,

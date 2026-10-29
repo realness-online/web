@@ -8,6 +8,18 @@ it('admins are tel: links; anything else is ignored', () => {
   assert.deepEqual([...read_admins(html)], ['+14156667777'])
 })
 
+it('admins are also read from the microdata page, laid out as text', () => {
+  const html = `<article itemscope itemtype="https://schema.org/Organization">
+<h1 itemprop="name">Realness admins</h1>
+<p itemprop="founder" itemscope itemtype="https://schema.org/Person"><span itemprop="name">Scott</span> <span itemprop="telephone">+1 415 666-7777</span></p>
+</article>`
+  assert.deepEqual([...read_admins(html)], ['+14156667777'])
+})
+
+it('a page with no admins grants nobody', () => {
+  assert.deepEqual([...read_admins('')], [])
+})
+
 it('the list is read at most every 30 seconds; none means no admins', async () => {
   let reads = 0
   let page = null

@@ -6,6 +6,10 @@ stdin and stdout. Frames are JSON lines:
 
     in    {"op": "data", "data_b64": "..."}
           {"op": "resize", "cols": 100, "rows": 30}
+          {"op": "session", "name": "s2"}   first frame only: a split pane's own shell
+          {"op": "close"}   end this session's shell
+
+`realness-pty busy` prints the named sessions running a foreground job.
     out   {"op": "data", "data_b64": "..."}
           {"op": "exit", "code": 0}
           {"op": "taken"}   another connection took the terminal
@@ -14,6 +18,10 @@ The terminal outlives the connection. One holder process per guest owns the pty
 and the shell; each connection is a thin relay to it over a unix socket. A new
 connection takes the terminal over from the old one, so a browser refresh
 reattaches to the running Pi instead of paying its startup again.
+
+A connection that names a session in its first frame gets that session's own
+holder and shell, for a split pane; without a name it is the terminal Pi runs
+in. At most MAX_SESSIONS named sessions run at once.
 
 The page opens every connection by typing `realness`. When Pi is already
 running, the holder drops it: a refresh returns to the same conversation.
@@ -29,6 +37,7 @@ import pty
 import pwd
 import re
 import select
+import signal
 import socket
 import struct
 import sys
@@ -42,6 +51,8 @@ USER = "realness"
 # machine: Pi finds .pi, bin, and AGENTS.md from where it starts.
 HARNESS_DIR = "/realness"
 SOCKET = "/run/realness-pty.sock"
+SESSION_NAME = re.compile(r"^[a-z0-9][a-z0-9-]{0,15}$")
+MAX_SESSIONS = 8
 # Keys typed from inside the actor (the chat bridge running a GUI command).
 # Unlike SOCKET it never takes the terminal from the browser.
 KEYS_SOCKET = "/run/realness/pty-keys.sock"
@@ -98,10 +109,14 @@ def drop_to(name):
     os.environ.update({"HOME": entry.pw_dir, "USER": name, "LOGNAME": name})
 
 
+def session_socket(name):
+    return f"/run/realness-pty-{name}.sock" if name else SOCKET
+
+
 class Holder:
-    def __init__(self, listener):
+    def __init__(self, listener, main=True, path=SOCKET):
         self.listener = listener
-        self.keys = open_keys_socket()
+        self.keys = open_keys_socket() if main else None
         self.client = None
         self.pending = b""
         self.fresh = False
@@ -117,6 +132,9 @@ class Holder:
             os.execvp(SHELL, [SHELL])
             os._exit(127)
         set_window(self.master, *self.size)
+        if not main:
+            with open(f"{path}.pid", "w") as pid_file:
+                pid_file.write(f"{self.pid}\n")
 
     def attach(self, client):
         if self.client:
@@ -193,7 +211,9 @@ class Holder:
             message = json.loads(line)
         except json.JSONDecodeError:
             return
-        if message.get("op") == "resize":
+        if message.get("op") == "close":
+            os.kill(self.pid, signal.SIGHUP)
+        elif message.get("op") == "resize":
             self.resize(int(message["cols"]), int(message["rows"]))
         elif message.get("op") == "data":
             data = base64.b64decode(message.get("data_b64") or "")
@@ -254,7 +274,7 @@ def open_keys_socket():
         return None
 
 
-def serve_holder(listener):
+def serve_holder(listener, path):
     """Detached from socat: the holder must survive the connection that made it."""
     if os.fork():
         return
@@ -265,40 +285,106 @@ def serve_holder(listener):
     for fd in (0, 1, 2):
         os.dup2(devnull, fd)
     try:
-        Holder(listener).run()
+        Holder(listener, main=path == SOCKET, path=path).run()
     finally:
-        try:
-            os.unlink(SOCKET)
-        except FileNotFoundError:
-            pass
+        for done in (path, f"{path}.pid"):
+            try:
+                os.unlink(done)
+            except FileNotFoundError:
+                pass
         os._exit(0)
 
 
-def connect():
+def live_sessions():
+    return [name for name in os.listdir("/run") if name.startswith("realness-pty-") and name.endswith(".sock")]
+
+
+def busy_sessions():
+    """Named sessions whose shell runs a foreground job: a build, a server, a
+    watch. The halo keeps the actor awake for these; Pi's own terminal waiting
+    for the person is idle, so it is not counted."""
+    busy = []
+    for sock in live_sessions():
+        name = sock[len("realness-pty-"):-len(".sock")]
+        try:
+            with open(f"/run/{sock}.pid") as pid_file:
+                pid = int(pid_file.read())
+            with open(f"/proc/{pid}/stat") as stat_file:
+                fields = stat_file.read().rsplit(")", 1)[1].split()
+        except (OSError, ValueError):
+            continue
+        foreground = int(fields[5])
+        if foreground > 0 and foreground != pid:
+            busy.append(name)
+    return busy
+
+
+def connect(path=SOCKET):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
-        sock.connect(SOCKET)
+        sock.connect(path)
         return sock
     except OSError:
         sock.close()
+    if path != SOCKET and len(live_sessions()) >= MAX_SESSIONS:
+        return None
     try:
-        os.unlink(SOCKET)
+        os.unlink(path)
     except FileNotFoundError:
         pass
     listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    listener.bind(SOCKET)
+    listener.bind(path)
     listener.listen(4)
-    serve_holder(listener)
+    serve_holder(listener, path)
     listener.close()
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.connect(SOCKET)
+    sock.connect(path)
     return sock
 
 
+def first_line(stdin):
+    """The first frame, read a byte at a time so nothing after it is consumed."""
+    line = b""
+    while not line.endswith(b"\n") and len(line) < 256:
+        byte = os.read(stdin, 1)
+        if not byte:
+            break
+        line += byte
+    return line
+
+
+def chosen_session(line):
+    """The session a first frame names, or None for the Pi terminal."""
+    try:
+        message = json.loads(line)
+    except ValueError:
+        return None
+    if not isinstance(message, dict) or message.get("op") != "session":
+        return None
+    name = message.get("name")
+    return name if isinstance(name, str) and SESSION_NAME.match(name) else ""
+
+
 def main():
-    holder = connect()
+    if sys.argv[1:] == ["busy"]:
+        for name in busy_sessions():
+            print(name)
+        return
     stdin = sys.stdin.fileno()
+    line = first_line(stdin)
+    name = chosen_session(line)
     out = sys.stdout.buffer
+    if name == "":
+        out.write(frame({"op": "error", "text": "bad session name"}))
+        out.flush()
+        return
+    holder = connect(session_socket(name))
+    if holder is None:
+        out.write(frame({"op": "error", "text": f"at most {MAX_SESSIONS} sessions"}))
+        out.flush()
+        return
+    if name is None and line:
+        holder.sendall(line)
     while True:
         readable, _, _ = select.select([holder, stdin], [], [])
         if holder in readable:

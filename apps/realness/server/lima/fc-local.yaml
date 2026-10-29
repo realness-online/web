@@ -7,9 +7,9 @@ nestedVirtualization: true
 images:
   - location: https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-arm64.img
     arch: aarch64
-cpus: 4
-memory: 8GiB
-disk: 20GiB
+cpus: 3
+memory: 4GiB
+disk: 16GiB
 mounts:
   # The two locations are filled from this checkout at creation (src/control/lima.js).
   - location: '{{project}}'
@@ -19,7 +19,7 @@ mounts:
   - location: '{{out}}'
     mountPoint: /artifacts/realness
     writable: true
-  # Local sync's files: Realness-sync in iCloud Drive, or <out>/sync-data.
+  # Local sync's files: the configured iCloud store (sync_dir), or <out>/sync-data.
   - location: '{{sync}}'
     mountPoint: /sync-data
     writable: true

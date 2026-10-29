@@ -18,11 +18,20 @@ const types = {
   '.txt': 'text/plain'
 }
 
-const watcher = spawn(process.execPath, [join(dirname(file_url_to_path(import.meta.url)), 'build.js'), '--drafts', '--watch'], { stdio: 'inherit' })
+const watcher = spawn(
+  process.execPath,
+  [
+    join(dirname(file_url_to_path(import.meta.url)), 'build.js'),
+    '--drafts',
+    '--watch'
+  ],
+  { stdio: 'inherit' }
+)
 process.on('exit', () => watcher.kill())
-for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => process.exit())
+for (const signal of ['SIGINT', 'SIGTERM'])
+  process.on(signal, () => process.exit())
 
-const resolve = async (url) => {
+const resolve = async url => {
   const path = join(OUT, normalize(decodeURIComponent(url.split('?')[0])))
   const info = await stat(path).catch(() => null)
   if (info?.isDirectory()) return join(path, 'index.html')
@@ -36,6 +45,8 @@ create_server(async (request, response) => {
     response.writeHead(404).end('not found')
     return
   }
-  response.writeHead(200, { 'content-type': types[extname(path)] || 'application/octet-stream' })
+  response.writeHead(200, {
+    'content-type': types[extname(path)] || 'application/octet-stream'
+  })
   response.end(body)
 }).listen(PORT, () => console.log(`http://localhost:${PORT}`))

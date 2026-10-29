@@ -132,10 +132,20 @@ describe('@/components/profile/as-sign-on', () => {
 
     it('shows the name prompt when nameless', async () => {
       mock_current_user_ref.value = { uid: 'test-user' }
+      wrapper.vm.loaded = true
       wrapper.vm.nameless = true
       await flushPromises()
 
       expect(wrapper.find('#name-prompt').exists()).toBe(true)
+    })
+
+    it('waits for the profile before showing the name step', async () => {
+      mock_current_user_ref.value = { uid: 'test-user' }
+      mock_load.mockReturnValue(new Promise(() => {}))
+      await flushPromises()
+
+      expect(wrapper.find('#sign-on-pending').exists()).toBe(true)
+      expect(wrapper.find('#name-prompt').exists()).toBe(false)
     })
 
     it('sets nameless when signed_on finds no profile', async () => {

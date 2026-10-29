@@ -3,6 +3,7 @@
  * caches (npm, Rust `target`), auth files, secrets, shell histories, and git. Names match any path segment.
  */
 const NAMES = new Set([
+  'secrets',
   '.obsidian',
   '.smart-env',
   '.git',

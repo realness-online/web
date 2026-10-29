@@ -16,6 +16,7 @@
 import { readFileSync, rmSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { append_handover, handover_receipt, read_handover } from './handover.js'
+import { as_skill_command, skill_names } from '../skill-alias/index.js'
 
 const SOCKET = '/run/realness/pi-chat.sock'
 const CHAT_PROMPT = '/usr/local/share/realness-chat.md'
@@ -299,15 +300,19 @@ export function bridge(pi, { socket_path, chat_prompt = null, handover_path = HA
       const message = request?.message
       if (line.length > MAX_LINE || typeof message !== 'string' || !message.trim()) return fail('invalid message')
       if (!ctx) return fail('Pi is still starting')
+      /** A skill typed in the chat box runs as it would in the terminal; other text stays text. */
+      const skill = as_skill_command(message, skill_names(pi.getCommands?.() ?? []))
+      const content = skill ?? message
+      const options = skill ? { expandPromptTemplates: true } : {}
       if (active || starting || !ctx.isIdle()) {
-        pi.sendUserMessage(message, { deliverAs: 'followUp' })
+        pi.sendUserMessage(content, { ...options, deliverAs: 'followUp' })
         return finish(socket, { type: 'queued' })
       }
       active = socket
       starting = true
       failure = null
       try {
-        pi.sendUserMessage(message)
+        pi.sendUserMessage(content, options)
       } catch (error) {
         active = null
         starting = false

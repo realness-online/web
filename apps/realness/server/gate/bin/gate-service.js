@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
-import { make_gate, one_halo } from '../../../src/gate/gate.js'
-import { placed_halos } from '../../../src/gate/placement.js'
-import { gce_start, make_waker, tcp_probe } from '../../../src/gate/wake.js'
+import { make_gate, one_halo } from '#root/src/gate/gate.js'
+import { placed_halos } from '#root/src/gate/placement.js'
+import { gce_start, make_waker, tcp_probe } from '#root/src/gate/wake.js'
 import { phone_identity } from '#root/src/proxy/identity.js'
 import { gcloud_token, metadata_token } from '#root/src/can/gcs.js'
 import { disk } from '#root/src/can/disk.js'
+import { store_of } from '#root/src/can/store.js'
 import { environment_settings } from '#root/src/settings/environments.js'
 import { parseArgs as parse_args } from 'node:util'
-import { sync_records } from '../../../src/gate/sync-records.js'
+import { explain_halo } from '#root/src/gate/halo-status.js'
+import { sync_records } from '#root/src/gate/sync-records.js'
 import {
   lifecycle_html,
   lifecycle_key,
@@ -27,7 +29,7 @@ const token = env.K_SERVICE ? metadata_token() : gcloud_token()
 const identify = phone_identity({
   project: env.IDENTITY_PROJECT,
   bucket: env.PINS_BUCKET,
-  storage: env.PINS_DIR ? disk(env.PINS_DIR) : undefined,
+  storage: env.PINS_DIR ? store_of(disk(env.PINS_DIR)) : undefined,
   token
 })
 const origins = (env.ORIGINS ?? '')
@@ -97,7 +99,16 @@ const waker = () => {
   })
 }
 
-const gate = make_gate({ identify, halo_for, secret, origins, wake: waker() })
+/** Off GCP, the local launcher records what the halo is doing; say that. */
+const unreachable = env.K_SERVICE ? undefined : () => explain_halo()
+const gate = make_gate({
+  identify,
+  halo_for,
+  secret,
+  origins,
+  wake: waker(),
+  unreachable
+})
 
 const port = Number(env.PORT ?? 8792)
 const listen = env.LISTEN ?? (env.K_SERVICE ? '0.0.0.0' : '127.0.0.1')

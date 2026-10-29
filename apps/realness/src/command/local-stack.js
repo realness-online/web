@@ -12,13 +12,14 @@ import path from 'node:path'
 import { product_paths } from '#root/src/settings/layout.js'
 import { local_settings } from '#root/src/settings/environments.js'
 import { out_path, sync_dir } from '#root/src/settings/output.js'
+import { secret_path, sign_in_dir } from '#root/src/settings/secrets.js'
 import { setTimeout as delay } from 'node:timers/promises'
 
 const { root, frontend } = product_paths()
 const project = `${root}/`
 export const local_artifacts = out_path('local')
-const secret_file = out_path('halo-pass-secret')
-const model_secret_file = out_path('model-pass-secret')
+const secret_file = secret_path('halo-pass-secret')
+const model_secret_file = secret_path('model-pass-secret')
 const REQUEST_TIMEOUT_MS = 3000
 const START_TIMEOUT_MS = 300_000
 const POLL_MS = 500
@@ -48,7 +49,7 @@ export const local_plan = () => {
         env: {
           PORT: String(local_settings.sign_in_port),
           LISTEN: '127.0.0.1',
-          SIGN_IN_DIR: out_path('sign-in'),
+          SIGN_IN_DIR: sign_in_dir(),
           IDENTITY_PROJECT: identity
         }
       },
@@ -90,7 +91,7 @@ export const local_plan = () => {
           PINS_DIR: sync_dir(),
           IDENTITY_PROJECT: identity,
           SIGN_IN_URL: sign_in_url,
-          OPENROUTER_API_KEY_FILE: out_path('openrouter-key'),
+          OPENROUTER_API_KEY_FILE: secret_path('openrouter-key'),
           ORIGINS: local_settings.cloud.services.origins
         }
       },

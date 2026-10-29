@@ -58,6 +58,9 @@ const LIMIT_MIB = 10
 const HASH_SHOWN = 12
 
 const LIMIT = LIMIT_MIB * MIB
+/** A gzip body may unpack to this much: text packs about five to one. */
+const PLAIN_RATIO = 8
+const PLAIN_LIMIT = LIMIT * PLAIN_RATIO
 const PHONES = /\+[1-9]\d{6,14}/g
 
 /** Logs hash numbers and never store them raw. */
@@ -142,8 +145,8 @@ const VERSION_LENGTH = 22
 /**
  * A write's body, hashed as it arrives: `X-Version` must match the plain
  * bytes' hash, which is `version_of` from src/files/version.js. A gzip body
- * is unpacked on the way to the hash and kept packed; its plain size counts
- * against the same limit.
+ * is unpacked on the way to the hash and kept packed; the sent bytes count
+ * against the limit, the plain bytes against a looser one.
  */
 const read_write = async request => {
   const encoding = request.headers['content-encoding'] ?? 'identity'
@@ -179,7 +182,7 @@ const unpack = async (gunzip, hash) => {
   try {
     for await (const chunk of gunzip) {
       size += chunk.length
-      if (size > LIMIT) throw new Status(HTTP.PAYLOAD_TOO_LARGE)
+      if (size > PLAIN_LIMIT) throw new Status(HTTP.PAYLOAD_TOO_LARGE)
       hash.update(chunk)
     }
   } catch (error) {
@@ -356,22 +359,38 @@ const refuse_sold = async (storage, path, who) => {
   if (stored?.meta?.sold === 'true') throw new Status(HTTP.FORBIDDEN)
 }
 
-/** The type and encoding come from the file: gzip bytes under an .html name. */
+/** Types a browser can open; anything else downloads as bytes. */
+const TYPES = {
+  html: 'text/html; charset=utf-8',
+  md: 'text/markdown; charset=utf-8',
+  json: 'application/json',
+  jsonl: 'application/jsonl',
+  svg: 'image/svg+xml',
+  txt: 'text/plain; charset=utf-8',
+  css: 'text/css',
+  js: 'text/javascript'
+}
+const type_of = path =>
+  TYPES[path.split('/').at(-1)?.split('.').at(-1) ?? ''] ??
+  'application/octet-stream'
+
+/** Gzip bytes under an .html name, from before stores named them `.gz`. */
 const GZIP_MAGIC = Buffer.from('1f8b', 'hex')
 const gzipped_html = (path, body) =>
   path.endsWith('.html') && body.subarray(0, 2).equals(GZIP_MAGIC)
 
-/** Send one file with its version as the etag. */
+/**
+ * Send one file with its version as the etag. A file stored as `.gz` goes
+ * out as its stored bytes with `Content-Encoding: gzip`, so a browser reads it.
+ */
 const answer_get = async (storage, response, path) => {
-  const file = await storage.get(path)
+  const file = await storage.get(path, { raw: true })
   if (!file) throw new Status(HTTP.NOT_FOUND)
+  const packed = file.packed ?? gzipped_html(path, file.body)
   response.writeHead(HTTP.OK, {
     etag: `"${file.version}"`,
-    'content-type': 'application/octet-stream',
-    ...(gzipped_html(path, file.body) && {
-      'content-type': 'text/html; charset=utf-8',
-      'content-encoding': 'gzip'
-    }),
+    'content-type': packed ? type_of(path) : 'application/octet-stream',
+    ...(packed && { 'content-encoding': 'gzip' }),
     ...meta_headers(file.meta)
   })
   return response.end(file.body)

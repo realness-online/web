@@ -8,6 +8,7 @@ import {
 } from 'node:fs'
 import { hostname } from 'node:os'
 import { disk } from '#root/src/can/disk.js'
+import { store_of } from '#root/src/can/store.js'
 
 const path = '/etc/realness/record-secret'
 const name = hostname()
@@ -19,7 +20,7 @@ if (!exists_sync(path))
   })
 chmod_sync(path, 0o600)
 const key = read_file_sync(path, 'utf8').trim()
-const storage = disk(process.env.SYNC_DIR)
+const storage = store_of(disk(process.env.SYNC_DIR))
 await storage.put(`halo-keys/${name}`, key)
 if (!(await storage.get('admins.html')))
   await storage.put(

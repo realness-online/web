@@ -52,7 +52,12 @@ state_file="$state_dir/actor"
 
 # The clock is always wrong after a resume: the guest comes up at snapshot
 # time (f4). Set it before anything here writes a timestamp.
-date -u -s "@$epoch" > /dev/null
+# A box in a user namespace cannot set the clock, and needs not: it shares
+# the VM's. Refuse only a clock that is still wrong.
+if ! date -u -s "@$epoch" > /dev/null 2>&1; then
+  skew=$(( $(date -u +%s) - epoch ))
+  [ "${skew#-}" -le 5 ] || { echo "clock is ${skew}s off and cannot be set" >&2; exit 1; }
+fi
 
 # Networking is a snapshot property too: every clone resumes carrying the seed's
 # 172.16.0.2/30 and its route. Re-address from the actor's own /30 before
@@ -62,7 +67,12 @@ network_up() {
   ip_addr="${address%%/*}"
   prefix="${address##*/}"
   gateway="${ip_addr%.*}.1"
-  for dev in $(ls /sys/class/net | grep -v '^lo$'); do
+  for dev in $(ip -o link show | awk -F": " "{print \$2}" | cut -d@ -f1 | grep -v "^lo\$"); do
+    # A box in a user namespace was addressed by the halo; it cannot re-address.
+    if ip -4 -o addr show dev "$dev" | grep -q " $ip_addr/$prefix " &&
+      ip route show default | grep -q "via $gateway dev $dev"; then
+      continue
+    fi
     ip addr flush dev "$dev"
     ip addr add "$ip_addr/$prefix" dev "$dev"
     ip link set "$dev" up

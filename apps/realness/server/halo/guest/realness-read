@@ -7,17 +7,31 @@ Firecrawl, and replies with JSON on stdout: source, kind (html or markdown),
 body, title. web-md calls this in an actor and turns the body into markdown.
 """
 import json
+import os
 import socket
 import sys
+
+DOOR_SOCKET = "/run/realness/door.sock"
+
+
+def door_socket():
+    """The halo door: vsock on Firecracker, a unix socket inside a box."""
+    family = socket.AF_UNIX if os.path.exists(DOOR_SOCKET) else socket.AF_VSOCK
+    return socket.socket(family, socket.SOCK_STREAM)
+
+
+def door_address(sock):
+    return DOOR_SOCKET if sock.family == socket.AF_UNIX else (2, 54)
+
 
 args = [a for a in sys.argv[1:] if a != "--fresh"]
 if len(args) != 1:
     sys.exit("usage: realness-read <url> [--fresh]")
 
-sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
+sock = door_socket()
 sock.settimeout(180)
 try:
-    sock.connect((2, 54))
+    sock.connect(door_address(sock))
 except OSError as error:
     sys.exit(f"realness-read: the halo did not answer ({error})")
 with sock:

@@ -10,13 +10,18 @@
  * (`limactl shell` rather than `gcloud compute ssh`) and that Lima has no disks
  * to create: the VM's own filesystem holds the actors volume.
  */
+import { readFile as read_file } from 'node:fs/promises'
+import { GUEST_SECRETS, secret_path } from '#root/src/settings/secrets.js'
 import { join } from 'node:path'
 import { attempt, step, note } from './exec.js'
 import { ROOT } from './paths.js'
 import { waitForHealth as wait_for_health } from './api.js'
 import { provision_record_key } from './halo-gcp.js'
 import { ensure_admins } from './admins.js'
+import { write_halo_status } from '#root/src/gate/halo-status.js'
+import { person } from '#root/src/harness/settings.js'
 import { disk } from '#root/src/can/disk.js'
+import { store_of } from '#root/src/can/store.js'
 import { local_person } from '#root/src/harness/settings.js'
 import { out_path } from '#root/src/settings/output.js'
 
@@ -28,7 +33,7 @@ export const DEV_OPERATOR = { phone: '+14156667777', name: 'Dev operator' }
  * the checkout's person, from person.local.html, and the test operator.
  */
 export const seed_local_admins = async ({
-  storage = disk(out_path('site-sync')),
+  storage = store_of(disk(out_path('site-sync'))),
   harness = join(ROOT, '../..')
 } = {}) => {
   const me = local_person(harness)
@@ -38,6 +43,16 @@ export const seed_local_admins = async ({
       'local admin is the test operator only; add person.local.html to be an admin yourself'
     )
   return done
+}
+
+/** lc1: the guest's copies of the pass secrets, from this Mac's own. */
+const install_secrets = async lima => {
+  for (const name of ['halo-pass-secret', 'model-pass-secret']) {
+    // eslint-disable-next-line no-await-in-loop -- two small files, in order
+    const value = (await read_file(secret_path(name), 'utf8')).trim()
+    // eslint-disable-next-line no-await-in-loop -- two small files, in order
+    await lima.install(`${GUEST_SECRETS}/${name}`, value)
+  }
 }
 
 /** The local halo writes its records to the cloud sync, like a cloud halo. */
@@ -62,18 +77,33 @@ export const up = async (
       `dev has one Lima halo, "${config.vm}". To use "${name}", add a config block for it.`
     )
 
-  step(`lima: ${config.vm}`)
+  try {
+    return await up_steps(lima, config, name, { smoke, fresh })
+  } catch (error) {
+    write_halo_status('failed', error.message.split('\n')[0])
+    throw error
+  }
+}
+
+/** Each step says what it is doing, here and in the status the gate repeats. */
+const doing = (heading, words) => {
+  step(heading)
+  write_halo_status('starting', words)
+}
+
+const up_steps = async (lima, config, name, { smoke, fresh }) => {
+  doing(`lima: ${config.vm}`, 'starting the Linux VM')
   note(await lima.start(join(ROOT, 'server', 'lima', 'fc-local.yaml')))
 
-  step('firecracker, kernel, rootfs')
+  doing('firecracker, kernel, rootfs', 'checking the VM tools and disk images')
   await lima.streamScript('tools/control/scripts/guest-setup.sh')
 
-  step('boot check')
+  doing('boot check', 'checking a test VM boots')
   await lima.streamScript('tools/control/scripts/boot-check.sh')
 
   if (fresh) await down(lima, config, name)
   await register(lima, config)
-  step('start the stack')
+  doing('start the stack', 'starting the agent server')
   const started = await startStack(lima, config, { fresh })
   note(started.alreadyUp ? 'already up' : 'started')
 
@@ -84,7 +114,9 @@ export const up = async (
     })
   }
 
+  write_halo_status('starting', 'waiting for the agent server to answer')
   const health = await wait_for_health(config.api, { tries: 90, delayMs: 2000 })
+  write_halo_status('up', 'answering')
   return {
     halo: config.vm,
     api: `${config.api}/v1/health`,
@@ -105,6 +137,7 @@ export const down = async (
 ) => {
   const stops_vm = mode === 'delete' || stop_vm
   step(`stopping the dev stack${stops_vm ? ' and the Lima VM' : ''}`)
+  write_halo_status('stopped', 'stopping')
   await lima.run(
     'pkill -f "[n]ode server/(halo|host)/main[.]js" || true; pkill -x firecracker || true',
     { user: 'root' }
@@ -144,7 +177,16 @@ const startStack = async (lima, config, { fresh = false } = {}) => {
   if (health && !fresh) return { alreadyUp: true, health }
 
   await seed_local_admins()
-  const prefix = fresh ? 'env FRESH=1 ' : ''
+  await install_secrets(lima)
+  const runtime = process.env.HALO_RUNTIME ?? process.env.RUNTIME
+  /** The Mac's owner: only their box works on this Mac's vault. */
+  const owner = person(join(ROOT, '..', '..'))?.slice(1)
+  const flags = [
+    fresh && 'FRESH=1',
+    owner && `HOST_OWNER=${owner}`,
+    runtime && /^(box|firecracker)$/.test(runtime) && `RUNTIME=${runtime}`
+  ].filter(Boolean)
+  const prefix = flags.length ? `env ${flags.join(' ')} ` : ''
   const command =
     `out="$(bash -c '. ${config.workdir}/lib/output.sh && echo "$OUT"')" && nohup ${prefix}bash ` +
     `${config.workdir}/tools/control/scripts/dev-stack.sh > "$out/dev-up.log" 2>&1 &`

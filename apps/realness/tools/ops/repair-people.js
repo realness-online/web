@@ -18,7 +18,11 @@
 import { spawnSync as spawn_sync } from 'node:child_process'
 import { createHash as create_hash } from 'node:crypto'
 import { gzipSync as gzip_sync } from 'node:zlib'
-import { mkdtempSync as mkdtemp_sync, writeFileSync as write_file_sync, rmSync as rm_sync } from 'node:fs'
+import {
+  mkdtempSync as mkdtemp_sync,
+  writeFileSync as write_file_sync,
+  rmSync as rm_sync
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 

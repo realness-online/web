@@ -12,7 +12,7 @@
  *
  * The pass is signed with the fleet-wide halo secret - the same value the sync
  * service mints from - read from HALO_PASS_SECRET_FILE, else
- * /etc/realness/halo-pass-secret, else <out>/halo-pass-secret (lib/output.js).
+ * /etc/realness/halo-pass-secret, else the harness's .pi/agent/secrets/.
  * Nothing is written to disk.
  *
  * The pty stream is the API's port plus one, which is what `main.js serve`
@@ -23,7 +23,7 @@ import { readFileSync as read_file_sync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { issue_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
-import { out_path } from '#root/lib/output.js'
+import { secret_path } from '#root/src/settings/secrets.js'
 
 const HERE = dirname(file_url_to_path(import.meta.url))
 const ROOT = join(HERE, '..', '..', '..')
@@ -32,7 +32,7 @@ const configured_secret = process.env.HALO_PASS_SECRET_FILE
 const SECRET_FILES = [
   ...(configured_secret ? [configured_secret] : []),
   '/etc/realness/halo-pass-secret',
-  out_path('halo-pass-secret')
+  secret_path('halo-pass-secret')
 ]
 
 /** A value after `--name`, or the default. */

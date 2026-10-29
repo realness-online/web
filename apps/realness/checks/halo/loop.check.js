@@ -1,3 +1,4 @@
+import { secret_path } from '#root/src/settings/secrets.js'
 import assert from 'node:assert/strict'
 import { createHmac as create_hmac } from 'node:crypto'
 import { readFileSync as read_file_sync, rmSync as rm_sync } from 'node:fs'
@@ -6,10 +7,9 @@ import { ActorStore } from '../../src/halo/actors.js'
 import { Door } from '../../src/halo/door.js'
 import { Loops } from '../../src/halo/loops.js'
 import { make_server } from '../../src/halo/server.js'
-import { out_path } from '#root/lib/output.js'
 
 const owner = '+14156667777'
-const secret = read_file_sync(out_path('halo-pass-secret'), 'utf8').trim()
+const secret = read_file_sync(secret_path('halo-pass-secret'), 'utf8').trim()
 process.env.HALO_PASS_SECRET = secret
 const pass = () => {
   const body = Buffer.from(

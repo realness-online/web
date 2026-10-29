@@ -21,9 +21,7 @@ vi.mock('#utils/firebase.js', () => ({
     })),
     getFiles: vi.fn(({ prefix } = {}) =>
       Promise.resolve([
-        mock_objects.filter(
-          object => !prefix || object.name.startsWith(prefix)
-        )
+        mock_objects.filter(object => !prefix || object.name.startsWith(prefix))
       ])
     )
   }
@@ -33,9 +31,8 @@ vi.mock('#utils/log.js', () => ({
   log_info: vi.fn()
 }))
 
-const { print_created_stamps, prints_list_handler } = await import(
-  '#handlers/http/prints-list.js'
-)
+const { print_created_stamps, prints_list_handler } =
+  await import('#handlers/http/prints-list.js')
 
 const author = '/+14155550142'
 const older = 1712000000000
@@ -51,10 +48,10 @@ const response = () => ({
   send: vi.fn()
 })
 
-/** A print the bucket holds: a preview PNG, its poster, and a statements file. */
+/** A print the bucket holds: a preview JPEG, its poster, and a statements file. */
 const store_print = (stamp, thought = '') => {
-  mock_objects.push({ name: `people${author}/posters/${stamp}.png` })
-  mock_store.set(`people${author}/posters/${stamp}.png`, Buffer.from('png'))
+  mock_objects.push({ name: `prints${author}/${stamp}.jpg` })
+  mock_store.set(`prints${author}/${stamp}.jpg`, Buffer.from('jpeg'))
   mock_store.set(
     `people${author}/posters/${stamp}.html`,
     deflateSync(poster_html(stamp))
@@ -116,7 +113,7 @@ describe('prints list', () => {
     expect(statement_reads).toHaveLength(1)
   })
 
-  it('counts only posters with a preview PNG as prints', async () => {
+  it('counts only posters with a preview JPEG as prints', async () => {
     store_print(newer)
     mock_objects.push({ name: `people${author}/posters/${older}.html` })
     mock_store.set(
@@ -130,7 +127,7 @@ describe('prints list', () => {
   it('reads the created stamps out of a listing with other files in it', async () => {
     mock_objects.push(
       { name: `people${author}/posters/index.html` },
-      { name: 'people/+15551234567/posters/1712000000002.png' },
+      { name: 'prints/+15551234567/1712000000002.jpg' },
       { name: `people${author}/statements/index.html` }
     )
     store_print(newer)

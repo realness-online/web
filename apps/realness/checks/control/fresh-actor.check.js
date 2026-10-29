@@ -1,3 +1,4 @@
+import { secret_path } from '#root/src/settings/secrets.js'
 import assert from 'node:assert/strict'
 import { spawn, spawnSync as spawn_sync } from 'node:child_process'
 import {
@@ -21,7 +22,7 @@ const API = process.env.API ?? 'http://127.0.0.1:18080'
 const PORT = Number(process.env.SYNC_PORT ?? 18095)
 const owner = '+14156667777'
 const root = new URL('../..', import.meta.url).pathname
-const secret = read_file_sync(out_path('halo-pass-secret'), 'utf8').trim()
+const secret = read_file_sync(secret_path('halo-pass-secret'), 'utf8').trim()
 const run = `fresh-actor-${random_uuid().slice(0, 8)}`
 const data = out_path(run)
 const hash = text => create_hash('sha256').update(text).digest('hex')

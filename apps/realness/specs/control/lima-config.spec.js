@@ -14,7 +14,8 @@ it('the Lima template names no checkout; every mount is filled from this one', (
   const filled = render_vm_config(template, {
     project: '/Users/person x/realness/apps/realness',
     out: '/Users/person x/realness/artifacts/realness',
-    sync: '/Users/person x/Realness-sync'
+    sync: '/Users/person x/Realness-sync',
+    vault: '/Users/person x/realness/vault'
   })
   assert.match(
     filled,
@@ -28,6 +29,7 @@ it('the Lima template names no checkout; every mount is filled from this one', (
     filled,
     /- location: "\/Users\/person x\/Realness-sync"\n\s+mountPoint: \/sync-data\n/
   )
+  assert.doesNotMatch(filled, /host\/vault/)
   assert.doesNotMatch(filled, /\{\{|""/)
 })
 

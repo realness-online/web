@@ -27,11 +27,20 @@ export const select_plans = async root => {
   for (const file of (await readdir(folder)).filter(name => name.endsWith('.md') && !ignored.has(name)).sort()) {
     const path = inside ? `${inside}/${file}` : file
     const id = await mint_item(vault, path, { author: person(root), type: 'plans', scan })
-    sources.push({ id, slug: slugs.get(id) ?? basename(file, '.md') })
+    sources.push({ id, slug: as_slug(slugs.get(id) ?? basename(file, '.md')) })
   }
   await write_app(app_dir, { ...app, sources })
   return sources
 }
+
+/** A page address from a note's name: lowercase words joined by dashes. */
+export const as_slug = name =>
+  name
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 
 if (process.argv[1] === file_url_to_path(import.meta.url)) {
   const root = resolve(dirname(file_url_to_path(import.meta.url)), '../../..')

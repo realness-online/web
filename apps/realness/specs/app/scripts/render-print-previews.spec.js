@@ -57,7 +57,7 @@ afterEach(() => {
 
 describe('parse_args', () => {
   it('reads limit, force, and upload', () => {
-    expect(parse_args([])).toEqual({ limit: 0, force: false, upload: true })
+    expect(parse_args([])).toEqual({ limit: 'all', force: false, upload: true })
     expect(parse_args(['--limit', '2', '--force', '--no-upload'])).toEqual({
       limit: 2,
       force: true,
@@ -88,30 +88,30 @@ describe('stamps', () => {
       'gs://b/p/1.html',
       'gs://b/p/3.html',
       'gs://b/p/3-layer.html',
-      'gs://b/p/2.png'
+      'gs://b/p/2.jpg'
     ]
     expect(stamps(urls, 'html')).toEqual([3, 1])
-    expect(stamps(urls, 'png')).toEqual([2])
+    expect(stamps(urls, 'jpg')).toEqual([2])
   })
 })
 
 describe('upload_preview', () => {
-  it('copies with a png type and a download token', () => {
+  it('copies with a jpeg type and a download token', () => {
     const run = vi.fn()
-    upload_preview('gs://b/1.png', '/f.png', run)
+    upload_preview('gs://b/1.jpg', '/f.jpg', run)
     const args = run.mock.calls[0][0]
     expect(args.slice(0, 4)).toEqual([
       'storage',
       'cp',
-      '/f.png',
-      'gs://b/1.png'
+      '/f.jpg',
+      'gs://b/1.jpg'
     ])
-    expect(args).toContain('--content-type=image/png')
+    expect(args).toContain('--content-type=image/jpeg')
     expect(args.at(-1)).toMatch(/firebaseStorageDownloadTokens=[\w-]{36}$/)
   })
 })
 
-const png = `data:image/png;base64,${Buffer.from('png').toString('base64')}`
+const jpeg = `data:image/jpeg;base64,${Buffer.from('jpeg').toString('base64')}`
 
 const setup = ({ listing, render } = {}) => {
   const launched = []
@@ -119,7 +119,7 @@ const setup = ({ listing, render } = {}) => {
   const evaluate = vi.fn(async expression =>
     expression.includes('.ready')
       ? true
-      : (render ?? (async () => ({ png, width: 2, height: 3 })))(expression)
+      : (render ?? (async () => ({ jpeg, width: 2, height: 3 })))(expression)
   )
   const options = {
     dist_dir,
@@ -127,12 +127,14 @@ const setup = ({ listing, render } = {}) => {
     chrome_path,
     bucket: 'b',
     author: () => '/+1',
-    list: () =>
-      listing ?? [
-        'gs://b/people/+1/posters/1.html',
-        'gs://b/people/+1/posters/2.html',
-        'gs://b/people/+1/posters/2.png'
-      ],
+    list: prefix =>
+      (
+        listing ?? [
+          'gs://b/people/+1/posters/1.html',
+          'gs://b/people/+1/posters/2.html',
+          'gs://b/prints/+1/2.jpg'
+        ]
+      ).filter(url => url.startsWith(prefix)),
     put,
     port: 0,
     poll_ms: 0,
@@ -155,10 +157,10 @@ describe('main', () => {
       'window.poster_driver.render_stored("/+1/posters/1")'
     )
     expect(put).toHaveBeenCalledWith(
-      'gs://b/people/+1/posters/1.png',
-      path.join(out_dir, '1.png')
+      'gs://b/prints/+1/1.jpg',
+      path.join(out_dir, '1.jpg')
     )
-    expect(readFileSync(path.join(out_dir, '1.png'), 'utf8')).toBe('png')
+    expect(readFileSync(path.join(out_dir, '1.jpg'), 'utf8')).toBe('jpeg')
     expect(launched[0].target_url).toMatch(/127\.0\.0\.1:\d+\/poster-driver$/)
     expect(launched.at(-1)).toBe('killed')
     expect(existsSync(launched[0].profile_dir)).toBe(false)
@@ -179,7 +181,7 @@ describe('main', () => {
 
   it('does nothing when every preview exists', async () => {
     const { options, launched } = setup({
-      listing: ['gs://b/p/1.html', 'gs://b/p/1.png']
+      listing: ['gs://b/people/+1/posters/1.html', 'gs://b/prints/+1/1.jpg']
     })
     expect(await main({ ...options, args: [] })).toEqual({
       rendered: [],
@@ -206,7 +208,7 @@ describe('main', () => {
       '2 failed: 2, 1'
     )
     expect(console.error).toHaveBeenCalledWith(
-      'print-previews: 1 failed - render returned no png'
+      'print-previews: 1 failed - render returned no jpeg'
     )
   })
 

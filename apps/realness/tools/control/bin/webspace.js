@@ -29,62 +29,63 @@ import {
   reconcile_cloud,
   reconcile_models,
   reconcile_text
-} from '../../../src/control/reconcile.js'
+} from '#root/src/control/reconcile.js'
 import { environment, isLocal as is_local } from '../webspace.config.js'
-import { gcloud } from '../../../src/control/cloud.js'
-import { limaTarget as lima_target } from '../../../src/control/lima.js'
+import { gcloud } from '#root/src/control/cloud.js'
+import { limaTarget as lima_target } from '#root/src/control/lima.js'
 import { readFile as read_file } from 'node:fs/promises'
-import { attempt, note, step } from '../../../src/control/exec.js'
+import { attempt, note, step } from '#root/src/control/exec.js'
 import { mkdir, stat } from 'node:fs/promises'
 import { join } from 'node:path'
-import * as dev from '../../../src/control/dev.js'
+import * as dev from '#root/src/control/dev.js'
 import {
   prepare_workloads,
   workload_timeout
-} from '../../../src/control/capacity-workloads.js'
+} from '#root/src/control/capacity-workloads.js'
 import {
   up as gcp_up,
   down as gcp_down,
   restart as gcp_restart,
   revoke as gcp_revoke
-} from '../../../src/control/halo-gcp.js'
+} from '#root/src/control/halo-gcp.js'
 import {
   up as lima_up,
   down as lima_down,
   restart as lima_restart
-} from '../../../src/control/halo-lima.js'
-import * as drain from '../../../src/control/drain.js'
-import { probe } from '../../../src/control/probe.js'
-import { halo_status, format_status } from '../../../src/control/status.js'
+} from '#root/src/control/halo-lima.js'
+import * as drain from '#root/src/control/drain.js'
+import { probe } from '#root/src/control/probe.js'
+import { halo_status, format_status } from '#root/src/control/status.js'
 import {
   set_json_output,
   result,
   mask_phones
-} from '../../../src/control/output.js'
+} from '#root/src/control/output.js'
 import {
   admin_login,
   admin_identity,
   admin_logout
-} from '../../../src/control/auth.js'
-import * as reads from '../../../src/control/reads.js'
-import { OPERATOR_START_MS } from '../../../src/sync/halo-lifecycle.js'
-import * as cloud from '../../../src/control/cloud-reads.js'
+} from '#root/src/control/auth.js'
+import * as reads from '#root/src/control/reads.js'
+import { OPERATOR_START_MS } from '#root/src/sync/halo-lifecycle.js'
+import * as cloud from '#root/src/control/cloud-reads.js'
 import {
   gather,
   LOCAL_SOURCES,
   overview_text
-} from '../../../src/control/overview.js'
-import { attention } from '../../../src/control/attention.js'
+} from '#root/src/control/overview.js'
+import { attention } from '#root/src/control/attention.js'
 import {
   manage_admins,
   ensure_admins,
   admins_text
-} from '../../../src/control/admins.js'
+} from '#root/src/control/admins.js'
 import { local_person } from '#root/src/harness/settings.js'
 import { project_root } from '#root/src/settings/layout.js'
-import { disk } from '../../../src/can/disk.js'
-import { create_gcs, gcloud_token } from '../../../src/can/gcs.js'
-import { billing_store, grant_plan } from '../../../src/proxy/billing.js'
+import { disk } from '#root/src/can/disk.js'
+import { store_of } from '#root/src/can/store.js'
+import { create_gcs, gcloud_token } from '#root/src/can/gcs.js'
+import { billing_store, grant_plan } from '#root/src/proxy/billing.js'
 import {
   deployment_settings,
   local_settings
@@ -100,7 +101,6 @@ const USAGE = `usage: realness <local|development|production> <command> [options
   build                        local only: stage the harness, build the template
   code                         local only: the latest sign-in code
   pull [<prefix> ...] [--from=production]  local only: copy people/, usage/, billing/ into sync-data; one way
-  pack [--dir=...] [--dry-run]  local only: gzip every plain text file in the store
   pull posters [--dry-run]     local only: production's posters overwrite local ones
 
   halo up [<name>] [--smoke] [--expire=2h]  make a halo, put the code on it, serve (~3 min in GCP)
@@ -386,21 +386,6 @@ const main = async argv => {
       return 0
     }
 
-    case 'pack': {
-      if (!local)
-        throw new Error(
-          'pack zips the local store; run it as realness local pack'
-        )
-      const { pack } = await import('../../../src/can/disk.js')
-      const dir = typeof flags.dir === 'string' ? flags.dir : sync_dir()
-      const report = await pack(dir, { dry_run: Boolean(flags['dry-run']) })
-      result(
-        { packed: report.packed.length, saved: report.saved },
-        `${report.packed.length} packed, ${(report.saved / 1e6).toFixed(1)} MB saved${flags['dry-run'] ? ' (dry run)' : ''}\n`
-      )
-      return 0
-    }
-
     case 'pull': {
       if (!local)
         throw new Error(
@@ -420,9 +405,10 @@ const main = async argv => {
           bucket: deployment_settings(from, process.env).bucket,
           token: gcloud_token()
         }),
-        to: disk(typeof flags.dir === 'string' ? flags.dir : sync_dir(), {
-          gzip_at_rest: true
-        }),
+        // gz1: local files land as `name.gz`, as sync serves them
+        to: store_of(
+          disk(typeof flags.dir === 'string' ? flags.dir : sync_dir())
+        ),
         prefixes: wanted.length
           ? wanted.map(prefix => prefix.replace(/\/?$/, '/'))
           : PULL_PREFIXES,
@@ -458,7 +444,7 @@ const main = async argv => {
       )
         throw new Error(usage)
       const storage = local
-        ? disk(typeof flags.dir === 'string' ? flags.dir : sync_dir())
+        ? store_of(disk(typeof flags.dir === 'string' ? flags.dir : sync_dir()))
         : create_gcs({
             bucket: deployment_settings(envName, process.env).bucket,
             token: gcloud_token()

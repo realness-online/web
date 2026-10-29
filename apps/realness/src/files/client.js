@@ -15,8 +15,6 @@
  * `deletes: "all"`; the rest are held. Remote deletes move files to the Trash.
  * A remote change mid-run is left for the next run and reported as a conflict.
  */
-import { promisify } from 'node:util'
-import { gzip as gzip_callback } from 'node:zlib'
 import { version_sync } from './version-node.js'
 import { born, set_born } from './birth.js'
 import {
@@ -36,7 +34,15 @@ import { apply, is_session_file, load_calls, replayable } from './replay.js'
 import { homedir } from 'node:os'
 import { basename, dirname, join, relative, resolve, sep } from 'node:path'
 import { merge_session } from './session-merge.js'
-import { is_zipped, zip, zipped_call } from './zip.js'
+import { promisify } from 'node:util'
+import { gzip as gzip_callback } from 'node:zlib'
+import {
+  OpenSession,
+  disk_bytes,
+  read_local,
+  sync_names
+} from './session-gz.js'
+import { zip } from './zip.js'
 import { skipped, skipped_name } from './skip.js'
 import { trashed_from } from '#root/src/can/trash-keys.js'
 import {
@@ -72,20 +78,16 @@ export class SyncError extends Error {
 }
 
 const sha = version_sync
-/** zlib's async gzip runs on libuv's worker pool, off the event loop. */
-const gzip = promisify(gzip_callback)
 
 /**
- * The upload for one body: `X-Version` always, gzip only when it shrinks.
+ * The upload for one body: always one gzip piece, the same bytes on every
+ * machine, which the store keeps as sent; `X-Version` is the plain hash.
  * @param {Buffer} bytes
  */
-export const packed_upload = async bytes => {
-  const headers = { 'x-version': sha(bytes) }
-  const packed = await gzip(bytes)
-  return packed.length < bytes.length
-    ? { body: packed, headers: { ...headers, 'content-encoding': 'gzip' } }
-    : { body: bytes, headers }
-}
+export const packed_upload = bytes => ({
+  body: zip(bytes),
+  headers: { 'x-version': sha(bytes), 'content-encoding': 'gzip' }
+})
 
 /** The phone number a token names, read locally only to build paths. */
 export const phone_of = token => {
@@ -180,11 +182,19 @@ const plan_sync = async ({
   starter
 }) => {
   const selected = only && new Set(only)
+  const walked = new Map(
+    (
+      await walk(local, (path, is_dir) =>
+        exclude(relative(local, path).split(sep).join('/'), is_dir)
+      ).catch(() => [])
+    ).map(file => /** @type {[string, string]} */ ([
+      relative(local, file).split(sep).join('/'),
+      file
+    ]))
+  )
   const locals = new Map()
-  for (const file of await walk(local, (path, is_dir) =>
-    exclude(relative(local, path).split(sep).join('/'), is_dir)
-  ).catch(() => []))
-    locals.set(relative(local, file).split(sep).join('/'), file)
+  for (const [name, on_disk] of sync_names([...walked.keys()]))
+    locals.set(name, walked.get(on_disk))
   const remotes =
     remote_files ??
     (await api.walk(folder).catch(error => {
@@ -309,6 +319,26 @@ const save_sync_record = async ({
  * Build the per-name transfer decisions for one sync run. Every helper closes
  * over the run: the remote folder, the local walk, the report, and the log.
  */
+const OPEN = Symbol('open session')
+
+/** zlib's async gzip runs on libuv's worker pool, off the event loop. */
+const gzip = promisify(gzip_callback)
+
+/** Too big to send: uploads go packed, so only the zip has to fit. */
+const too_big = async (bytes, max) =>
+  bytes.length > max && (await gzip(bytes)).length > max
+
+/** A local file's sync bytes, null when absent, OPEN while a session is mid-write. */
+const sync_bytes = async (name, file) => {
+  if (!file) return null
+  try {
+    return await read_local(name, file)
+  } catch (error) {
+    if (error instanceof OpenSession) return OPEN
+    throw error
+  }
+}
+
 /** One transfer phase for one name. Every path reports and returns. */
 const pull_only_transfer = async (
   run,
@@ -528,7 +558,7 @@ const both_moved = async (
     rows && apply(theirs.bytes.toString('utf8'), await load_calls(rows))
   if (typeof replayed === 'string') {
     const merged = Buffer.from(replayed)
-    await run.fx.write_file(join(local, name), merged)
+    await run.put_local(name, merged)
     agree(
       name,
       merged,
@@ -538,9 +568,9 @@ const both_moved = async (
   }
   const session = merge_session(name, bytes, theirs.bytes)
   if (session) {
-    if (!(await read_file(file)).equals(bytes))
+    if (!(await read_local(name, file)).equals(bytes))
       return report.conflicts.push(name)
-    if (!session.equals(bytes)) await run.fx.write_file(file, session)
+    if (!session.equals(bytes)) await run.put_local(name, session)
     agree(
       name,
       session,
@@ -590,8 +620,11 @@ const transfer_one = async (run, name) => {
   if (stock && name === STARTER_FILE) return
   const base = manifest[name]
   const file = locals.get(name)
-  const bytes = file ? await read_file(file) : null
-  if (bytes && bytes.length > max_bytes) return report.too_big.push(name)
+  const read = await sync_bytes(name, file)
+  if (read === OPEN) return report.held.push(name)
+  const bytes = /** @type {Buffer | null} */ (read)
+  if (bytes && (await too_big(bytes, max_bytes)))
+    return report.too_big.push(name)
   const local_sha = bytes ? sha(bytes) : null
   const remote_version = remotes[name] ?? null
   const local_moved = local_sha !== (base?.local ?? base?.version ?? null)
@@ -859,7 +892,9 @@ const make_transfer = ({
     arrived ??= Promise.all(
       [...locals]
         .filter(([name]) => !manifest[name])
-        .map(async ([, path]) => sha(await read_file(path).catch(() => '')))
+        .map(async ([name, path]) =>
+          sha(await read_local(name, path).catch(() => ''))
+        )
     ).then(versions => new Set(versions))
     return (await arrived).has(base.local ?? base.version)
   }
@@ -883,6 +918,7 @@ const make_transfer = ({
       const session_name = relative(session_folder, session)
         .split(sep)
         .join('/')
+        .replace(/\.html\.gz$/, '.html')
       const saved_session = await expect(
         await call('GET', `${sessions_remote}${session_name}`),
         `saved session ${session_name}`,
@@ -891,7 +927,7 @@ const make_transfer = ({
       if (
         saved_session.status === HTTP.NOT_FOUND ||
         sha(Buffer.from(await saved_session.arrayBuffer())) !==
-          sha(await read_file(session))
+          sha(await read_local(session_name, session))
       )
         return false
     }
@@ -922,10 +958,10 @@ const make_transfer = ({
   }
   const pull = async (name, theirs) => {
     await safe_target(local, name)
-    const target = join(local, name)
+    const target = locals.get(name) ?? join(local, name)
     if (dry_run) return agree(name, theirs.bytes, theirs.version)
     await mkdir(dirname(target), { recursive: true })
-    await write_file(target, theirs.bytes)
+    await write_file(target, disk_bytes(name, target, theirs.bytes))
     if (theirs.created) await set_born(target, theirs.created)
     agree(name, theirs.bytes, theirs.version)
   }
@@ -946,8 +982,14 @@ const make_transfer = ({
   }
 
   /** Everything the transfer phases read, gathered once. */
+  const fx = dry_run ? dry_fx : real_fx
   const run = {
-    fx: dry_run ? dry_fx : real_fx,
+    fx,
+    /** Write a sync name back to its file, packed if it lives packed. */
+    put_local: (name, bytes) => {
+      const path = locals.get(name) ?? join(local, name)
+      return fx.write_file(path, disk_bytes(name, path, bytes))
+    },
     conflict_allowed,
     moved_away,
     agree,
@@ -1002,7 +1044,7 @@ const read_api = ({ call, expect, key }) => {
     },
 
     async put(path, bytes, headers = {}) {
-      const upload = await packed_upload(Buffer.from(bytes))
+      const upload = packed_upload(Buffer.from(bytes))
       const response = await expect(
         await call('PUT', path, {
           body: upload.body,
@@ -1168,7 +1210,7 @@ export const client = ({
   trash: default_trash
 }) => {
   const key = key_for(phone)
-  const call = zipped_call(caller({ url, token, fetcher, key }), key, sha)
+  const call = caller({ url, token, fetcher, key })
   const server = String(url).replace(/\/+$/, '')
 
   const expect = (response, what, ok = [HTTP.OK]) => {
@@ -1269,8 +1311,7 @@ export const client = ({
       const mass_removal = vanished > MAX_REMOVALS
       if (mass_removal) report.mass_removal = vanished
       if (dry_run) report.dry_run = true
-      // sy18: harness versions hash the zip; the edit log keeps plain hashes
-      const ver = is_zipped(key(folder)) ? bytes => sha(zip(bytes)) : sha
+      const ver = sha
       const side = dry_run
         ? dry_remote({ api, call, folder, remotes, ver })
         : { api, call }

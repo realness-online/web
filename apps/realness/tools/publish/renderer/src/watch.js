@@ -32,8 +32,12 @@ export const watch_sources = build => {
     if (pending) clearTimeout(pending)
     pending = setTimeout(rebuild, 50)
   }
-  const directories = ['content', 'static', 'partials', 'pages'].filter(exists_sync)
-  const watchers = directories.map(directory => watch(directory, { recursive: true }, schedule))
+  const directories = ['content', 'static', 'partials', 'pages'].filter(
+    exists_sync
+  )
+  const watchers = directories.map(directory =>
+    watch(directory, { recursive: true }, schedule)
+  )
   watchers.push(watch('site.json', schedule))
   return () => {
     if (pending) clearTimeout(pending)

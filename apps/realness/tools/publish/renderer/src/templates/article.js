@@ -26,18 +26,10 @@ const byline = itemid => {
   return `<address itemprop="author" itemscope itemtype="http://schema.org/Person"><a itemprop="telephone" href="tel:${phone}">${phone}</a></address>`
 }
 
-export const article_body = (
-  poster,
-  data,
-  title,
-  html,
-  notes,
-  related = ''
-) => 
+export const article_body = (poster, data, title, html, notes, related = '') =>
   `<article itemscope${data.itemid ? ` itemid="${escape_html(data.itemid)}"` : ''} itemtype="http://schema.org/BlogPosting">
       ${related}
       ${poster(data, title, 'h1', null, { close_href: '/' })}
       <section itemprop="articleBody">${html}${notes}</section>
       ${byline(data.itemid)}
     </article>`
-

@@ -84,7 +84,7 @@ write_file_sync(
   `${[
     'url\tok\treason\tload_s\tcpu_s\tidle_cpu_s\tchars',
     ...rows.map(row => Object.values(row).join('\t'))
-  ].join('\n')  }\n`
+  ].join('\n')}\n`
 )
 write_file_sync(
   join(run, 'summary.json'),

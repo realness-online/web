@@ -13,23 +13,31 @@ pre.mermaid {
       ry: 6px !important;
     }
 
-    .pele-node[class*=" active"],
-    .pele-node[class*=" out"] {
+    .pele-node[class*=' active'],
+    .pele-node[class*=' out'] {
       --tone: var(--accent);
     }
 
-    .pele-node[class*=" gate"],
-    .pele-node[class*=" next"] {
+    .pele-node[class*=' gate'],
+    .pele-node[class*=' next'] {
       --tone: var(--warning);
     }
 
-    .pele-node[class*=" blocked"],
-    .pele-node[class*=" no"],
-    .pele-node[class*=" focus"] {
+    .pele-node[class*=' blocked'],
+    .pele-node[class*=' no'],
+    .pele-node[class*=' focus'] {
       --tone: var(--emphasis);
     }
 
-    .pele-node:is([class*=" active"], [class*=" out"], [class*=" gate"], [class*=" next"], [class*=" blocked"], [class*=" no"], [class*=" focus"]) {
+    .pele-node:is(
+      [class*=' active'],
+      [class*=' out'],
+      [class*=' gate'],
+      [class*=' next'],
+      [class*=' blocked'],
+      [class*=' no'],
+      [class*=' focus']
+    ) {
       :is(rect, polygon, circle) {
         fill: color-mix(in srgb, var(--tone) 14%, var(--surface)) !important;
         stroke: var(--tone) !important;
@@ -42,11 +50,11 @@ pre.mermaid {
       }
     }
 
-    .pele-node[class*=" next"] :is(rect, polygon) {
+    .pele-node[class*=' next'] :is(rect, polygon) {
       stroke-dasharray: 4 3 !important;
     }
 
-    .pele-node[class*=" done"] {
+    .pele-node[class*=' done'] {
       opacity: 0.45;
     }
 

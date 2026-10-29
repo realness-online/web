@@ -330,16 +330,14 @@ it('r2a: a stream passes through, and leaving closes the halo call', async () =>
   api.server.close()
 })
 
-it('r2a: an unreachable halo is a 502', async () => {
+it('r2a: an unreachable halo is a 503 that says why', async () => {
   const { gate, at } = await api_gate({ port: 1 })
-  assert.equal(
-    (
-      await fetch(`${at}/v1/actors`, {
-        headers: { authorization: 'Bearer good.id.token', origin }
-      })
-    ).status,
-    502
-  )
+  const response = await fetch(`${at}/v1/actors`, {
+    headers: { authorization: 'Bearer good.id.token', origin }
+  })
+  assert.equal(response.status, 503)
+  assert.equal(response.headers.get('retry-after'), '5')
+  assert.equal((await response.text()).trim(), 'halo unreachable')
   gate.close()
 })
 

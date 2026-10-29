@@ -16,6 +16,8 @@ const QUIET_MS = 60_000
 
 const LOG = logger('pty')
 const HELLO_LIMIT = 1 << HELLO_LIMIT_BITS
+/** A split pane's session: the guest's realness-pty accepts the same names. */
+const SESSION = /^[a-z0-9][a-z0-9-]{0,15}$/
 
 const reject = (client, message) => {
   LOG.warn(`pty refused: ${message}`)
@@ -40,10 +42,15 @@ const handle = async (
   if (hello.length >= HELLO_LIMIT)
     return reject(client, 'hello line is too long')
 
-  let id, cols, rows, pass
+  let id, cols, rows, pass, session
   try {
     const request = JSON.parse(hello)
-    ;({ actor: id, pass } = request)
+    ;({ actor: id, pass, session = null } = request)
+    if (
+      session !== null &&
+      !(typeof session === 'string' && SESSION.test(session))
+    )
+      throw new Error('session must be a short lowercase name')
     cols = Number.parseInt(request.cols || 80, 10)
     rows = Number.parseInt(request.rows || DEFAULT_ROWS, 10)
     if (Number.isNaN(cols) || Number.isNaN(rows))
@@ -88,19 +95,13 @@ const handle = async (
     else terminal_clients.delete(id)
     clearTimeout(quiet_timer)
     if (working) store.end_work(id, connection)
-    if (!remaining)
-      store
-        .idle(id, 'disk')
-        .catch(error =>
-          LOG.error(`disconnect shutdown failed for ${id}`, error)
-        )
   }
   client.on('close', end)
   client.on('error', end)
   try {
     await store.ensure_running(id)
     if (ended || client.destroyed) return end()
-    guest = await vsock.connect(record.vsock_path, PTY_PORT)
+    guest = await vsock.connect(record.pty_path ?? record.vsock_path, PTY_PORT)
     if (ended || client.destroyed) {
       guest.socket.destroy()
       return end()
@@ -126,6 +127,8 @@ const handle = async (
   active()
   client.on('data', active)
   guest.socket.on('data', active)
+  if (session)
+    guest.socket.write(`${JSON.stringify({ op: 'session', name: session })}\n`)
   guest.socket.write(`${JSON.stringify({ op: 'resize', cols, rows })}\n`)
   client.write('{"ok": true}\n')
   if (early.length) client.write(early)

@@ -9,7 +9,7 @@ import { client } from '#root/src/files/client.js'
 import { issue_harness_pass } from '#root/src/sign-on/node/recovery-pass.js'
 import { rights } from '#root/src/sync/rights.js'
 import { sync_service } from '#root/src/sync/server.js'
-import { zipped_storage } from './zipped-storage.js'
+import { store_of } from '#root/src/can/store.js'
 
 const secret = 'actor-sync-test-secret-at-least-thirty-two-bytes'
 const phone = '+14155550123'
@@ -24,7 +24,7 @@ it('an actor edit reaches a desktop through normal sync, renewing an expired pas
   await mkdir(join(root, 'vault'), { recursive: true })
   await writeFile(join(root, '.ignore'), '')
   await writeFile(join(root, 'vault/note.md'), 'original\n')
-  const storage = zipped_storage(disk(join(directory, 'storage')))
+  const storage = store_of(disk(join(directory, 'storage')))
   const server = sync_service({
     storage,
     rights: rights(storage),

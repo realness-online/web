@@ -82,6 +82,18 @@ describe('@/components/chat/as-connection-feedback', () => {
     feedback.unmount()
   })
 
+  it('shows no clock when a problem has nothing measured', () => {
+    const feedback = mount(AsConnectionFeedback, {
+      props: {
+        progress: null,
+        problem: 'Realness is starting on this computer'
+      }
+    })
+    expect(feedback.find('time').exists()).toBe(false)
+    expect(feedback.find('button').exists()).toBe(true)
+    feedback.unmount()
+  })
+
   it('treats invalid measurements as zero', () => {
     for (const elapsed_ms of [undefined, NaN, -1, '8400']) {
       const feedback = mount(AsConnectionFeedback, {

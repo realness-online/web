@@ -14,7 +14,9 @@ vi.mock('#utils/firebase.js', () => ({
       exists: vi.fn(() => Promise.resolve([mock_store.has(name)])),
       download: vi.fn(() => Promise.resolve([mock_store.get(name)])),
       getMetadata: vi.fn(() =>
-        Promise.resolve([{ metadata: { firebaseStorageDownloadTokens: 'abc' } }])
+        Promise.resolve([
+          { metadata: { firebaseStorageDownloadTokens: 'abc' } }
+        ])
       )
     })),
     getFiles: vi.fn(() => Promise.resolve([mock_objects]))
@@ -62,7 +64,7 @@ beforeEach(() => {
   mock_store.clear()
   mock_objects.length = 0
   mock_store.set(`people${poster_id}.html`, deflateSync(poster_html))
-  mock_store.set(`people${poster_id}.png`, Buffer.from('png'))
+  mock_store.set(`prints${author}/${created}.jpg`, Buffer.from('jpeg'))
 })
 
 describe('print share', () => {
@@ -143,7 +145,7 @@ describe('print share', () => {
       `people${poster_id}.html`,
       Buffer.from(`<svg itemid="${poster_id}"></svg>`)
     )
-    mock_store.delete(`people${poster_id}.png`)
+    mock_store.delete(`prints${author}/${created}.jpg`)
     const res = await serve()
     expect(res.send.mock.calls[0][0]).toContain('No sales recorded yet.')
     expect(res.send.mock.calls[0][0]).not.toContain('property="og:image"')

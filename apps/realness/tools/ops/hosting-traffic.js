@@ -25,14 +25,21 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 
 const script_path = file_url_to_path(import.meta.url)
 const repo_root = path.resolve(path.dirname(script_path), '../..')
-const harness_artifacts = path.resolve(repo_root, '..', '..', 'artifacts', 'realness-ops')
+const harness_artifacts = path.resolve(
+  repo_root,
+  '..',
+  '..',
+  'artifacts',
+  'realness-ops'
+)
 
 export const default_host = 'realness.online'
 const default_days = 7
 const default_buckets = 4
 const default_page_size = 1000
 
-const paint = (open, close) => (s, on) => (on ? `\u001b[${open}m${s}\u001b[${close}m` : s)
+const paint = (open, close) => (s, on) =>
+  on ? `\u001b[${open}m${s}\u001b[${close}m` : s
 export const bold = paint(1, 22)
 export const dim = paint(2, 22)
 export const green = paint(32, 39)
@@ -148,17 +155,20 @@ export const parse_args = (argv = process.argv.slice(2)) => {
     else if (arg === '--include-bots') opts.include_bots = true
     else if (arg === '--all-paths') opts.all_paths = true
     else if (arg === '--by-day') opts.by_day = true
-    else if (arg === '--sample') {
+    else if (arg === '--sample')
       if (next && !next.startsWith('--')) opts.sample = Number(argv[++i])
       else opts.sample = 5
-    } else throw new Error(`Unknown argument: ${arg}`)
+    else throw new Error(`Unknown argument: ${arg}`)
   }
 
   if (!Number.isFinite(opts.days) || opts.days <= 0)
     throw new Error('--days must be a positive number')
   if (!Number.isFinite(opts.buckets) || opts.buckets < 1)
     throw new Error('--buckets must be at least 1')
-  if (opts.sample !== null && (!Number.isFinite(opts.sample) || opts.sample < 0))
+  if (
+    opts.sample !== null &&
+    (!Number.isFinite(opts.sample) || opts.sample < 0)
+  )
     throw new Error('--sample must be a non-negative number')
   if (opts.cache_only && opts.refresh)
     throw new Error('Use either --cache-only or --refresh, not both')
@@ -257,8 +267,8 @@ export const http_request_from_entry = entry => {
     record.httpRequest ??
     record.http_request ??
     (record.protoPayload &&
-    typeof record.protoPayload === 'object' &&
-    /** @type {Record<string, unknown>} */ (record.protoPayload).httpRequest)
+      typeof record.protoPayload === 'object' &&
+      /** @type {Record<string, unknown>} */ (record.protoPayload).httpRequest)
   if (!http || typeof http !== 'object') return null
   return /** @type {Record<string, unknown>} */ (http)
 }
@@ -267,9 +277,10 @@ export const http_request_from_entry = entry => {
  * @param {string | undefined | null} referer
  */
 export const referer_host = referer => {
-  if (!referer || typeof referer !== 'string' || !referer.trim()) return '(none)'
+  if (!referer || typeof referer !== 'string' || !referer.trim())
+    return '(none)'
   try {
-    const host = new URL(referer).host
+    const { host } = new URL(referer)
     return /^[a-z0-9.-]+(:\d+)?$/i.test(host) ? host : '(none)'
   } catch {
     return '(none)'
@@ -294,7 +305,7 @@ export const entry_timestamp = entry => {
   const ts = /** @type {Record<string, unknown>} */ (entry).timestamp
   if (typeof ts === 'string' && ts) return ts
   if (ts && typeof ts === 'object') {
-    const seconds = /** @type {Record<string, unknown>} */ (ts).seconds
+    const { seconds } = ts
     if (typeof seconds === 'number' || typeof seconds === 'string') {
       const ms = Number(seconds) * 1000
       if (Number.isFinite(ms)) return new Date(ms).toISOString()
@@ -363,7 +374,7 @@ export const read_jsonl_cache = cache_path => {
 export const append_jsonl_cache = (cache_path, rows) => {
   if (!rows.length) return
   mkdir_sync(path.dirname(cache_path), { recursive: true })
-  const body = rows.map(row => JSON.stringify(row)).join('\n') + '\n'
+  const body = `${rows.map(row => JSON.stringify(row)).join('\n')}\n`
   append_file_sync(cache_path, body, 'utf8')
 }
 
@@ -377,7 +388,7 @@ export const rewrite_jsonl_cache = (cache_path, rows) => {
     write_file_sync(cache_path, '', 'utf8')
     return
   }
-  const body = rows.map(row => JSON.stringify(row)).join('\n') + '\n'
+  const body = `${rows.map(row => JSON.stringify(row)).join('\n')}\n`
   write_file_sync(cache_path, body, 'utf8')
 }
 
@@ -537,7 +548,8 @@ export const aggregate_window = (
     const http_request = http_request_from_entry(entry)
     if (!http_request) continue
     if (!is_document_hit(http_request, { host, all_paths })) continue
-    if (!include_bots && is_bot_ua(String(http_request.userAgent ?? ''))) continue
+    if (!include_bots && is_bot_ua(String(http_request.userAgent ?? '')))
+      continue
     countable++
     const ip = String(http_request.remoteIp ?? '')
     hits_by_ip.set(ip, (hits_by_ip.get(ip) ?? 0) + 1)
@@ -552,7 +564,9 @@ export const aggregate_window = (
   let burst_hits = 0
 
   const ordered = [...entries].sort((a, b) =>
-    String(entry_timestamp(a) ?? '').localeCompare(String(entry_timestamp(b) ?? ''))
+    String(entry_timestamp(a) ?? '').localeCompare(
+      String(entry_timestamp(b) ?? '')
+    )
   )
 
   for (const entry of ordered) {
@@ -575,7 +589,7 @@ export const aggregate_window = (
     else inner_keys.add(key)
 
     if (arrivals.has(key)) continue
-    const referer = /** @type {string | undefined} */ (http_request.referer)
+    const { referer } = http_request
     arrivals.set(key, {
       kind: classify_referer(referer, host),
       host: referer_host(referer)
@@ -702,20 +716,27 @@ export const format_insight = (trend, { days, color = false }) => {
     return lines.join('\n')
   }
   if (!current.covered)
-    lines.push(dim('  partial period: logs start after the window opens', color))
+    lines.push(
+      dim('  partial period: logs start after the window opens', color)
+    )
 
   const count = value => bold(green(String(value), color), color)
   const ratio = Math.round((current.deeper / current.landed) * 100)
   lines.push(
-    `  ${count(current.landed)} people visited the homepage` +
-      dim(`  (${days}d, distinct visitors)`, color)
+    `  ${count(current.landed)} people visited the homepage${dim(
+      `  (${days}d, distinct visitors)`,
+      color
+    )}`
   )
   lines.push(
-    `  ${count(current.deeper)} of them went past the homepage ` +
-      dim(`(${ratio}%)`, color)
+    `  ${count(current.deeper)} of them went past the homepage ${dim(
+      `(${ratio}%)`,
+      color
+    )}`
   )
 
-  if (current.outside === 0) lines.push(dim('  none came from another site', color))
+  if (current.outside === 0)
+    lines.push(dim('  none came from another site', color))
   else {
     lines.push(`  ${count(current.outside)} came from another site`)
     const width = Math.max(
@@ -830,7 +851,11 @@ export const aggregate_by_day = (
  * @param {ReturnType<typeof aggregate_by_day>} rows
  * @param {string[]} [paths]
  */
-export const format_by_day = (rows, paths = by_day_paths, { color = false } = {}) => {
+export const format_by_day = (
+  rows,
+  paths = by_day_paths,
+  { color = false } = {}
+) => {
   const lines = []
   lines.push(dim('By day (human hits / ≈IPs, UTC):', color))
   const short = {
@@ -838,14 +863,12 @@ export const format_by_day = (rows, paths = by_day_paths, { color = false } = {}
     '/about': 'about',
     '/pricing': 'price'
   }
-  const header =
-    'Day         ' +
-    paths
-      .map(doc_path => {
-        const label = short[doc_path] ?? doc_path
-        return `${label.padStart(5)} ${'≈'.padStart(4)}`
-      })
-      .join('  ')
+  const header = `Day         ${paths
+    .map(doc_path => {
+      const label = short[doc_path] ?? doc_path
+      return `${label.padStart(5)} ${'≈'.padStart(4)}`
+    })
+    .join('  ')}`
   lines.push(bold(header, color))
   lines.push(dim('-'.repeat(header.length), color))
   for (const row of rows) {
@@ -871,7 +894,9 @@ export const format_report = (report, meta = {}) => {
 
   if (!report.paths.length) {
     lines.push('No matching document requests in this window.')
-    lines.push(dim(`(scanned ${report.scanned} cached rows in lookback)`, color))
+    lines.push(
+      dim(`(scanned ${report.scanned} cached rows in lookback)`, color)
+    )
     return lines.join('\n')
   }
 
@@ -935,9 +960,7 @@ export const build_logging_filter = ({
     const path_alt = [...marketing_paths]
       .filter(doc_path => doc_path !== '/')
       .map(doc_path =>
-        doc_path
-          .replace(/^\//, '')
-          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        doc_path.replace(/^\//, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       )
       .join('|')
     parts.push(
@@ -1053,7 +1076,7 @@ export const sync_traffic_cache = options => {
   /** @type {ReturnType<typeof compact_entry>[]} */
   const incoming = []
 
-  if (!options.cache_only) {
+  if (!options.cache_only)
     if (!bounds.newest || options.refresh) {
       const filled = fetch_log_range({
         project: options.project,
@@ -1087,10 +1110,10 @@ export const sync_traffic_cache = options => {
           page_size: options.page_size
         })
         pages += backward.pages
-        for (const entry of backward.entries) incoming.push(compact_entry(entry))
+        for (const entry of backward.entries)
+          incoming.push(compact_entry(entry))
       }
     }
-  }
 
   /** @type {ReturnType<typeof compact_entry>[]} */
   const novel = []
@@ -1101,7 +1124,8 @@ export const sync_traffic_cache = options => {
     novel.push(row)
   }
 
-  if (options.refresh) rewrite_jsonl_cache(options.cache_path, [...by_id.values()])
+  if (options.refresh)
+    rewrite_jsonl_cache(options.cache_path, [...by_id.values()])
   else if (novel.length) append_jsonl_cache(options.cache_path, novel)
 
   const all_rows = [...by_id.values()]
@@ -1213,7 +1237,8 @@ const main = async () => {
     const current_since = trend[trend.length - 1].start
     const report = aggregate_entries(
       synced.all_entries.filter(
-        row => typeof row.timestamp === 'string' && row.timestamp >= current_since
+        row =>
+          typeof row.timestamp === 'string' && row.timestamp >= current_since
       ),
       {
         host: args.host,

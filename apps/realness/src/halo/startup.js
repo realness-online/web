@@ -1,6 +1,9 @@
 import { randomUUID as random_uuid } from 'node:crypto'
 import { can } from '#root/src/can/can.js'
 import { BadRequest, Busy, NotFound } from './errors.js'
+import { logger } from './log.js'
+
+const LOG = logger('startup')
 
 const HTTP_OK = 200
 const RETAIN_MS = 60_000
@@ -83,7 +86,8 @@ export const startup_handlers = ({
         created,
         elapsed_ms: clock() - operation.started_at
       })
-    } catch {
+    } catch (error) {
+      LOG.warn(`actor startup failed: ${error?.message ?? error}`)
       publish(operation, {
         type: 'error',
         text: 'Actor startup failed',

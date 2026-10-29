@@ -6,18 +6,28 @@ verifies this VM, names its owner, and signs a sixty-second pass. Nothing is
 stored on disk, so seeds and exports carry no model credential.
 """
 import json
+import os
 import socket
 import sys
 
-HOST_CID = 2
-DOOR_PORT = 54
+DOOR_SOCKET = "/run/realness/door.sock"
+
+
+def door_socket():
+    """The halo door: vsock on Firecracker, a unix socket inside a box."""
+    family = socket.AF_UNIX if os.path.exists(DOOR_SOCKET) else socket.AF_VSOCK
+    return socket.socket(family, socket.SOCK_STREAM)
+
+
+def door_address(sock):
+    return DOOR_SOCKET if sock.family == socket.AF_UNIX else (2, 54)
 
 
 def door_pass():
-    sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
+    sock = door_socket()
     sock.settimeout(10)
     with sock:
-        sock.connect((HOST_CID, DOOR_PORT))
+        sock.connect(door_address(sock))
         sock.sendall(b'{"op":"model-pass"}\n')
         response = b""
         while b"\n" not in response:

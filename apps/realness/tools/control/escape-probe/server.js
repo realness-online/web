@@ -20,7 +20,7 @@ const ownAddress = () => {
 }
 
 /** Refused when the TCP connect fails; a timeout (dropped) counts as refused. */
-const tryConnect = (host, port, ms = 1500) => 
+const tryConnect = (host, port, ms = 1500) =>
   new Promise(done => {
     const socket = connect({ host, port })
     const finish = (refused, detail) => {
@@ -36,7 +36,6 @@ const tryConnect = (host, port, ms = 1500) =>
       )
     )
   })
-
 
 const reach = async targets => {
   const tries = await Promise.all(targets.map(([h, p]) => tryConnect(h, p)))

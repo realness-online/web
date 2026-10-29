@@ -1,6 +1,8 @@
 /** Add keyboard and pointer size controls after Pele renders. */
-export const size_diagrams = (diagrams) => {
-  for (const diagram of diagrams.filter(node => node.closest('section[itemprop="articleBody"]'))) {
+export const size_diagrams = diagrams => {
+  for (const diagram of diagrams.filter(node =>
+    node.closest('section[itemprop="articleBody"]')
+  )) {
     const svg = diagram.querySelector('svg')
     svg.setAttribute('width', String(svg.viewBox.baseVal.width))
     svg.setAttribute('height', String(svg.viewBox.baseVal.height))
@@ -20,7 +22,12 @@ export const size_diagrams = (diagrams) => {
       diagram.setAttribute('aria-pressed', String(!expanded))
       if (!expanded && scroll_left === null) {
         const first = svg.querySelector('.pele-node')
-        scroll_left = first ? first.getBoundingClientRect().left - diagram.getBoundingClientRect().left - diagram.clientWidth / 2 + first.getBoundingClientRect().width / 2 : 0
+        scroll_left = first
+          ? first.getBoundingClientRect().left -
+            diagram.getBoundingClientRect().left -
+            diagram.clientWidth / 2 +
+            first.getBoundingClientRect().width / 2
+          : 0
       }
       diagram.scrollLeft = expanded ? 0 : scroll_left
       diagram.scrollTop = expanded ? 0 : scroll_top

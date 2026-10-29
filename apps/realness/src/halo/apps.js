@@ -217,8 +217,8 @@ export class AppStore {
     }
   }
 
-  /** `copy(dest)` fills a staging folder; start runs from it, then it goes. */
   /**
+   * `copy(dest)` fills a staging folder; start runs from it, then it goes.
    * @param {(dest: string) => Promise<void>} copy
    * @param {{ owner: string, state?: string, actor?: string, path?: string, public?: boolean }} meta
    * @returns {Promise<AppRecord>}
@@ -249,8 +249,8 @@ export class AppStore {
     return record
   }
 
-  /** One operation per app at a time: the sweep and the API never race. */
   /**
+   * One operation per app at a time: the sweep and the API never race.
    * @template T
    * @param {string} id
    * @param {() => Promise<T> | T} work
@@ -266,8 +266,8 @@ export class AppStore {
     return next
   }
 
-  /** Infer, build, boot, and wait for the port. A site gets a record and no VM. */
   /**
+   * Infer, build, boot, and wait for the port. A site gets a record and no VM.
    * @param {string} files a folder to inspect and run
    * @param {{ owner?: string, state?: string, actor?: string, path?: string, public?: boolean }} [meta] record fields from the caller
    * @returns {Promise<AppRecord>} a site gets id and kind only; no VM boots
@@ -317,8 +317,8 @@ export class AppStore {
   /**
    * A fresh boot from the record: a new copy of the image, the same code disk,
    * TAP, MAC, and address. Any VM still on the api socket goes first.
+   * @returns {Promise<AppRecord>}
    */
-  /** @returns {Promise<AppRecord>} */
   async boot(id) {
     const record = this.record(id)
     const dir = this.path(id)

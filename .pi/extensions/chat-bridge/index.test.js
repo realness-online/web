@@ -187,6 +187,20 @@ test('a chat message runs in the same Pi and streams back', async () => {
   close()
 })
 
+test('a skill typed in the chat box runs as the skill; other slashes stay text', async () => {
+  const { pi, path, close } = setup()
+  pi.getCommands = () => [{ name: 'skill:planning', source: 'skill' }]
+  const turn = () => {
+    pi.emit('agent_start')
+    pi.emit('agent_settled')
+  }
+  await ask(path, JSON.stringify({ message: '/planning a garden' }), turn)
+  await ask(path, JSON.stringify({ message: '/etc is a folder' }), turn)
+  assert.deepEqual(pi.sent, ['/skill:planning a garden', '/etc is a folder'])
+  assert.deepEqual(pi.options, [{ expandPromptTemplates: true }, {}])
+  close()
+})
+
 test('terminal turns neither stream to chat nor get the chat prompt', async () => {
   const { pi, close } = setup()
   assert.equal(pi.emit('before_agent_start', { systemPrompt: 'BASE' }), undefined)

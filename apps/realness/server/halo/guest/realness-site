@@ -13,6 +13,19 @@ import re
 import socket
 import sys
 
+DOOR_SOCKET = "/run/realness/door.sock"
+
+
+def door_socket():
+    """The halo door: vsock on Firecracker, a unix socket inside a box."""
+    family = socket.AF_UNIX if os.path.exists(DOOR_SOCKET) else socket.AF_VSOCK
+    return socket.socket(family, socket.SOCK_STREAM)
+
+
+def door_address(sock):
+    return DOOR_SOCKET if sock.family == socket.AF_UNIX else (2, 54)
+
+
 if len(sys.argv) not in (2, 3) or sys.argv[1] not in ("versions", "restore", "remove"):
     sys.exit("usage: realness-site versions|restore <version>|remove")
 action = sys.argv[1]
@@ -28,9 +41,9 @@ if os.path.isfile(marker):
     request["site"] = site
 if action == "restore":
     request["version"] = sys.argv[2]
-with socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM) as sock:
+with door_socket() as sock:
     sock.settimeout(120)
-    sock.connect((2, 54))
+    sock.connect(door_address(sock))
     sock.sendall(json.dumps(request).encode() + b"\n")
     data = b""
     while b"\n" not in data:

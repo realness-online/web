@@ -31,6 +31,7 @@
   const BLANK_POSTER = 'poster has no drawable layer'
   const POLL_MS = 100
   const PNG_TARGET = 1200
+  const PREVIEW_JPEG_QUALITY = 0.85
   const COPIED_MS = 2000
   const render_mutex = mutex_for('poster-driver')
 
@@ -110,13 +111,19 @@
    * @param {SVGSVGElement} svg
    * @param {number} width
    * @param {number} height
+   * @param {{ type?: string, quality?: number }} [format]
    * @returns {Promise<string>}
    */
-  const as_png_data_url = async (svg, width, height) => {
+  const as_image_data_url = async (
+    svg,
+    width,
+    height,
+    { type = 'image/png', quality } = {}
+  ) => {
     const canvas = await render_complete_poster_to_canvas(svg, width, height, {
       fit: 'meet'
     })
-    const blob = await canvas.convertToBlob({ type: 'image/png' })
+    const blob = await canvas.convertToBlob({ type, quality })
     return await new Promise(resolve => {
       const reader = new FileReader()
       reader.onload = () => resolve(String(reader.result))
@@ -257,7 +264,7 @@
 
     status.value = 'Exporting'
     const png = formats.has('png')
-      ? await as_png_data_url(svg, width, height)
+      ? await as_image_data_url(svg, width, height)
       : null
     const psd = formats.has('psd')
       ? as_base64(await render_svg_layers_to_psd(svg, itemid))
@@ -281,11 +288,11 @@
   }
 
   /**
-   * Render a poster already on storage to a PNG preview through the same
+   * Render a poster already on storage to a JPEG preview through the same
    * export renderer `render` uses. The print shop's checkout pictures come
-   * from here.
+   * from here; JPEG keeps them a third the size of a PNG.
    * @param {Id} itemid - e.g. `/author/posters/1712000000000`
-   * @returns {Promise<{ itemid: Id, png: string, viewbox: string, width: number, height: number }>}
+   * @returns {Promise<{ itemid: Id, jpeg: string, viewbox: string, width: number, height: number }>}
    */
   const render_stored = async itemid => {
     await render_mutex.lock()
@@ -320,11 +327,14 @@
       const height = Math.round(source_height * scale)
 
       status.value = 'Exporting'
-      const png = await as_png_data_url(svg, width, height)
+      const jpeg = await as_image_data_url(svg, width, height, {
+        type: 'image/jpeg',
+        quality: PREVIEW_JPEG_QUALITY
+      })
       status.value = 'Done'
       return {
         itemid,
-        png,
+        jpeg,
         viewbox: svg.getAttribute('viewBox') || '',
         width,
         height

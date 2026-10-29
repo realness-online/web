@@ -43,7 +43,7 @@ export const print_pages_from_list = payload => {
           ? {
               og_image: print.image,
               og_image_alt: 'Hand-finished Realness print',
-              og_image_type: 'image/png'
+              og_image_type: 'image/jpeg'
             }
           : {})
       }

@@ -25,6 +25,8 @@
  */
 
 const PERSON = 'https://schema.org/Person'
+/** A member may also be written as `employee`: the same thing, now microdata's word. */
+const MEMBER = 'employee'
 const PHONE = /^\+[1-9]\d{6,14}$/
 const VOID = new Set([
   'br',
@@ -105,7 +107,7 @@ const close_tag = (state, name) => {
 const open_tag = (state, name, a, self) => {
   const empty = VOID.has(name) || self
   const props = (a.itemprop ?? '').toLowerCase().split(/\s+/)
-  const role = ['founder', 'member'].find(prop => props.includes(prop))
+  const role = ['founder', 'member', MEMBER].find(prop => props.includes(prop))
   const field = ['telephone', 'name'].find(prop => props.includes(prop))
   if (role) {
     if (state.person) throw new Error('members page: a person inside a person')
@@ -138,7 +140,7 @@ export const read_members = source => {
     throw new Error('members page: raw or inert content')
   /** @type {{ found: Record<string, string[]>, stack: string[], people: object[], person: { prop: string, depth: number, phones: string[], names: string[] } | null, phone: { depth: number, text: string, field: string } | null }} */
   const state = {
-    found: { founder: [], member: [] },
+    found: { founder: [], member: [], employee: [] },
     stack: [],
     people: [],
     person: null, // { prop, depth, phones: [], names: [] }
@@ -158,7 +160,7 @@ export const read_members = source => {
   const [founder] = found.founder
   return {
     founder,
-    members: [...new Set([founder, ...found.member])],
+    members: [...new Set([founder, ...found.member, ...found.employee])],
     people
   }
 }

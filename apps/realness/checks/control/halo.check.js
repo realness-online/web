@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync as exec_file_sync } from 'node:child_process'
+import { secret_path } from '#root/src/settings/secrets.js'
 import { createHmac as create_hmac } from 'node:crypto'
 import { connect } from 'node:net'
 import {
@@ -9,15 +10,17 @@ import {
 } from 'node:fs'
 import assert from 'node:assert/strict'
 import { after, before, describe, test } from 'node:test'
-import { out_path } from '#root/lib/output.js'
 
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const PTY = process.env.PTY ?? '127.0.0.1:18081'
 const KILL = process.env.KILL ?? 'limactl shell fc-local sudo kill -9 {pid}'
+// A Firecracker actor on the Mac is a VM inside Lima: Pi takes ~40 s to draw
+// there. DRAW_MS=90000 for that run; GCP and boxes draw well inside 30 s.
+const DRAW_MS = Number(process.env.DRAW_MS ?? 30000)
 
 const made = new Set()
 const owner = '+14156667777'
-const secretPath = out_path('halo-pass-secret')
+const secretPath = secret_path('halo-pass-secret')
 const secret =
   process.env.HALO_PASS_SECRET ??
   (exists_sync(secretPath) ? read_file_sync(secretPath, 'utf8').trim() : null)
@@ -340,14 +343,6 @@ describe("an actor's life", () => {
         (await call('GET', `/s/${actor.id}/missing.css`)).status,
         404
       )
-      const port = new URL(API).port
-      const vhost = exec_file_sync('curl', [
-        '-s',
-        '-H',
-        `Halo: ${actor.id}.localhost:${port}`,
-        `${API}/`
-      ]).toString()
-      assert.equal(vhost, '<h1>hi</h1>\n')
     }
   })
 
@@ -375,6 +370,22 @@ describe("an actor's life", () => {
       `${API}/s/${actor.id}/../../etc/passwd`
     ]).toString()
     assert.notEqual(out, '200')
+  })
+
+  test("the halo keeps the page's pane layout", async () => {
+    const path = `/v1/actors/${actor.id}/layout`
+    assert.deepEqual((await call('GET', path)).json, { layout: null })
+    const layout = {
+      split: 'row',
+      panes: [{ session: null }, { session: 'logs' }]
+    }
+    assert.equal((await call('POST', path, { layout })).status, 200)
+    assert.deepEqual((await call('GET', path)).json, { layout })
+    assert.equal((await call('POST', path, { layout: 'row' })).status, 400)
+    assert.equal(
+      (await call('GET', path, undefined, '+14155559999')).status,
+      404
+    )
   })
 
   test('the trace records what happened, oldest first', async () => {
@@ -415,7 +426,7 @@ describe("an actor's life", () => {
     assert.equal((await sh(copy.id, 'cat /realness/h4a-disk')).out, 'kept\n')
     const restored = await sh(
       copy.id,
-      'test -f /realness/bin/pi && test ! -e /root/realness && printf \'%s\' "$HOME"'
+      'test -d /realness/.pi && test -f /realness/AGENTS.md && test ! -e /root/realness && printf \'%s\' "$HOME"'
     )
     assert.equal(restored.code, 0, restored.err)
     assert.equal(restored.out, '/realness')
@@ -474,7 +485,7 @@ describe('terminal', () => {
 const terminal = async (
   id,
   until,
-  { keep = false, ms = 30000, send = [] } = {}
+  { keep = false, ms = DRAW_MS, send = [] } = {}
 ) => {
   const [host, port] = PTY.split(':')
   const socket = connect(Number(port), host)

@@ -10,11 +10,11 @@ import {
 } from 'node:fs'
 import { request } from 'node:http'
 import { join } from 'node:path'
-import { AppStore } from '../../src/halo/apps.js'
-import { Actor } from '../../src/halo/actors.js'
-import { NotFound } from '../../src/halo/errors.js'
+import { AppStore } from '#root/src/halo/apps.js'
+import { Actor } from '#root/src/halo/actors.js'
+import { NotFound } from '#root/src/halo/errors.js'
 import { issue_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
-import { make_server } from '../../src/halo/server.js'
+import { make_server } from '#root/src/halo/server.js'
 
 const secret = (process.env.HALO_PASS_SECRET ||=
   random_bytes(32).toString('hex'))
@@ -42,7 +42,7 @@ const unreached = name => () => {
 }
 
 const actor = new Actor({ id: 'a-check', owner: alice })
-/** @type {import('../../src/halo/server.js').RouteStore} */
+/** @type {import('#root/src/halo/server.js').RouteStore} */
 const actors = {
   get: id => {
     if (id !== actor.id) throw new NotFound(id)

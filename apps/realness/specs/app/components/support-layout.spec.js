@@ -126,6 +126,43 @@ const open = async () => {
 }
 
 describe('app-wide chat', () => {
+  it('Tab from the chat input moves into the terminal, and Tab stays pi inside it', async () => {
+    vi.stubGlobal('matchMedia', query => ({
+      matches: true,
+      addEventListener: () => {},
+      removeEventListener: () => {}
+    }))
+    const { page, router } = await open()
+    await page.get('button[aria-label="Open chat"]').trigger('click')
+    await flush_promises()
+    await router.push('/terminal')
+    await flush_promises()
+    const pane = document.createElement('div')
+    pane.id = 'tui-pane'
+    pane.innerHTML = '<canvas tabindex="-1"></canvas>'
+    document.body.appendChild(pane)
+    const input = page.get('textarea[name="message"]').element
+    const canvas = pane.querySelector('canvas')
+    input.focus()
+    const hop = new KeyboardEvent('keydown', {
+      code: 'Tab',
+      bubbles: true,
+      cancelable: true
+    })
+    input.dispatchEvent(hop)
+    expect(hop.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(canvas)
+    const pi_tab = new KeyboardEvent('keydown', {
+      code: 'Tab',
+      bubbles: true,
+      cancelable: true
+    })
+    canvas.focus()
+    canvas.dispatchEvent(pi_tab)
+    expect(pi_tab.defaultPrevented).toBe(false)
+    pane.remove()
+  })
+
   it('warms the VM beside documentation, keeps its draft on navigation, and sends the new page context', async () => {
     const { page, router } = await open()
     await page.get('button[aria-label="Open chat"]').trigger('click')

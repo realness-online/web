@@ -14,6 +14,7 @@ import {
   renameSync as rename_sync,
   rmSync as rm_sync,
   statSync as stat_sync,
+  statfsSync as statfs_sync,
   unlinkSync as unlink_sync,
   writeFileSync as write_file_sync,
   appendFileSync as append_file_sync
@@ -37,6 +38,7 @@ import * as syscalls from './syscalls.js'
 import { logger } from './log.js'
 import * as vsock from './vsock.js'
 import { next_step } from './lifecycle.js'
+import { sessions_busy } from './sessions-busy.js'
 import { wait_for_door } from './door.js'
 import { create_startup_trace } from '#root/src/harness/startup.js'
 /** @typedef {import('#root/src/harness/startup.js').StartupTrace} StartupTrace */
@@ -971,8 +973,6 @@ export class ActorStore {
    * Run argv in one actor; no shell, so nothing in argv is parsed. The guest
    * is flushed before answering: a hard stop after an exec returned must not
    * lose what it wrote (h3).
-   */
-  /**
    * @param {string} id
    * @param {string[]} argv
    * @param {{ cwd?: string | null, stdin?: Buffer, timeout?: number | null }} [options]
@@ -1213,8 +1213,6 @@ export class ActorStore {
   /**
    * Step idle actors down: memory, disk, export, then delete after a verified
    * export. Only verified owners are retired (lifecycle.next_step).
-   */
-  /**
    * @param {object} [options]
    * @param {number} [options.now]
    * @param {((record: Actor, step: string) => Promise<void>) | null} [options.apply]
@@ -1222,13 +1220,20 @@ export class ActorStore {
   sweep({ now = Date.now(), apply = null } = {}) {
     return this.lock.run(async () => {
       const done = []
+      const synced = Boolean(this.sync_url)
       for (const record of this.list()) {
         if (this.is_busy(record.id)) continue
-        const step = next_step(record, now, { synced: Boolean(this.sync_url) })
+        const tight = this.free_bytes() < this.mib * MIB + GIB
+        const step = next_step(record, now, { synced, tight })
         if (!step) continue
+        if (record.state === 'running' && (await this.keeps_awake(record)))
+          continue
         if (apply) await apply(record, step)
-        else if (step === 'retire') await this.#destroy(record.id)
-        else if (step === 'memory') {
+        else if (step === 'remove') {
+          LOG.warn(`removing incomplete actor directory: ${record.dir}`)
+          await this.#teardown(record)
+        } else if (step === 'retire') await this.#destroy(record.id)
+        else if (step === 'memory' || record.state === 'running') {
           await this.#final_sync(record)
           await this.#idle(record.id, step)
         } else if (step === 'export') {
@@ -1244,6 +1249,26 @@ export class ActorStore {
       }
       return done
     })
+  }
+
+  /** A pane running a job keeps the actor awake: its activity is now. */
+  async keeps_awake(record) {
+    const busy = await sessions_busy(record, this.vsock_port)
+    if (!busy.length) return false
+    record.last_activity = now_iso()
+    this.#write(record)
+    LOG.info(`actor ${record.id} kept awake by ${busy.join(', ')}`)
+    return true
+  }
+
+  /** Free bytes on the actors volume; Infinity when it cannot be read. */
+  free_bytes() {
+    try {
+      const { bsize, bavail } = statfs_sync(this.volume)
+      return bsize * bavail
+    } catch {
+      return Infinity
+    }
   }
 
   /** An export is safe to retire when its manifest and bundle agree. */
@@ -1274,6 +1299,12 @@ export class ActorStore {
       await this.#flush(record)
       const api = new firecracker.Api(record.api_sock, this.api_timeout)
       await firecracker.pause(api)
+      if (tier === 'memory')
+        await firecracker.create_snapshot(
+          api,
+          join(record.dir, STATE),
+          join(record.dir, MEM)
+        )
       await firecracker.terminate(pid)
     }
     if (tier === 'disk') {

@@ -1,4 +1,4 @@
-import { zipped_storage } from '../harness/zipped-storage.js'
+import { store_of } from '#root/src/can/store.js'
 import assert from 'node:assert/strict'
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises'
@@ -28,7 +28,7 @@ const hash = text => createHash('sha256').update(text).digest('hex')
 let storage, server, url
 
 before(async () => {
-  storage = zipped_storage(disk(join(dir, 'bucket')))
+  storage = store_of(disk(join(dir, 'bucket')))
   const put = (path, body) => storage.put(`people/${phone}/${path}`, body)
   const call = {
     type: 'message',
@@ -140,7 +140,7 @@ it('vault session settings survive whole and listed recovery', async () => {
     await storage.put(`${prefix}vault/Sessions/s.jsonl`, body)
     const stored = new Date('2026-01-02T03:04:05Z')
     await utimes(
-      join(dir, 'bucket', `${prefix}vault/Sessions/s.jsonl${whole ? '.gz' : ''}`),
+      join(dir, 'bucket', `${prefix}vault/Sessions/s.jsonl.gz`),
       stored,
       stored
     )
@@ -367,12 +367,10 @@ it('recovery removes a starter file deleted from the saved harness', async () =>
   assert.equal(await readFile(join(root, 'keep.md'), 'utf8'), 'keep\n')
 })
 
-for (const [name, gone] of [
-  ['a personal file', 'notes/gone.md'],
-  ['a starter file', 'skills/critic/SKILL.md']
-])
+// gz2c: starter files are baseline and never sync, so only a personal file
+for (const [name, gone] of [['a personal file', 'vault/notes/gone.md']])
   it(`deleting ${name} in the first turn after recovery reaches the saved harness`, async () => {
-    const phone = gone.startsWith('notes') ? '+14155550127' : '+14155550128'
+    const phone = '+14155550127'
     const root = join(dir, `first-turn-${phone.slice(-2)}`)
     const state = join(root, '.pi/agent/state')
     const starter = join(dir, `first-turn-starter-${phone.slice(-2)}`)
@@ -392,8 +390,8 @@ for (const [name, gone] of [
     await put('.ignore', 'artifacts/\n')
     await put('.pi/starter.json', JSON.stringify(manifest))
     await put('skills/critic/SKILL.md', stock)
-    await put('notes/gone.md', 'delete me\n')
-    await put('notes/kept.md', 'keep me\n')
+    await put('vault/notes/gone.md', 'delete me\n')
+    await put('vault/notes/kept.md', 'keep me\n')
     await recover(url, () => issue_recovery_pass({ phone, id }, secret), root, {
       state,
       starter
@@ -410,7 +408,101 @@ for (const [name, gone] of [
     assert.deepEqual(report.harness.files.deleted, [gone])
     assert.equal(await storage.get(`people/${phone}/harness/${gone}`), null)
     assert.equal(
-      await readFile(join(root, 'notes/kept.md'), 'utf8'),
+      await readFile(join(root, 'vault/notes/kept.md'), 'utf8'),
       'keep me\n'
     )
   })
+
+it('a fresh actor skips past-month sessions and pulls the sealed and current months', async () => {
+  const owner = '+14155550132'
+  const prefix = `people/${owner}/harness/`
+  await storage.put(`${prefix}.ignore`, '')
+  await storage.put(`${prefix}package.json`, JSON.stringify({}))
+  await storage.put(
+    `${prefix}.memory/turns/2026-08.turns.html.gz`,
+    'sealed august'
+  )
+  await storage.put(
+    `${prefix}vault/Sessions/2026-08-06T02-00-00-000Z_abcdef.html`,
+    'old session'
+  )
+  await storage.put(
+    `${prefix}vault/Sessions/2026-10-20T02-00-00-000Z_abcdef.html`,
+    'current session'
+  )
+  const root = join(dir, 'months')
+  await run(root, [issue_recovery_pass({ phone: owner, id }, secret)])
+  assert.equal(
+    await readFile(join(root, '.memory/turns/2026-08.turns.html.gz'), 'utf8'),
+    'sealed august'
+  )
+  assert.equal(
+    await readFile(
+      join(root, 'vault/Sessions/2026-10-20T02-00-00-000Z_abcdef.html'),
+      'utf8'
+    ),
+    'current session'
+  )
+  await assert.rejects(
+    readFile(
+      join(root, 'vault/Sessions/2026-08-06T02-00-00-000Z_abcdef.html'),
+      'utf8'
+    ),
+    { code: 'ENOENT' }
+  )
+})
+
+it('a plan that syncs the vault but not its sessions pulls notes only', async () => {
+  const vault_phone = '+14155550140'
+  const put = (path, body) => storage.put(`people/${vault_phone}/${path}`, body)
+  await put(
+    'vault/plans/p.md',
+    '# P\n\n## Syncs\n\n- vault\n- !vault/Sessions\n- vault/Areas\n'
+  )
+  await put('vault/Areas/garden.md', 'tomatoes')
+  await put('vault/Journal/today.md', 'rain')
+  await put('vault/Sessions/2026-10-27.html', 'a long session')
+  const root = join(dir, 'vault-only')
+  await run(root, [issue_recovery_pass({ phone: vault_phone, id }, secret)])
+  assert.equal(
+    await readFile(join(root, 'vault/Areas/garden.md'), 'utf8'),
+    'tomatoes'
+  )
+  assert.equal(
+    await readFile(join(root, 'vault/Journal/today.md'), 'utf8'),
+    'rain'
+  )
+  await assert.rejects(readFile(join(root, 'vault/Sessions/2026-10-27.html')), {
+    code: 'ENOENT'
+  })
+})
+
+it('recovery never writes a path this machine keeps as the main copy', async () => {
+  const keep_phone = '+14155550141'
+  const put = (path, body) => storage.put(`people/${keep_phone}/${path}`, body)
+  await put('vault/plans/p.md', '# P\n\n## Syncs\n\n- vault\n- work/notes\n')
+  await put('vault/Areas/garden.md', 'from the store')
+  await put('work/notes/a.md', 'note')
+  const root = join(dir, 'keep-local')
+  await mkdir(join(root, 'vault/Areas'), { recursive: true })
+  await writeFile(join(root, 'vault/Areas/garden.md'), 'the main copy')
+  await mkdir(join(root, 'vault/plans'), { recursive: true })
+  await writeFile(
+    join(root, 'vault/plans/p.md'),
+    '# P\n\n## Syncs\n\n- vault\n- work/notes\n'
+  )
+  await mkdir(root, { recursive: true })
+  await recover(
+    url,
+    async () => issue_recovery_pass({ phone: keep_phone, id }, secret),
+    root,
+    {
+      keep_local: ['vault']
+    }
+  )
+  assert.equal(
+    await readFile(join(root, 'vault/Areas/garden.md'), 'utf8'),
+    'the main copy'
+  )
+  assert.equal(await readFile(join(root, 'work/notes/a.md'), 'utf8'), 'note')
+})

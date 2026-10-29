@@ -9,14 +9,16 @@ import { OG_WIDTH, OG_HEIGHT } from '../images.js'
  * @param {boolean} [watch=false]
  */
 export const shell = (site, title, body, meta = {}, watch = false) => {
-    const plans = site.type === 'plans'
-    const diagrams = body.includes('<pre class="mermaid">')
-    const full_title = meta.root ? `${title} — ${site.tagline}` : `${title} — ${site.name}`
-    const description = meta.description || site.description
-    const canonical = `${site.url}${meta.url || ''}`
-    const og_type = meta.type || 'website'
-    const og_image = `${site.url}${meta.og_image_path}`
-    return `<!doctype html>
+  const plans = site.type === 'plans'
+  const diagrams = body.includes('<pre class="mermaid">')
+  const full_title = meta.root
+    ? `${title} — ${site.tagline}`
+    : `${title} — ${site.name}`
+  const description = meta.description || site.description
+  const canonical = `${site.url}${meta.url || ''}`
+  const og_type = meta.type || 'website'
+  const og_image = `${site.url}${meta.og_image_path}`
+  return `<!doctype html>
   <html lang="en"${plans ? ' data-site="plans"' : ''}${diagrams ? ' data-diagrams="pending"' : ''}>
   <head>
     <meta charset="utf-8">
@@ -60,4 +62,4 @@ export const shell = (site, title, body, meta = {}, watch = false) => {
   </main>
   </body>
   </html>`
-  }
+}

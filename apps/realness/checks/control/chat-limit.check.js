@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 import { createHmac as create_hmac } from 'node:crypto'
+import { secret_path } from '#root/src/settings/secrets.js'
 import { readFileSync as read_file_sync } from 'node:fs'
-import { out_path } from '#root/lib/output.js'
 
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const owner = '+14156667777'
 const secret =
   process.env.HALO_PASS_SECRET ??
-  read_file_sync(out_path('halo-pass-secret'), 'utf8').trim()
+  read_file_sync(secret_path('halo-pass-secret'), 'utf8').trim()
 const pass = () => {
   const body = Buffer.from(
     JSON.stringify({

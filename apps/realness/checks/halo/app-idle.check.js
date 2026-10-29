@@ -1,3 +1,4 @@
+import { secret_path } from '#root/src/settings/secrets.js'
 import assert from 'node:assert/strict'
 import {
   existsSync as exists_sync,
@@ -5,10 +6,9 @@ import {
 } from 'node:fs'
 import { request } from 'node:http'
 import { issue_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
-import { out_path } from '#root/lib/output.js'
 
 const API = 'http://127.0.0.1:8080'
-const dev_secret = out_path('halo-pass-secret')
+const dev_secret = secret_path('halo-pass-secret')
 const secret = read_file_sync(
   exists_sync(dev_secret) ? dev_secret : '/etc/realness/halo-pass-secret',
   'utf8'

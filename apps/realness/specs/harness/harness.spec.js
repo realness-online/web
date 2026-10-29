@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto'
+import { gzipSync } from 'node:zlib'
 /**
  * `realness sync`: plan Syncs sections against a real sync service on disk.
  */
@@ -16,6 +18,9 @@ import {
   refused,
   sync_harness,
   syncs_of,
+  sync_exclusions_of,
+  outermost,
+  within,
   use_harness_state
 } from '#root/src/harness/harness.js'
 import { task_paths } from '#root/src/harness/task.js'
@@ -76,7 +81,7 @@ it('whole-harness sync ignores the removed legacy starter override', async conte
   process.env.REALNESS_STARTER = join(root, 'missing-starter')
   const harness = await files(join(root, 'legacy-starter'), {
     '.ignore': '',
-    'note.md': 'personal\n'
+    'vault/note.md': 'personal\n'
   })
   const isolated = client({
     state: join(root, 'state'),
@@ -85,9 +90,9 @@ it('whole-harness sync ignores the removed legacy starter override', async conte
     token: issuer.token('+15555550999')
   })
   const report = await sync_harness({ root: harness, store: isolated })
-  assert.ok(report.harness.files.pushed.includes('note.md'))
+  assert.ok(report.harness.files.pushed.includes('vault/note.md'))
   assert.equal(
-    (await isolated.cat('can://~/harness/note.md')).toString(),
+    (await isolated.cat('can://~/harness/vault/note.md')).toString(),
     'personal\n'
   )
 })
@@ -130,6 +135,41 @@ it('configured vault sessions sync first and stay in task and light policies', a
     ),
     ['vault/Sessions/s.jsonl']
   )
+})
+
+it('m0: sealed months sync beside the harness; a past session stays in the store', async () => {
+  const owner = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
+    url: `http://127.0.0.1:${server.address().port}`,
+    token: issuer.token('+15555550140')
+  })
+  const past = '2020-01-02T00-00-00-000Z_old.jsonl'
+  const desktop = await files(join(root, 'm0-desktop'), {
+    'package.json': JSON.stringify({
+      realness: { sessions: 'vault/Sessions' }
+    }),
+    '.ignore': '',
+    [`vault/Sessions/${past}`]: '{"type":"session","id":"old"}\n',
+    '.pi/agent/memory/turns/2020-01.turns.html.gz': gzipSync('sealed')
+  })
+  const first = await sync_harness({ root: desktop, store: owner })
+  assert.deepEqual(first.harness.sessions.pushed, [past])
+  assert.deepEqual(first.harness.memory.pushed, ['turns/2020-01.turns.html'])
+  const fresh = await files(join(root, 'm0-fresh'), {
+    'package.json': JSON.stringify({ realness: { sessions: 'vault/Sessions' } })
+  })
+  await sync_harness({ root: fresh, store: owner })
+  assert.equal(
+    await readFile(
+      join(fresh, '.pi/agent/memory/turns/2020-01.turns.html'),
+      'utf8'
+    ),
+    'sealed'
+  )
+  await assert.rejects(readFile(join(fresh, `vault/Sessions/${past}`)), {
+    code: 'ENOENT'
+  })
 })
 
 it('offline branches merge at the configured vault session path', async () => {
@@ -294,9 +334,9 @@ it('v8: root discovery uses vault/plans, never an old plans folder', async conte
 it('h1: root discovery and default sync work without plans', async () => {
   const harness = await files(join(root, 'no-plans'), {
     '.ignore': '',
-    'notes/deep/idea.md': 'idea'
+    'vault/notes/deep/idea.md': 'idea'
   })
-  assert.equal(find_root(join(harness, 'notes/deep'), {}), harness)
+  assert.equal(find_root(join(harness, 'vault/notes/deep'), {}), harness)
   const owner = client({
     state: join(root, 'state'),
     trash: join(root, 'trash'),
@@ -304,7 +344,7 @@ it('h1: root discovery and default sync work without plans', async () => {
     token: issuer.token('+15555550106')
   })
   const report = await sync_harness({ root: harness, store: owner })
-  assert.ok(report.harness.files.pushed.includes('notes/deep/idea.md'))
+  assert.ok(report.harness.files.pushed.includes('vault/notes/deep/idea.md'))
 })
 
 it('local state lives in the harness, follows realness.state, and never syncs', async () => {
@@ -312,7 +352,7 @@ it('local state lives in the harness, follows realness.state, and never syncs', 
     '.ignore': '',
     'package.json': JSON.stringify({ realness: { state: 'local/state' } }),
     'local/state/sync.log': 'refresh: 400',
-    'notes/a.md': 'a'
+    'vault/a.md': 'a'
   })
   const outer = process.env.REALNESS_STATE
   process.env.REALNESS_STATE = join(root, 'ignored-state')
@@ -326,7 +366,7 @@ it('local state lives in the harness, follows realness.state, and never syncs', 
       token: issuer.token('+15555550107')
     })
     const report = await sync_harness({ root: harness, store: owner })
-    assert.ok(report.harness.files.pushed.includes('notes/a.md'))
+    assert.ok(report.harness.files.pushed.includes('vault/a.md'))
     assert.ok(
       !report.harness.files.pushed.some(path => path.startsWith('local/state'))
     )
@@ -438,40 +478,40 @@ it('h1: a whole harness reaches a fresh VM, minus ignores, repos, and big files;
     '.pi/agent/settings.json': '{}\n',
     '.pi/agent/auth.json': 'SECRET',
     '.pi/agent/memory.db': 'derived index',
-    'notes/inbox/idea.md': 'idea\n',
+    'work/inbox/idea.md': 'idea\n',
     'renders/frame.png': 'big render',
-    'clip.mov': 'movie',
-    'keep.mov': 'kept',
-    'code/README.md': 'repo',
+    'work/clip.mov': 'movie',
+    'work/keep.mov': 'kept',
+    'work/code/README.md': 'repo',
+    'apps/site/index.md': 'baseline app',
     'node_modules/x/index.js': 'dep'
   })
-  await mkdir(join(desktop, 'code/.git'), { recursive: true })
-  await writeFile(join(desktop, 'huge.bin'), Buffer.alloc(11 * 1024 * 1024))
+  await mkdir(join(desktop, 'work/code/.git'), { recursive: true })
+  await writeFile(join(desktop, 'work/huge.bin'), randomBytes(11 * 1024 * 1024))
 
   const first = await sync_harness({ root: desktop, store: owner })
-  assert.deepEqual(first.harness.files.too_big, ['huge.bin'])
+  assert.deepEqual(first.harness.files.too_big, ['work/huge.bin'])
   assert.deepEqual(Object.keys(await owner.walk('can://~/harness/')).sort(), [
     '.ignore',
-    '.pi/agent/settings.json',
     'AGENTS.md',
-    'keep.mov',
-    'notes/inbox/idea.md'
+    'work/code.md',
+    'work/inbox/idea.md',
+    'work/keep.mov'
   ])
 
   const vm = await files(join(root, 'h1-vm'), {})
   await sync_harness({ root: vm, store: owner })
   assert.equal(await readFile(join(vm, 'AGENTS.md'), 'utf8'), 'memory\n')
-  assert.equal(
-    await readFile(join(vm, 'notes/inbox/idea.md'), 'utf8'),
-    'idea\n'
-  )
+  assert.equal(await readFile(join(vm, 'work/inbox/idea.md'), 'utf8'), 'idea\n')
   for (const path of [
+    '.pi/agent/settings.json',
     '.pi/agent/auth.json',
     '.pi/agent/memory.db',
+    'apps/site/index.md',
     'renders/frame.png',
-    'clip.mov',
-    'code/README.md',
-    'huge.bin'
+    'work/clip.mov',
+    'work/code/README.md',
+    'work/huge.bin'
   ])
     await assert.rejects(readFile(join(vm, path)), { code: 'ENOENT' }, path)
 
@@ -485,7 +525,7 @@ it('h1: a whole harness reaches a fresh VM, minus ignores, repos, and big files;
   )
 })
 
-it('a1: two accounts sync matching app paths without sharing private files', async () => {
+it('a1: two accounts sync matching work paths without sharing private files', async () => {
   const url = `http://127.0.0.1:${server.address().port}`
   const accounts = []
   for (const [index, phone] of ['+15555550131', '+15555550132'].entries()) {
@@ -497,18 +537,18 @@ it('a1: two accounts sync matching app paths without sharing private files', asy
     })
     const desktop = await files(join(root, `apps-${index}-desktop`), {
       '.ignore': '',
-      'apps/site/site.json': JSON.stringify({ name: `Private site ${index}` }),
-      'apps/site/content/articles/post.md': `private post ${index}\n`,
-      'apps/site/node_modules/dependency.js': 'local dependency',
-      'apps/site/dist/index.html': 'local build',
-      'apps/site/.env': 'local secret'
+      'work/site/site.json': JSON.stringify({ name: `Private site ${index}` }),
+      'work/site/content/articles/post.md': `private post ${index}\n`,
+      'work/site/node_modules/dependency.js': 'local dependency',
+      'work/site/dist/index.html': 'local build',
+      'work/site/.env': 'local secret'
     })
     await sync_harness({ root: desktop, store: owner })
     const vm = join(root, `apps-${index}-vm`)
     await mkdir(vm, { recursive: true })
     await sync_harness({ root: vm, store: owner })
     assert.equal(
-      await readFile(join(vm, 'apps/site/content/articles/post.md'), 'utf8'),
+      await readFile(join(vm, 'work/site/content/articles/post.md'), 'utf8'),
       `private post ${index}\n`
     )
     for (const path of [
@@ -516,40 +556,40 @@ it('a1: two accounts sync matching app paths without sharing private files', asy
       'dist/index.html',
       '.env'
     ])
-      await assert.rejects(readFile(join(vm, 'apps/site', path)), {
+      await assert.rejects(readFile(join(vm, 'work/site', path)), {
         code: 'ENOENT'
       })
     accounts.push({ phone, owner, desktop, vm })
   }
   for (const [index, { owner, desktop, vm }] of accounts.entries()) {
     await writeFile(
-      join(vm, 'apps/site/content/articles/post.md'),
+      join(vm, 'work/site/content/articles/post.md'),
       `VM post ${index}\n`
     )
     await sync_harness({ root: vm, store: owner })
     await sync_harness({ root: desktop, store: owner })
     assert.equal(
       await readFile(
-        join(desktop, 'apps/site/content/articles/post.md'),
+        join(desktop, 'work/site/content/articles/post.md'),
         'utf8'
       ),
       `VM post ${index}\n`
     )
     const stranger = accounts[1 - index].phone
-    const path = `can://people/${stranger}/harness/apps/site/content/articles/post.md`
+    const path = `can://people/${stranger}/harness/work/site/content/articles/post.md`
     await assert.rejects(owner.cat(path), { status: 403 })
     await assert.rejects(owner.put(path, 'overwrite'), { status: 403 })
-    await assert.rejects(owner.walk(`can://people/${stranger}/harness/apps/`), {
+    await assert.rejects(owner.walk(`can://people/${stranger}/harness/work/`), {
       status: 403
     })
     const response = await fetch(
-      `${url}/people/${accounts[index].phone}/harness/apps/site/content/articles/post.md`
+      `${url}/people/${accounts[index].phone}/harness/work/site/content/articles/post.md`
     )
-    assert.equal(response.status, 403, 'sync does not publish an app')
+    assert.equal(response.status, 403, 'sync does not publish work')
   }
 })
 
-it('a1: restoring an empty workspace still creates its apps folder', async () => {
+it('gz2c: an empty workspace syncs its first work file, not apps', async () => {
   const owner = client({
     state: join(root, 'state'),
     trash: join(root, 'trash'),
@@ -560,12 +600,17 @@ it('a1: restoring an empty workspace still creates its apps folder', async () =>
   const fresh = join(root, 'empty-apps')
   await mkdir(fresh, { recursive: true })
   await sync_harness({ root: fresh, store: owner })
-  await writeFile(join(fresh, 'apps/first.md'), 'first app file')
+  await mkdir(join(fresh, 'work'), { recursive: true })
+  await writeFile(join(fresh, 'work/first.md'), 'first work file')
+  await writeFile(join(fresh, 'apps/baseline.md'), 'baseline')
   await sync_harness({ root: fresh, store: owner })
   assert.equal(
-    (await owner.cat('can://~/harness/apps/first.md')).toString(),
-    'first app file'
+    (await owner.cat('can://~/harness/work/first.md')).toString(),
+    'first work file'
   )
+  await assert.rejects(owner.cat('can://~/harness/apps/baseline.md'), {
+    status: 404
+  })
 })
 
 it('x10: with .ignore, plan Syncs paths no longer write their old places', async () => {
@@ -576,21 +621,21 @@ it('x10: with .ignore, plan Syncs paths no longer write their old places', async
     token: issuer.token('+15555550107')
   })
   const desktop = await files(join(root, 'x10-whole-only'), {
-    '.ignore': 'notes/private.md\n',
-    'vault/plans/p.md': '# P\n\n## Syncs\n- notes\n',
-    'notes/public.md': 'public',
-    'notes/private.md': 'private'
+    '.ignore': 'vault/notes/private.md\n',
+    'vault/plans/p.md': '# P\n\n## Syncs\n- vault/notes\n',
+    'vault/notes/public.md': 'public',
+    'vault/notes/private.md': 'private'
   })
   const report = await sync_harness({ root: desktop, store: owner })
   assert.deepEqual(report.synced, {})
   assert.equal(
-    (await owner.cat('can://~/harness/notes/public.md')).toString(),
+    (await owner.cat('can://~/harness/vault/notes/public.md')).toString(),
     'public'
   )
   for (const path of [
-    'can://~/notes/public.md',
-    'can://~/notes/private.md',
-    'can://~/harness/notes/private.md'
+    'can://~/vault/notes/public.md',
+    'can://~/vault/notes/private.md',
+    'can://~/harness/vault/notes/private.md'
   ])
     await assert.rejects(owner.cat(path), { status: 404 }, path)
 })
@@ -604,13 +649,16 @@ it('h1: artifacts stay local on upload and restore, even when listed', async () 
   })
   const desktop = await files(join(root, 'artifacts-desktop'), {
     '.ignore': '',
-    'vault/plans/p.md': '# P\n\n## Syncs\n- artifacts\n- notes\n',
+    'vault/plans/p.md': '# P\n\n## Syncs\n- artifacts\n- vault/notes\n',
     'artifacts/preview.txt': 'local preview',
-    'notes/note.md': 'saved note',
-    'notes/artifacts/result.svg': 'local result'
+    'vault/notes/note.md': 'saved note',
+    'vault/notes/artifacts/result.svg': 'local result'
   })
   await sync_harness({ root: desktop, store: owner })
-  for (const path of ['artifacts/preview.txt', 'notes/artifacts/result.svg'])
+  for (const path of [
+    'artifacts/preview.txt',
+    'vault/notes/artifacts/result.svg'
+  ])
     for (const base of ['can://~/', 'can://~/harness/'])
       await assert.rejects(owner.cat(`${base}${path}`), { status: 404 })
   assert.equal(
@@ -622,13 +670,13 @@ it('h1: artifacts stay local on upload and restore, even when listed', async () 
   const fresh = await files(join(root, 'artifacts-fresh'), {})
   await sync_harness({ root: fresh, store: owner })
   assert.equal(
-    await readFile(join(fresh, 'notes/note.md'), 'utf8'),
+    await readFile(join(fresh, 'vault/notes/note.md'), 'utf8'),
     'saved note'
   )
   await assert.rejects(readFile(join(fresh, 'artifacts/old.txt')), {
     code: 'ENOENT'
   })
-  await assert.rejects(readFile(join(fresh, 'notes/artifacts/old.txt')), {
+  await assert.rejects(readFile(join(fresh, 'vault/notes/artifacts/old.txt')), {
     code: 'ENOENT'
   })
 })
@@ -805,10 +853,10 @@ it('turn-end defers a saved-history edit and pushes a write', async () => {
     (await owner.cat('can://~/work/notes/doc.md')).toString(),
     'title\nBODY\n'
   )
-  assert.deepEqual(
-    JSON.parse(await owner.cat('can://~/.pi/agent/deferred.json')),
-    {},
-    'pushed bytes clear the pending edit'
+  assert.equal(
+    await owner.version('can://~/.pi/agent/deferred.json'),
+    null,
+    'pushed bytes clear the pending edit and drop the remote record'
   )
 })
 
@@ -927,4 +975,19 @@ it('s1f: a crash at any upload loses only work after the last completed sync', a
     completed >= 3,
     'history, the write, and the pending list each upload'
   )
+})
+
+it('a !path in Syncs is an exclusion, not a path', () => {
+  const plan = '# P\n\n## Syncs\n\n- vault\n- !vault/Sessions/\n- work/site\n'
+  assert.deepEqual(syncs_of(plan), ['vault', 'work/site'])
+  assert.deepEqual(sync_exclusions_of(plan), ['vault/Sessions'])
+})
+
+it('a path inside another listed path syncs once, through the outer one', () => {
+  assert.deepEqual(outermost(['vault', 'vault/Projects', 'work/site']), [
+    'vault',
+    'work/site'
+  ])
+  assert.equal(within(['vault/Sessions'], 'vault/Sessions/2026.html'), true)
+  assert.equal(within(['vault/Sessions'], 'vault/Sessions-notes.md'), false)
 })

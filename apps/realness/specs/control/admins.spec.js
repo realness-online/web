@@ -1,3 +1,4 @@
+import { gunzipSync } from 'node:zlib'
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
 import { execFile as exec_file } from 'node:child_process'
@@ -33,7 +34,7 @@ it('rendered pages round-trip through the reader sync uses, names escaped', () =
   assert.deepEqual([...read_admins(html)], [SCOTT, ADA])
   assert.deepEqual(parse_admins(html), [
     { phone: SCOTT, name: 'Scott <ops> & "co"' },
-    { phone: ADA, name: ADA }
+    { phone: ADA, name: '' }
   ])
   assert.ok(!html.includes('<ops>'))
 })
@@ -143,10 +144,11 @@ it('realness local admins: dry-run, --yes, list (phones masked)', async t => {
     ])
   const dry = await run('add', SCOTT, 'Scott')
   assert.match(dry.stdout, /would write \(rerun with --yes\)/)
-  await assert.rejects(read_file(join(dir, 'admins.html')))
+  const stored = join(dir, 'server/admins.html.gz')
+  await assert.rejects(read_file(stored))
   await run('add', SCOTT, 'Scott', '--yes')
   assert.deepEqual(
-    [...read_admins(await read_file(join(dir, 'admins.html'), 'utf8'))],
+    [...read_admins(gunzipSync(await read_file(stored)).toString('utf8'))],
     [SCOTT]
   )
   const listed = await run('list')
@@ -240,10 +242,12 @@ it('a signed-in non-admin is told who can add them', async () => {
   )
 })
 
-it('the phone shows as text; who is admin still comes from href alone', () => {
+it('the phone shows as text; who is admin comes from the shown number', () => {
   const html = render_admins([{ phone: SCOTT, name: 'Scott' }])
-  assert.ok(html.replace(/<[^>]*>/g, ' ').includes(SCOTT))
+  assert.ok(html.replace(/<[^>]*>/g, ' ').includes('+1 415 666-7777'))
   assert.deepEqual(parse_admins(html), [{ phone: SCOTT, name: 'Scott' }])
-  const lying = html.replace(`>${SCOTT}</a>`, `>${ADA}</a>`)
-  assert.deepEqual([...read_admins(lying)], [SCOTT])
+  const another = render_admins([{ phone: ADA, name: 'Scott' }])
+  assert.deepEqual([...read_admins(another)], [ADA])
+  const link_only = '<a href="tel:+14155550123">x</a>'
+  assert.deepEqual([...read_admins(link_only)], [ADA])
 })

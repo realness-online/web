@@ -114,7 +114,8 @@ const utc_date_str = date => date.toISOString().slice(0, 10)
  * @param {string} name
  */
 const metric_value = (row, name) => {
-  const raw = row[name] ?? row[`ad_account.${name}`] ?? row[`ad_account_${name}`]
+  const raw =
+    row[name] ?? row[`ad_account.${name}`] ?? row[`ad_account_${name}`]
   const num = Number(raw)
   return Number.isFinite(num) ? num : 0
 }
@@ -129,7 +130,9 @@ export const fetch_ad_account_timezone = async api_key => {
   })
   if (!response.ok) {
     const body = await response.text()
-    throw new Error(`Ads API ${response.status}: ${body || response.statusText}`)
+    throw new Error(
+      `Ads API ${response.status}: ${body || response.statusText}`
+    )
   }
   const payload = await response.json()
   return payload.timezone || 'UTC'
@@ -176,7 +179,10 @@ const record_day = entry => {
  * @param {{ host: string, topic_param: string, since: string }} options
  * @returns {Map<string, number>} keyed by YYYY-MM-DD (UTC)
  */
-export const aggregate_topic_hits_by_day = (entries, { host, topic_param, since }) => {
+export const aggregate_topic_hits_by_day = (
+  entries,
+  { host, topic_param, since }
+) => {
   /** @type {Map<string, number>} */
   const by_day = new Map()
   for (const day of each_utc_day(since)) by_day.set(day, 0)
@@ -186,7 +192,8 @@ export const aggregate_topic_hits_by_day = (entries, { host, topic_param, since 
     if (!http_request) continue
     if (!is_document_hit(http_request, { host, all_paths: false })) continue
     if (is_bot_ua(String(http_request.userAgent ?? ''))) continue
-    if (!query_param_value(String(http_request.requestUrl ?? ''), topic_param)) continue
+    if (!query_param_value(String(http_request.requestUrl ?? ''), topic_param))
+      continue
 
     const day = record_day(entry)
     if (day && by_day.has(day)) by_day.set(day, (by_day.get(day) ?? 0) + 1)
@@ -213,25 +220,41 @@ export const fetch_ads_daily_metrics = async ({ api_key, since, until }) => {
     const params = new URLSearchParams()
     params.append('time_granularity', 'hourly')
     params.append('aggregation_level', 'ad_account')
-    for (const field of raw_metric_fields) params.append('fields[]', `ad_account.${field}`)
-    params.append('time_ranges[]', JSON.stringify({ type: 'date_range', since, until }))
+    for (const field of raw_metric_fields)
+      params.append('fields[]', `ad_account.${field}`)
+    params.append(
+      'time_ranges[]',
+      JSON.stringify({ type: 'date_range', since, until })
+    )
     params.append('limit', '500')
     if (after) params.append('after', after)
 
-    const response = await fetch(`${ads_api_base}/ad_account/insights?${params}`, {
-      headers: { Authorization: `Bearer ${api_key}`, Accept: 'application/json' }
-    })
+    const response = await fetch(
+      `${ads_api_base}/ad_account/insights?${params}`,
+      {
+        headers: {
+          Authorization: `Bearer ${api_key}`,
+          Accept: 'application/json'
+        }
+      }
+    )
 
     if (!response.ok) {
       const body = await response.text()
-      throw new Error(`Ads API ${response.status}: ${body || response.statusText}`)
+      throw new Error(
+        `Ads API ${response.status}: ${body || response.statusText}`
+      )
     }
 
     const payload = await response.json()
     for (const row of payload.data ?? []) {
       if (typeof row.start_time !== 'number') continue
       const date = day_in_tz(row.start_time, 'UTC')
-      const existing = raw_by_utc_day.get(date) ?? { impressions: 0, clicks: 0, spend: 0 }
+      const existing = raw_by_utc_day.get(date) ?? {
+        impressions: 0,
+        clicks: 0,
+        spend: 0
+      }
       existing.impressions += metric_value(row, 'impressions')
       existing.clicks += metric_value(row, 'clicks')
       existing.spend += metric_value(row, 'spend')
@@ -244,14 +267,14 @@ export const fetch_ads_daily_metrics = async ({ api_key, since, until }) => {
 
   /** @type {Map<string, Record<string, number>>} */
   const by_date = new Map()
-  for (const [date, totals] of raw_by_utc_day) {
+  for (const [date, totals] of raw_by_utc_day)
     by_date.set(date, {
       ...totals,
       ctr: totals.impressions > 0 ? totals.clicks / totals.impressions : 0,
       cpc: totals.clicks > 0 ? totals.spend / totals.clicks : 0,
-      cpm: totals.impressions > 0 ? (totals.spend / totals.impressions) * 1000 : 0
+      cpm:
+        totals.impressions > 0 ? (totals.spend / totals.impressions) * 1000 : 0
     })
-  }
 
   return by_date
 }
@@ -262,9 +285,25 @@ export const fetch_ads_daily_metrics = async ({ api_key, since, until }) => {
  * @param {Map<string, number>} topic_by_date
  * @param {string} topic_param
  */
-export const format_combined_report = (ads_by_date, traffic_rows, topic_by_date, topic_param, { color = false } = {}) => {
+export const format_combined_report = (
+  ads_by_date,
+  traffic_rows,
+  topic_by_date,
+  topic_param,
+  { color = false } = {}
+) => {
   const site_labels = by_day_paths.map(p => (p === '/' ? 'home' : p.slice(1)))
-  const headers = ['Day', 'Impr', 'Clicks', 'Spend', 'CTR', 'CPC', 'CPM', ...site_labels, `${topic_param}=`]
+  const headers = [
+    'Day',
+    'Impr',
+    'Clicks',
+    'Spend',
+    'CTR',
+    'CPC',
+    'CPM',
+    ...site_labels,
+    `${topic_param}=`
+  ]
 
   const rows = traffic_rows.map(row => {
     const ads = ads_by_date.get(row.day) ?? {}
@@ -281,9 +320,13 @@ export const format_combined_report = (ads_by_date, traffic_rows, topic_by_date,
     ]
   })
 
-  const widths = headers.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length)))
+  const widths = headers.map((h, i) =>
+    Math.max(h.length, ...rows.map(r => r[i].length))
+  )
   const render = cells =>
-    cells.map((c, i) => (i === 0 ? c.padEnd(widths[i]) : c.padStart(widths[i]))).join('  ')
+    cells
+      .map((c, i) => (i === 0 ? c.padEnd(widths[i]) : c.padStart(widths[i])))
+      .join('  ')
 
   const lines = [
     bold(render(headers), color),
@@ -291,7 +334,12 @@ export const format_combined_report = (ads_by_date, traffic_rows, topic_by_date,
   ]
   for (const row of rows) lines.push(render(row))
   lines.push('')
-  lines.push(dim(`${site_labels.join('/')} = human page hits, bots excluded.  ${topic_param}= = hits carrying ?${topic_param}=.`, color))
+  lines.push(
+    dim(
+      `${site_labels.join('/')} = human page hits, bots excluded.  ${topic_param}= = hits carrying ?${topic_param}=.`,
+      color
+    )
+  )
   return lines.join('\n')
 }
 
@@ -311,12 +359,19 @@ const main = async () => {
   const today_tz = day_in_tz(Date.now() / 1000, ads_tz)
   const today_tz_utc_midnight = new Date(`${today_tz}T00:00:00Z`).getTime()
   const until = utc_date_str(new Date(today_tz_utc_midnight - day_ms))
-  const since = utc_date_str(new Date(today_tz_utc_midnight - (args.days + 1) * day_ms))
+  const since = utc_date_str(
+    new Date(today_tz_utc_midnight - (args.days + 1) * day_ms)
+  )
 
   const err_color = stream_color(process.stderr)
-  const host_flag = args.host === default_host ? green(args.host, err_color) : yellow(args.host, err_color)
+  const host_flag =
+    args.host === default_host
+      ? green(args.host, err_color)
+      : yellow(args.host, err_color)
 
-  console.error(`Ads  ${since}..${until}  ${dim(`(UTC days · acct tz ${ads_tz})`, err_color)}`)
+  console.error(
+    `Ads  ${since}..${until}  ${dim(`(UTC days · acct tz ${ads_tz})`, err_color)}`
+  )
   const ads_by_date = await fetch_ads_daily_metrics({ api_key, since, until })
 
   console.error(`Traffic  ${host_flag}`)
@@ -333,7 +388,12 @@ const main = async () => {
   const synced_age = fs.existsSync(cache_path)
     ? `synced ${format_age(Date.now() - fs.statSync(cache_path).mtimeMs)} ago`
     : 'no cache yet'
-  console.error(dim(`${synced_age}  ·  ${synced.added} new, ${synced.cache_total} cached`, err_color))
+  console.error(
+    dim(
+      `${synced_age}  ·  ${synced.added} new, ${synced.cache_total} cached`,
+      err_color
+    )
+  )
   const traffic_rows = aggregate_by_day(synced.entries, {
     host: args.host,
     include_bots: false,
@@ -347,7 +407,15 @@ const main = async () => {
   })
 
   const out_color = stream_color(process.stdout)
-  console.log(format_combined_report(ads_by_date, traffic_rows, topic_by_date, args.topic_param, { color: out_color }))
+  console.log(
+    format_combined_report(
+      ads_by_date,
+      traffic_rows,
+      topic_by_date,
+      args.topic_param,
+      { color: out_color }
+    )
+  )
 }
 
 const is_main =
