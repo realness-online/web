@@ -85,6 +85,7 @@
     "check:site": "node checks/control/site.check.js",
     "check:publish": "node checks/control/publish.check.js",
     "check:crawl": "node scripts/check-crawl.js",
+    "check:color-flip": "node scripts/check-color-flip.js",
     "check:pwa-build": "node scripts/check-pwa-build.js",
     "check:pwa-offline": "node scripts/check-pwa-offline.js",
     "check:fresh-actor": "node --test --test-concurrency=1 checks/control/fresh-actor.check.js",

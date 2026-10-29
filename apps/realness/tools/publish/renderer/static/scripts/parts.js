@@ -105,13 +105,13 @@ const PELE_ROLES = {
 
 /**
  * Point a diagram at the page's color roles and body font, so Pele measures
- * the type the reader sees.
+ * the type the reader sees. Colors stay references, not values, so a
+ * diagram follows the system's light and dark flip without redrawing.
  * @param {HTMLElement} node
  */
 export const match_theme = node => {
-  const root = getComputedStyle(document.documentElement)
   for (const [name, role] of Object.entries(PELE_ROLES))
-    node.style.setProperty(name, root.getPropertyValue(role).trim())
+    node.style.setProperty(name, `var(${role})`)
   const font = getComputedStyle(document.body).fontFamily
   node.style.setProperty('--pele-font', font)
   node.style.setProperty('--pele-font-mono', font)
