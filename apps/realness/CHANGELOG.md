@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-u - 2026-10-30
+
 - **Background workers allowed** - The site's security policy lets the app
   start its own background workers, including ones built in the browser.
 - **Quieter poster loading** - When an archive repeats a poster you already
