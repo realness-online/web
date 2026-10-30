@@ -263,6 +263,7 @@ const push = async (cloud, config, name) => {
     await cloud.stream([
       'scp',
       out_path('realness-harness.tar.gz'),
+      out_path('realness-apps.tar.gz'),
       `${name}:~/realness/dist/`
     ])
   } finally {
