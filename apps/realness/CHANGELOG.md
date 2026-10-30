@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Posters arrive zipped** - Sync sends a poster's stored gzip as is: a layer
+  is about 17 KB on the wire instead of 63 KB.
+- **Posters stay at the edge** - The CDN keeps a poster's layers for a year
+  and the browser for a day; a poster's own page re-checks every minute, so a
+  sale shows quickly and a deleted poster leaves viewers within a day of the
+  next release.
+
 ## v3.0.0-s - 2026-10-30
 
 - **Your files go through sync** - The app reads and writes through the sync

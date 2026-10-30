@@ -376,3 +376,33 @@ it('adopt on a missing object is null', async t => {
   routed_fetch(t, () => json({}, { status: 404 }))
   assert.equal(await store().adopt('people/+1/gone.html'), null)
 })
+
+it('a raw get hands back the stored gzip, packed, without the bucket unzipping it (gz5)', async t => {
+  const html = '<symbol>layer</symbol>'
+  const stored = gzip_sync(html)
+  routed_fetch(t, () =>
+    object({ contentEncoding: 'gzip', metadata: { version: 'v1' } })
+  )
+  const asked = []
+  const download = async (url, headers) => {
+    asked.push({ url, headers })
+    return { status: 200, body: stored }
+  }
+  const got = await store({ download }).get('people/+1/a.html', { raw: true })
+  assert.deepEqual(got.body, stored)
+  assert.equal(got.packed, true)
+  assert.equal(got.version, 'v1')
+  assert.equal(asked[0].headers['accept-encoding'], 'gzip')
+  assert.equal(asked[0].headers.authorization, 'Bearer t')
+  assert.match(asked[0].url, /\?alt=media&generation=7$/)
+})
+
+it('a raw get of an object stored plain reads it as before, not packed', async t => {
+  routed_fetch(t, url =>
+    url.includes('alt=media') ? reply('plain-bytes') : object()
+  )
+  const download = async () => assert.fail('plain objects need no raw download')
+  const got = await store({ download }).get('people/+1/a.md', { raw: true })
+  assert.equal(got.body.toString('utf8'), 'plain-bytes')
+  assert.equal(got.packed, false)
+})

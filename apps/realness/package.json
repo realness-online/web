@@ -126,7 +126,7 @@
     "preversion": "node scripts/check-release.js --unreleased",
     "version": "node scripts/promote-changelog.js && scripts/git.sh add CHANGELOG.md package.json",
     "postversion": "scripts/git.sh commit -m v$npm_package_version && scripts/git.sh tag v$npm_package_version && scripts/git.sh push -u origin HEAD && scripts/git.sh push origin v$npm_package_version",
-    "release:gh": "node scripts/check-release.js && node scripts/changelog-notes.js && gh release create v$npm_package_version $(case $npm_package_version in (*-*) echo --prerelease;; esac) \"$(node src/settings/cli.js output frontend)/build-manifest.json\" --title v$npm_package_version --target \"$(scripts/git.sh rev-parse HEAD)\" --notes-file \"$(node src/settings/cli.js output frontend-notes)\"",
+    "release:gh": "node scripts/check-release.js && node scripts/changelog-notes.js && gh release create v$npm_package_version --repo \"$(scripts/git.sh remote get-url origin | sed -E 's#.*github.com[:/]##; s#[.]git$##')\" $(case $npm_package_version in (*-*) echo --prerelease;; esac) \"$(node src/settings/cli.js output frontend)/build-manifest.json\" --title v$npm_package_version --target \"$(scripts/git.sh rev-parse HEAD)\" --notes-file \"$(node src/settings/cli.js output frontend-notes)\"",
     "ship": "node tools/control/scripts/ship.js",
     "verify": "node scripts/verify-deploy.js",
     "verify:deploy:site": "node scripts/verify-deploy.js --from-site",

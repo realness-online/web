@@ -692,7 +692,7 @@ it('m2: a public read with no token may be shared by a CDN; a signed read never'
   const cache = async (method, path, headers = {}) =>
     (await call(method, path, { headers })).headers.get('cache-control')
   const poster = `people/${A}/posters/1.html`
-  const forever = 'public, max-age=31536000, immutable'
+  const forever = 'public, max-age=86400, s-maxage=31536000'
   const short = 'public, max-age=0, s-maxage=60'
   assert.equal(await cache('GET', `${poster}?v=${version}`), forever)
   assert.equal(await cache('GET', `${poster}?v=old`), short)
@@ -707,6 +707,40 @@ it('m2: a public read with no token may be shared by a CDN; a signed read never'
   )
   assert.equal(await status('GET', `people/${A}/relations.html`), 403)
   assert.equal(await cache('GET', `people/${A}/relations.html`), 'no-store')
+})
+
+it("m2: a poster's layers keep a year even unversioned; its index stays short", async () => {
+  const cache = async path =>
+    (await call('GET', path)).headers.get('cache-control')
+  const forever = 'public, max-age=86400, s-maxage=31536000'
+  for (const layer of [
+    'sediment',
+    'sand',
+    'gravel',
+    'rocks',
+    'boulders',
+    'shadows'
+  ]) {
+    const path = `people/${A}/posters/3-${layer}.html`
+    await call('PUT', path, { headers: as(A), body: layer })
+    assert.equal(await cache(path), forever, layer)
+  }
+  await call('PUT', `people/${A}/posters/3.html`, {
+    headers: as(A),
+    body: 'index'
+  })
+  assert.equal(
+    await cache(`people/${A}/posters/3.html`),
+    'public, max-age=0, s-maxage=60'
+  )
+  await call('PUT', `people/${A}/posters/3-notes.html`, {
+    headers: as(A),
+    body: 'x'
+  })
+  assert.equal(
+    await cache(`people/${A}/posters/3-notes.html`),
+    'public, max-age=0, s-maxage=60'
+  )
 })
 
 it('m2: a rewrite at the same path gets a new versioned URL', async () => {

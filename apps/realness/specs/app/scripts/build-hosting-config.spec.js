@@ -74,6 +74,28 @@ describe('build-hosting-config', () => {
     expect(config.hosting.some(hosting => hosting.rewrites?.length)).toBe(true)
   })
 
+  it('never marks sync reads no-cache, so the CDN keeps what sync allows (m2)', () => {
+    const { config } = build('--env', 'production')
+    const app = config.hosting.find(hosting =>
+      (hosting.rewrites ?? []).some(rewrite => rewrite.source === '/v1/**')
+    )
+    const no_cache = (app.headers ?? []).filter(rule =>
+      rule.headers.some(
+        header => header.key === 'Cache-Control' && header.value === 'no-cache'
+      )
+    )
+    expect(no_cache.length).toBeGreaterThan(0)
+    for (const rule of no_cache) {
+      expect(rule.source).not.toBe('**')
+      if (rule.regex) {
+        const pattern = new RegExp(rule.regex)
+        expect(pattern.test('/v1/people/+1/posters/a.html')).toBe(false)
+        expect(pattern.test('/')).toBe(true)
+        expect(pattern.test('/+16282281824')).toBe(true)
+      }
+    }
+  })
+
   it("routes to Cloud Run in the environment's region", () => {
     const regions = env =>
       build('--env', env)

@@ -15,6 +15,7 @@
  * out, so `get` returns exactly what `put` was given.
  */
 import { randomUUID as random_uuid } from 'node:crypto'
+import { get as https_get } from 'node:https'
 import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
 import { gunzipSync as gunzip_sync, gzipSync as gzip_sync } from 'node:zlib'
@@ -325,7 +326,56 @@ const adopter =
     return { version, adopted: true }
   }
 
-export const create_gcs = ({ bucket, token, prefix = '' }) => {
+/**
+ * One GET whose body comes back exactly as sent. `fetch` unzips a gzip
+ * response on its own, and a bucket unzips a gzip object for a caller that
+ * does not ask for gzip, so a packed object's own bytes need both turned off.
+ * @param {string} url
+ * @param {Record<string, string>} headers
+ * @returns {Promise<{ status: number, body: Buffer }>}
+ */
+const raw_download = (url, headers) =>
+  new Promise((resolve, reject) => {
+    https_get(url, { headers }, response => {
+      const chunks = []
+      response.on('data', chunk => chunks.push(chunk))
+      response.on('end', () =>
+        resolve({
+          status: response.statusCode ?? 0,
+          body: Buffer.concat(chunks)
+        })
+      )
+      response.on('error', reject)
+    }).on('error', reject)
+  })
+
+/**
+ * A gzip object's stored bytes, marked packed; null when it is gone.
+ * @param {typeof raw_download} download
+ * @param {() => Promise<string>} token
+ * @param {string} media
+ * @param {string} key
+ * @param {{ version: string, meta: Record<string, string> }} described
+ */
+const packed_get = async (download, token, media, key, described) => {
+  const { status, body } = await download(media, {
+    authorization: `Bearer ${await token()}`,
+    'accept-encoding': 'gzip'
+  })
+  if (status === HTTP.NOT_FOUND) return null
+  if (status !== HTTP.OK)
+    throw new Error(
+      `gcs get ${key}: ${status} ${body.toString().slice(0, HTTP.OK)}`
+    )
+  return { body, packed: true, ...described }
+}
+
+export const create_gcs = ({
+  bucket,
+  token,
+  prefix = '',
+  download = raw_download
+}) => {
   if (!bucket) throw new Error('create_gcs needs a bucket')
   if (typeof token !== 'function') throw new Error('create_gcs needs token()')
   if (prefix && !prefix.endsWith('/')) throw new Error('prefix must end in /')
@@ -374,16 +424,22 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
     /** Every key under a person's scope holding `version`. */
     find: (scope, version) => index.find(scope, version),
 
-    async get(key) {
+    /**
+     * @param {string} key
+     * @param {{ raw?: boolean }} [options] raw: a gzip object's stored bytes, marked packed
+     */
+    async get(key, { raw = false } = {}) {
       const current = await head(key)
       if (!current) return null
-      const response = await call(
-        `${API}/${bucket}/o/${object(key)}?alt=media&generation=${encodeURIComponent(current.generation)}`
-      )
+      const media = `${API}/${bucket}/o/${object(key)}?alt=media&generation=${encodeURIComponent(current.generation)}`
+      const described = { version: version_of(current), meta: meta_of(current) }
+      if (raw && current.contentEncoding === 'gzip')
+        return packed_get(download, token, media, key, described)
+      const response = await call(media)
       if (response.status === HTTP.NOT_FOUND) return null
       if (!response.ok) await fail(`get ${key}`, response)
       const body = Buffer.from(await response.arrayBuffer())
-      return { body, version: version_of(current), meta: meta_of(current) }
+      return { body, ...(raw && { packed: false }), ...described }
     },
 
     /**

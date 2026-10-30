@@ -425,21 +425,31 @@ const answer_get = async (storage, response, path, shared = null) => {
 /**
  * m2: a read with no caller passed `can` as public, so it is the same for
  * everyone and a CDN may keep it. A read that names the version it wants
- * (`?v=`) and gets it can never change, so it keeps a year; anything else -
- * HEAD, listings, unversioned reads - keeps a minute. Any file may change at
- * its path (a sale rewrites a poster), so no path is trusted to be fixed.
- * A signed-in read sets nothing and is never shared.
+ * (`?v=`), or a poster's layer, never changes: the CDN keeps it a year and
+ * a browser a day, since only the CDN is cleared (each Hosting deploy) and a
+ * deleted poster should leave viewers within a day of that. Anything else -
+ * HEAD, listings, unversioned reads - keeps a minute: a sale rewrites a
+ * poster at its path. A signed-in read sets nothing and is never shared.
  */
 const SHORT = 'public, max-age=0, s-maxage=60'
-const FOREVER = 'public, max-age=31536000, immutable'
-/** @typedef {{ method: string | undefined, wanted: string | null }} SharedRead */
+const FOREVER = 'public, max-age=86400, s-maxage=31536000'
+/** @typedef {{ method: string | undefined, wanted: string | null, path: string }} SharedRead */
 /**
  * @param {SharedRead} read
  * @param {string | null} version
  * @returns {string} a Cache-Control value
  */
-const shared_cache = ({ method, wanted }, version) =>
-  method === 'GET' && wanted && wanted === version ? FOREVER : SHORT
+const shared_cache = ({ method, wanted, path }, version) =>
+  method === 'GET' && ((wanted && wanted === version) || LAYER.test(path))
+    ? FOREVER
+    : SHORT
+
+/**
+ * A poster's layer: written once with the poster, never rewritten. A sale
+ * rewrites only the poster's own file, so a layer keeps a year unversioned.
+ */
+const LAYER =
+  /\/posters\/(?:[^/]+\/)?[^/]+-(?:sediment|sand|gravel|rocks|boulders|shadows)\.html$/
 
 /**
  * The version a shared read asks for, from `?v=`.
@@ -825,7 +835,7 @@ const answer_record = async (
       path,
       caller
         ? null
-        : { method: request.method, wanted: wanted_version(request.url) }
+        : { method: request.method, wanted: wanted_version(request.url), path }
     )
 
   await change_record({
