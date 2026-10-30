@@ -202,14 +202,33 @@ export const load_from_network = async itemid => {
  * @returns {Promise<{item: Item | null, html: string | null}>}
  */
 export const load_from_cache = async itemid => {
-  const response = await fetch_item(itemid)
-  if (!response) return { item: null, html: null }
-
-  const html = await as_html(response)
+  const html = await shared_html(itemid)
   if (!html) return { item: null, html: null }
 
   const item = await item_from_html(html, itemid)
   return { item, html }
+}
+
+/**
+ * Reads of an item already on their way. A poster's figure and its symbols
+ * ask for the same layers at once; they share the one request, and each
+ * still parses its own item. Settled reads leave, so a later call asks again.
+ * @type {Map<Id, Promise<string | null>>}
+ */
+const reading = new Map()
+
+/**
+ * @param {Id} itemid
+ * @returns {Promise<string | null>}
+ */
+const shared_html = itemid => {
+  const pending = reading.get(itemid)
+  if (pending) return pending
+  const read = fetch_item(itemid)
+    .then(response => (response ? as_html(response) : null))
+    .finally(() => reading.delete(itemid))
+  reading.set(itemid, read)
+  return read
 }
 
 /**

@@ -717,6 +717,36 @@ describe('@/utils/itemid', () => {
       expect(result.html).toBe(html)
     })
 
+    it('load_from_cache shares one fetch between callers asking at once', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+14155550143')
+      const html = `<address itemid="${id}" itemscope><h3 itemprop="name">Shared</h3></address>`
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/shared.html')
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () =>
+          Promise.resolve(new TextEncoder().encode(html).buffer)
+      })
+
+      const [first, second] = await Promise.all([
+        load_from_cache(id),
+        load_from_cache(id)
+      ])
+
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      expect(first.html).toBe(html)
+      expect(second.html).toBe(html)
+      expect(first.item).not.toBe(second.item)
+
+      await load_from_cache(id)
+      expect(global.fetch).toHaveBeenCalledTimes(2)
+    })
+
     it('load_from_cache returns null item and html when url is null', async () => {
       const id = /** @type {import('@/types').Id} */ ('/+14155550142')
       get.mockImplementation(key =>
