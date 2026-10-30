@@ -41,18 +41,32 @@
   const focus_pane = session => {
     stages.get(session)?.querySelector('canvas')?.focus()
   }
-  /** Ctrl+Alt+Left/Right moves between panes; plain keys stay with the app. */
-  const hop_pane = event => {
-    if (!event.ctrlKey || !event.altKey) return
+  /**
+   * Split keys with Option+Cmd, which browsers leave alone: D right,
+   * Shift+D down, [ / ] step, and arrows step. Plain arrows stay with the app.
+   */
+  const pane_keys = event => {
+    if (!event.metaKey || !event.altKey) return
+    const direction = event.shiftKey ? 'column' : 'row'
+    const letter = event.key.toLowerCase()
+    if (letter === 'd') {
+      event.preventDefault()
+      event.stopPropagation()
+      return split(direction)
+    }
+    if (event.key === ']' || event.key === '[') {
+      if (panes.value.length < 2) return
+      event.preventDefault()
+      event.stopPropagation()
+      return step_pane(event.key === ']' ? 1 : -1)
+    }
     const step = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[
       event.key
     ]
     if (!step || panes.value.length < 2) return
     event.preventDefault()
     event.stopPropagation()
-    const at = panes.value.findIndex(pane => pane.session === focused.value)
-    const next = panes.value.at((Math.max(at, 0) + step) % panes.value.length)
-    focus_pane(next.session)
+    step_pane(step)
   }
   const mounted = ref(false)
   const mount_problem = ref('')
@@ -151,7 +165,8 @@
       actor,
       wasm_url: new URL(wasm_url, location.href),
       focus: view.value === 'tui' && session === panes.value.at(-1)?.session,
-      open: size => connect_terminal(user, actor, size, session)
+      open: size => connect_terminal(user, actor, size, session),
+      on_exit: () => close_pane(session)
     })
     if (left || !panes.value.some(pane => pane.session === session))
       return terminal.close()
@@ -211,8 +226,10 @@
     }
   }
 
-  const split = async () => {
+  /** A new pane in the given split direction, with its own shell session. */
+  const split = async direction_option => {
     if (panes.value.length >= MAX_PANES) return
+    if (panes.value.length === 1) direction.value = direction_option
     const used = new Set(panes.value.map(pane => pane.session))
     let n = 1
     while (used.has(`p${n}`)) n++
@@ -238,9 +255,10 @@
     }
   }
 
-  const turn = () => {
-    direction.value = direction.value === 'row' ? 'column' : 'row'
-    keep_layout()
+  const step_pane = step => {
+    const at = panes.value.findIndex(pane => pane.session === focused.value)
+    const next = panes.value.at((Math.max(at, 0) + step) % panes.value.length)
+    focus_pane(next.session)
   }
 
   const retry = () => {
@@ -304,22 +322,7 @@
       v-if="mounted"
       data-panes
       :data-direction="direction"
-      @keydown.capture="hop_pane">
-      <menu v-if="wide">
-        <li>
-          <button
-            type="button"
-            :disabled="panes.length >= MAX_PANES || undefined"
-            @click="split">
-            Split
-          </button>
-        </li>
-        <li v-if="panes.length > 1">
-          <button type="button" @click="turn">
-            {{ direction === 'row' ? 'Stack' : 'Side by side' }}
-          </button>
-        </li>
-      </menu>
+      @keydown.capture="pane_keys">
       <section
         v-for="item in panes"
         :key="item.session ?? 'main'"
@@ -330,13 +333,6 @@
         :aria-label="item.session ? `Terminal ${item.session}` : 'Terminal'">
         <canvas tabindex="0" />
         <output />
-        <button
-          v-if="item.session"
-          type="button"
-          aria-label="Close pane"
-          @click="close_pane(item.session)">
-          ×
-        </button>
       </section>
     </section>
   </section>
@@ -352,6 +348,7 @@
     z-index: 11;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     padding-top: env(safe-area-inset-top, 0px);
     background: var(--surface);
     translate: 100% 0;
@@ -389,21 +386,6 @@
       &[data-direction='column'] {
         flex-direction: column;
       }
-      & > menu {
-        position: absolute;
-        inset-block-start: 0;
-        inset-inline-end: (base-line / 2);
-        z-index: 1;
-        display: flex;
-        gap: (base-line / 2);
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        opacity: 0.4;
-        &:hover, &:focus-within {
-          opacity: 1;
-        }
-      }
     }
     & > section[data-panes]:has(> section[data-terminal] + section[data-terminal]) > section[data-focused] {
       box-shadow: inset 0 2px 0 var(--accent, currentColor);
@@ -429,15 +411,6 @@
         color: var(--muted-text);
         font-family: ui-monospace, Menlo, monospace;
         pointer-events: none;
-      }
-      & > button {
-        position: absolute;
-        inset-block-start: 0;
-        inset-inline-start: 0;
-        opacity: 0.4;
-        &:hover, &:focus {
-          opacity: 1;
-        }
       }
     }
   }

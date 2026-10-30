@@ -1,5 +1,6 @@
 import { browser_settings } from '../../settings/environments.js'
 import { create_vm_env } from './vm-env.js'
+import { current_user } from './serverless.js'
 import { create_vm_files } from './vm-files.js'
 import {
   claim_view,
@@ -233,9 +234,9 @@ const lost = async error => {
 const durable = () =>
   (bundle ??= import(/* @vite-ignore */ '/pi-durable.browser.js'))
 
-const open_explorer = async (token, database) => {
+const open_explorer = async (token, database, owner) => {
   const pi = await durable()
-  const storage = await pi.openIndexedDbStorage(database)
+  const storage = await pi.BrowserHtmlStorage.open(database, database, owner)
   const remote = create_vm_env({ getIdToken: token })
   let harness
   try {
@@ -308,7 +309,8 @@ export const explorer = async (token, user_id) => {
     throw new Error('Reload chat after changing accounts')
   if (taken) throw new TakenError()
   if (open_now) return open_now
-  opening ??= { database, promise: open_explorer(token, database) }
+  const owner = current_user.value?.phoneNumber || undefined
+  opening ??= { database, promise: open_explorer(token, database, owner) }
   try {
     open_now = await opening.promise
     claim(database)
@@ -346,7 +348,11 @@ const share = () => {
 /** Read the log without claiming it and hand the transcript to followers. */
 const reread = async database => {
   const pi = await durable()
-  const storage = await pi.openIndexedDbStorage(database, { claim: false })
+  const storage = await pi.BrowserHtmlStorage.readOnly(
+    database,
+    database,
+    undefined
+  )
   try {
     const lines = to_lines(
       await pi.readTranscript(storage, pi.BACKGROUND_CONTEXT)

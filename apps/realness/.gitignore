@@ -62,3 +62,7 @@ scripts/service-account*
 .lighthouseci
 .auto/
 fallow-report.json
+
+# vitest browser failure artifacts
+.vitest-attachments/
+__screenshots__/

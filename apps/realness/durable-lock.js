@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * The browser bundle's pin. Durable's API changes without notice, so a build
- * names the exact fork commit and adapter commit it was made from, and refuses
+ * names the exact fork commit and module commit it was made from, and refuses
  * to run when the checkout no longer matches.
  *
  *   node durable-lock.js check     exit 1 when the lock and the checkout disagree
@@ -20,7 +20,7 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 const HERE = dirname(file_url_to_path(import.meta.url))
 const LOCK = join(HERE, 'durable.lock.json')
 const FORK = join(HERE, '../../work/pi')
-const ADAPTER = join(HERE, '../../work/pi-durable-storage-idb')
+const MODULE = join(HERE, '../../work/pi-durable-storage-html')
 
 const git = (cwd, ...args) =>
   exec_file_sync('git', ['-C', cwd, ...args], { encoding: 'utf8' }).trim()
@@ -29,10 +29,10 @@ const version_of = (cwd, manifest) =>
   JSON.parse(read_file_sync(join(cwd, manifest), 'utf8')).version
 
 /** What the checkout is right now, or why it cannot be read. */
-export const current = ({ fork = FORK, adapter = ADAPTER } = {}) => {
+export const current = ({ fork = FORK, module: mod = MODULE } = {}) => {
   for (const [name, cwd] of [
     ['fork', fork],
-    ['adapter', adapter]
+    ['module', mod]
   ]) {
     if (!exists_sync(cwd))
       return { problem: `${name} checkout missing at ${cwd}` }
@@ -47,9 +47,9 @@ export const current = ({ fork = FORK, adapter = ADAPTER } = {}) => {
       commit: git(fork, 'rev-parse', '--short=8', 'HEAD'),
       version: version_of(fork, 'packages/durable/package.json')
     },
-    adapter: {
-      commit: git(adapter, 'rev-parse', '--short=8', 'HEAD'),
-      version: version_of(adapter, 'package.json')
+    module: {
+      commit: git(mod, 'rev-parse', '--short=8', 'HEAD'),
+      version: version_of(mod, 'package.json')
     }
   }
 }
@@ -61,10 +61,10 @@ const locked = () =>
 /**
  * Every way the checkout and the lock disagree, as plain lines.
  * @param {object} pin
- * @param {{ fork: object, adapter: object }} now
+ * @param {{ fork: object, module: object }} now
  */
 const mismatches = (pin, now) =>
-  ['fork', 'adapter'].flatMap(name =>
+  ['fork', 'module'].flatMap(name =>
     ['commit', 'version'].flatMap(field => {
       const pinned = pin?.[name]?.[field]
       const actual = now?.[name]?.[field]
@@ -87,7 +87,7 @@ const check = () => {
   if (wrong.length)
     return fail(`durable bundle pin is stale:\n  ${wrong.join('\n  ')}`)
   console.warn(
-    `durable bundle matches ${now.fork.commit} and adapter ${now.adapter.commit}`
+    `durable bundle matches ${now.fork.commit} and module ${now.module.commit}`
   )
 }
 

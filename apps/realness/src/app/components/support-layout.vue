@@ -1,7 +1,6 @@
 <script setup>
   import SiteNav from '@/components/site-nav'
   import AsWorkspace from '@/components/chat/as-workspace.vue'
-  import { current_user } from '@/utils/serverless'
   import { use_home_view } from '@/use/home-view'
   import { useRoute as use_route } from 'vue-router'
   const route = use_route()
@@ -16,7 +15,7 @@
     <site-nav v-if="route.meta.support" />
     <router-view />
   </section>
-  <as-workspace v-if="current_user" />
+  <as-workspace />
 </template>
 
 <style lang="stylus">

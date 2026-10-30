@@ -124,6 +124,9 @@ const local_routes = {
 }
 
 /** One config for the web app's dev, build, and specs, and the lint and format rules for the whole package; Vite+ reads lint and fmt only from the package root. */
+/** Source only a real browser can run; `npm run test:browser` measures it. */
+export const browser_only = ['src/app/utils/explorer.js']
+
 export default define_config(({ mode }) => ({
   lint: {
     plugins: ['oxc', 'typescript', 'unicorn', 'react', 'vue'],
@@ -440,7 +443,8 @@ export default define_config(({ mode }) => ({
       ...config_defaults.exclude,
       '**/setup.js',
       '**/mocks/**',
-      'specs/app/storage-rules/**'
+      'specs/app/storage-rules/**',
+      'specs/app/browser/**'
     ],
     testTimeout: 30000,
     coverage: {
@@ -467,7 +471,8 @@ export default define_config(({ mode }) => ({
         'docs/**',
         path.join(app_root, 'main.js'),
         path.join(app_root, 'router.js'),
-        path.join(app_root, 'wasm/**')
+        path.join(app_root, 'wasm/**'),
+        ...browser_only
       ],
       thresholds: {
         lines: 80,

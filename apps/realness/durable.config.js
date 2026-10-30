@@ -18,7 +18,7 @@ import { product_paths } from '#root/src/settings/layout.js'
 const HERE = process.cwd()
 const ROOT = file_url_to_path(new URL('../../', new URL(`file://${HERE}/`)))
 const FORK = `${ROOT}work/pi/packages`
-const ADAPTER = `${ROOT}work/pi-durable-storage-idb`
+const MODULE = `${ROOT}work/pi-durable-storage-html`
 const { app: app_root } = product_paths()
 
 const lock = command =>
@@ -56,7 +56,8 @@ const pinned_path = specifier => {
 const durable_resolver = () => ({
   name: 'durable-resolver',
   resolveId(source) {
-    if (source === 'pi-durable-storage-idb') return `${ADAPTER}/dist/index.js`
+    if (source === 'pi-durable-storage-html') return `${MODULE}/src/index.ts`
+    if (source === 'pako') return null
     if (!source.startsWith('@earendil-works/')) return null
     const found = pinned_path(source)
     if (!found) throw new Error(`durable build cannot resolve ${source}`)
@@ -68,8 +69,12 @@ export default define_config({
   resolve: {
     alias: [
       {
-        find: /^pi-durable-storage-idb$/,
-        replacement: `${ADAPTER}/dist/index.js`
+        find: /^pi-durable-storage-html$/,
+        replacement: `${MODULE}/src/index.ts`
+      },
+      {
+        find: /^pako$/,
+        replacement: `${ROOT}apps/realness/node_modules/pako/dist/pako.mjs`
       }
     ]
   },

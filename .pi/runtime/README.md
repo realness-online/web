@@ -27,8 +27,7 @@ workspace's separate selected-fork installation is not changed by this installer
 `npm run pi:update` only reinstalls this pin. It does not choose an upstream
 release. Provider credentials must come from each user, never from this package.
 
-Current release evidence is local at `artifacts/pi/review-v1.3.0/`.
-The selected 1.3.0 fork commit is `c35c4079263018401488ba5d9b997d8a9c31d8ac`.
-The previous runtime and marker are preserved in that evidence folder's
-`activation-rollback/` directory.
+Current release evidence is local at `artifacts/pi/release-v1.4.0/`.
+The selected 1.4.0 fork commit is `08620a3b1e98130c99906789bb56193f765cb429`.
+The previous 1.3.0 pin (fork `c35c4079`) stays in git history for rollback.
 macOS clean-install and RPC startup checks passed. Linux and WSL remain untested.

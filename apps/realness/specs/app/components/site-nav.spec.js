@@ -79,44 +79,7 @@ describe('@/components/site-nav', () => {
     )
   })
 
-  it('labels the account link Account when signed out', () => {
-    const wrapper = mount()
-    expect(wrapper.get('a[href="/account"]').attributes('aria-label')).toBe(
-      'Account'
-    )
-    expect(wrapper.text()).not.toContain('Sign in')
-  })
-
-  it('labels the account link with the profile name when signed in', () => {
-    mock_current_user.value = { uid: 'u1' }
-    mock_me.value = { name: 'Scott' }
-    const wrapper = mount()
-    expect(wrapper.get('a[href="/account"]').attributes('aria-label')).toBe(
-      'Scott'
-    )
-    expect(wrapper.text()).not.toContain('Sign in')
-  })
-
-  it('opens account settings when signed out', () => {
-    const wrapper = mount()
-    const account = wrapper.findAllComponents(router_link_stub).at(-1)
-    expect(account.props('to')).toBe('/account')
-  })
-
-  it('goes to the account page once signed in', () => {
-    mock_current_user.value = { uid: 'u1' }
-    mock_me.value = { name: 'Scott' }
-    const wrapper = mount()
-    const account = wrapper.findAllComponents(router_link_stub).at(-1)
-    expect(account.props('to')).toBe('/account')
-  })
-
-  it('falls back to Account when signed in without a name', () => {
-    mock_current_user.value = { uid: 'u1' }
-    mock_me.value = {}
-    const wrapper = mount()
-    expect(wrapper.get('a[href="/account"]').attributes('aria-label')).toBe(
-      'Account'
-    )
+  it('leaves Account to the Thoughts page', () => {
+    expect(mount().find('a[href="/account"]').exists()).toBe(false)
   })
 })

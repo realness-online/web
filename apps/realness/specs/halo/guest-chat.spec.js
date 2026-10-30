@@ -5,10 +5,9 @@ import { createServer } from 'node:net'
 import { join } from 'node:path'
 import { it } from 'node:test'
 import { out_path } from '#root/src/settings/output.js'
-import { python_command } from '#root/lib/python.js'
 
 const program = new URL(
-  '../../server/halo/guest/realness-chat',
+  '../../server/halo/guest/realness-chat.js',
   import.meta.url
 ).pathname
 
@@ -35,7 +34,7 @@ const bridge = async reply => {
 
 const run = (path, line) =>
   new Promise((resolve, reject) => {
-    const child = spawn(python_command(), [program, path])
+    const child = spawn(process.execPath, [program, path])
     let out = ''
     child.stdout.on('data', chunk => (out += chunk))
     child.on('error', reject)
@@ -100,9 +99,9 @@ it('messages still relay, and bad lines never reach the bridge', async () => {
 
 it('the terminal starts at the harness root, where Pi finds its extensions', () => {
   const pty = readFileSync(
-    new URL('../../server/halo/guest/realness-pty', import.meta.url),
+    new URL('../../server/halo/guest/realness-pty.js', import.meta.url),
     'utf8'
   )
-  assert.match(pty, /^HARNESS_DIR = "\/realness"$/m)
-  assert.match(pty, /os\.chdir\(HARNESS_DIR\)/)
+  assert.match(pty, /^const HARNESS_DIR = '\/realness'$/m)
+  assert.match(pty, /cwd: HARNESS_DIR/)
 })

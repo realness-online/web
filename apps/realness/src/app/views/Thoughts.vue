@@ -47,6 +47,7 @@
   import { poster_delete_log } from '@/utils/poster-delete-log'
   import AsTextarea from '@/components/thoughts/as-textarea.vue'
   import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
+  import Icon from '@/components/icon.vue'
   import { use_home_view } from '@/use/home-view'
 
   const from_blog = ref(
@@ -558,8 +559,13 @@
     <header>
       <as-chat-toggle v-if="current_user" />
       <a v-if="from_blog" :href="from_blog">←</a>
-      <router-link v-if="current_user" id="account" to="/account" tabindex="-1">
-        {{ me?.name || 'Account' }}
+      <router-link
+        id="account"
+        to="/account"
+        tabindex="-1"
+        aria-label="Account"
+        :title="me?.name || 'Account'">
+        <icon name="silhouette" />
       </router-link>
       <router-link id="about" to="/about" tabindex="-1">
         <span>{{ version_parts[0] }}</span>
@@ -703,10 +709,14 @@
       }
       & > a#account {
         margin-left: auto;
-        color: var(--accent);
-        text-decoration: none;
-        &:hover {
-          color: var(--emphasis);
+        display: inline-flex;
+        & > svg {
+          width: base-line * 1.33;
+          height: base-line * 1.33;
+          fill: var(--accent);
+        }
+        &:hover > svg {
+          fill: var(--emphasis);
         }
       }
       & > a#account + a#about {

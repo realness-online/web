@@ -9,7 +9,7 @@ images:
     arch: aarch64
 cpus: 3
 memory: 4GiB
-disk: 16GiB
+disk: 20GiB
 mounts:
   # The two locations are filled from this checkout at creation (src/control/lima.js).
   - location: '{{project}}'

@@ -16,7 +16,7 @@
     "tools/control/bin/capacity-sample.js",
     "tools/desktop/entry.ts",
     "tools/publish/renderer/serve.js",
-    "server/halo/guest/realness-serve.js",
+    "server/halo/guest/*.js",
     "tools/control/escape-probe/server.js",
     "themes/load.js",
     "themes/adapters/*.js",
@@ -58,7 +58,8 @@
     "pele",
     "@earendil-works/chord",
     "@earendil-works/pi-durable",
-    "pi-durable-storage-idb"
+    "pi-durable-storage-idb",
+    "pi-durable-storage-html"
   ],
   "ignoreUnresolvedImports": [
     "/pi-durable.browser.js",
@@ -80,7 +81,12 @@
   },
   "overrides": [
     {
-      "files": ["**/specs/**", "**/test/**", "**/*.spec.js", "**/*.test.js"],
+      "files": [
+        "**/specs/**",
+        "**/test/**",
+        "**/*.spec.js",
+        "**/*.test.js"
+      ],
       "rules": {
         "unused-exports": "off",
         "unused-files": "off"
@@ -116,144 +122,109 @@
   "ignoreExports": [
     {
       "file": "src/app/utils/opacity.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/app/utils/color-converters.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/app/utils/colors.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/app/use/path.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/app/use/pattern.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/app/use/people.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/app/use/poster.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/app/use/statements.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/app/use/sync-folder.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/app/use/sync.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/app/use/vectorize.js",
-      "exports": ["*"]
+      "exports": [
+        "*"
+      ]
     },
     {
       "file": "src/halo/vsock.js",
-      "exports": ["Lines"]
+      "exports": [
+        "Lines"
+      ]
     },
     {
       "file": "src/halo/pty.js",
-      "exports": ["make_server"]
+      "exports": [
+        "make_server"
+      ]
     },
     {
       "file": "src/control/halo-gcp.js",
-      "exports": ["up", "down", "restart"]
+      "exports": [
+        "up",
+        "down",
+        "restart"
+      ]
     },
     {
       "file": "src/control/halo-lima.js",
-      "exports": ["up", "down", "restart"]
+      "exports": [
+        "up",
+        "down",
+        "restart"
+      ]
     }
   ],
   "regression": {
     "baseline": {
       "analysisIdentity": {
-        "mode": "syntactic",
-        "semantic_schema_version": 1,
-        "capabilities": [],
-        "project_config_hash": "",
-        "backend_family": "",
-        "completeness": "complete"
-      },
-      "totalIssues": 32,
-      "unusedFiles": 0,
-      "unusedExports": 0,
-      "unusedTypes": 0,
-      "unusedDependencies": 0,
-      "unusedDevDependencies": 0,
-      "unusedOptionalDependencies": 0,
-      "unusedEnumMembers": 0,
-      "unusedClassMembers": 19,
-      "unresolvedImports": 0,
-      "unlistedDependencies": 0,
-      "duplicateExports": 10,
-      "circularDependencies": 0,
-      "reExportCycles": 0,
-      "typeOnlyDependencies": 0,
-      "testOnlyDependencies": 0,
-      "devDependenciesInProduction": 3,
-      "boundaryViolations": 0,
-      "boundaryCoverageViolations": 0,
-      "boundaryCallViolations": 0,
-      "policyViolations": 0
-    }
-  },
-  "regression": {
-    "baseline":     {
-      "analysisIdentity": {
         "mode": "type-aware",
         "semantic_schema_version": 2,
         "capabilities": [
           "symbol-use",
           "api-surface"
         ],
-        "project_config_hash": "sha256:826a02edfb7dd473152057faa33e2296b91246d6b4a9823a190cd2bc58d2e368",
-        "backend_family": "typescript-go",
-        "completeness": "unavailable"
-      },
-      "totalIssues": 43,
-      "unusedFiles": 0,
-      "unusedExports": 0,
-      "unusedTypes": 0,
-      "unusedDependencies": 0,
-      "unusedDevDependencies": 0,
-      "unusedOptionalDependencies": 0,
-      "unusedEnumMembers": 0,
-      "unusedClassMembers": 39,
-      "unresolvedImports": 0,
-      "unlistedDependencies": 0,
-      "duplicateExports": 0,
-      "circularDependencies": 0,
-      "reExportCycles": 0,
-      "typeOnlyDependencies": 0,
-      "testOnlyDependencies": 0,
-      "devDependenciesInProduction": 2,
-      "boundaryViolations": 0,
-      "boundaryCoverageViolations": 0,
-      "boundaryCallViolations": 0,
-      "policyViolations": 0
-    }
-  },
-  "regression": {
-    "baseline":     {
-      "analysisIdentity": {
-        "mode": "type-aware",
-        "semantic_schema_version": 2,
-        "capabilities": [
-          "symbol-use",
-          "api-surface"
-        ],
-        "project_config_hash": "sha256:37053c1cd33e667d948b216141575654d7fe3e8f92231f29ec3187a4169b6667",
+        "project_config_hash": "sha256:923ef0f4b184f5f2670e38ad4f2713ccf0d7661f043ae426a5d8e02c287b97f2",
         "backend_family": "typescript-go",
         "completeness": "partial"
       },

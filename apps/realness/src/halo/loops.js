@@ -19,6 +19,7 @@ export const launch_argv = goal => [
   '--uid=realness',
   '--gid=realness',
   '--collect',
+  '/usr/local/bin/node',
   '/usr/local/bin/realness-loop-run',
   goal
 ]
@@ -26,24 +27,31 @@ const LIVE = new Set(['starting', 'running'])
 export const STOP_ARGV = ['systemctl', 'stop', 'realness-loop']
 
 export const PROBE_ARGV = [
-  'python3',
-  '-c',
+  '/usr/local/bin/node',
+  '-e',
   `
-import json
-d = "/realness/work/loop"
-def read(path, tail=0):
-    try:
-        with open(path, "rb") as f:
-            if tail:
-                f.seek(0, 2); f.seek(max(0, f.tell() - tail))
-            return f.read().decode("utf8", "replace")
-    except OSError:
-        return ""
-status = json.loads(read(d + "/status.json") or "{}")
-runs = sum(1 for line in read(d + "/.auto/log.jsonl").splitlines() if '"run":' in line)
-quota = "quota exceeded" in read(d + "/events.jsonl", 65536)
-tail = read(d + "/.auto/log.jsonl", 16384).splitlines()[-20:]
-print(json.dumps({"state": status.get("state"), "tokens": status.get("tokens", 0), "runs": runs, "quota": quota, "tail": tail}))
+const fs = process.getBuiltinModule('node:fs')
+const d = '/realness/work/loop'
+const read = (path, tail = 0) => {
+  try {
+    const bytes = fs.readFileSync(path)
+    return bytes.subarray(tail ? Math.max(0, bytes.length - tail) : 0).toString()
+  } catch {
+    return ''
+  }
+}
+let status = {}
+try {
+  status = JSON.parse(read(d + '/status.json') || '{}')
+} catch {}
+const runs = read(d + '/.auto/log.jsonl')
+  .split('\\n')
+  .filter(line => line.includes('"run":')).length
+const quota = read(d + '/events.jsonl', 65536).includes('quota exceeded')
+const tail = read(d + '/.auto/log.jsonl', 16384).split('\\n').slice(-20)
+process.stdout.write(
+  JSON.stringify({ state: status.state, tokens: status.tokens ?? 0, runs, quota, tail }) + '\\n'
+)
 `
 ]
 

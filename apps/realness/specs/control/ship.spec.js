@@ -46,7 +46,7 @@ it('shared source reaches every service that includes it', () => {
 
 it('halo source needs the halo and nothing else', () => {
   assert.deepEqual(choose(['src/halo/server.js']), ['frontend', 'halo'])
-  assert.deepEqual(choose(['server/halo/guest/realness-agent.py']), [
+  assert.deepEqual(choose(['server/halo/guest/realness-agent.js']), [
     'frontend',
     'halo'
   ])

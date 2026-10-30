@@ -25,6 +25,7 @@ const stages = [
   'check:functions',
   'type',
   'test:coverage',
+  'test:browser',
   'test:functions'
 ]
 const scratch = new URL(

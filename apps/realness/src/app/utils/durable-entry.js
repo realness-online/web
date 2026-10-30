@@ -21,7 +21,7 @@ export {
 } from '@earendil-works/pi-durable'
 export { createModels, createProvider } from '@earendil-works/pi-ai'
 export { openAICompletionsApi } from '@earendil-works/pi-ai/api/openai-completions.lazy'
-export { openIndexedDbStorage } from 'pi-durable-storage-idb'
+export { BrowserHtmlStorage } from 'pi-durable-storage-html'
 export {
   createBashTool,
   createReadTool,
@@ -47,7 +47,7 @@ const scan_all = async (storage, query, cursor, context) => {
  * The root conversation's active messages, read straight from storage with no
  * harness: the newest head marker, then every later non-head entry. In-place
  * edits are not applied; Explorer writes none.
- * @param {import('pi-durable-storage-idb').IndexedDbStorage} storage
+ * @param {import('pi-durable-storage-html').BrowserHtmlStorage} storage
  * @param {import('@earendil-works/chord').Context} context
  */
 export const readTranscript = async (storage, context) => {
@@ -67,7 +67,7 @@ export const readTranscript = async (storage, context) => {
 
 /**
  * The root conversation's newest entry id: the log's tail, 0 when empty.
- * @param {import('pi-durable-storage-idb').IndexedDbStorage} storage
+ * @param {import('pi-durable-storage-html').BrowserHtmlStorage} storage
  * @param {import('@earendil-works/chord').Context} context
  */
 export const readTail = async (storage, context) => {
@@ -83,7 +83,7 @@ export const readTail = async (storage, context) => {
 
 /**
  * The newest entry of one of `kinds`, scanning back from the tail.
- * @param {import('pi-durable-storage-idb').IndexedDbStorage} storage
+ * @param {import('pi-durable-storage-html').BrowserHtmlStorage} storage
  * @param {string[]} kinds
  * @param {import('@earendil-works/chord').Context} context
  */

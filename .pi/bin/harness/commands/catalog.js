@@ -117,6 +117,15 @@ export const collect_commands = async root => {
     }
   }
   for (const family of cli_families) {
+    const present = await Promise.all(
+      [family.source, family.entry].map(path =>
+        stat(join(root, path)).then(
+          () => true,
+          () => false
+        )
+      )
+    )
+    if (present.includes(false)) continue
     await text_of(family.source)
     await text_of(family.entry)
     for (const [route, group, description, options, context] of family.routes) {

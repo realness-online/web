@@ -1,4 +1,5 @@
 import { createServer as create_server } from 'node:http'
+import { HTTP } from '#root/lib/http.js'
 import { Readable } from 'node:stream'
 
 const HANDLER = '/app/code/server.js'
@@ -41,7 +42,9 @@ create_server(async (req, res) => {
       throw new TypeError('the handler must return a Response')
   } catch (error) {
     console.error(error)
-    res.writeHead(500, { 'content-type': 'text/plain' }).end('handler error\n')
+    res
+      .writeHead(HTTP.INTERNAL_ERROR, { 'content-type': 'text/plain' })
+      .end('handler error\n')
     return
   }
   res.writeHead(

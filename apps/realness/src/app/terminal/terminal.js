@@ -5,7 +5,6 @@ import { realness_theme } from './themes/ghostty-theme.js'
 const FONT_SIZE = 14
 const MIN_COLS = 20
 const MIN_ROWS = 6
-const HORIZONTAL_PADDING = 16
 const VERTICAL_PADDING = 8
 const NOTE_MS = 1600
 const BLINK_MS = 530
@@ -168,8 +167,14 @@ const create_display = ({ state, term, ctx, status, colors }) => {
   }
 }
 
+/**
+ * The terminal's socket. `on_exit` hears the shell's exit code once, when the
+ * guest reports it: a shell that exits ends its pane, a dropped socket does not.
+ * @param {{ state: any, term: any, encoder: any, canvas: any, status: any, redraw: () => void, set_note: (note: string) => void, on_exit?: ((code: number) => void) | null }} view
+ * @param {{ actor: string | null, exec: string | null, base: string, open: ((size: { cols: number, rows: number }) => Promise<any>) | null }} options
+ */
 const create_connection = (
-  { state, term, encoder, canvas, status, redraw, set_note },
+  { state, term, encoder, canvas, status, redraw, set_note, on_exit = null },
   { actor, exec, base, open }
 ) => {
   const send = bytes => {
@@ -258,7 +263,7 @@ const create_connection = (
     let ticket
     try {
       const response = await fetch(
-        new URL(`ticket?actor=${encodeURIComponent(actor)}`, base),
+        new URL(`ticket?actor=${encodeURIComponent(actor ?? '')}`, base),
         {
           method: 'POST'
         }
@@ -307,6 +312,7 @@ const create_connection = (
     if (message.op === 'exit') {
       state.exited = true
       set_note(`exit ${message.code}`)
+      on_exit?.(message.code)
       ws?.close()
       return
     }
@@ -557,7 +563,8 @@ const bind_keyboard = ({
  * Draw a live actor terminal into `stage`, which holds a canvas and an output.
  * `base` is where the halo's `ticket` and `pty` routes live. `open`, when
  * given, makes the socket instead: ({ cols, rows }) => WebSocket; a thrown
- * error with status 401 or 403 stops reconnecting. Returns { close }.
+ * error with status 401 or 403 stops reconnecting. `on_exit` hears the shell's
+ * exit code once. Returns { close }.
  */
 export const mount = async (
   stage,
@@ -568,6 +575,7 @@ export const mount = async (
     wasm_url = new URL('ghostty-vt.wasm', document.baseURI),
     focus = true,
     open = null,
+    on_exit = /** @type {((code: number) => void) | null} */ (null),
     scheme = matchMedia('(prefers-color-scheme: dark)'),
     load_theme = () => realness_theme(scheme.matches ? 'dark' : 'light')
   } = {}
@@ -581,16 +589,20 @@ export const mount = async (
   const canvas = stage.querySelector('canvas')
   const ctx = canvas.getContext('2d')
   const metrics = cell_metrics(ctx, FONT_SIZE)
-  const size_terminal = () => ({
-    cols: Math.max(
-      MIN_COLS,
-      Math.floor((stage.clientWidth - HORIZONTAL_PADDING) / metrics.width)
-    ),
-    rows: Math.max(
-      MIN_ROWS,
-      Math.floor((stage.clientHeight - VERTICAL_PADDING) / metrics.height)
-    )
-  })
+  const size_terminal = () => {
+    const style = stage.ownerDocument?.defaultView?.getComputedStyle(stage)
+    const inline =
+      stage.clientWidth -
+      (parseFloat(style?.paddingInlineStart ?? '') || 0) -
+      (parseFloat(style?.paddingInlineEnd ?? '') || 0)
+    return {
+      cols: Math.max(MIN_COLS, Math.floor(inline / metrics.width)),
+      rows: Math.max(
+        MIN_ROWS,
+        Math.floor((stage.clientHeight - VERTICAL_PADDING) / metrics.height)
+      )
+    }
+  }
   const engine = await load_engine(wasm_url)
   canvas.addEventListener('click', () => canvas.focus())
   if (focus) canvas.focus()
@@ -621,7 +633,7 @@ export const mount = async (
     redraw()
   })
   const connection = create_connection(
-    { state, term, encoder, canvas, status, redraw, set_note },
+    { state, term, encoder, canvas, status, redraw, set_note, on_exit },
     { actor, exec, base, open }
   )
   const { send, send_resize } = connection

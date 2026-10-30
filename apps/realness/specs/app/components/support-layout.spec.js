@@ -239,11 +239,11 @@ describe('app-wide chat', () => {
     ).toBeUndefined()
   })
 
-  it('does not offer a connected workspace when signed out', async () => {
+  it('shows chat and terminal when signed out, without starting an actor', async () => {
     current_user.value = null
     const { page } = await open()
-    expect(page.find('#chat-panel').exists()).toBe(false)
-    expect(page.find('button[aria-label="Open chat"]').exists()).toBe(false)
+    expect(page.find('#chat-panel').exists()).toBe(true)
+    expect(page.findComponent({ name: 'AsTui' }).exists()).toBe(true)
     expect(requests).toHaveLength(0)
   })
 })

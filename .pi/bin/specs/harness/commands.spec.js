@@ -248,3 +248,16 @@ it('copy still uses the full command after filtering; filter buttons never copy'
   page.click(page.document.querySelector('#command-filters button[value="Build"]'))
   assert.equal(page.copied(), 'node apps/realness/tools/cli/bin/realness.js watch')
 })
+
+it("an actor's checkout without apps/realness still builds the catalog, leaving those families out", async () => {
+  const { mkdtemp, writeFile, rm } = await import('node:fs/promises')
+  const bare = await mkdtemp(join(root, 'artifacts/tmp/commands-bare-'))
+  try {
+    await writeFile(join(bare, 'package.json'), '{"name":"bare","scripts":{}}')
+    for (const file of ['README.md', 'AGENTS.md']) await writeFile(join(bare, file), '# bare\n')
+    const found = await collect_commands(bare)
+    assert.ok(!found.entries.some(entry => entry.source?.startsWith('apps/realness/')))
+  } finally {
+    await rm(bare, { recursive: true, force: true })
+  }
+})

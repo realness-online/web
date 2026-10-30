@@ -9,6 +9,7 @@ const open_terminal = async env => {
   const sent = []
   await mount(env.stage, {
     ...mount_options,
+    on_exit: code => env.exits?.push(code),
     open: async () => new WebSocket('wss://gate.test/pty')
   })
   await env.settle()
@@ -142,7 +143,7 @@ describe('terminal connection messages', () => {
   const receive = (env, message) =>
     env.sockets[0].onmessage({ data: JSON.stringify(message) })
 
-  it('closes the socket when the program exits, and stops taking keys', async () => {
+  it('closes the socket when the program exits, reports it once, and stops taking keys', async () => {
     const { socket, sent } = await open_terminal(env)
     env.focus()
     let closed = false
@@ -150,8 +151,11 @@ describe('terminal connection messages', () => {
       closed = true
       socket.readyState = 3
     }
+    const exits = []
+    env.exits = exits
     receive(env, { op: 'exit', code: 3 })
     expect(closed).toBe(true)
+    expect(exits).toEqual([3])
     key(env, { key: 'a' })
     expect(sent).toHaveLength(0)
   })

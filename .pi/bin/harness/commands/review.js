@@ -68,19 +68,19 @@ export const reviewed = {
   '.pi/bin/harness/pi-fork.js#rollback': ['Keep', 'Documented in work/pi/FORK.md; restores the prior launcher.'],
   '.pi/bin/harness/session-format.js#convert': ['Keep', 'Four JSONL session files and two recovery backups remain.'],
 
-  'apps/realness/server/halo/guest/realness-chrome#lease': [
+  'apps/realness/server/halo/guest/realness-chrome.js#lease': [
     'Keep',
     'Agent-browser leases a Chrome VM through this route.'
   ],
-  'apps/realness/server/halo/guest/realness-site#versions': [
+  'apps/realness/server/halo/guest/realness-site.js#versions': [
     'Keep',
     'Described in server/halo/guest/realness-chat.md.'
   ],
-  'apps/realness/server/halo/guest/realness-site#restore <version>': [
+  'apps/realness/server/halo/guest/realness-site.js#restore <version>': [
     'Keep',
     'Described in server/halo/guest/realness-chat.md.'
   ],
-  'apps/realness/server/halo/guest/realness-site#remove': ['Keep', 'Described in server/halo/guest/realness-chat.md.'],
+  'apps/realness/server/halo/guest/realness-site.js#remove': ['Keep', 'Described in server/halo/guest/realness-chat.md.'],
 
   'apps/realness/tools/cli/bin/realness.js#frontend build': [
     'Keep',

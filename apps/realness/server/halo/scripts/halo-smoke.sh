@@ -20,12 +20,12 @@ for _ in $(seq 1 20); do
   sleep 2
   curl -sf --max-time 3 http://127.0.0.1:8080/v1/health > /tmp/health.json && break
 done
-seed_id="$(python3 -c "import json;print(json.load(open('/tmp/health.json'))['seed']['machine_id'])" 2> /dev/null || true)"
+seed_id="$(node -e "const h = JSON.parse(process.getBuiltinModule('node:fs').readFileSync('/tmp/health.json'));process.stdout.write(h.seed?.machine_id ?? '')" 2> /dev/null || true)"
 if [ -n "$seed_id" ]; then pass "health reports a seed (machine-id $seed_id)"; else fail "no healthy seed"; fi
 
 echo "==> create"
 curl -sS -X POST --max-time 90 http://127.0.0.1:8080/v1/actors > /tmp/actor.json
-sid="$(python3 -c "import json;print(json.load(open('/tmp/actor.json'))['id'])" 2> /dev/null || true)"
+sid="$(node -e "const a = JSON.parse(process.getBuiltinModule('node:fs').readFileSync('/tmp/actor.json'));process.stdout.write(a.id ?? '')" 2> /dev/null || true)"
 if [ -n "$sid" ]; then pass "actor $sid created"; else fail "no actor: $(cat /tmp/actor.json)"; fi
 
 if [ -n "$sid" ]; then
@@ -33,11 +33,10 @@ if [ -n "$sid" ]; then
   curl -sS -X POST --max-time 90 -H 'content-type: application/json' \
     -d '{"argv":["/bin/sh","-c","hostname; uname -m; cat /etc/machine-id"]}' \
     "http://127.0.0.1:8080/v1/actors/$sid/exec" > /tmp/exec.json
-  out="$(python3 -c "
-import base64, json
-d = json.load(open('/tmp/exec.json'))
-print('exit', d['exit_code'])
-print(base64.b64decode(d['stdout_b64']).decode().strip())
+  out="$(node -e "
+const d = JSON.parse(process.getBuiltinModule('node:fs').readFileSync('/tmp/exec.json'))
+console.log('exit', d.exit_code)
+console.log(Buffer.from(d.stdout_b64, 'base64').toString().trim())
 " 2> /dev/null || true)"
   if [ -n "$out" ]; then printf '%s\n' "$out"; else fail "exec returned nothing: $(cat /tmp/exec.json)"; fi
   actor_id="$(printf '%s\n' "$out" | tail -1)"

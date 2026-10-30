@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { execFileSync as exec_file_sync } from 'node:child_process'
 import { createHash as create_hash } from 'node:crypto'
 import {
   chmodSync as chmod_sync,
@@ -197,6 +196,22 @@ const realness_provider = proxy_url => ({
   ]
 })
 
+/**
+ * The Pi an actor installs: the checkout's runtime pin, not whatever `pi`
+ * this machine runs.
+ * @param {string} root
+ */
+const pinned_pi = root => {
+  try {
+    return String(
+      JSON.parse(read_file_sync(join(root, '.pi/runtime/release.json'), 'utf8'))
+        .version
+    )
+  } catch {
+    throw new Error('no Pi runtime pin at .pi/runtime/release.json')
+  }
+}
+
 /** Build the ship tree. Checks run first, so a bad input keeps the last tree. */
 /** @param {{ root?: string, stage?: string, proxy_url?: string }} [options] */
 export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
@@ -204,16 +219,9 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
     throw new Error(
       'proxy_url is required: pass --env local|development|production'
     )
-  let pi_version
-  try {
-    pi_version = exec_file_sync('pi', ['--version'], {
-      encoding: 'utf8'
-    }).trim()
-  } catch {
-    throw new Error('pi is not installed on PATH')
-  }
+  const pi_version = pinned_pi(root)
   if (!PI_VERSION.test(pi_version))
-    throw new Error(`invalid local pi version: ${pi_version}`)
+    throw new Error(`invalid pinned pi version: ${pi_version}`)
   if (!PROXY_URL.test(proxy_url))
     throw new Error('proxy_url must be an http(s) endpoint')
 

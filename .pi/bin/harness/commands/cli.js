@@ -91,8 +91,8 @@ export const cli_families = [
   },
   {
     name: 'Actor Chrome',
-    entry: 'apps/realness/server/halo/guest/realness-chrome',
-    source: 'apps/realness/server/halo/guest/realness-chrome',
+    entry: 'apps/realness/server/halo/guest/realness-chrome.js',
+    source: 'apps/realness/server/halo/guest/realness-chrome.js',
     launcher: 'realness chrome',
     routes: [
       ['lease', 'Actor commands', 'Lease a Chrome VM.', '', 'Actor only; starts a browser VM.'],
@@ -101,8 +101,8 @@ export const cli_families = [
   },
   {
     name: 'Actor loop',
-    entry: 'apps/realness/server/halo/guest/realness-loop',
-    source: 'apps/realness/server/halo/guest/realness-loop',
+    entry: 'apps/realness/server/halo/guest/realness-loop.js',
+    source: 'apps/realness/server/halo/guest/realness-loop.js',
     launcher: 'realness loop',
     routes: [
       [
@@ -117,8 +117,8 @@ export const cli_families = [
   },
   {
     name: 'Actor site',
-    entry: 'apps/realness/server/halo/guest/realness-site',
-    source: 'apps/realness/server/halo/guest/realness-site',
+    entry: 'apps/realness/server/halo/guest/realness-site.js',
+    source: 'apps/realness/server/halo/guest/realness-site.js',
     launcher: 'realness-site',
     routes: [
       ['versions', 'Actor commands', 'List published site versions.', '', 'Actor only.'],
@@ -134,8 +134,8 @@ export const cli_families = [
   },
   {
     name: 'Actor publish',
-    entry: 'apps/realness/server/halo/guest/realness-publish',
-    source: 'apps/realness/server/halo/guest/realness-publish',
+    entry: 'apps/realness/server/halo/guest/realness-publish.js',
+    source: 'apps/realness/server/halo/guest/realness-publish.js',
     launcher: 'realness publish',
     routes: [
       [

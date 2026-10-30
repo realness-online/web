@@ -83,6 +83,15 @@ network_up() {
 }
 network_up
 
+# The door: one unix socket in both runtimes. A box's halo creates it; on
+# Firecracker this relay carries it to the halo over vsock, so no guest script
+# speaks vsock. A resumed snapshot still holds the relay, and its socket.
+if [ ! -S /run/realness/door.sock ]; then
+  mkdir -p /run/realness
+  setsid socat UNIX-LISTEN:/run/realness/door.sock,fork,reuseaddr,mode=666 \
+    VSOCK-CONNECT:2:54 > /dev/null 2>&1 &
+fi
+
 # The seed snapshot holds a running Pi (h4), and every clone wakes with its
 # memory: the seed's conversation, and the seed's random state in V8 and
 # OpenSSL, which make ids and TLS keys. Nothing reseeds a running Node, so

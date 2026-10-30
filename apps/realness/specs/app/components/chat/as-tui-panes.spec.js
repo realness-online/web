@@ -52,6 +52,10 @@ before_each(() => {
   mock_load.mockResolvedValue(null)
   socket = Object.assign(new EventTarget(), { close: vi.fn() })
   mock_open_terminal.mockResolvedValue(socket)
+  mock_mount.mockImplementation(async (_, options) => {
+    options.open?.({ cols: 80, rows: 24 }).catch(() => {})
+    return { close: mock_close }
+  })
   home_view.value = 'tui'
   use_home_view().wide.value = true
 })
@@ -75,8 +79,8 @@ const open = async () => {
 const terminals = pane =>
   pane.findAll('[data-terminal]').map(stage => stage.attributes('aria-label'))
 
-const button = (pane, text) =>
-  pane.findAll('menu button').find(found => found.text() === text)
+/** A Ghostty-style key on the panes wrapper. */
+const key = (pane, init) => pane.get('[data-panes]').trigger('keydown', init)
 
 describe('@/components/chat/as-tui panes', () => {
   it('restores a saved layout and mounts each pane in order', async () => {
@@ -111,48 +115,59 @@ describe('@/components/chat/as-tui panes', () => {
     expect(pane.find('[role="alert"]').exists()).toBe(false)
   })
 
-  it('splits into the next free pane, stops at four, and saves each change', async () => {
+  it('Option+Cmd+D splits right, Shift+D down, stops at four, and saves each change', async () => {
+    const split_key = (target, init) =>
+      key(target, { metaKey: true, altKey: true, ...init })
     const pane = await open()
-    await button(pane, 'Split').trigger('click')
+    await split_key(pane, { key: 'd' })
     await flush_promises()
     expect(terminals(pane)).toEqual(['Terminal', 'Terminal p1'])
+    expect(pane.get('[data-panes]').attributes('data-direction')).toBe('row')
     expect(mock_save).toHaveBeenLastCalledWith(
       expect.anything(),
       'a-mine00000000',
       { panes: [{ session: null }, { session: 'p1' }], direction: 'row' }
     )
-    await button(pane, 'Split').trigger('click')
-    await button(pane, 'Split').trigger('click')
+    const fresh = await open()
+    await split_key(fresh, { key: 'D', shiftKey: true })
     await flush_promises()
-    expect(terminals(pane)).toHaveLength(4)
-    expect(button(pane, 'Split').attributes('disabled')).toBeDefined()
-    await button(pane, 'Split').trigger('click')
-    await flush_promises()
-    expect(terminals(pane)).toHaveLength(4)
-  })
-
-  it('turns the split, and closes a pane without touching the main one', async () => {
-    const pane = await open()
-    expect(button(pane, 'Stack')).toBeUndefined()
-    await button(pane, 'Split').trigger('click')
-    await flush_promises()
-    await button(pane, 'Stack').trigger('click')
-    expect(pane.get('[data-panes]').attributes('data-direction')).toBe('column')
-    expect(mock_save).toHaveBeenLastCalledWith(
-      expect.anything(),
-      'a-mine00000000',
-      expect.objectContaining({ direction: 'column' })
+    expect(fresh.get('[data-panes]').attributes('data-direction')).toBe(
+      'column'
     )
-    await button(pane, 'Side by side').trigger('click')
-    expect(pane.get('[data-panes]').attributes('data-direction')).toBe('row')
-    const closes = pane.findAll('[aria-label="Close pane"]')
-    expect(closes).toHaveLength(1)
-    await closes[0].trigger('click')
-    expect(terminals(pane)).toEqual(['Terminal'])
-    expect(mock_close).toHaveBeenCalledTimes(1)
+    fresh.unmount()
+    await split_key(pane, { key: 'd' })
+    await split_key(pane, { key: 'd' })
+    await flush_promises()
+    expect(terminals(pane)).toHaveLength(4)
+    await split_key(pane, { key: 'd' })
+    await flush_promises()
+    expect(terminals(pane)).toHaveLength(4)
   })
 
-  it('Ctrl+Alt+arrows move between panes; plain arrows stay with the app', async () => {
+  it('has no split or close buttons, and Cmd alone keeps the browser keys', async () => {
+    const pane = await open()
+    expect(pane.find('menu').exists()).toBe(false)
+    expect(pane.find('[aria-label="Close pane"]').exists()).toBe(false)
+    await key(pane, { key: 'd', metaKey: true })
+    await flush_promises()
+    expect(terminals(pane)).toEqual(['Terminal'])
+    await key(pane, { key: 'd', metaKey: true, altKey: true })
+    await flush_promises()
+    await key(pane, { key: 'w', metaKey: true, altKey: true })
+    expect(terminals(pane)).toEqual(['Terminal', 'Terminal p1'])
+  })
+
+  it('a shell that exits closes its split pane', async () => {
+    const pane = await open()
+    await key(pane, { key: 'd', metaKey: true, altKey: true })
+    await flush_promises()
+    expect(terminals(pane)).toEqual(['Terminal', 'Terminal p1'])
+    mock_mount.mock.calls[1][1].on_exit(0)
+    await flush_promises()
+    expect(terminals(pane)).toEqual(['Terminal'])
+  })
+
+  it('Option+Cmd steps with arrows and [ ]; plain keys stay with the app', async () => {
     mock_load.mockResolvedValueOnce({
       panes: [{ session: null }, { session: 'p1' }]
     })
@@ -160,16 +175,18 @@ describe('@/components/chat/as-tui panes', () => {
     const [main, side] = pane.findAll('[data-terminal] canvas')
     main.element.focus()
     await main.trigger('focusin')
-    await pane
-      .get('[data-panes]')
-      .trigger('keydown', { key: 'ArrowRight', ctrlKey: true, altKey: true })
+    await key(pane, { key: 'ArrowRight', metaKey: true, altKey: true })
     expect(document.activeElement).toBe(side.element)
-    await pane.get('[data-panes]').trigger('keydown', { key: 'ArrowRight' })
+    await key(pane, { key: 'ArrowLeft', metaKey: true, altKey: true })
+    expect(document.activeElement).toBe(main.element)
+    await key(pane, { key: ']', metaKey: true, altKey: true })
     expect(document.activeElement).toBe(side.element)
-    await pane
-      .get('[data-panes]')
-      .trigger('keydown', { key: 'Enter', ctrlKey: true, altKey: true })
-    expect(document.activeElement).toBe(side.element)
+    await key(pane, { key: '[', metaKey: true, altKey: true })
+    expect(document.activeElement).toBe(main.element)
+    await key(pane, { key: 'ArrowRight' })
+    expect(document.activeElement).toBe(main.element)
+    await key(pane, { key: 'ArrowRight', ctrlKey: true, altKey: true })
+    expect(document.activeElement).toBe(main.element)
   })
 
   it('says the connection closed when the socket closes before it opens', async () => {

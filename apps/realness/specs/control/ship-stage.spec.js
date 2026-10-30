@@ -163,6 +163,7 @@ it('a clean checkout stages the starter without personal Pi settings', () => {
   try {
     for (const path of [
       'package.json',
+      '.pi/runtime/release.json',
       '.pi/starter/settings.json',
       '.pi/starter/npm/package.json',
       '.pi/starter/AGENTS.md'
@@ -362,12 +363,17 @@ it('the ship tree rejects a malformed proxy URL', () => {
   )
 })
 
-it('the ship tree captures one local version and rejects invalid versions', () => {
+it('the ship tree names the Pi it installs, not the one on this Mac', () => {
+  const pinned = JSON.parse(
+    readFileSync(join(project, '../../.pi/runtime/release.json'), 'utf8')
+  ).version
   const scratch = join(project, '../../artifacts/realness-product')
   mkdirSync(scratch, { recursive: true })
   const bin = mkdtempSync(join(scratch, 'pi-test-'))
+  const root = mkdtempSync(join(scratch, 'root-test-'))
   try {
     writeFileSync(join(bin, 'pi'), '#!/bin/sh\necho 9.8.7\n', { mode: 0o755 })
+    const env = { ...process.env, PATH: `${bin}:${process.env.PATH}` }
     execFileSync(
       process.execPath,
       [
@@ -375,23 +381,16 @@ it('the ship tree captures one local version and rejects invalid versions', () =
         '--env',
         'development'
       ],
-      {
-        env: {
-          ...process.env,
-          PATH: `${bin}:${process.env.PATH}`
-        }
-      }
+      { env }
     )
-    assert.equal(readFileSync(join(ship, './.pi-version'), 'utf8'), '9.8.7\n')
+    assert.equal(
+      readFileSync(join(ship, './.pi-version'), 'utf8'),
+      `${pinned}\n`
+    )
     execFileSync(
       'bash',
       [join(project, 'tools/control/scripts/harness-stage.sh'), 'development'],
-      {
-        env: {
-          ...process.env,
-          PATH: `${bin}:${process.env.PATH}`
-        }
-      }
+      { env }
     )
     assert.equal(
       execFileSync(
@@ -399,45 +398,29 @@ it('the ship tree captures one local version and rejects invalid versions', () =
         ['xOzf', out_path('realness-harness.tar.gz'), './.pi-version'],
         { encoding: 'utf8' }
       ),
-      '9.8.7\n'
+      `${pinned}\n`
     )
     const entry = readFileSync(join(project, 'tools/desktop/entry.ts'), 'utf8')
     assert.ok(
       entry.includes('npm:@earendil-works/pi-coding-agent@__PI_VERSION__')
     )
     assert.ok(
-      entry
-        .replace('__PI_VERSION__', '9.8.7')
-        .includes('npm:@earendil-works/pi-coding-agent@9.8.7')
-    )
-    assert.ok(
       readFileSync(join(project, 'tools/desktop/build.sh'), 'utf8').includes(
         'sed -i \'\' "s|__PI_VERSION__|$pi_version|"'
       )
     )
-    writeFileSync(join(bin, 'pi'), '#!/bin/sh\necho unknown\n', { mode: 0o755 })
-    assert.throws(
-      () =>
-        execFileSync(
-          process.execPath,
-          [
-            join(project, 'tools/control/scripts/ship-stage.js'),
-            '--env',
-            'development'
-          ],
-          {
-            env: {
-              ...process.env,
-              PATH: `${bin}:${process.env.PATH}`
-            },
-            stdio: 'pipe'
-          }
-        ),
-      /invalid local pi version/
+    mkdirSync(join(root, '.pi/runtime'), { recursive: true })
+    writeFileSync(
+      join(root, '.pi/runtime/release.json'),
+      JSON.stringify({ version: 'unknown' })
     )
-    assert.equal(readFileSync(join(ship, './.pi-version'), 'utf8'), '9.8.7\n')
+    assert.throws(
+      () => ship_stage({ root, stage: join(root, 'stage'), proxy_url }),
+      /invalid pinned pi version/
+    )
   } finally {
     rmSync(bin, { recursive: true, force: true })
+    rmSync(root, { recursive: true, force: true })
   }
 })
 

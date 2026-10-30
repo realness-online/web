@@ -60,19 +60,20 @@ chmod 0755 "$TREE/usr/sbin/policy-rc.d"
 
 install -m 0755 "$GUEST_SRC/fcnet-setup.sh" "$TREE/usr/local/bin/fcnet-setup.sh"
 install -m 0755 "$GUEST_SRC/realness-net-up" "$TREE/usr/local/bin/realness-net-up"
-install -m 0755 "$GUEST_SRC/realness-agent.py" "$TREE/usr/local/bin/realness-agent"
-install -m 0755 "$GUEST_SRC/realness-pty" "$TREE/usr/local/bin/realness-pty"
-install -m 0755 "$GUEST_SRC/realness-chat" "$TREE/usr/local/bin/realness-chat"
+install -m 0755 "$GUEST_SRC/realness-agent.js" "$TREE/usr/local/bin/realness-agent"
+install -m 0755 "$GUEST_SRC/realness-pty.js" "$TREE/usr/local/bin/realness-pty"
+install -m 0755 "$GUEST_SRC/realness-chat.js" "$TREE/usr/local/bin/realness-chat"
 install -m 0644 "$GUEST_SRC/realness-chat.md" "$TREE/usr/local/share/realness-chat.md"
 install -m 0755 "$GUEST_SRC/realness-actor-init" "$TREE/usr/local/bin/realness-actor-init"
-install -m 0755 "$GUEST_SRC/realness-publish" "$TREE/usr/local/bin/realness-publish"
-install -m 0755 "$GUEST_SRC/realness-chrome" "$TREE/usr/local/bin/realness-chrome"
-install -m 0755 "$GUEST_SRC/realness-read" "$TREE/usr/local/bin/realness-read"
-install -m 0755 "$GUEST_SRC/realness-site" "$TREE/usr/local/bin/realness-site"
-install -m 0755 "$GUEST_SRC/realness-loop-run" "$TREE/usr/local/bin/realness-loop-run"
-install -m 0755 "$GUEST_SRC/realness-loop" "$TREE/usr/local/bin/realness-loop"
+install -m 0755 "$GUEST_SRC/realness-publish.js" "$TREE/usr/local/bin/realness-publish"
+install -m 0755 "$GUEST_SRC/realness-chrome.js" "$TREE/usr/local/bin/realness-chrome"
+install -m 0755 "$GUEST_SRC/realness-read.js" "$TREE/usr/local/bin/realness-read"
+install -m 0755 "$GUEST_SRC/realness-site.js" "$TREE/usr/local/bin/realness-site"
+install -m 0755 "$GUEST_SRC/realness-loop-run.js" "$TREE/usr/local/bin/realness-loop-run"
+install -m 0755 "$GUEST_SRC/realness-loop.js" "$TREE/usr/local/bin/realness-loop"
 install -m 0755 "$GUEST_SRC/realness-recover" "$TREE/usr/local/bin/realness-recover"
-install -m 0755 "$GUEST_SRC/realness-model-pass" "$TREE/usr/local/bin/realness-model-pass"
+install -m 0755 "$GUEST_SRC/realness-model-pass.js" "$TREE/usr/local/bin/realness-model-pass"
+install -m 0755 "$GUEST_SRC/realness-door.js" "$TREE/usr/local/bin/realness-door.js"
 install -m 0644 "$GUEST_SRC/realness-net.service" "$TREE/etc/systemd/system/realness-net.service"
 install -m 0644 "$GUEST_SRC/realness-vsock.service" "$TREE/etc/systemd/system/realness-vsock.service"
 install -m 0644 "$GUEST_SRC/realness-pty.service" "$TREE/etc/systemd/system/realness-pty.service"
@@ -94,8 +95,7 @@ trap cleanup_mounts EXIT
 BASE_PACKAGES=(
   systemd systemd-sysv
   udev kmod
-  iproute2 socat python3
-  python3-yaml
+  iproute2 socat
   ca-certificates curl git ripgrep fd-find jq unzip
   less
   neovim emacs-nox
@@ -113,8 +113,16 @@ log "dbus reads the actor's machine-id through /etc"
 mkdir -p "$TREE/var/lib/dbus"
 ln -sfn /etc/machine-id "$TREE/var/lib/dbus/machine-id"
 
-chroot "$TREE" dpkg-query -W systemd git socat python3 fd-find neovim emacs-nox > /dev/null \
+chroot "$TREE" dpkg-query -W systemd git socat fd-find neovim emacs-nox > /dev/null \
   || { echo "dpkg does not agree the base packages installed" >&2; exit 1; }
+
+log "n1: no scripting interpreter beyond Node and bash (git's own perl aside)"
+for tool in python3 python python2; do
+  if chroot "$TREE" /bin/sh -c "command -v $tool" > /dev/null 2>&1; then
+    echo "$tool is in the template - Node and bash only (n1)" >&2
+    exit 1
+  fi
+done
 
 log "enabling units"
 systemctl --root="$TREE" enable \
@@ -153,6 +161,12 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
 for command in pi pi-session-read; do
   ln -sf "/usr/local/lib/realness-pi/node_modules/.bin/$command" "$TREE/usr/local/bin/$command"
 done
+installed_pi="$(chroot "$TREE" /usr/local/bin/node -p \
+  "require('/usr/local/lib/realness-pi/node_modules/@earendil-works/pi-coding-agent/package.json').version")"
+[ "$installed_pi" = "$PI_VERSION" ] || {
+  echo "the image installs pi $installed_pi but .pi-version says $PI_VERSION" >&2
+  exit 1
+}
 
 APPS_TAR="${APPS_TAR:-$OUT/realness-apps.tar.gz}"
 [ -f "$APPS_TAR" ] || { echo "run tools/control/scripts/harness-stage.sh <env> on the Mac first" >&2; exit 1; }

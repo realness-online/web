@@ -12,11 +12,11 @@ import AsPanel from '@/components/chat/as-panel.vue'
 import AsWorkspace from '@/components/chat/as-workspace.vue'
 import { use_home_view } from '@/use/home-view'
 import { home_view } from '@/utils/preference'
-import * as idb from 'fake-indexeddb'
 import { use_chat } from '@/use/chat'
 import * as explorer from '@/utils/explorer'
 
 vi.mock('@/utils/serverless', () => ({
+  me: { value: undefined },
   current_user: {
     value: {
       uid: 'durable-chat-person',
@@ -98,9 +98,6 @@ const send = async (value, text) => {
 
 before_each(() => {
   vi.stubEnv('MODE', 'development')
-  for (const [name, value] of Object.entries(idb))
-    if (name.startsWith('IDB') || name === 'indexedDB')
-      vi.stubGlobal(name, value)
   requests.length = 0
   views.length = 0
   view_now = EMPTY_VIEW
@@ -158,25 +155,26 @@ after_each(async () => {
   await explorer.close()
   explorer.reset_owner()
   await Promise.all(others.splice(0).map(other => other.close()))
-  await new Promise((resolve, reject) => {
-    const deletion = indexedDB.deleteDatabase(
-      `realness-explorer-${encodeURIComponent(user.uid)}`
-    )
-    deletion.onsuccess = resolve
-    deletion.onerror = () => reject(deletion.error)
-  })
+  const opfs = await navigator.storage.getDirectory()
+  await opfs.removeEntry(DATABASE).catch(() => {})
   vi.unstubAllGlobals()
   vi.unstubAllEnvs()
 })
 
 const DATABASE = `realness-explorer-${encodeURIComponent(user.uid)}`
 const others = []
-/** Another tab opening the same log; it claims the pen without telling anyone. */
-const other_tab = async () => {
+/** Open the log as another tab would: one tab holds the file at a time. */
+const open_log = async () => {
   const pi = await import(/* @vite-ignore */ '/pi-durable.browser.js')
-  const storage = await pi.openIndexedDbStorage(DATABASE)
+  const storage = await pi.BrowserHtmlStorage.open(DATABASE, DATABASE)
   others.push(storage)
   return storage
+}
+/** Another tab takes the chat: it announces, this tab lets go, then it opens the log. */
+const other_tab = async value => {
+  announce()
+  await wait_for(() => expect(value.taken.value).toBe(true))
+  return open_log()
 }
 /** What the other tab says once it has opened. */
 const announce = () => {
@@ -314,8 +312,9 @@ describe('chat with the real Durable browser bundle', () => {
     expect(terminal.props('finding')).toBe(true)
     expect(terminal.props('actor')).toBe(null)
     finish_startup(new Response('Warm-up unavailable', { status: 503 }))
-    await flush_promises()
-    expect(terminal.props('problem')).toContain('Warm-up unavailable')
+    await wait_for(() =>
+      expect(terminal.props('problem')).toContain('Warm-up unavailable')
+    )
     expect(page.get('#chat-panel [role="status"]').text()).toBe('')
     expect(page.find('#chat-panel [role="alert"]').exists()).toBe(false)
     replies.push({ content: 'We can still talk.' })
@@ -552,9 +551,7 @@ describe('chat with the real Durable browser bundle', () => {
     replies.push({ content: 'First tab.' })
     await send(value, 'Hello.')
     expect(value.taken.value).toBe(false)
-    const other = await other_tab()
-    announce()
-    await wait_for(() => expect(value.taken.value).toBe(true))
+    const other = await other_tab(value)
     const spoken = requests.length
     value.draft.value = 'Still here?'
     await value.send()
@@ -573,17 +570,17 @@ describe('chat with the real Durable browser bundle', () => {
     expect(value.messages.value.at(-1).text).toBe('Back.')
   })
 
-  it('refuses a write after a silent takeover and keeps the draft', async () => {
+  it('another tab cannot open the log while this one writes, so a silent takeover cannot happen', async () => {
     const value = chat()
     replies.push({ content: 'First tab.' })
     await send(value, 'Hello.')
-    await other_tab()
-    value.draft.value = 'Lost pen.'
-    replies.push({ content: 'Should not land.' })
-    await value.send()
-    expect(value.taken.value).toBe(true)
-    expect(value.draft.value).toBe('Lost pen.')
-    expect(value.status.value).toBe('')
+    await expect(open_log()).rejects.toMatchObject({
+      name: 'OwnershipLostError'
+    })
+    replies.push({ content: 'Still mine.' })
+    await send(value, 'Still here?')
+    expect(value.taken.value).toBe(false)
+    expect(value.messages.value.at(-1).text).toBe('Still mine.')
   })
 
   it('says a turn committed, and a read-only tab rereads the log itself', async () => {
@@ -597,9 +594,7 @@ describe('chat with the real Durable browser bundle', () => {
     await send(value, 'Hello.')
     await wait_for(() => expect(heard).toEqual([{ committed: DATABASE }]))
 
-    const other = await other_tab()
-    announce()
-    await wait_for(() => expect(value.taken.value).toBe(true))
+    const other = await other_tab(value)
     const pi = await import(/* @vite-ignore */ '/pi-durable.browser.js')
     const user_id = await other.mintId()
     const reply_id = await other.mintId()

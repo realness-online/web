@@ -7,6 +7,7 @@ import {
   existsSync as exists_sync,
   readFileSync as read_file_sync
 } from 'node:fs'
+import { fileURLToPath as file_url_to_path } from 'node:url'
 import { environment_settings } from '#root/src/settings/environments.js'
 import {
   halo_files,
@@ -26,7 +27,10 @@ const VERSION = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z]))?$/
 const out = text => process.stdout.write(`${text}\n`)
 const err = text => process.stderr.write(`${text}\n`)
 
-const git = args => exec_file_sync('git', args, { encoding: 'utf8' }).trim()
+const GIT = file_url_to_path(
+  new URL('../../../scripts/git.sh', import.meta.url)
+)
+const git = args => exec_file_sync(GIT, args, { encoding: 'utf8' }).trim()
 
 const run = (program, args) => {
   const result = spawn_sync(program, args, { stdio: 'inherit' })

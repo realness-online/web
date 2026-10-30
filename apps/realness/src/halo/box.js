@@ -109,12 +109,6 @@ const write_json = (path, value) =>
   write_file_sync(path, `${JSON.stringify(value, null, 2)}\n`)
 
 /**
- * A minimal firecracker CONNECT/OK responder inside the box. Each guest agent
- * (exec on 52, pty on 53, chat on 55) gets a socat-bound raw socket; this fronts
- * them with the handshake so the halo's vsock channel needs no changes. The
- * CONNECT port picks the agent, as on Firecracker, so any socket reaches any port.
- */
-/**
  * Guest scripts a box takes from this checkout rather than the template: the
  * door clients, which fall back to the /run/realness/door.sock relay a box
  * needs without vsock, and the terminal, so its sessions match this halo.
@@ -124,14 +118,27 @@ const GUEST = file_url_to_path(
 )
 const GUEST_COPIES = [
   'realness-actor-init',
-  'realness-chrome',
-  'realness-loop',
-  'realness-model-pass',
-  'realness-publish',
-  'realness-pty',
-  'realness-read',
-  'realness-site'
+  'realness-agent.js',
+  'realness-chat.js',
+  'realness-chrome.js',
+  'realness-door.js',
+  'realness-loop.js',
+  'realness-loop-run.js',
+  'realness-model-pass.js',
+  'realness-publish.js',
+  'realness-pty.js',
+  'realness-read.js',
+  'realness-responder.js',
+  'realness-site.js'
 ]
+
+/**
+ * The name a guest script runs under, the same as the template installs it:
+ * executables drop `.js`; the door keeps it because Node imports it.
+ * @param {string} name
+ */
+export const installed_name = name =>
+  name === 'realness-door.js' ? name : name.replace(/\.js$/, '')
 
 /** `pi` once it holds across two checks, `starting` while its launcher runs. */
 const PI_STATE =
@@ -139,51 +146,6 @@ const PI_STATE =
   "pgrep -f '(/usr/local/bin/realness|/realness/bin/pi)( |$)' >/dev/null && echo starting || echo none"
 const OPENER_RETRY_MS = 2000
 const PI_POLL_MS = 200
-
-const HANDSHAKE_RESPONDER = [
-  'import socket, os, threading, time',
-  'def pipe(a, b):',
-  '    try:',
-  '        while True:',
-  '            d = a.recv(65536)',
-  '            if not d: break',
-  '            b.sendall(d)',
-  '    except OSError:',
-  '        pass',
-  'TARGETS = {b"52": "/box/agent.sock", b"53": "/box/pty.sock", b"55": "/box/chat.sock"}',
-  'def handle(c, target):',
-  '    try:',
-  '        line = b""',
-  '        while not line.endswith(b"\\n"):',
-  '            ch = c.recv(1)',
-  '            if not ch: return',
-  '            line += ch',
-  '        parts = line.split()',
-  '        target = TARGETS.get(parts[1] if len(parts) > 1 else b"", target)',
-  '        up = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)',
-  '        up.connect(target)',
-  '        c.sendall(b"OK " + line.split()[1] + b"\\n")',
-  '        threading.Thread(target=pipe, args=(c, up), daemon=True).start()',
-  '        pipe(up, c)',
-  '        c.shutdown(socket.SHUT_RDWR)',
-  '        up.close()',
-  '    except OSError:',
-  '        pass',
-  '    finally:',
-  '        c.close()',
-  'def serve(port, target):',
-  '    path = f"/box/sock-{port}"',
-  '    try: os.unlink(path)',
-  '    except FileNotFoundError: pass',
-  '    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)',
-  '    s.bind(path); s.listen(16)',
-  '    while True:',
-  '        c, _ = s.accept()',
-  '        threading.Thread(target=handle, args=(c, target), daemon=True).start()',
-  'for port, target in [(52, "/box/agent.sock"), (53, "/box/pty.sock"), (55, "/box/chat.sock")]:',
-  '    threading.Thread(target=serve, args=(port, target), daemon=True).start()',
-  'while True: time.sleep(3600)'
-].join('\n')
 
 /**
  * The box's /sys. sysfs cannot be mounted fresh from a user namespace that
@@ -634,9 +596,14 @@ export class BoxStore {
     record.root = join(dir, 'root')
     record.realness = realness
     record.vsock_path = join(box, 'agent.sock')
-    write_file_sync(join(box, 'responder.py'), HANDSHAKE_RESPONDER)
     for (const name of GUEST_COPIES) {
-      const target = join(record.root, 'usr', 'local', 'bin', name)
+      const target = join(
+        record.root,
+        'usr',
+        'local',
+        'bin',
+        installed_name(name)
+      )
       copy_file_sync(join(GUEST, name), target)
       chmod_sync(target, EVERYONE_READS)
       if (record.userns) chown_sync(target, USERNS_BASE, USERNS_BASE)
@@ -711,7 +678,7 @@ export class BoxStore {
             'socat UNIX-LISTEN:/box/agent.sock,fork,reuseaddr EXEC:/usr/local/bin/realness-agent & ' +
             'socat UNIX-LISTEN:/box/pty.sock,fork,reuseaddr EXEC:/usr/local/bin/realness-pty & ' +
             'socat UNIX-LISTEN:/box/chat.sock,fork,reuseaddr EXEC:/usr/local/bin/realness-chat & ' +
-            'python3 /box/responder.py & ' +
+            '/usr/local/bin/realness-responder & ' +
             'trap "kill %1 %2 %3 %4 %5" TERM INT; wait'
         ],
         env: [

@@ -50,6 +50,7 @@ check palette npm run check:palette
 check ds-store npm run check:ds-store
 check node-tests "${app[@]}" test:coverage:node
 check frontend-tests "${app[@]}" test:coverage
+check browser-tests "${app[@]}" test:browser
 check functions-tests "${app[@]}" test:functions
 
 (( ${#failed[@]} )) || exit 0
