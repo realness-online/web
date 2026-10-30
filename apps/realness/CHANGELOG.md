@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Quieter poster loading** - When an archive repeats a poster you already
+  have, the console notes it quietly instead of warning.
+
 ## v3.0.0-t - 2026-10-30
 
 - **Posters arrive zipped** - Sync sends a poster's stored gzip as is: a layer

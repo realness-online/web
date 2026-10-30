@@ -294,8 +294,8 @@ export const use_posters = () => {
         new_posters.filter(p => !existing_ids.has(p.id))
       )
       if (dupes.length)
-        console.warn(
-          `[posters] DUPES in archive ${next_archive} for ${author_id}: ${dupes.length} already in posters.value`,
+        console.info(
+          `[posters] skipped ${dupes.length} already-loaded poster(s) from archive ${next_archive} for ${author_id}`,
           dupes.map(p => p.id)
         )
       posters.value.push(...unique_new)
