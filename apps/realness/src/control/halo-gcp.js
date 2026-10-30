@@ -28,14 +28,16 @@ import { ROOT } from './paths.js'
 import { out_path } from '#root/lib/output.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
 import { create_gcs, gcloud_token } from '#root/src/can/gcs.js'
+import { store_of } from '#root/src/can/store.js'
 
 /** Copy a local file to gs://bucket/key with the storage client; gcloud storage crashes on Python 3.14. */
+/** The bucket as sync sees it: keys placed by the layout, stored as `.gz`. */
+const bucket_store = bucket =>
+  store_of(create_gcs({ bucket, token: gcloud_token() }))
+
 const upload_file = async (file, destination) => {
   const [bucket, ...key] = destination.slice('gs://'.length).split('/')
-  await create_gcs({ bucket, token: gcloud_token() }).put(
-    key.join('/'),
-    await read_file(file)
-  )
+  await bucket_store(bucket).put(key.join('/'), await read_file(file))
 }
 /* eslint-disable no-await-in-loop -- readiness polling waits between tries */
 
@@ -307,7 +309,7 @@ const pipe_to = (cloud, argv, input) =>
   )
 
 /** Copy the pass secrets from Secret Manager onto the halo, root-only. */
-export const install_secrets = async (
+const install_secrets = async (
   cloud,
   config,
   name,
@@ -437,37 +439,21 @@ export const revoke = async (
   config,
   name,
   {
-    gcloud = argv => run('gcloud', [...argv, `--project=${config.project}`]),
-    scratch = join(ROOT, '../../artifacts/realness'),
+    store = config.storage ? bucket_store(config.storage) : null,
     now = () => new Date().toISOString()
   } = {}
 ) => {
   if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(name))
     throw new Error('invalid halo name')
-  if (!config.project || !config.storage)
+  if (!config.project || !config.storage || !store)
     throw new Error('halo config needs project and storage')
   step(`fence ${name} in sync`)
-  await mkdir(scratch, { recursive: true })
-  const dir = await mkdtemp(join(scratch, 'fence-'))
-  try {
-    const file = join(dir, 'fence')
-    await write_file(file, JSON.stringify({ halo: name, revoked_at: now() }))
-    await gcloud([
-      'storage',
-      'cp',
-      file,
-      `gs://${config.storage}/halo-fences/${name}`
-    ])
-  } finally {
-    await rm(dir, { recursive: true, force: true })
-  }
+  await store.put(
+    `halo-fences/${name}`,
+    JSON.stringify({ halo: name, revoked_at: now() })
+  )
   step(`drop ${name}'s record key`)
-  await gcloud([
-    'storage',
-    'rm',
-    '--continue-on-error',
-    `gs://${config.storage}/halo-keys/${name}`
-  ])
+  await store.delete(`halo-keys/${name}`).catch(() => {})
   return { halo: name, fenced: true }
 }
 

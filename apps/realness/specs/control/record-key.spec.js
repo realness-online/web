@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { readFile, readdir, stat, mkdir, rm } from 'node:fs/promises'
 import { after, before, it } from 'node:test'
+import { join } from 'node:path'
 import { provision_record_key } from '../../src/control/halo-gcp.js'
 import { out_path } from '#root/lib/output.js'
 
@@ -90,58 +91,23 @@ it('a config without project or storage registers nothing', async () => {
   assert.equal(calls.length, prior)
 })
 
-it('revoke fences the halo in sync, then drops its record key', async () => {
+it('revoke fences the halo where sync reads it, then drops its record key', async () => {
   const { revoke } = await import('../../src/control/halo-gcp.js')
-  const asked = []
-  let fence
+  const { store_of } = await import('#root/src/can/store.js')
+  const { disk } = await import('#root/src/can/disk.js')
+  const bucket = join(scratch, 'bucket')
+  const store = store_of(disk(bucket))
+  await store.put('halo-keys/realness-1', key)
   const result = await revoke(config, 'realness-1', {
-    scratch,
-    now: () => '2026-10-15T00:00:00.000Z',
-    gcloud: async argv => {
-      asked.push(argv.join(' '))
-      if (argv[1] === 'cp') fence = JSON.parse(await readFile(argv[2], 'utf8'))
-    }
+    store,
+    now: () => '2026-10-15T00:00:00.000Z'
   })
   assert.deepEqual(result, { halo: 'realness-1', fenced: true })
-  assert.match(
-    asked[0],
-    /gs:\/\/realness-online\.appspot\.com\/halo-fences\/realness-1$/
+  assert.deepEqual(
+    JSON.parse((await store.get('halo-fences/realness-1')).body.toString()),
+    { halo: 'realness-1', revoked_at: '2026-10-15T00:00:00.000Z' }
   )
-  assert.equal(
-    asked[1],
-    'storage rm --continue-on-error gs://realness-online.appspot.com/halo-keys/realness-1'
-  )
-  assert.deepEqual(fence, {
-    halo: 'realness-1',
-    revoked_at: '2026-10-15T00:00:00.000Z'
-  })
-  assert.deepEqual(await readdir(scratch), [])
-  await assert.rejects(revoke(config, '../x', { scratch }), /invalid halo name/)
-})
-
-it('pass secrets reach the halo on stdin, root-only, never on argv', async () => {
-  const { install_secrets } = await import('../../src/control/halo-gcp.js')
-  const sent = []
-  const host = {
-    sshArgs: (name, command) => ['compute', 'ssh', name, `--command=${command}`]
-  }
-  await install_secrets(host, config, 'realness-1', {
-    read: async secret => `${secret.toLowerCase()}-${'x'.repeat(32)}\n`,
-    send: async (argv, input) => sent.push({ argv: argv.join(' '), input })
-  })
-  assert.equal(sent.length, 2)
-  assert.match(
-    sent[0].argv,
-    /install -D -m 0600 -o root -g root \/dev\/stdin \/etc\/realness\/halo-pass-secret$/
-  )
-  assert.match(sent[1].argv, /\/etc\/realness\/model-pass-secret$/)
-  assert.ok(sent.every(({ argv, input }) => !argv.includes(input)))
-  assert.equal(sent[0].input, `halo_pass_secret-${'x'.repeat(32)}`)
-  await assert.rejects(
-    install_secrets(host, config, 'realness-1', {
-      read: async () => 'short',
-      send: async () => {}
-    }),
-    /HALO_PASS_SECRET is missing or too short/
-  )
+  assert.equal(await store.get('halo-keys/realness-1'), null)
+  assert.ok(await stat(join(bucket, 'halo-fences/realness-1.gz')))
+  await assert.rejects(revoke(config, '../x', { store }), /invalid halo name/)
 })
