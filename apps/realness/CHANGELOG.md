@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-t - 2026-10-30
+
 - **Posters arrive zipped** - Sync sends a poster's stored gzip as is: a layer
   is about 17 KB on the wire instead of 63 KB.
 - **Posters stay at the edge** - The CDN keeps a poster's layers for a year
