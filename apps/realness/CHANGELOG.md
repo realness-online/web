@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-s - 2026-10-30
+
 - **Your files go through sync** - The app reads and writes through the sync
   service at `/v1`; your browser no longer talks to storage directly. Public
   posters are cached at the edge, so a second look loads from nearby.
