@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- **Your files go through sync** - The app reads and writes through the sync
+  service at `/v1`; your browser no longer talks to storage directly. Public
+  posters are cached at the edge, so a second look loads from nearby.
+- **Posters load each layer once** - A poster's picture and its layers share
+  one request instead of asking twice.
+- **Pi 1.4.0 on actors** - Actors run the new Pi; actor scripts are Node and
+  bash only.
+- **Split panes work like terminals** - A split pane shows what you type,
+  starts each line at the left, and knows its size.
+- **Your actor searches your vault** - `realness vault search` and
+  `realness vault note` ask your Mac's index instead of keeping a copy.
+- **Lighter actor recovery** - A new actor keeps sessions packed and leaves
+  older ones in storage: about 300 MB instead of 720 MB.
+- **Diagrams follow light and dark** - Diagrams switch with your system's
+  appearance right away.
+- **Pages work offline** - Shared PWA settings for the app, blog, and plans;
+  checks prove offline loading and clean canonical URLs.
+
 ## v3.0.0-r - 2026-10-26
 
 - **Services prove what they run** - Sync, proxy, and gate answer
