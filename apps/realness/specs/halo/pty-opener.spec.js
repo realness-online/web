@@ -6,7 +6,8 @@ import {
   foreground_busy,
   home_of,
   relay,
-  runs_other
+  runs_other,
+  shell_address
 } from '../../server/halo/guest/realness-pty.js'
 
 /** A `/proc/<pid>/stat` line with the given foreground group. */
@@ -49,4 +50,11 @@ it('keystrokes after the session line reach the holder, byte for byte', async ()
   page.write(Buffer.from('typed é ✓', 'utf8'))
   await new Promise(done => setImmediate(done))
   assert.equal(Buffer.concat(received).toString('utf8'), 'first typed é ✓')
+})
+
+it('a pane shell starts as a normal terminal: it echoes typing and ends lines with CR LF', () => {
+  const address = shell_address('/bin/bash')
+  assert.match(address, /^EXEC:\/bin\/bash,pty,setsid,ctty,stderr$/)
+  for (const raw of ['rawer', 'raw', 'echo=0', 'echo=false'])
+    assert.ok(!address.split(',').includes(raw), raw)
 })

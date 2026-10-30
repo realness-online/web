@@ -54,6 +54,9 @@ const ESCAPE_TAIL = 24
 const HOLDER_WAIT_TRIES = 100
 const HOLDER_WAIT_MS = 20
 const DEFAULT_COLS = 80
+/** How often, and how long, a new holder looks for the shell socat starts. */
+const SHELL_POLL_MS = 20
+const SHELL_TRIES = 250
 const DEFAULT_ROWS = 24
 const OPENER = 'realness\r'
 /** Modes an app sets once at startup, replayed to a browser that attaches later. */
@@ -237,6 +240,16 @@ export const home_of = (name, passwd = read_file_sync('/etc/passwd', 'utf8')) =>
     .find(fields => fields[0] === name)?.[5] ?? HARNESS_DIR
 
 /**
+ * socat's address for a holder's shell. The pty starts as a normal terminal:
+ * it echoes what is typed and turns a newline into CR LF. Programs that want
+ * raw keys (Pi, vim) switch the mode themselves; a raw start leaves a plain
+ * shell blind to its own typing, with every line stepping right.
+ * @param {string} shell
+ * @returns {string}
+ */
+export const shell_address = shell => `EXEC:${shell},pty,setsid,ctty,stderr`
+
+/**
  * The shell a holder owns: socat allocates the pty, bash becomes its session
  * leader, and the holder speaks raw bytes over a unix socket.
  */
@@ -247,10 +260,7 @@ const start_shell = socket => {
   const shell = `setpriv --reuid=${USER} --regid=${USER} --init-groups ${SHELL}`
   const child = spawn(
     'socat',
-    [
-      `UNIX-LISTEN:${socket},mode=600`,
-      `EXEC:${shell},pty,setsid,ctty,stderr,rawer,echo=0`
-    ],
+    [`UNIX-LISTEN:${socket},mode=600`, shell_address(shell)],
     {
       detached: true,
       stdio: 'ignore',
@@ -321,16 +331,29 @@ class Holder {
       upstream.on('error', () => setTimeout(dial, 50))
       upstream.on('connect', () => {
         this.upstream = upstream
-        this.shell_pid = this.find_shell()
-        if (this.shell_pid && !this.main)
-          write_file_sync(`${this.path}.pid`, `${this.shell_pid}\n`)
-        const tty = this.shell_pid && tty_of(this.shell_pid)
-        if (tty) set_window(tty, ...this.size)
+        this.await_shell()
         upstream.on('data', data => this.from_shell(data))
         upstream.on('close', () => this.finished())
       })
     }
     dial()
+  }
+
+  /**
+   * socat starts the shell only once we connect, so it may not exist yet.
+   * Look until it does, then give it the size the page last asked for.
+   * @param {number} [tries]
+   */
+  await_shell(tries = SHELL_TRIES) {
+    this.shell_pid = this.find_shell()
+    if (!this.shell_pid) {
+      if (tries > 0)
+        setTimeout(() => this.await_shell(tries - 1), SHELL_POLL_MS)
+      return
+    }
+    if (!this.main) write_file_sync(`${this.path}.pid`, `${this.shell_pid}\n`)
+    const tty = tty_of(this.shell_pid)
+    if (tty) set_window(tty, ...this.size)
   }
 
   /** The pty's bytes: replay state, then the page. */
@@ -433,8 +456,12 @@ class Holder {
   }
 
   resize(cols, rows) {
+    if (!Number.isFinite(cols) || !Number.isFinite(rows)) return
     const tty = this.shell_pid && tty_of(this.shell_pid)
-    if (!tty || !Number.isFinite(cols) || !Number.isFinite(rows)) return
+    if (!tty) {
+      this.size = [cols, rows]
+      return
+    }
     if (this.fresh && cols > 1) {
       set_window(tty, cols - 1, rows)
       exec_file_sync('sleep', ['0.05'], { stdio: 'ignore' })
