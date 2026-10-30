@@ -12,6 +12,16 @@ export default define_config(async env => {
   const app = await app_config(env)
   return {
     ...app,
+    server: {
+      ...app.server,
+      fs: {
+        ...app.server?.fs,
+        allow: [
+          ...(app.server?.fs?.allow ?? ['.']),
+          out_path('frontend', 'browser')
+        ]
+      }
+    },
     test: {
       root: '.',
       alias: app.test.alias,
@@ -19,6 +29,7 @@ export default define_config(async env => {
       include: ['specs/app/browser/**/*.spec.js'],
       testTimeout: 30000,
       fileParallelism: false,
+      attachmentsDir: out_path('frontend', 'browser', 'attachments'),
       coverage: {
         enabled: true,
         provider: 'v8',
@@ -30,6 +41,7 @@ export default define_config(async env => {
       browser: {
         enabled: true,
         headless: true,
+        screenshotDirectory: out_path('frontend', 'browser', 'screenshots'),
         provider: playwright(),
         instances: [{ browser: 'chromium' }]
       }
