@@ -22,6 +22,13 @@ it('dependencies, builds, auth, secrets, and git never sync', () => {
     assert.ok(skipped(path), path)
 })
 
+it('a bare repository, named like work/realness.git, never syncs', () => {
+  assert.ok(skipped('work/realness.git/HEAD'))
+  assert.ok(skipped('work/realness.git/objects/ab/cdef'))
+  assert.ok(!skipped('work/realness.git.md'))
+  assert.ok(!skipped('vault/notes/git.md'))
+})
+
 it('artifacts never sync, at the root or inside a project', () => {
   assert.ok(skipped('artifacts/starter-harness/package.json'))
   assert.ok(skipped('work/project/artifacts/result.svg'))

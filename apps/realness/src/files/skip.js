@@ -1,6 +1,6 @@
 /**
  * What never syncs: artifacts, local vault metadata, dependencies, builds,
- * caches (npm, Rust `target`), auth files, secrets, shell histories, and git. Names match any path segment.
+ * caches (npm, Rust `target`), auth files, secrets, shell histories, and git (`.git` and bare `name.git` repositories). Names match any path segment.
  */
 const NAMES = new Set([
   'secrets',
@@ -28,6 +28,7 @@ const NAMES = new Set([
   'service-account.json'
 ])
 const PATTERNS = [
+  /.\.git$/,
   /^\.env(\..+)?$/,
   /\.(pem|key|p12|pfx)$/,
   /^id_(rsa|ed25519|ecdsa)(\.pub)?$/,

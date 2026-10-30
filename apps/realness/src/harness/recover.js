@@ -1,5 +1,4 @@
 /** Read-only recovery through the normal sync client; no storage credential. */
-import { execFile as exec_file } from 'node:child_process'
 import { connect as net_connect } from 'node:net'
 import { existsSync as exists_sync } from 'node:fs'
 import {
@@ -32,40 +31,20 @@ import { HTTP } from '#root/lib/http.js'
 const DOOR_TIMEOUT_MS = 10_000
 
 /**
- * Node has no AF_VSOCK socket API; socat supplies only the socket transport.
- * REALNESS_DOOR_SOCK points the door at its unix socket (the box's directory
- * is mounted at /box), reached with node's own net. REALNESS_RECOVERY_PASS
- * skips the door: the halo signed the pass when it launched this recovery.
+ * Ask the halo door for a pass. The door is one unix socket in both runtimes
+ * (`/run/realness/door.sock`; a box makes it, Firecracker relays it over
+ * vsock), so this speaks only node's own net. REALNESS_DOOR overrides the
+ * path, as it does for the guest scripts. REALNESS_RECOVERY_PASS skips the
+ * door: the halo signed the pass when it launched this recovery.
  */
 export const door_pass = (op = 'recovery-pass') => {
   if (process.env.REALNESS_RECOVERY_PASS && op === 'recovery-pass')
     return Promise.resolve(process.env.REALNESS_RECOVERY_PASS)
-  const request = () =>
-    process.env.REALNESS_DOOR_SOCK
-      ? ask_unix_door(process.env.REALNESS_DOOR_SOCK, op)
-      : ask_vsock_door(op)
-  return request().catch(error => Promise.reject(error))
+  return ask_unix_door(
+    process.env.REALNESS_DOOR ?? '/run/realness/door.sock',
+    op
+  )
 }
-
-const ask_vsock_door = op =>
-  new Promise((resolve, reject) => {
-    const child = exec_file(
-      'socat',
-      ['-t', '10', '-', 'VSOCK-CONNECT:2:54'],
-      { timeout: 10000 },
-      (error, stdout) => {
-        if (error) return reject(error)
-        const answer = JSON.parse(stdout.split('\n')[0])
-        if (!answer.ok)
-          return reject(
-            new Error(answer.error || 'halo door did not issue a pass')
-          )
-        resolve(answer.pass)
-      }
-    )
-    if (child.stdin) child.stdin.end(`${JSON.stringify({ op })}\n`)
-    else reject(new Error('socat has no stdin'))
-  })
 
 const ask_unix_door = (path, op) =>
   new Promise((resolve, reject) => {

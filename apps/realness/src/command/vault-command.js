@@ -27,7 +27,9 @@ export const run_vault = async (
   const limit_at = args.indexOf('--limit')
   const limit = limit_at === -1 ? LIMIT_DEFAULT : Number(args[limit_at + 1])
   const words = args.filter(
-    (arg, i) => arg !== '--json' && i !== limit_at && i !== limit_at + 1
+    (arg, i) =>
+      arg !== '--json' &&
+      (limit_at === -1 || (i !== limit_at && i !== limit_at + 1))
   )
   const [verb, ...rest] = words
   const text = rest.join(' ').trim()
