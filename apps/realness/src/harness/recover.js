@@ -138,6 +138,13 @@ export const recover = async (
   } = {}
 ) => {
   const state = await prepare_actor_state(root, { state: state_option })
+  /**
+   * Where the harness settings are read: this root once it has its own
+   * `package.json`, else the starter it will be laid from. Sync never carries
+   * `package.json`, so a fresh actor has none until the starter lands.
+   */
+  const settings_root = () =>
+    starter && !exists_sync(join(root, 'package.json')) ? starter : root
   const pass = await renewing_pass(issue, fetcher)
   const claims = JSON.parse(
     Buffer.from(pass.token().split('.')[0], 'base64url').toString()
@@ -156,6 +163,7 @@ export const recover = async (
     const inner = options.exclude ?? exclude
     const report = await store.sync(local, remote, {
       state,
+      sessions: join(root, runtime_sessions_path(settings_root())),
       pull_only: true,
       ...options,
       exclude: (path, is_dir) =>
@@ -228,10 +236,12 @@ export const recover = async (
     await pull_path('package.json', saved)
     count = before_package
     const policy = light_policy(
-      await read_file(join(root, 'package.json'), 'utf8').catch(error => {
-        if (error.code === 'ENOENT') return null
-        throw error
-      })
+      await read_file(join(settings_root(), 'package.json'), 'utf8').catch(
+        error => {
+          if (error.code === 'ENOENT') return null
+          throw error
+        }
+      )
     )
     let skips = []
     if (policy) {
@@ -240,7 +250,7 @@ export const recover = async (
         listing,
         policy,
         Date.now(),
-        runtime_sessions_path(root)
+        runtime_sessions_path(settings_root())
       )
       const keep = new Set(skips)
       await write_skipped(state, skips)
@@ -267,7 +277,7 @@ export const recover = async (
     light = { skipped: skips.length }
   } else {
     await pull_path('package.json')
-    const sessions = runtime_sessions_path(root)
+    const sessions = runtime_sessions_path(settings_root())
     await pull(`${base}${sessions}/`, join(root, sessions))
     const folder = plans_path(root)
     await pull(`${base}${folder}/`, join(root, folder))

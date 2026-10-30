@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { gunzipSync } from 'node:zlib'
 import {
   disk_bytes,
+  new_local_path,
   packed_on_disk,
   sync_names
 } from '#root/src/files/session-gz.js'
@@ -23,4 +24,12 @@ it('only a renamed session is packed on the way to disk', () => {
     'x'
   )
   assert.equal(disk_bytes('a.html', '/d/a.html', 'x'), 'x')
+})
+
+it('a session arriving with no copy here lands packed, as the Mac keeps it', () => {
+  assert.equal(new_local_path('/r/s', 'a.html', true), '/r/s/a.html.gz')
+  assert.equal(new_local_path('/r/s', 'x/a.html', true), '/r/s/x/a.html.gz')
+  assert.equal(new_local_path('/r/s', 'a.jsonl', true), '/r/s/a.jsonl')
+  assert.equal(new_local_path('/r/s', 'a.html.gz', true), '/r/s/a.html.gz')
+  assert.equal(new_local_path('/r', 'notes/a.html', false), '/r/notes/a.html')
 })

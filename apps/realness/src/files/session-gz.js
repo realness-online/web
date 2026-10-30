@@ -6,6 +6,7 @@
  * names as they are.
  */
 import { readFile as read_file } from 'node:fs/promises'
+import { join } from 'node:path'
 import { unzip, zip } from './zip.js'
 
 const PACKED = /\.html\.gz$/
@@ -31,6 +32,17 @@ export const sync_names = names => {
     })
   )
 }
+
+/**
+ * Where a sync name lands when nothing here holds it yet. A session comes
+ * down packed, `x.html.gz`, as the Mac keeps it; everything else as named.
+ * @param {string} local
+ * @param {string} name
+ * @param {boolean} is_session
+ * @returns {string}
+ */
+export const new_local_path = (local, name, is_session) =>
+  join(local, is_session && name.endsWith('.html') ? `${name}${GZ}` : name)
 
 /** Whether a sync name is held on disk packed, at `path`. */
 export const packed_on_disk = (name, path) =>

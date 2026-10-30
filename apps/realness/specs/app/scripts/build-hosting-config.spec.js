@@ -68,9 +68,9 @@ describe('build-hosting-config', () => {
     expect(result.status).toBe(0)
   })
 
-  it('drops routes to services production lacks', () => {
+  it('production routes only to sync, never the proxy (m2)', () => {
     const { config } = build('--env', 'production')
-    expect(services(config)).toEqual([])
+    expect(services(config)).toEqual(['realness-sync', 'realness-sync'])
     expect(config.hosting.some(hosting => hosting.rewrites?.length)).toBe(true)
   })
 
@@ -81,5 +81,6 @@ describe('build-hosting-config', () => {
         .filter(rewrite => rewrite.run)
         .map(rewrite => rewrite.run.region)
     expect(new Set(regions('development'))).toEqual(new Set(['us-central1']))
+    expect(new Set(regions('production'))).toEqual(new Set(['us-west2']))
   })
 })

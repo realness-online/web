@@ -1,7 +1,16 @@
 import { store_of } from '#root/src/can/store.js'
 import assert from 'node:assert/strict'
 import { createHash, randomUUID } from 'node:crypto'
-import { mkdir, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises'
+import {
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  utimes,
+  writeFile
+} from 'node:fs/promises'
+import { gunzipSync } from 'node:zlib'
 import { join } from 'node:path'
 import { version_sync } from '#root/src/files/version-node.js'
 import { after, before, it } from 'node:test'
@@ -505,4 +514,41 @@ it('recovery never writes a path this machine keeps as the main copy', async () 
     'the main copy'
   )
   assert.equal(await readFile(join(root, 'work/notes/a.md'), 'utf8'), 'note')
+})
+
+it("a fresh actor reads the starter's settings: sessions land packed where package.json says", async () => {
+  const phone = '+14155550126'
+  const root = join(dir, 'starter-settings')
+  const directory = join(dir, 'starter-settings-distribution')
+  const settings = JSON.stringify({ realness: { sessions: 'vault/Sessions' } })
+  await mkdir(join(directory, '.pi'), { recursive: true })
+  await writeFile(join(directory, 'package.json'), settings)
+  await writeFile(
+    join(directory, '.pi/starter.json'),
+    JSON.stringify({
+      version: hash('starter'),
+      files: { 'package.json': hash(settings) }
+    })
+  )
+  const put = (path, body) =>
+    storage.put(`people/${phone}/harness/${path}`, body)
+  await put('.ignore', '')
+  const html = '<!doctype html><html><body>session</body></html>'
+  await put(
+    `vault/Sessions/${new Date().toISOString().slice(0, 7)}-01.html`,
+    html
+  )
+  await recover(url, () => issue_recovery_pass({ phone, id }, secret), root, {
+    starter: directory
+  })
+  const names = await readdir(join(root, 'vault/Sessions'))
+  assert.deepEqual(names, [
+    `${new Date().toISOString().slice(0, 7)}-01.html.gz`
+  ])
+  assert.equal(
+    gunzipSync(
+      await readFile(join(root, 'vault/Sessions', names[0]))
+    ).toString(),
+    html
+  )
 })

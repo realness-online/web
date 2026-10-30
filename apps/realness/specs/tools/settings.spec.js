@@ -67,7 +67,8 @@ it('each browser mode reaches its own gate and local stays local', () => {
     })
   assert.deepEqual(browser_settings('production'), {
     gate_url: environment_settings('production').services.gate_url,
-    proxy_url: environment_settings('production').services.proxy_url
+    proxy_url: environment_settings('production').services.proxy_url,
+    sync_url: '/v1'
   })
   assert.deepEqual(browser_settings('dev-local'), {
     gate_url: '/gate',

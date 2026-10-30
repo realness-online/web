@@ -40,6 +40,7 @@ import {
   OpenSession,
   disk_bytes,
   read_local,
+  new_local_path,
   sync_names
 } from './session-gz.js'
 import { zip } from './zip.js'
@@ -870,6 +871,16 @@ const dry_remote = ({ api, call, folder, remotes, ver = sha }) => {
   }
 }
 
+/**
+ * Where a sync name lives here: the file already holding it, or where a new
+ * one lands (a session packed).
+ * @param {Map<string, string>} locals
+ * @param {string} local
+ * @param {(name: string) => boolean} in_sessions
+ */
+const where_of = (locals, local, in_sessions) => name =>
+  locals.get(name) ?? new_local_path(local, name, in_sessions(name))
+
 const make_transfer = ({
   api: plain_api,
   call,
@@ -901,6 +912,7 @@ const make_transfer = ({
 }) => {
   const api = dated_api(plain_api, folder, locals)
   const file_of = name => join(pair.local, ...name.split('/'))
+  const where = where_of(locals, local, in_sessions)
   const read_replay = (name, base, bytes) => {
     if (!session_folder || !base?.at || !bytes || !base.version) return null
     const rows = replayable(log.since(file_of(name), base.at), plain(bytes))
@@ -1002,7 +1014,7 @@ const make_transfer = ({
   }
   const pull = async (name, theirs) => {
     await safe_target(local, name)
-    const target = locals.get(name) ?? join(local, name)
+    const target = where(name)
     if (dry_run) return agree(name, theirs.bytes, theirs.version)
     await mkdir(dirname(target), { recursive: true })
     await write_file(target, disk_bytes(name, target, theirs.bytes))
@@ -1031,7 +1043,7 @@ const make_transfer = ({
     fx,
     /** Write a sync name back to its file, packed if it lives packed. */
     put_local: (name, bytes) => {
-      const path = locals.get(name) ?? join(local, name)
+      const path = where(name)
       return fx.write_file(path, disk_bytes(name, path, bytes))
     },
     conflict_allowed,

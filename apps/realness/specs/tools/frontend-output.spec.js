@@ -93,7 +93,7 @@ it('hosting configuration retains targets, rules and secondary hosting paths', c
   )
 })
 
-it('production hosting drops routes to services the project has not deployed', context => {
+it('production hosting routes only to sync, in its region (m2)', context => {
   const { output_root, run } = fixture(context)
   run('scripts/build-hosting-config.js', output_root, '--env', 'production')
   const generated = JSON.parse(
@@ -103,7 +103,16 @@ it('production hosting drops routes to services the project has not deployed', c
   assert.ok(routes.length > 0, 'page rewrites remain')
   assert.deepEqual(
     routes.filter(rewrite => rewrite.run),
-    []
+    [
+      {
+        source: '/v1/**',
+        run: { serviceId: 'realness-sync', region: 'us-west2' }
+      },
+      {
+        source: '/sites/**',
+        run: { serviceId: 'realness-sync', region: 'us-west2' }
+      }
+    ]
   )
 })
 

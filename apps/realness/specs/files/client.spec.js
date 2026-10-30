@@ -1008,3 +1008,25 @@ it('a file too big plain but small packed still syncs', async () => {
   assert.deepEqual(report.too_big, [])
   assert.deepEqual(report.pushed, ['big.txt'])
 })
+
+it('a session pulled into a sessions folder that lacks it lands packed, and stays agreed', async () => {
+  const a = as(A)
+  const html = session_jsonl_to_html(
+    session_rows(head, entry('e1', null, 'hi')),
+    'fresh'
+  )
+  await a.put('can://~/fresh-sessions/s.html', html)
+  const sessions = await local('fresh-sessions', {})
+  const state = join(root, 'fresh-sessions-state')
+  await a.sync(sessions, 'can://~/fresh-sessions/', { state, sessions })
+  assert.deepEqual(await readdir(sessions), ['s.html.gz'])
+  assert.equal(
+    gunzipSync(await readFile(join(sessions, 's.html.gz'))).toString(),
+    html
+  )
+  const again = await a.sync(sessions, 'can://~/fresh-sessions/', {
+    state,
+    sessions
+  })
+  assert.deepEqual(again.pulled, [])
+})
