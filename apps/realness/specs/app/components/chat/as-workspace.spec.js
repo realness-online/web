@@ -348,6 +348,25 @@ describe('@/components/chat/as-workspace', () => {
     }
   })
 
+  it('Tab from chat while the terminal has not drawn leaves focus in chat', async () => {
+    mock_route.path = '/'
+    const page = await open()
+    home_view.value = 'chat-tui'
+    await flush_promises()
+    const input = page.get('textarea').element
+    input.focus()
+    const tab = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      code: 'Tab',
+      bubbles: true,
+      cancelable: true
+    })
+    expect(() => input.dispatchEvent(tab)).not.toThrow()
+    expect(tab.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(input)
+    page.unmount()
+  })
+
   it('opens chat alone and terminal beside it through their views', async () => {
     const page = await open()
     home_view.value = 'chat'

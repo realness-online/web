@@ -201,6 +201,15 @@ export const main = () => {
     return 0
   }
 
+  if (!resume)
+    for (const suite of [
+      'test:coverage:node',
+      'test:coverage',
+      'test:browser',
+      'test:functions'
+    ])
+      run('npm', ['run', suite])
+
   const before = revisions(settings)
   for (const step of release_plan(targets, { resume }))
     if (step === 'version') run('npm', ['version', next])

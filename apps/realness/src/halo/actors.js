@@ -1376,8 +1376,11 @@ export class ActorStore {
       other =>
         other.id !== id && other.state === 'running' && other.tap === record.tap
     )
-    if (holder)
-      throw new HaloError(`${record.tap} is held by running actor ${holder.id}`)
+    if (holder) {
+      LOG.info(`${record.tap} is held by ${holder.id}; moving actor ${id}`)
+      record.tap = this.#free_tap()
+      this.#write(record)
+    }
     if (syscalls.ensure_tap(record.tap))
       LOG.info(`rebuilt ${record.tap} for actor ${id}`)
     if (from_memory) {

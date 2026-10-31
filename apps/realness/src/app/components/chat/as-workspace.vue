@@ -115,10 +115,11 @@
     const hop = event.altKey
       ? from_input || from_canvas
       : !event.shiftKey && from_input
-    if (!hop) return
+    const target = from_input ? canvas : input
+    if (!hop || !target) return
     event.preventDefault()
     event.stopImmediatePropagation()
-    ;(from_input ? canvas : input).focus()
+    target.focus()
   }
 
   on_mounted(() =>

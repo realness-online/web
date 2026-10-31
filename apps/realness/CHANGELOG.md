@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Your VM wakes even when another took its network slot** - It moves to a
+  free one instead of refusing. Tab from chat no longer errors while the
+  terminal is still opening.
+
 ## v3.0.0-w - 2026-10-31
 
 - **The terminal opens after your VM wakes from disk** - Pi starts on its
