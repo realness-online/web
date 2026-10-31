@@ -10,11 +10,10 @@ it('local status reads halos, loops, and spend, never cloud logs or bills', () =
   assert.deepEqual(LOCAL_SOURCES, ['halos', 'quiet', 'loops', 'spend'])
 })
 
-it('the local watch passes no cloud sources', () => {
-  assert.match(
-    read('../../src/command/command.js'),
-    /cloud: where\.local\s*\?\s*null/
-  )
+it('the watch tracks production even while the local stack runs', () => {
+  const command = read('../../src/command/command.js')
+  assert.match(command, /service_url \? target\(\) : person_target\(\)/)
+  assert.doesNotMatch(command, /cloud: where\.local/)
 })
 
 /** l7: the Lima halo's intent goes to local sync under its host name, with a halo pass. */

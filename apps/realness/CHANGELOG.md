@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- **`npm run watch` keeps working past an hour** - It renews its sign-in after
-  a 401, as other commands do, instead of failing every read.
+- **`npm run watch` tracks production on GCP** - It reads production sync
+  with your saved sign-in and only the `realness-online` project, even while
+  the local stack runs. It renews its sign-in after a 401.
 - **JetBrains Mono in the terminal** - With Nerd Font icons, so LazyVim and
   Doom show their symbols. It loads only when a terminal opens. Panes get
   even padding on every side.

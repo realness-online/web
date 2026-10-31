@@ -290,7 +290,8 @@ const run_watch_command = async (
       'usage',
       'realness watch runs on the desktop harness'
     )
-  const where = await target()
+  /** Production on GCP, with the person's saved sign-in; `--sync` still points elsewhere. */
+  const where = await (service_url ? target() : person_target())
   const token = await where.get_token()
   if (!token)
     throw new CapabilityError(
@@ -329,10 +330,7 @@ const run_watch_command = async (
       named,
       records,
       service: service_url ?? where.url,
-      /** On the local stack nothing reads a cloud project. */
-      cloud: where.local
-        ? null
-        : cloud_sources({ store, sync: sync_traffic_cache }),
+      cloud: cloud_sources({ store, sync: sync_traffic_cache }),
       interval_ms,
       signal: controller.signal,
       stdout,

@@ -276,3 +276,21 @@ it('watch traffic reads the archive it just refreshed', async () => {
     await rm(cache_path, { force: true })
   }
 })
+
+it('by default the watch reads production on GCP and nothing else', async () => {
+  const args_seen = []
+  const sources = cloud_sources({
+    now: () => now.getTime(),
+    run: async (command, args) => {
+      args_seen.push(...args)
+      return { ok: true, out: '[]', err: '' }
+    }
+  })
+  await sources.services()
+  await sources.resources()
+  await assert.rejects(sources.billing(), /no billing export configured/)
+  const projects = args_seen.filter(arg => arg.startsWith('--project='))
+  assert.ok(projects.length > 0)
+  assert.deepEqual([...new Set(projects)], ['--project=realness-online'])
+  assert.ok(!args_seen.some(arg => arg.includes('realness-development')))
+})

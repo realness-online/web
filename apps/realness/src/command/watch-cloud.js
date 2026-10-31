@@ -80,6 +80,9 @@ export const sync_traffic = ({ sync, project, host, now = Date.now }) => {
   }
 }
 
+/** The watch tracks production on GCP; local is free and development is not watched. */
+const WATCHED = { production: ENVIRONMENTS.production }
+
 /**
  * Billing covers configured exports; inventory includes their billed projects.
  * Plans read from `store`; without one they are unknown. Traffic reads the
@@ -87,7 +90,7 @@ export const sync_traffic = ({ sync, project, host, now = Date.now }) => {
  * @param {{ environments?: object, run?: typeof attempt, now?: () => number, store?: Parameters<typeof import('./watch-traffic.js').read_plans>[0] | null, sync?: (options: object) => { added: number, pages: number }, traffic_project?: string }} [options]
  */
 export const cloud_sources = ({
-  environments = ENVIRONMENTS,
+  environments = WATCHED,
   run = attempt,
   now = Date.now,
   store = null,
