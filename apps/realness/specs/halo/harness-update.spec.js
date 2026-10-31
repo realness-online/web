@@ -100,11 +100,18 @@ it('the Pi runtime is left to the template', t => {
   assert.equal(read('.pi/runtime/package.json'), null)
 })
 
-it('the guest agent always follows the release', t => {
+it('the guest programs the halo talks to always follow the release', t => {
   const { fresh, actor } = disks(t, { release: {}, shipped: {}, workspace: {} })
-  tree(fresh, { [SYSTEM[0]]: 'streams' })
-  tree(actor, { [SYSTEM[0]]: 'old' })
-  assert.deepEqual(update_harness({ fresh, actor }).updated, [SYSTEM[0]])
-  assert.equal(read_file_sync(join(actor, SYSTEM[0]), 'utf8'), 'streams')
+  assert.deepEqual(SYSTEM, [
+    'usr/local/bin/realness-agent',
+    'usr/local/bin/realness-pty',
+    'usr/local/bin/realness-actor-init'
+  ])
+  for (const path of SYSTEM) {
+    tree(fresh, { [path]: 'new' })
+    tree(actor, { [path]: 'old' })
+    assert.deepEqual(update_harness({ fresh, actor }).updated, [path])
+    assert.equal(read_file_sync(join(actor, path), 'utf8'), 'new')
+  }
   assert.deepEqual(update_harness({ fresh, actor }).updated, [])
 })

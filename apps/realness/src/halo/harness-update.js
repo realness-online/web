@@ -15,7 +15,11 @@ import { dirname, join, relative } from 'node:path'
 export const STARTER = 'usr/local/share/realness-starter'
 export const WORKSPACE = 'realness'
 /** Guest programs the halo talks to; they always follow the release. */
-export const SYSTEM = ['usr/local/bin/realness-agent']
+export const SYSTEM = [
+  'usr/local/bin/realness-agent',
+  'usr/local/bin/realness-pty',
+  'usr/local/bin/realness-actor-init'
+]
 const PI_RUNTIME = '.pi/runtime/'
 
 /**
