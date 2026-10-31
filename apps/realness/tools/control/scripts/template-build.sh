@@ -258,7 +258,7 @@ cat > "$TREE/usr/local/bin/nvim" <<WRAPPER
 if [ ! -e "\$HOME/.config/nvim/init.lua" ] && [ ! -e "\$HOME/.config/nvim/init.vim" ]; then
   export XDG_CONFIG_HOME=/realness/.pi/editors
   [ -e /realness/.pi/editors/nvim/init.lua ] || XDG_CONFIG_HOME=/usr/local/share/realness-starter/.pi/editors
-  export XDG_DATA_HOME=$EDITORS/share XDG_STATE_HOME=$EDITORS/state XDG_CACHE_HOME=$EDITORS/cache
+  export XDG_DATA_HOME=$EDITORS/share XDG_STATE_HOME=/realness/artifacts/editors/state XDG_CACHE_HOME=/realness/artifacts/editors/cache
 fi
 exec /opt/nvim/bin/nvim "\$@"
 WRAPPER
@@ -270,6 +270,7 @@ if [ -e "\$HOME/.config/emacs/init.el" ] || [ -e "\$HOME/.emacs.d/init.el" ] || 
 fi
 shipped=/realness/.pi/editors/doom
 [ -e "\$shipped/init.el" ] || shipped=/usr/local/share/realness-starter/.pi/editors/doom
+mkdir -p /realness/artifacts/editors/cache/doom /realness/artifacts/editors/state/doom
 export DOOMDIR="\${DOOMDIR:-\$shipped}" DOOMLOCALDIR=$EDITORS/doom-local
 exec /usr/bin/emacs --init-directory $EDITORS/emacs "\$@"
 WRAPPER
@@ -286,7 +287,11 @@ chroot "$TREE" env $editor_env XDG_CONFIG_HOME=/realness/.pi/editors XDG_DATA_HO
   /opt/nvim/bin/nvim --headless "+Lazy! restore" +qa < /dev/null \
   > "$RUN/lazy-restore.log" 2>&1 || { tail -40 "$RUN/lazy-restore.log"; exit 1; }
 chroot "$TREE" /usr/local/bin/nvim --version | head -1
-rm -rf "$TREE/var/tmp/editor-home"
+rm -rf "$TREE/var/tmp/editor-home" "$TREE$EDITORS/cache" "$TREE$EDITORS/state"
+for dir in cache state; do
+  rm -rf "$TREE$EDITORS/doom-local/$dir"
+  ln -s "/realness/artifacts/editors/$dir/doom" "$TREE$EDITORS/doom-local/$dir"
+done
 du -sh "$TREE/opt/nvim" "$TREE$EDITORS" | sed 's/^/  /'
 
 chroot "$TREE" git config --system credential.https://github.com.helper '!/usr/local/bin/realness git-credential'
