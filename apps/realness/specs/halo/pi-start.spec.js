@@ -64,7 +64,7 @@ const actor_init = file_url_to_path(
 )
 
 /** Run `realness-actor-init start-pi` with `pgrep` answering `running` for those patterns. */
-const start_pi = (t, running) => {
+const start_pi = (t, running, { pty = '', seconds } = {}) => {
   mkdir_sync(scratch, { recursive: true })
   const directory = mkdtemp_sync(join(scratch, 'opener-'))
   t.after(() => rm_sync(directory, { recursive: true, force: true }))
@@ -77,14 +77,17 @@ const start_pi = (t, running) => {
     'pgrep',
     `case "$*" in ${running.map(flag => `"${flag}"*`).join('|') || '__none__'}) exit 0;; esac\nexit 1`
   )
-  executable('pty', `cat >> "${typed}"`)
+  executable('pty', `cat >> "${typed}"\n${pty}`)
+  // The guest's coreutils `timeout`, from what every test host has.
+  executable('timeout', `exec perl -e 'alarm shift; exec @ARGV or die' "$@"`)
   write_file_sync(join(directory, 'sock'), '')
   spawn_sync('/bin/sh', [actor_init, 'start-pi'], {
     env: {
       ...process.env,
       PATH: `${directory}:/usr/bin:/bin`,
       REALNESS_PTY: join(directory, 'pty'),
-      REALNESS_PTY_SOCK: join(directory, 'sock')
+      REALNESS_PTY_SOCK: join(directory, 'sock'),
+      ...(seconds && { REALNESS_OPENER_SECONDS: String(seconds) })
     }
   })
   try {
@@ -96,6 +99,12 @@ const start_pi = (t, running) => {
 
 it('types the opener once when no Pi is starting', t => {
   assert.equal(start_pi(t, []), 1)
+})
+
+it('a terminal client that never exits cannot hold start-pi past its bound', t => {
+  const started = Date.now()
+  assert.equal(start_pi(t, [], { pty: 'sleep 30', seconds: 1 }), 1)
+  assert.ok(Date.now() - started < 5000, 'start-pi returned so it can retry')
 })
 
 it('types nothing while Pi is still starting as its launcher', t => {

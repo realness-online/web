@@ -132,3 +132,46 @@ it('a quiet terminal stops holding the halo; typing holds it again', async t => 
   await new Promise(done => setTimeout(done, 20))
   assert.equal(work, 0, 'closing a quiet terminal releases nothing twice')
 })
+
+/** Attach once to a halo whose actor fails to start Pi, in the given VM state. */
+const attach_after_pi_failure = async (t, state) => {
+  const guest = create_server(socket => {
+    socket.on('error', () => {})
+    socket.once('data', () => socket.write('OK 53\n'))
+  })
+  await listen(guest)
+  const server = make_server({
+    get: () => ({
+      owner: phone,
+      state,
+      vsock_path: { port: guest.address().port, host: '127.0.0.1' }
+    }),
+    ensure_running: async () => {
+      throw new Error('Pi did not start: timed out after 60s')
+    },
+    begin_work: () => {},
+    end_work: () => {},
+    idle: async () => {}
+  })
+  await listen(server)
+  const socket = connect(server.address().port, '127.0.0.1')
+  t.after(async () => {
+    socket.destroy()
+    guest.closeAllConnections?.()
+    await Promise.all([close(server), close(guest)])
+  })
+  const lines = new Lines(socket)
+  await new Promise(done => socket.once('connect', done))
+  socket.write(`${JSON.stringify({ actor: 'a-one', pass })}\n`)
+  return JSON.parse(await lines.read(1))
+}
+
+it('a running actor whose Pi did not start still opens its terminal, at the shell', async t => {
+  assert.deepEqual(await attach_after_pi_failure(t, 'running'), { ok: true })
+})
+
+it('an actor that never came up still refuses its terminal with the reason', async t => {
+  assert.deepEqual(await attach_after_pi_failure(t, 'stopped'), {
+    error: 'Pi did not start: timed out after 60s'
+  })
+})

@@ -280,6 +280,40 @@ const start_shell = socket => {
   return child
 }
 
+/** Bytes a holder keeps for its shell before the bridge connects; past this, the oldest go. */
+const HELD_BYTES = 64 * 1024
+
+/**
+ * The way into a holder's shell. The holder listens before socat's bridge
+ * connects, so the first keys (the opener a woken actor types) can arrive
+ * early: hold them until `connect`, never drop them.
+ */
+export const shell_input = () => {
+  /** @type {{ write: (data: Buffer) => unknown } | null} */
+  let socket = null
+  /** @type {Buffer[]} */
+  let held = []
+  let size = 0
+  return {
+    /** @param {Buffer | string} data */
+    write(data) {
+      if (typeof data === 'string') data = Buffer.from(data)
+      if (socket) return socket.write(data)
+      held.push(data)
+      size += data.length
+      while (size > HELD_BYTES && held.length > 1)
+        size -= /** @type {Buffer} */ (held.shift()).length
+    },
+    /** @param {{ write: (data: Buffer) => unknown }} upstream */
+    connect(upstream) {
+      socket = upstream
+      for (const data of held) upstream.write(data)
+      held = []
+      size = 0
+    }
+  }
+}
+
 /** One holder: the pty's owner and the client currently attached. */
 class Holder {
   /**
@@ -299,6 +333,7 @@ class Holder {
     this.kitty = []
     this.carry = ''
     this.upstream = null
+    this.input = shell_input()
     this.shell = start_shell(`${path}.raw`)
     this.shell_pid = null
     this.listen()
@@ -333,6 +368,7 @@ class Holder {
       upstream.on('error', () => setTimeout(dial, 50))
       upstream.on('connect', () => {
         this.upstream = upstream
+        this.input.connect(upstream)
         this.await_shell()
         upstream.on('data', data => this.from_shell(data))
         upstream.on('close', () => this.finished())
@@ -393,7 +429,7 @@ class Holder {
     } catch {}
     try {
       this.keys = create_server(socket => {
-        socket.once('data', data => this.upstream?.write(data))
+        socket.once('data', data => this.input.write(data))
         socket.on('error', () => {})
       })
       this.keys.listen(KEYS_SOCKET, () => {
@@ -429,7 +465,7 @@ class Holder {
       const opener = this.fresh && data.toString() === OPENER
       this.fresh = false
       if (opener && this.running_command()) return
-      this.upstream?.write(data)
+      this.input.write(data)
     }
   }
 

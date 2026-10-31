@@ -7,7 +7,8 @@ import {
   home_of,
   relay,
   runs_other,
-  shell_address
+  shell_address,
+  shell_input
 } from '../../server/halo/guest/realness-pty.js'
 
 /** A `/proc/<pid>/stat` line with the given foreground group. */
@@ -50,6 +51,27 @@ it('keystrokes after the session line reach the holder, byte for byte', async ()
   page.write(Buffer.from('typed é ✓', 'utf8'))
   await new Promise(done => setImmediate(done))
   assert.equal(Buffer.concat(received).toString('utf8'), 'first typed é ✓')
+})
+
+it('keys sent before the shell bridge connects reach the shell once it does', () => {
+  const input = shell_input()
+  input.write(Buffer.from('realness\r'))
+  const shell = []
+  input.connect({ write: data => shell.push(data) })
+  input.write(Buffer.from('more'))
+  assert.equal(Buffer.concat(shell).toString(), 'realness\rmore')
+})
+
+it('keys held for an unconnected shell stay bounded, keeping the newest', () => {
+  const input = shell_input()
+  const chunk = Buffer.alloc(16 * 1024, 'a')
+  for (let i = 0; i < 8; i += 1) input.write(chunk)
+  input.write(Buffer.from('last'))
+  const shell = []
+  input.connect({ write: data => shell.push(data) })
+  const held = Buffer.concat(shell)
+  assert.ok(held.length <= 64 * 1024 + 4)
+  assert.ok(held.toString().endsWith('last'))
 })
 
 it('a pane shell starts as a normal terminal: it echoes typing and ends lines with CR LF', () => {

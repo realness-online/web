@@ -24,6 +24,24 @@ const reject = (client, message) => {
   client.end(`${JSON.stringify({ error: message })}\n`)
 }
 
+/**
+ * Start the actor for its terminal. Startup still fails when Pi does not
+ * start, but a VM that is up keeps its shell: the terminal attaches there,
+ * where the person can see what went wrong, instead of never opening.
+ */
+const running_or_shell = async (store, id) => {
+  try {
+    await store.ensure_running(id)
+  } catch (error) {
+    let state
+    try {
+      ;({ state } = store.get(id))
+    } catch {}
+    if (state !== 'running') throw error
+    LOG.warn(`pty attaching to ${id}'s shell without Pi: ${error.message}`)
+  }
+}
+
 const handle = async (
   store,
   client,
@@ -99,7 +117,7 @@ const handle = async (
   client.on('close', end)
   client.on('error', end)
   try {
-    await store.ensure_running(id)
+    await running_or_shell(store, id)
     if (ended || client.destroyed) return end()
     guest = await vsock.connect(record.pty_path ?? record.vsock_path, PTY_PORT)
     if (ended || client.destroyed) {

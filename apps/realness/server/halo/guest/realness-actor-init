@@ -25,7 +25,9 @@ pty_sock="${REALNESS_PTY_SOCK:-/run/realness-pty.sock}"
 type_opener() {
   for _ in $(seq 50); do [ -e "$pty_sock" ] && break; sleep 0.1; done
   opener="$(printf 'realness\r' | base64)"
-  printf '{"op":"data","data_b64":"%s"}\n' "$opener" | "$pty" > /dev/null 2>&1 || true
+  # The client can outlive its one line; bound it so start-pi returns and retries.
+  printf '{"op":"data","data_b64":"%s"}\n' "$opener" |
+    timeout "${REALNESS_OPENER_SECONDS:-5}" "$pty" > /dev/null 2>&1 || true
 }
 # A Pi still starting runs as its launcher scripts, not yet as `pi`; typing
 # again then lands `realness` in Pi's editor.
