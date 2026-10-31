@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-x - 2026-10-31
+
 - **Your VM wakes even when another took its network slot** - It moves to a
   free one instead of refusing. Tab from chat no longer errors while the
   terminal is still opening.
