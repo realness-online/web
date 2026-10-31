@@ -6,6 +6,7 @@
   with your saved sign-in and only the `realness-online` project, even while
   the local stack runs. It renews its sign-in after a 401. Model spend
   counts calls and tokens, so free-model use shows instead of "no model use".
+  Cloud spend reads production's own billing export in `realness-online`.
 - **JetBrains Mono in the terminal** - With Nerd Font icons, so LazyVim and
   Doom show their symbols. It loads only when a terminal opens. Panes get
   even padding on every side.

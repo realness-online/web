@@ -288,9 +288,22 @@ it('by default the watch reads production on GCP and nothing else', async () => 
   })
   await sources.services()
   await sources.resources()
-  await assert.rejects(sources.billing(), /no billing export configured/)
+  await assert.rejects(sources.billing(), /no exported billing data/)
+  assert.ok(
+    args_seen.some(arg => arg.includes('realness-online.billing_export')),
+    'the bill is read from production'
+  )
   const projects = args_seen.filter(arg => arg.startsWith('--project='))
   assert.ok(projects.length > 0)
   assert.deepEqual([...new Set(projects)], ['--project=realness-online'])
   assert.ok(!args_seen.some(arg => arg.includes('realness-development')))
+})
+
+it("production's bill comes from its own export, never development's", async () => {
+  const { ENVIRONMENTS } =
+    await import('#root/tools/control/webspace.config.js')
+  assert.equal(
+    ENVIRONMENTS.production.cloud.billing,
+    'realness-online.billing_export.gcp_billing_export_v1_01D37F_25129A_87149E'
+  )
 })

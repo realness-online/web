@@ -161,7 +161,8 @@ export const ENVIRONMENTS = {
       project: production.project,
       region: production.services.region,
       services: ['realness-sync', 'realness-proxy', 'realness-gate'],
-      billing: null,
+      billing:
+        'realness-online.billing_export.gcp_billing_export_v1_01D37F_25129A_87149E',
       openrouter: { key_secret: 'OPENROUTER_API_KEY' },
       expected: [
         'Cloud Run',
