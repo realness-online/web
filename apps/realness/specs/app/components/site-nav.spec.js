@@ -51,6 +51,14 @@ describe('@/components/site-nav', () => {
     expect(nav.find('a[href="/terms"]').text()).toBe('Legal')
   })
 
+  it('ends the menu with the account icon, labeled with the name', () => {
+    mock_current_user.value = { uid: 'person-1' }
+    mock_me.value = { name: 'Scott' }
+    const account = mount().find('menu > a:last-child')
+    expect(account.attributes('href')).toBe('/account')
+    expect(account.attributes('aria-label')).toBe('Scott')
+  })
+
   it('marks Pricing current on each tier, but not on another page', () => {
     for (const path of [
       '/pricing/endorse',
@@ -77,9 +85,5 @@ describe('@/components/site-nav', () => {
     expect(nav.attributes('itemtype')).toBe(
       'https://schema.org/SiteNavigationElement'
     )
-  })
-
-  it('leaves Account to the Thoughts page', () => {
-    expect(mount().find('a[href="/account"]').exists()).toBe(false)
   })
 })

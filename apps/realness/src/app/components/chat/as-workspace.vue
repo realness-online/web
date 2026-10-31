@@ -44,9 +44,11 @@
     { flush: 'sync' }
   )
 
+  /** Signed out, the view is always thoughts; wait for sign-in so a reload keeps the saved layout. */
   watch(
-    () => route?.path,
-    path => {
+    () => [route?.path, current_user.value?.uid],
+    ([path, uid]) => {
+      if (!uid) return
       if (path === '/terminal') set_view(shows.value.chat ? 'chat-tui' : 'tui')
       else if (path === '/')
         set_view(shows.value.chat ? 'chat-thoughts' : 'thoughts')

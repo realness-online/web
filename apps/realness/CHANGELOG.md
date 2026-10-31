@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- **Neovim and Emacs in every terminal** - `nvim` opens LazyVim on Neovim
+  0.12 and `emacs` opens Doom, with the owner's theme, plugins, and keys,
+  installed in the image so they start offline. Your own config in
+  `~/.config` wins.
+- **Terminal prompt like your Mac's** - Gray time, git branch, yellow folder,
+  and the cursor on its own line.
+- **Split the pane you're in** - Option+Space then `\` splits the focused
+  pane to the right, `-` splits it below, arrows move to the pane on that
+  side, `[` and `]` step between panes. Option+Cmd keys go back to the
+  browser and the Dock.
+- **Account back in the site nav** - The account icon sits beside the logo
+  again, not in the Thoughts header.
+- **Chat stays where you left it** - Reloading keeps chat open or closed as
+  you had it.
+
 ## v3.0.0-u - 2026-10-30
 
 - **Background workers allowed** - The site's security policy lets the app

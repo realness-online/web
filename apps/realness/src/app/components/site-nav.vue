@@ -1,12 +1,16 @@
 <script setup>
   import LogoAsLink from '@/components/logo-as-link'
   import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
+  import Icon from '@/components/icon.vue'
   import { computed } from 'vue'
   import { useRoute as use_route } from 'vue-router'
-  import { current_user } from '@/utils/serverless'
+  import { current_user, me } from '@/utils/serverless'
 
   const route = use_route()
   const pricing_current = computed(() => route?.path?.startsWith('/pricing/'))
+  const account_label = computed(
+    () => (current_user.value && me.value?.name) || 'Account'
+  )
 </script>
 
 <template>
@@ -26,6 +30,14 @@
         >Pricing</router-link
       >
       <router-link to="/terms" replace>Legal</router-link>
+      <router-link
+        id="account"
+        to="/account"
+        replace
+        :aria-label="account_label"
+        :title="account_label">
+        <icon name="silhouette" />
+      </router-link>
     </menu>
     <logo-as-link />
   </nav>
@@ -72,6 +84,16 @@
 
       a[href='/terms'] {
         font-size: smaller;
+      }
+
+      & > a#account {
+        margin-left: auto;
+        display: inline-flex;
+        & > svg {
+          width: calc(var(--base-line) * 1.33);
+          height: calc(var(--base-line) * 1.33);
+          fill: currentColor;
+        }
       }
     }
   }

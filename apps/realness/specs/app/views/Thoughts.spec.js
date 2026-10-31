@@ -297,16 +297,10 @@ describe('Thoughts', () => {
     window.history.replaceState({}, '', '/')
   })
 
-  it('puts Account right beside the question mark, signed in or out', async () => {
-    for (const user of [{ uid: 'test-user' }, null]) {
-      mock_current_user_ref.value = user
-      // eslint-disable-next-line no-await-in-loop -- one mount per sign-in state
-      const wrapper = await settled(mount())
-      const account = wrapper.get('header > #account')
-      expect(account.attributes('aria-label')).toBe('Account')
-      expect(account.element.nextElementSibling?.id).toBe('about')
-      wrapper.unmount()
-    }
+  it('leaves Account to the site nav', async () => {
+    const wrapper = await settled(mount())
+    expect(wrapper.find('header > #account').exists()).toBe(false)
+    wrapper.unmount()
   })
 
   afterEach(() => {

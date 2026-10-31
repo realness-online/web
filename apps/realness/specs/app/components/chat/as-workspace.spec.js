@@ -234,6 +234,17 @@ describe('@/components/chat/as-workspace', () => {
     })
   }
 
+  it('keeps chat open across a reload where sign-in arrives after mount', async () => {
+    mock_route.path = '/'
+    current_user.value = null
+    home_view.value = 'chat-thoughts'
+    await open()
+    expect(home_view.value).toBe('chat-thoughts')
+    current_user.value = { uid: 'person-1', getIdToken: async () => 'id.token' }
+    await flush_promises()
+    expect(home_view.value).toBe('chat-thoughts')
+  })
+
   it('starts warm-up when sign-in finishes with chat already open', async () => {
     current_user.value = null
     home_view.value = 'chat-thoughts'
