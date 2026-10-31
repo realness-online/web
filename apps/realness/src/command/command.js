@@ -130,14 +130,10 @@ const open_store = async (
       'not_signed_in',
       'not signed in; run realness login'
     )
-  let current = token
   return client({
     url: service_url ?? where.url,
     phone: phone_of(token),
-    token: async ({ refresh = false } = {}) => {
-      if (refresh) current = (await where.get_token()) ?? current
-      return current
-    },
+    token: renewing_token(where, token),
     state: state ?? (root ? use_harness_state(root) : undefined)
   })
 }
@@ -271,6 +267,20 @@ const run_git_credential = async (
 }
 
 /** Watch halo health on the desktop harness until interrupted. */
+/**
+ * The sign-in a client sends: the current token, renewed from `where` when
+ * the client asks again after a 401. A watch outlives a one-hour local token.
+ * @param {{ get_token: () => Promise<string | null> }} where
+ * @param {string} token
+ */
+export const renewing_token = (where, token) => {
+  let current = token
+  return async ({ refresh = false } = {}) => {
+    if (refresh) current = (await where.get_token()) ?? current
+    return current
+  }
+}
+
 const run_watch_command = async (
   args,
   { actor, target, json, service_url, state, stdin, stdout }
@@ -302,7 +312,11 @@ const run_watch_command = async (
   const { cloud_sources } = await import('./watch-cloud.js')
   const { sync_traffic_cache } =
     await import('#root/tools/ops/hosting-traffic.js')
-  const store = client({ url: service_url ?? where.url, token })
+  const store = client({
+    url: service_url ?? where.url,
+    phone: phone_of(token),
+    token: renewing_token(where, token)
+  })
   const controller = new AbortController()
   process.once('SIGINT', () => controller.abort())
   process.once('SIGTERM', () => controller.abort())

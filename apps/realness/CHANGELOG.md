@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **`npm run watch` keeps working past an hour** - It renews its sign-in after
+  a 401, as other commands do, instead of failing every read.
 - **JetBrains Mono in the terminal** - With Nerd Font icons, so LazyVim and
   Doom show their symbols. It loads only when a terminal opens. Panes get
   even padding on every side.

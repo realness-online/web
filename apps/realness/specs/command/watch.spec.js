@@ -1074,3 +1074,13 @@ it('a resize redraws at the new width without reading services again', async () 
   assert.ok(resized.split('\n').every(line => [...line].length <= 30))
   assert.equal(stdout.listenerCount('resize'), 0)
 })
+
+it('a long watch asks for a fresh sign-in after a 401, then keeps it', async () => {
+  const { renewing_token } = await import('#root/src/command/command.js')
+  const minted = ['first', 'second']
+  const where = { get_token: async () => minted.shift() ?? 'none' }
+  const token = renewing_token(where, await where.get_token())
+  assert.equal(await token(), 'first')
+  assert.equal(await token({ refresh: true }), 'second')
+  assert.equal(await token(), 'second', 'the watch keeps the renewed one')
+})
