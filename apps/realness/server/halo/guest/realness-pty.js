@@ -41,6 +41,8 @@ import { createServer as create_server, connect } from 'node:net'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 
 const SHELL = '/bin/bash'
+/** The prompt the person sees on their Mac; it runs their own ~/.bashrc first. */
+const BASHRC = '/usr/local/share/realness-bashrc'
 const USER = 'realness'
 /** The visible terminal starts at the harness root, as on the person's own machine. */
 const HARNESS_DIR = '/realness'
@@ -257,7 +259,7 @@ const start_shell = socket => {
   try {
     unlink_sync(socket)
   } catch {}
-  const shell = `setpriv --reuid=${USER} --regid=${USER} --init-groups ${SHELL}`
+  const shell = `setpriv --reuid=${USER} --regid=${USER} --init-groups ${SHELL} --rcfile ${BASHRC} -i`
   const child = spawn(
     'socat',
     [`UNIX-LISTEN:${socket},mode=600`, shell_address(shell)],

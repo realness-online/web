@@ -1,0 +1,19 @@
+# The actor's interactive shell, matching the owner's Mac prompt:
+#   16:28 (main) ~/realness
+#    _
+# Gray time, the git branch (green clean, red {changed}), yellow folder,
+# and the cursor on its own line. The person's own ~/.bashrc runs first.
+
+[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"
+
+__realness_git() {
+  local branch
+  branch=$(git symbolic-ref --short HEAD 2> /dev/null) || return
+  if git diff --quiet 2> /dev/null && git diff --cached --quiet 2> /dev/null; then
+    printf '\001\033[32m\002 (%s)\001\033[0m\002' "$branch"
+  else
+    printf '\001\033[31m\002 {%s}\001\033[0m\002' "$branch"
+  fi
+}
+
+PS1='\[\033[90m\]\A\[\033[0m\]$(__realness_git) \[\033[33m\]\w\[\033[0m\]\n '
