@@ -6,7 +6,7 @@ import {
   it,
   vi
 } from 'vite-plus/test'
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { mount, flushPromises as flush_promises } from '@vue/test-utils'
 import AsPanel from '@/components/chat/as-panel.vue'
 import AsWorkspace from '@/components/chat/as-workspace.vue'
@@ -14,6 +14,10 @@ import { use_home_view } from '@/use/home-view'
 import { home_view } from '@/utils/preference'
 import { use_chat } from '@/use/chat'
 import * as explorer from '@/utils/explorer'
+
+/** The page's route; a spec sets a path, the rest leave it unset. */
+const route = reactive({ path: undefined, query: {} })
+vi.mock('vue-router', () => ({ useRoute: () => route }))
 
 vi.mock('@/utils/serverless', () => ({
   me: { value: undefined },
@@ -151,6 +155,7 @@ before_each(() => {
 after_each(async () => {
   for (const page of pages) page.unmount()
   home_view.value = 'thoughts'
+  route.path = undefined
   await Promise.all(chats.map(value => value.stop()))
   await explorer.close()
   explorer.reset_owner()
@@ -274,12 +279,13 @@ describe('chat with the real Durable browser bundle', () => {
     expect(value.status.value).toBe('Nothing upstream')
   })
 
-  it('answers while the VM warms in the background and keeps answering if warm-up fails', async () => {
+  it('answers while the terminal VM warms and keeps answering if warm-up fails', async () => {
     let finish_startup
     startup_pending = new Promise(resolve => {
       finish_startup = resolve
     })
-    home_view.value = 'chat-thoughts'
+    route.path = '/terminal'
+    home_view.value = 'chat-tui'
     use_home_view().wide.value = true
     const page = mount(AsWorkspace, {
       global: {

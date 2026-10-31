@@ -141,11 +141,11 @@ describe('browser chat', () => {
     expect(calls.some(call => call.url.includes('/pty'))).toBe(false)
   })
 
-  it('does not switch chat to an automatically selected terminal actor', async () => {
+  it('chat alone starts no actor and answers in the browser', async () => {
     mock_route.query = {}
     const page = await open()
     expect(calls.filter(call => call.url.endsWith('/v1/startup'))).toHaveLength(
-      1
+      0
     )
     expect(mock_replace).not.toHaveBeenCalled()
     await submit(page, 'Hello')

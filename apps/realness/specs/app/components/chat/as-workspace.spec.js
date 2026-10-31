@@ -205,14 +205,17 @@ describe('@/components/chat/as-workspace', () => {
     )
   })
 
-  it('warms the VM when chat opens and reuses it when the terminal opens', async () => {
+  it('chat alone leaves the halo asleep; the terminal wakes it once', async () => {
     await open()
     expect(calls).toHaveLength(0)
     key_commands.run_command('view::Toggle_Chat')
     await flush_promises()
     expect(home_view.value).toBe('chat-thoughts')
-    expect(calls.filter(url => url.endsWith('/v1/startup'))).toHaveLength(1)
+    expect(calls.filter(url => url.endsWith('/v1/startup'))).toHaveLength(0)
     key_commands.run_command('view::Layout_Tui')
+    await flush_promises()
+    expect(calls.filter(url => url.endsWith('/v1/startup'))).toHaveLength(1)
+    key_commands.run_command('view::Layout_Chat_Tui')
     await flush_promises()
     expect(calls.filter(url => url.endsWith('/v1/startup'))).toHaveLength(1)
   })
@@ -245,14 +248,27 @@ describe('@/components/chat/as-workspace', () => {
     expect(home_view.value).toBe('chat-thoughts')
   })
 
-  it('starts warm-up when sign-in finishes with chat already open', async () => {
-    current_user.value = null
-    home_view.value = 'chat-thoughts'
-    await open()
-    expect(calls).toHaveLength(0)
-    current_user.value = { uid: 'person-1', getIdToken: async () => 'id.token' }
-    await flush_promises()
-    expect(calls.filter(url => url.endsWith('/v1/startup'))).toHaveLength(1)
+  it('a reload with chat open wakes nothing; with the terminal it wakes once', async () => {
+    for (const [path, saved, wakes] of [
+      ['/', 'chat-thoughts', 0],
+      ['/terminal', 'chat-tui', 1]
+    ]) {
+      calls.length = 0
+      mock_route.path = path
+      current_user.value = null
+      home_view.value = saved
+      const page = await open()
+      expect(calls).toHaveLength(0)
+      current_user.value = {
+        uid: 'person-1',
+        getIdToken: async () => 'id.token'
+      }
+      await flush_promises()
+      expect(calls.filter(url => url.endsWith('/v1/startup'))).toHaveLength(
+        wakes
+      )
+      page.unmount()
+    }
   })
 
   it('takes the actor from the address when named', async () => {

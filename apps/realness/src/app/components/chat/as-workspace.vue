@@ -64,8 +64,12 @@
     await startup.prepare(requested_actor).catch(() => {})
   }
 
+  /**
+   * Only the terminal wakes the halo. Chat answers in the browser, and its
+   * bash tool starts the actor itself on the first command.
+   */
   watch(
-    () => [shows.value.chat || shows.value.tui, current_user.value?.uid],
+    () => [shows.value.tui, current_user.value?.uid],
     ([needed]) => {
       if (needed) find_actor()
     },

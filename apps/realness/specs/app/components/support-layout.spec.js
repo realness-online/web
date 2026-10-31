@@ -163,7 +163,7 @@ describe('app-wide chat', () => {
     pane.remove()
   })
 
-  it('warms the VM beside documentation, keeps its draft on navigation, and sends the new page context', async () => {
+  it('leaves the halo asleep beside documentation, keeps its draft on navigation, and sends the new page context', async () => {
     const { page, router } = await open()
     await page.get('button[aria-label="Open chat"]').trigger('click')
     await flush_promises()
@@ -189,7 +189,7 @@ describe('app-wide chat', () => {
     ).toHaveLength(0)
     expect(
       requests.filter(request => request.url.endsWith('/v1/startup'))
-    ).toHaveLength(1)
+    ).toHaveLength(0)
   })
 
   it('opens with Option+` while typing, then restores focus when closed', async () => {
