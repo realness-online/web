@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-w - 2026-10-31
+
 - **The terminal opens after your VM wakes from disk** - Pi starts on its
   own again: the first keys reach the shell instead of being dropped, and a
   stuck start retries. If Pi still fails, the terminal opens at a shell
