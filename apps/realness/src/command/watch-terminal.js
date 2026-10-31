@@ -924,35 +924,48 @@ export const traffic_lines = (traffic, width, on = true, now = Date.now()) => {
 const model_panel_lines = (cost, width, on) => {
   const model_rows = cost?.rows ?? []
   const model_daily = new Map()
+  const used_daily = new Map()
   for (const row of model_rows)
-    for (const day of row.daily ?? [])
+    for (const day of row.daily ?? []) {
       model_daily.set(day.date, (model_daily.get(day.date) ?? 0) + day.cost)
+      used_daily.set(
+        day.date,
+        (used_daily.get(day.date) ?? 0) + (day.used ?? 0)
+      )
+    }
   const model_values = [...model_daily]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([, cost]) => cost)
   const today = usd(model_rows.reduce((sum, row) => sum + row.day.cost, 0))
   const month = usd(model_rows.reduce((sum, row) => sum + row.month.cost, 0))
-  const today_tokens = model_rows.reduce(
-    (sum, row) => sum + (row.day.tokens ?? 0),
-    0
-  )
-  const month_tokens = model_rows.reduce(
-    (sum, row) => sum + (row.month.tokens ?? 0),
-    0
-  )
+  const total = (span, key) =>
+    model_rows.reduce((sum, row) => sum + (row[span][key] ?? 0), 0)
+  /** Calls and every token used; an older ledger without calls shows its allowance tokens. */
+  const counted = model_rows.some(row => row.month.calls !== undefined)
+  const use = (span, unit = ' tok') => {
+    if (!counted) return tokens(total(span, 'tokens'))
+    const calls = total(span, 'calls')
+    return `${calls} call${calls === 1 ? '' : 's'} ${tokens(total(span, 'used'))}${unit}`
+  }
+  /** Free models cost nothing, so their days chart by tokens used. */
+  const chart = model_values.some(value => value !== 0)
+    ? model_values
+    : [...used_daily].sort(([a], [b]) => a.localeCompare(b)).map(([, n]) => n)
   return cost?.status === 'failed'
     ? [paint('UNAVAILABLE', 'failed', on)]
     : [
         fit_first(
           [
-            `today ${today} ${tokens(today_tokens)}  month ${month} ${tokens(month_tokens)}`,
+            `today ${today} ${use('day')}  month ${month} ${use('month')}`,
+            `today ${use('day')}  month ${use('month')}`,
+            `today ${use('day', '')}  month ${use('month', '')}`,
             `today ${today}  month ${month}`,
             `${today} / ${month}`
           ],
           width
         ),
-        model_values.some(value => value !== 0)
-          ? paint(sparkline(model_values, width), 'running', on)
+        total('month', 'calls') > 0 || model_values.some(value => value !== 0)
+          ? paint(sparkline(chart, width), 'running', on)
           : paint('no model use this month', 'unknown', on)
       ]
 }

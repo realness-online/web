@@ -23,7 +23,25 @@ const month_days = (now = new Date()) => {
 /** The ledger path for one person and day, under `usage/`. */
 const usage_day = (phone, day) => `usage/${phone}/${day}/`
 
-const add = (a, b) => ({ tokens: a.tokens + b.tokens, cost: a.cost + b.cost })
+const add = (a, b) => ({
+  tokens: a.tokens + b.tokens,
+  cost: a.cost + b.cost,
+  calls: a.calls + b.calls,
+  used: a.used + b.used
+})
+
+/**
+ * Every call and every token, free models too: what the watch shows as use.
+ * `sum_rows` stays the allowance and cost the proxy enforces.
+ * @param {Array<{ prompt_tokens?: number, completion_tokens?: number }>} rows
+ */
+const use_of = rows => ({
+  calls: rows.length,
+  used: rows.reduce(
+    (sum, row) => sum + (row.prompt_tokens ?? 0) + (row.completion_tokens ?? 0),
+    0
+  )
+})
 
 const missing = error =>
   error.status === HTTP.NOT_FOUND || error.message.endsWith(': 404')
@@ -70,13 +88,18 @@ export const ledger = store => ({
     for (const day of month_days(now)) {
       const rows = await day_page(store, phone, day)
       if (rows) found = true
-      sums.push({ date: day, ...sum_rows(rows ?? []) })
+      sums.push({ date: day, ...sum_rows(rows ?? []), ...use_of(rows ?? []) })
     }
     if (!found) throw new Error('no model ledger for this month')
     const today = sums.at(-1)
     return {
-      day: { tokens: today.tokens, cost: today.cost },
-      month: sums.reduce(add, { tokens: 0, cost: 0 }),
+      day: {
+        tokens: today.tokens,
+        cost: today.cost,
+        calls: today.calls,
+        used: today.used
+      },
+      month: sums.reduce(add, { tokens: 0, cost: 0, calls: 0, used: 0 }),
       daily: sums
     }
   }

@@ -521,10 +521,10 @@ it('daily spend reaches the frame through the ledger and health snapshot', async
   const spent = await source.spent(phone, new Date('2026-10-03T12:00:00Z'))
   assert.deepEqual(
     spent.daily,
-    dates.map((date, cost) => ({ date, tokens: 3, cost }))
+    dates.map((date, cost) => ({ date, tokens: 3, cost, calls: 1, used: 3 }))
   )
-  assert.deepEqual(spent.day, { tokens: 3, cost: 2 })
-  assert.deepEqual(spent.month, { tokens: 9, cost: 3 })
+  assert.deepEqual(spent.day, { tokens: 3, cost: 2, calls: 1, used: 3 })
+  assert.deepEqual(spent.month, { tokens: 9, cost: 3, calls: 3, used: 9 })
   const snapshot = await health_snapshot({
     store: store(keys),
     token: claims(),
@@ -1083,4 +1083,33 @@ it('a long watch asks for a fresh sign-in after a 401, then keeps it', async () 
   assert.equal(await token(), 'first')
   assert.equal(await token({ refresh: true }), 'second')
   assert.equal(await token(), 'second', 'the watch keeps the renewed one')
+})
+
+it('free-model calls show as model use, though they spend no allowance', async () => {
+  const phone = '+15555550123'
+  const path = `can://usage/${phone}/2026-10-30/`
+  const keys = {
+    [path]: ['index.html'],
+    [`${path}index.html`]: usage_row({
+      model: 'thinkingmachines/inkling:free',
+      payer: phone,
+      plan: 'free',
+      status: 200,
+      usage: { prompt_tokens: 40000, completion_tokens: 3552, cost: 0 },
+      call: 'c1'
+    })
+  }
+  const spent = await usage_ledger(store(keys)).spent(
+    phone,
+    new Date('2026-10-30T12:00:00Z')
+  )
+  assert.deepEqual(spent.month, { tokens: 0, cost: 0, calls: 1, used: 43552 })
+  const snapshot = await health_snapshot({
+    store: store(keys),
+    token: claims(),
+    ledger: ledger(spent)
+  })
+  const text = frame({ snapshot, on: false, width: 100, height: 60 })
+  assert.doesNotMatch(text, /no model use/)
+  assert.match(text, /month 1 call 44k/)
 })
