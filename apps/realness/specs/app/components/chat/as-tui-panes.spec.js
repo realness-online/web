@@ -43,6 +43,7 @@ vi.mock('@/utils/serverless', async () => {
 import AsTui from '@/components/chat/as-tui.vue'
 import { use_home_view } from '@/use/home-view'
 import { home_view } from '@/utils/preference'
+import { use_key_commands } from '@/use/key-commands'
 
 let socket
 before_each(() => {
@@ -66,18 +67,27 @@ after_each(() => {
 
 enable_auto_unmount(after_each)
 
+/** Each pane gets its own key commands, run as the Option+Space panel would. */
 const open = async () => {
+  const keys = use_key_commands()
   const pane = mount(AsTui, {
     props: { actor: 'a-mine00000000' },
-    global: { provide: { set_working: () => {} } },
+    global: { provide: { set_working: () => {}, 'key-commands': keys } },
     attachTo: document.body
   })
+  pane.keys = keys
   await flush_promises()
   return pane
 }
 
 const terminals = pane =>
   pane.findAll('[data-terminal]').map(stage => stage.attributes('aria-label'))
+
+/** Where a pane sits, from its inline style. */
+const box = (pane, label) => {
+  const { top, left } = pane.get(`[aria-label="${label}"]`).element.style
+  return { top, left }
+}
 
 /** A Ghostty-style key on the panes wrapper. */
 const key = (pane, init) => pane.get('[data-panes]').trigger('keydown', init)
@@ -90,7 +100,7 @@ describe('@/components/chat/as-tui panes', () => {
     })
     const pane = await open()
     expect(terminals(pane)).toEqual(['Terminal', 'Terminal p1'])
-    expect(pane.get('[data-panes]').attributes('data-direction')).toBe('column')
+    expect(box(pane, 'Terminal p1')).toMatchObject({ top: '50%', left: '0%' })
     expect(mock_mount).toHaveBeenCalledTimes(2)
   })
 
@@ -115,31 +125,27 @@ describe('@/components/chat/as-tui panes', () => {
     expect(pane.find('[role="alert"]').exists()).toBe(false)
   })
 
-  it('Option+Cmd+D splits right, Shift+D down, stops at four, and saves each change', async () => {
-    const split_key = (target, init) =>
-      key(target, { metaKey: true, altKey: true, ...init })
+  it('\\ splits the focused pane right, - splits it below, stops at four, and saves', async () => {
     const pane = await open()
-    await split_key(pane, { key: 'd' })
+    const run = command => pane.keys.run_command(command)
+    run('view::Split_Right')
     await flush_promises()
     expect(terminals(pane)).toEqual(['Terminal', 'Terminal p1'])
-    expect(pane.get('[data-panes]').attributes('data-direction')).toBe('row')
+    expect(box(pane, 'Terminal p1')).toMatchObject({ top: '0%', left: '50%' })
     expect(mock_save).toHaveBeenLastCalledWith(
       expect.anything(),
       'a-mine00000000',
-      { panes: [{ session: null }, { session: 'p1' }], direction: 'row' }
+      { tree: { split: 'row', a: { session: null }, b: { session: 'p1' } } }
     )
-    const fresh = await open()
-    await split_key(fresh, { key: 'D', shiftKey: true })
+    run('view::Split_Down')
     await flush_promises()
-    expect(fresh.get('[data-panes]').attributes('data-direction')).toBe(
-      'column'
-    )
-    fresh.unmount()
-    await split_key(pane, { key: 'd' })
-    await split_key(pane, { key: 'd' })
+    expect(box(pane, 'Terminal p1')).toMatchObject({ top: '0%', left: '50%' })
+    expect(box(pane, 'Terminal p2')).toMatchObject({ top: '50%', left: '50%' })
+    expect(box(pane, 'Terminal')).toMatchObject({ top: '0%', left: '0%' })
+    run('view::Split_Right')
     await flush_promises()
     expect(terminals(pane)).toHaveLength(4)
-    await split_key(pane, { key: 'd' })
+    run('view::Split_Down')
     await flush_promises()
     expect(terminals(pane)).toHaveLength(4)
   })
@@ -153,13 +159,12 @@ describe('@/components/chat/as-tui panes', () => {
     expect(terminals(pane)).toEqual(['Terminal'])
     await key(pane, { key: 'd', metaKey: true, altKey: true })
     await flush_promises()
-    await key(pane, { key: 'w', metaKey: true, altKey: true })
-    expect(terminals(pane)).toEqual(['Terminal', 'Terminal p1'])
+    expect(terminals(pane)).toEqual(['Terminal'])
   })
 
   it('a shell that exits closes its split pane', async () => {
     const pane = await open()
-    await key(pane, { key: 'd', metaKey: true, altKey: true })
+    pane.keys.run_command('view::Split_Right')
     await flush_promises()
     expect(terminals(pane)).toEqual(['Terminal', 'Terminal p1'])
     mock_mount.mock.calls[1][1].on_exit(0)
@@ -167,7 +172,7 @@ describe('@/components/chat/as-tui panes', () => {
     expect(terminals(pane)).toEqual(['Terminal'])
   })
 
-  it('Option+Cmd steps with arrows and [ ]; plain keys stay with the app', async () => {
+  it('panel [ and ] step panes; panel keys wait while the terminal is hidden', async () => {
     mock_load.mockResolvedValueOnce({
       panes: [{ session: null }, { session: 'p1' }]
     })
@@ -175,17 +180,38 @@ describe('@/components/chat/as-tui panes', () => {
     const [main, side] = pane.findAll('[data-terminal] canvas')
     main.element.focus()
     await main.trigger('focusin')
-    await key(pane, { key: 'ArrowRight', metaKey: true, altKey: true })
+    pane.keys.run_command('view::Pane_Next')
     expect(document.activeElement).toBe(side.element)
-    await key(pane, { key: 'ArrowLeft', metaKey: true, altKey: true })
+    pane.keys.run_command('view::Pane_Previous')
     expect(document.activeElement).toBe(main.element)
-    await key(pane, { key: ']', metaKey: true, altKey: true })
+    home_view.value = 'thoughts'
+    pane.keys.run_command('view::Split_Right')
+    await flush_promises()
+    expect(terminals(pane)).toHaveLength(2)
+  })
+
+  it('panel arrows move to the pane on that side; Option+Cmd keys stay with the browser', async () => {
+    mock_load.mockResolvedValueOnce({
+      panes: [{ session: null }, { session: 'p1' }]
+    })
+    const pane = await open()
+    const [main, side] = pane.findAll('[data-terminal] canvas')
+    main.element.focus()
+    await main.trigger('focusin')
+    for (const init of [
+      { key: 'ArrowRight', metaKey: true, altKey: true },
+      { key: ']', metaKey: true, altKey: true },
+      { key: 'ArrowRight' }
+    ]) {
+      await key(pane, init)
+      expect(document.activeElement).toBe(main.element)
+    }
+    pane.keys.run_command('view::Pane_Right')
     expect(document.activeElement).toBe(side.element)
-    await key(pane, { key: '[', metaKey: true, altKey: true })
-    expect(document.activeElement).toBe(main.element)
-    await key(pane, { key: 'ArrowRight' })
-    expect(document.activeElement).toBe(main.element)
-    await key(pane, { key: 'ArrowRight', ctrlKey: true, altKey: true })
+    await side.trigger('focusin')
+    pane.keys.run_command('view::Pane_Right')
+    expect(document.activeElement).toBe(side.element)
+    pane.keys.run_command('view::Pane_Left')
     expect(document.activeElement).toBe(main.element)
   })
 

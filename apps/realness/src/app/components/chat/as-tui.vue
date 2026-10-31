@@ -14,6 +14,15 @@
     watch
   } from 'vue'
   import wasm_url from '@/terminal/ghostty-vt.wasm?url'
+  import {
+    MAX_PANES,
+    from_saved,
+    places,
+    remove_pane,
+    sessions,
+    split_at,
+    toward
+  } from '@/terminal/pane-tree.js'
 
   const props = defineProps({
     actor: { type: String, default: null },
@@ -26,9 +35,25 @@
 
   const { view, shows, wide } = use_home_view()
   /** Split panes: each is its own shell session on the actor. null is the first. */
-  const MAX_PANES = 4
-  const panes = ref([{ session: null }])
-  const direction = ref('row')
+  const tree = ref(
+    /** @type {import('@/terminal/pane-tree.js').Node} */ ({ session: null })
+  )
+  const panes = computed(() =>
+    sessions(tree.value).map(session => ({ session }))
+  )
+  /** Each pane's box; panes stay one flat list so a split never remounts one. */
+  const boxes = computed(() => places(tree.value))
+  const EDGE = 100
+  const place_style = session => {
+    const { top, left, width, height } = boxes.value.get(session)
+    const gap = (start, size) => (start + size < EDGE ? '1px' : '0px')
+    return {
+      top: `${top}%`,
+      left: `${left}%`,
+      width: `calc(${width}% - ${gap(left, width)})`,
+      height: `calc(${height}% - ${gap(top, height)})`
+    }
+  }
   const stages = new Map()
   const terminals = new Map()
   const stage_ref = session => element => {
@@ -40,33 +65,6 @@
     stages.get(focused.value) ?? stages.get(panes.value[0]?.session ?? null)
   const focus_pane = session => {
     stages.get(session)?.querySelector('canvas')?.focus()
-  }
-  /**
-   * Split keys with Option+Cmd, which browsers leave alone: D right,
-   * Shift+D down, [ / ] step, and arrows step. Plain arrows stay with the app.
-   */
-  const pane_keys = event => {
-    if (!event.metaKey || !event.altKey) return
-    const direction = event.shiftKey ? 'column' : 'row'
-    const letter = event.key.toLowerCase()
-    if (letter === 'd') {
-      event.preventDefault()
-      event.stopPropagation()
-      return split(direction)
-    }
-    if (event.key === ']' || event.key === '[') {
-      if (panes.value.length < 2) return
-      event.preventDefault()
-      event.stopPropagation()
-      return step_pane(event.key === ']' ? 1 : -1)
-    }
-    const step = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[
-      event.key
-    ]
-    if (!step || panes.value.length < 2) return
-    event.preventDefault()
-    event.stopPropagation()
-    step_pane(step)
   }
   const mounted = ref(false)
   const mount_problem = ref('')
@@ -184,25 +182,14 @@
    */
   const restore_layout = async (user, actor) => {
     try {
-      const layout = await load_layout(user, actor)
-      const saved = Array.isArray(layout?.panes) ? layout.panes : []
-      if (
-        saved.length &&
-        saved.length <= MAX_PANES &&
-        saved[0].session === null
-      )
-        panes.value = saved.map(({ session }) => ({ session: session ?? null }))
-      if (layout?.direction === 'column') direction.value = 'column'
+      tree.value = from_saved(await load_layout(user, actor))
     } catch {}
   }
 
   const keep_layout = () => {
     const user = current_user.value
     if (!user || !props.actor) return
-    save_layout(user, props.actor, {
-      panes: panes.value,
-      direction: direction.value
-    }).catch(() => {})
+    save_layout(user, props.actor, { tree: tree.value }).catch(() => {})
   }
 
   const mount_terminal = async () => {
@@ -226,15 +213,17 @@
     }
   }
 
-  /** A new pane in the given split direction, with its own shell session. */
-  const split = async direction_option => {
+  /** Split the focused pane: `row` puts the new one right, `column` below. */
+  const split = async direction => {
     if (panes.value.length >= MAX_PANES) return
-    if (panes.value.length === 1) direction.value = direction_option
     const used = new Set(panes.value.map(pane => pane.session))
     let n = 1
     while (used.has(`p${n}`)) n++
     const pane = { session: `p${n}` }
-    panes.value = [...panes.value, pane]
+    const at = used.has(focused.value)
+      ? focused.value
+      : panes.value.at(-1).session
+    tree.value = split_at(tree.value, at, direction, pane.session)
     keep_layout()
     await next_tick()
     const { mount } = await import('@/terminal/terminal.js')
@@ -247,7 +236,7 @@
     if (session === null) return
     terminals.get(session)?.close()
     terminals.delete(session)
-    panes.value = panes.value.filter(pane => pane.session !== session)
+    tree.value = remove_pane(tree.value, session)
     keep_layout()
     if (focused.value === session) {
       focused.value = null
@@ -259,6 +248,12 @@
     const at = panes.value.findIndex(pane => pane.session === focused.value)
     const next = panes.value.at((Math.max(at, 0) + step) % panes.value.length)
     focus_pane(next.session)
+  }
+
+  /** Focus the pane on that side of the focused one; nothing at an edge. */
+  const move_toward = side => {
+    const next = toward(tree.value, focused.value, side)
+    if (next !== undefined) focus_pane(next)
   }
 
   const retry = () => {
@@ -279,7 +274,7 @@
       if (before && before[1] !== props.actor) {
         latest.clear()
         close_terminals()
-        panes.value = [{ session: null }]
+        tree.value = { session: null }
         focused.value = null
         mounted.value = false
       }
@@ -292,7 +287,26 @@
     { immediate: true }
   )
 
+  const key_commands = inject('key-commands', null)
+  /** Option+Space panel keys; they act only while the terminal shows. */
+  const PANE_COMMANDS = {
+    'view::Split_Right': () => split('row'),
+    'view::Split_Down': () => split('column'),
+    'view::Pane_Previous': () => panes.value.length > 1 && step_pane(-1),
+    'view::Pane_Next': () => panes.value.length > 1 && step_pane(1),
+    'view::Pane_Left': () => move_toward('left'),
+    'view::Pane_Right': () => move_toward('right'),
+    'view::Pane_Up': () => move_toward('up'),
+    'view::Pane_Down': () => move_toward('down')
+  }
+  for (const [command, run] of Object.entries(PANE_COMMANDS))
+    key_commands?.register_handler(command, {
+      handler: () => shows.value.tui && run(),
+      context: 'global'
+    })
   on_before_unmount(() => {
+    for (const command of Object.keys(PANE_COMMANDS))
+      key_commands?.unregister_handler(command)
     left = true
     latest.clear()
     startup.stop()
@@ -318,16 +332,13 @@
       :problem="problem || mount_problem"
       :progress="feedback_progress"
       @retry="retry" />
-    <section
-      v-if="mounted"
-      data-panes
-      :data-direction="direction"
-      @keydown.capture="pane_keys">
+    <section v-if="mounted" data-panes>
       <section
         v-for="item in panes"
         :key="item.session ?? 'main'"
         :ref="stage_ref(item.session)"
         data-terminal
+        :style="place_style(item.session)"
         :data-focused="focused === item.session || undefined"
         @focusin="focused = item.session"
         :aria-label="item.session ? `Terminal ${item.session}` : 'Terminal'">
@@ -379,23 +390,16 @@
     & > section[data-panes] {
       grid-area: 2 / 1;
       position: relative;
-      display: flex;
-      gap: 1px;
       min-block-size: 0;
       background: var(--muted-text);
-      &[data-direction='column'] {
-        flex-direction: column;
-      }
     }
     & > section[data-panes]:has(> section[data-terminal] + section[data-terminal]) > section[data-focused] {
       box-shadow: inset 0 2px 0 var(--accent, currentColor);
     }
     & section[data-terminal] {
-      flex: 1 1 0;
-      min-inline-size: 0;
+      position: absolute;
+      box-sizing: border-box;
       background: var(--surface);
-      position: relative;
-      min-block-size: 0;
       overflow: hidden;
       padding-inline: (base-line / 2);
       user-select: none;
