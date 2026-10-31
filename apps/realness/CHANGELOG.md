@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **The terminal opens after your VM wakes from disk** - Pi starts on its
+  own again: the first keys reach the shell instead of being dropped, and a
+  stuck start retries. If Pi still fails, the terminal opens at a shell
+  prompt instead of never appearing. Existing VMs pick this up on their
+  next wake.
+
 ## v3.0.0-v - 2026-10-31
 
 - **Chat no longer wakes the halo** - Only opening the terminal does. Chat
