@@ -57,6 +57,15 @@ export const STARTER_DEFAULTS = {
   '.pi/starter/AGENTS.md': 'AGENTS.md'
 }
 
+/**
+ * The owner's editors, shipped for everyone: Neovim (LazyVim) and Doom Emacs
+ * configs with their theme, plugins, and keys. Their git history stays home.
+ */
+export const EDITORS = {
+  'work/nvim': '.pi/editors/nvim',
+  'work/doom': '.pi/editors/doom'
+}
+
 export const HOME_ONLY = {
   editor: "reads Scott's Neovim and Emacs",
   'zoom-to-ableton': "carries Scott's effect rack",
@@ -100,6 +109,7 @@ export const ships = path => {
     name.startsWith('._') ||
     is_history(name) ||
     parts.includes('node_modules') ||
+    parts.includes('.git') ||
     is_test_scratch(parts)
   )
     return false
@@ -260,6 +270,9 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
   }
   for (const [from, to] of Object.entries(STARTER_DEFAULTS))
     copy(join(root, from), join(stage, to), root)
+  for (const [from, to] of Object.entries(EDITORS))
+    if (exists_sync(join(root, from)))
+      copy(join(root, from), join(stage, to), root)
   write_file_sync(
     join(stage, '.pi/agent/trust.json'),
     `${JSON.stringify({ [ACTOR_HARNESS]: true }, null, 2)}\n`
@@ -270,7 +283,21 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
   mkdir_sync(join(stage, 'vault/Projects'), { recursive: true })
   write_file_sync(
     join(stage, 'vault/Projects/site.md'),
-    '# Published site\n\n## Syncs\n\n- work/site\n'
+    [
+      '# Published site',
+      '',
+      '```mermaid',
+      'flowchart TD',
+      '  s1["s1 build the site in work/site"]',
+      '  s2["s2 publish it"]',
+      '  s1 --> s2',
+      '```',
+      '',
+      '## Syncs',
+      '',
+      '- work/site',
+      ''
+    ].join('\n')
   )
 
   edit_json(join(stage, '.pi/agent/settings.json'), settings => {

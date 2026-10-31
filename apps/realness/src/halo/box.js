@@ -608,6 +608,10 @@ export class BoxStore {
       chmod_sync(target, EVERYONE_READS)
       if (record.userns) chown_sync(target, USERNS_BASE, USERNS_BASE)
     }
+    const bashrc = join(record.root, 'usr', 'local', 'share', 'realness-bashrc')
+    copy_file_sync(join(GUEST, 'realness-bashrc'), bashrc)
+    chmod_sync(bashrc, EVERYONE_READS)
+    if (record.userns) chown_sync(bashrc, USERNS_BASE, USERNS_BASE)
     const netns_path = this.#network(record, index)
     this.#write_config(record, netns_path)
   }

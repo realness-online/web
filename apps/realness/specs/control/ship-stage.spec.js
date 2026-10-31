@@ -53,6 +53,11 @@ it('the ship tree carries the harness, prompts, and starting examples', () => {
     assert.ok(existsSync(join(ship, folder)), `home has ${folder}/`)
   assert.deepEqual(readdirSync(join(ship, 'work')), [], 'no work ships')
   assert.ok(existsSync(join(ship, 'vault/Projects/site.md')))
+  assert.match(
+    readFileSync(join(ship, 'vault/Projects/site.md'), 'utf8'),
+    /```mermaid\nflowchart TD\n[\s\S]*```\n\n## Syncs\n\n- work\/site\n$/,
+    'the starter plan passes the plan check: a small DAG, then its Syncs'
+  )
   assert.ok(!existsSync(join(ship, 'plans')), 'plans live in the vault')
   assert.equal(
     readFileSync(join(ship, './.ignore'), 'utf8'),
@@ -448,4 +453,51 @@ it('the actor Pi trusts its own harness, so the terminal never waits on a prompt
     JSON.parse(readFileSync(join(stage, '.pi/agent/trust.json'), 'utf8')),
     { '/realness': true }
   )
+})
+
+it("the owner's editors ship for everyone, without their history", () => {
+  const scratch = join(project, '../../artifacts/realness-product')
+  mkdirSync(scratch, { recursive: true })
+  const root = mkdtempSync(join(scratch, 'editors-root-'))
+  try {
+    for (const path of [
+      'package.json',
+      '.pi/runtime/release.json',
+      '.pi/starter/settings.json',
+      '.pi/starter/npm/package.json',
+      '.pi/starter/AGENTS.md'
+    ]) {
+      mkdirSync(join(root, path, '..'), { recursive: true })
+      writeFileSync(join(root, path), readFileSync(join(ROOT, path)))
+    }
+    cpSync(join(ROOT, '.pi/examples'), join(root, '.pi/examples'), {
+      recursive: true,
+      filter: path => !path.split('/').includes('node_modules')
+    })
+    const files = {
+      'work/nvim/init.lua': 'require("config.lazy")\n',
+      'work/nvim/lua/config/keymaps.lua': '-- keys\n',
+      'work/nvim/.git/HEAD': 'ref: refs/heads/main\n',
+      'work/nvim/.DS_Store': '',
+      'work/doom/init.el': '(doom!)\n',
+      'work/doom/themes/realness-theme.el': ';; theme\n'
+    }
+    for (const [path, text] of Object.entries(files)) {
+      mkdirSync(join(root, path, '..'), { recursive: true })
+      writeFileSync(join(root, path), text)
+    }
+    const stage = ship_stage({ root, stage: join(root, 'ship'), proxy_url })
+    for (const path of [
+      '.pi/editors/nvim/init.lua',
+      '.pi/editors/nvim/lua/config/keymaps.lua',
+      '.pi/editors/doom/init.el',
+      '.pi/editors/doom/themes/realness-theme.el'
+    ])
+      assert.ok(existsSync(join(stage, path)), path)
+    for (const path of ['.pi/editors/nvim/.git', '.pi/editors/nvim/.DS_Store'])
+      assert.ok(!existsSync(join(stage, path)), path)
+    assert.deepEqual(readdirSync(join(stage, 'work')), [], 'work stays home')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
 })

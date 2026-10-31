@@ -21,6 +21,10 @@ esac
 UBUNTU_BASE="ubuntu-base-24.04.3-base-$UBUNTU_ARCH.tar.gz"
 NODE_VERSION="v24.21.0"
 NODE="node-$NODE_VERSION-linux-$NODE_ARCH.tar.xz"
+NVIM_VERSION="v0.12.6"
+NVIM_ARCH="$([ "$UBUNTU_ARCH" = amd64 ] && echo x86_64 || echo arm64)"
+DOOM_COMMIT="59cdaa32ae933469bb6a1fb3cadee8a988c15968"
+EDITORS=/opt/editors
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 mkdir -p "$RUN"
@@ -64,6 +68,7 @@ install -m 0755 "$GUEST_SRC/realness-agent.js" "$TREE/usr/local/bin/realness-age
 install -m 0755 "$GUEST_SRC/realness-pty.js" "$TREE/usr/local/bin/realness-pty"
 install -m 0755 "$GUEST_SRC/realness-chat.js" "$TREE/usr/local/bin/realness-chat"
 install -m 0644 "$GUEST_SRC/realness-chat.md" "$TREE/usr/local/share/realness-chat.md"
+install -m 0644 "$GUEST_SRC/realness-bashrc" "$TREE/usr/local/share/realness-bashrc"
 install -m 0755 "$GUEST_SRC/realness-actor-init" "$TREE/usr/local/bin/realness-actor-init"
 install -m 0755 "$GUEST_SRC/realness-publish.js" "$TREE/usr/local/bin/realness-publish"
 install -m 0755 "$GUEST_SRC/realness-chrome.js" "$TREE/usr/local/bin/realness-chrome"
@@ -238,6 +243,52 @@ exec /realness/.pi/bin/pi "$@"
 WRAPPER
 chmod 0755 "$TREE/usr/local/bin/realness"
 
+log "editors: Neovim $NVIM_VERSION with LazyVim, Doom Emacs, the owner's configs"
+curl -fsSL "https://github.com/neovim/neovim/releases/download/$NVIM_VERSION/nvim-linux-$NVIM_ARCH.tar.gz" \
+  | tar xz -C "$TREE/opt"
+rm -rf "$TREE/opt/nvim" && mv "$TREE/opt/nvim-linux-$NVIM_ARCH" "$TREE/opt/nvim"
+mkdir -p "$TREE$EDITORS"
+rm -rf "$TREE$EDITORS/emacs"
+git clone -q https://github.com/doomemacs/doomemacs "$TREE$EDITORS/emacs"
+git -C "$TREE$EDITORS/emacs" checkout -q "$DOOM_COMMIT"
+git -C "$TREE$EDITORS/emacs" submodule update -q --init
+cat > "$TREE/usr/local/bin/nvim" <<WRAPPER
+#!/bin/sh
+# The shipped LazyVim unless the person keeps their own ~/.config/nvim.
+if [ ! -e "\$HOME/.config/nvim/init.lua" ] && [ ! -e "\$HOME/.config/nvim/init.vim" ]; then
+  export XDG_CONFIG_HOME=/realness/.pi/editors
+  [ -e /realness/.pi/editors/nvim/init.lua ] || XDG_CONFIG_HOME=/usr/local/share/realness-starter/.pi/editors
+  export XDG_DATA_HOME=$EDITORS/share XDG_STATE_HOME=$EDITORS/state XDG_CACHE_HOME=$EDITORS/cache
+fi
+exec /opt/nvim/bin/nvim "\$@"
+WRAPPER
+cat > "$TREE/usr/local/bin/emacs" <<WRAPPER
+#!/bin/sh
+# The shipped Doom unless the person keeps their own Emacs config.
+if [ -e "\$HOME/.config/emacs/init.el" ] || [ -e "\$HOME/.emacs.d/init.el" ] || [ -e "\$HOME/.emacs" ]; then
+  exec /usr/bin/emacs "\$@"
+fi
+shipped=/realness/.pi/editors/doom
+[ -e "\$shipped/init.el" ] || shipped=/usr/local/share/realness-starter/.pi/editors/doom
+export DOOMDIR="\${DOOMDIR:-\$shipped}" DOOMLOCALDIR=$EDITORS/doom-local
+exec /usr/bin/emacs --init-directory $EDITORS/emacs "\$@"
+WRAPPER
+chmod 0755 "$TREE/usr/local/bin/nvim" "$TREE/usr/local/bin/emacs"
+mkdir -p "$TREE/var/tmp/editor-home"
+editor_env="HOME=/var/tmp/editor-home PATH=/usr/bin:/bin:/usr/local/bin TERM=xterm-256color"
+log "editors: Doom packages"
+chroot "$TREE" env $editor_env DOOMDIR=/realness/.pi/editors/doom DOOMLOCALDIR=$EDITORS/doom-local \
+  EMACSDIR=$EDITORS/emacs $EDITORS/emacs/bin/doom install --force --no-config --no-env < /dev/null \
+  > "$RUN/doom-install.log" 2>&1 || { tail -40 "$RUN/doom-install.log"; exit 1; }
+log "editors: LazyVim plugins"
+chroot "$TREE" env $editor_env XDG_CONFIG_HOME=/realness/.pi/editors XDG_DATA_HOME=$EDITORS/share \
+  XDG_STATE_HOME=$EDITORS/state XDG_CACHE_HOME=$EDITORS/cache \
+  /opt/nvim/bin/nvim --headless "+Lazy! restore" +qa < /dev/null \
+  > "$RUN/lazy-restore.log" 2>&1 || { tail -40 "$RUN/lazy-restore.log"; exit 1; }
+chroot "$TREE" /usr/local/bin/nvim --version | head -1
+rm -rf "$TREE/var/tmp/editor-home"
+du -sh "$TREE/opt/nvim" "$TREE$EDITORS" | sed 's/^/  /'
+
 chroot "$TREE" git config --system credential.https://github.com.helper '!/usr/local/bin/realness git-credential'
 chroot "$TREE" git config --system credential.https://github.com.useHttpPath true
 
@@ -276,6 +327,7 @@ log "realness user owns /realness and the caches"
 chroot "$TREE" id -u realness > /dev/null 2>&1 \
   || chroot "$TREE" useradd -M -U -d /realness -s /bin/bash realness
 chroot "$TREE" chown -R realness:realness /realness
+[ -d "$TREE$EDITORS" ] && chroot "$TREE" chown -R realness:realness "$EDITORS"
 cat > "$TREE/etc/tmpfiles.d/realness-run.conf" <<'TMPFILES'
 d /run/realness 0755 realness realness
 TMPFILES
