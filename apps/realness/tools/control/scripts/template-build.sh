@@ -260,6 +260,7 @@ if [ ! -e "\$HOME/.config/nvim/init.lua" ] && [ ! -e "\$HOME/.config/nvim/init.v
   [ -e /realness/.pi/editors/nvim/init.lua ] || XDG_CONFIG_HOME=/usr/local/share/realness-starter/.pi/editors
   export XDG_DATA_HOME=$EDITORS/share XDG_STATE_HOME=/realness/artifacts/editors/state XDG_CACHE_HOME=/realness/artifacts/editors/cache
 fi
+export REALNESS_EDITORS=1
 exec /opt/nvim/bin/nvim "\$@"
 WRAPPER
 cat > "$TREE/usr/local/bin/emacs" <<WRAPPER
@@ -281,11 +282,21 @@ log "editors: Doom packages"
 chroot "$TREE" env $editor_env DOOMDIR=/realness/.pi/editors/doom DOOMLOCALDIR=$EDITORS/doom-local \
   EMACSDIR=$EDITORS/emacs $EDITORS/emacs/bin/doom install --force --no-config --no-env < /dev/null \
   > "$RUN/doom-install.log" 2>&1 || { tail -40 "$RUN/doom-install.log"; exit 1; }
-log "editors: LazyVim plugins"
+log "editors: LazyVim plugins, and Treesitter parsers built with a compiler that leaves after"
+chroot "$TREE" env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends gcc libc6-dev > "$RUN/gcc.log" 2>&1
 chroot "$TREE" env $editor_env XDG_CONFIG_HOME=/realness/.pi/editors XDG_DATA_HOME=$EDITORS/share \
   XDG_STATE_HOME=$EDITORS/state XDG_CACHE_HOME=$EDITORS/cache \
   /opt/nvim/bin/nvim --headless "+Lazy! restore" +qa < /dev/null \
   > "$RUN/lazy-restore.log" 2>&1 || { tail -40 "$RUN/lazy-restore.log"; exit 1; }
+chroot "$TREE" env $editor_env XDG_CONFIG_HOME=/realness/.pi/editors XDG_DATA_HOME=$EDITORS/share \
+  XDG_STATE_HOME=$EDITORS/state XDG_CACHE_HOME=$EDITORS/cache REALNESS_EDITORS=1 \
+  /opt/nvim/bin/nvim --headless \
+  '+lua local o = require("lazy.core.plugin").values(require("lazy.core.config").plugins["nvim-treesitter"], "opts", false); require("nvim-treesitter").install(o.ensure_installed or {}):wait(900000)' \
+  +qa < /dev/null > "$RUN/treesitter.log" 2>&1 || { tail -40 "$RUN/treesitter.log"; exit 1; }
+parsers="$(ls "$TREE$EDITORS/share/nvim/site/parser" 2> /dev/null | wc -l)"
+[ "$parsers" -gt 10 ] || { tail -40 "$RUN/treesitter.log"; echo "only $parsers Treesitter parsers built" >&2; exit 1; }
+log "editors: $parsers Treesitter parsers; the compiler leaves"
+chroot "$TREE" env DEBIAN_FRONTEND=noninteractive apt-get purge -y -qq --autoremove gcc libc6-dev > /dev/null 2>&1
 chroot "$TREE" /usr/local/bin/nvim --version | head -1
 rm -rf "$TREE/var/tmp/editor-home" "$TREE$EDITORS/cache" "$TREE$EDITORS/state"
 for dir in cache state; do
