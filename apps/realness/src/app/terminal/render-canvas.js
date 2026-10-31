@@ -6,7 +6,9 @@ const SELECTION_OPACITY = 0.6
 const PIXEL_CENTER = 0.5
 const HOLLOW_BLOCK = 3
 
-const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace'
+/** JetBrains Mono with Nerd Font icons, then the system's monospace. */
+export const MONO_FAMILY = 'Realness Mono'
+const MONO = `"${MONO_FAMILY}", ui-monospace, SFMono-Regular, Menlo, monospace`
 
 export const cell_metrics = (ctx, font_size) => {
   ctx.font = `${font_size}px ${MONO}`

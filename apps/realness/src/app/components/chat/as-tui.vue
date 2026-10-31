@@ -401,7 +401,7 @@
       box-sizing: border-box;
       background: var(--surface);
       overflow: hidden;
-      padding-inline: (base-line / 2);
+      padding: (base-line / 2);
       user-select: none;
       & > canvas {
         display: block;

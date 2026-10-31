@@ -62,3 +62,33 @@ describe('terminal mounted with an open function', () => {
     expect(tries).toBe(3)
   })
 })
+
+describe('terminal font', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('loads JetBrains Mono before it measures cells, and still mounts without it', async () => {
+    const loads = []
+    for (const load of [
+      async font => (loads.push(font), []),
+      async () => {
+        throw new Error('offline')
+      }
+    ]) {
+      const env = make_stage()
+      vi.stubGlobal('fetch', async () => {
+        throw new Error('no ticket fetch with open')
+      })
+      Object.defineProperty(document, 'fonts', {
+        configurable: true,
+        value: { load }
+      })
+      const terminal = await mount(env.stage, {
+        ...mount_options,
+        open: async () => new WebSocket('wss://gate.test/pty')
+      })
+      await env.settle()
+      terminal.close()
+    }
+    expect(loads).toEqual(['14px "Realness Mono"', 'bold 14px "Realness Mono"'])
+  })
+})

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **JetBrains Mono in the terminal** - With Nerd Font icons, so LazyVim and
+  Doom show their symbols. It loads only when a terminal opens. Panes get
+  even padding on every side.
 - **Neovim and Emacs in every terminal** - `nvim` opens LazyVim on Neovim
   0.12 and `emacs` opens Doom, with the owner's theme, plugins, and keys,
   installed in the image so they start offline. Your own config in

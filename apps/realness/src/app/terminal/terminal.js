@@ -1,11 +1,11 @@
 import { load_engine, apply_theme, KEY, paste_encode } from './ghostty-vt.js'
-import { draw_frame, cell_metrics } from './render-canvas.js'
+import './font.css'
+import { draw_frame, cell_metrics, MONO_FAMILY } from './render-canvas.js'
 import { realness_theme } from './themes/ghostty-theme.js'
 
 const FONT_SIZE = 14
 const MIN_COLS = 20
 const MIN_ROWS = 6
-const VERTICAL_PADDING = 8
 const NOTE_MS = 1600
 const BLINK_MS = 530
 const RETRY_BASE_MS = 500
@@ -560,6 +560,21 @@ const bind_keyboard = ({
 }
 
 /**
+ * Wait for the terminal font so cells are measured in it; the system
+ * monospace stands in when it cannot load.
+ * @param {Document} doc
+ */
+const load_font = async doc => {
+  try {
+    await Promise.all(
+      ['', 'bold '].map(weight =>
+        doc.fonts?.load(`${weight}${FONT_SIZE}px "${MONO_FAMILY}"`)
+      )
+    )
+  } catch {}
+}
+
+/**
  * Draw a live actor terminal into `stage`, which holds a canvas and an output.
  * `base` is where the halo's `ticket` and `pty` routes live. `open`, when
  * given, makes the socket instead: ({ cols, rows }) => WebSocket; a thrown
@@ -588,19 +603,18 @@ export const mount = async (
   const status = stage.querySelector('output')
   const canvas = stage.querySelector('canvas')
   const ctx = canvas.getContext('2d')
+  await load_font(stage.ownerDocument ?? document)
   const metrics = cell_metrics(ctx, FONT_SIZE)
   const size_terminal = () => {
     const style = stage.ownerDocument?.defaultView?.getComputedStyle(stage)
+    const pad = side => parseFloat(style?.[side] ?? '') || 0
     const inline =
-      stage.clientWidth -
-      (parseFloat(style?.paddingInlineStart ?? '') || 0) -
-      (parseFloat(style?.paddingInlineEnd ?? '') || 0)
+      stage.clientWidth - pad('paddingInlineStart') - pad('paddingInlineEnd')
+    const block =
+      stage.clientHeight - pad('paddingBlockStart') - pad('paddingBlockEnd')
     return {
       cols: Math.max(MIN_COLS, Math.floor(inline / metrics.width)),
-      rows: Math.max(
-        MIN_ROWS,
-        Math.floor((stage.clientHeight - VERTICAL_PADDING) / metrics.height)
-      )
+      rows: Math.max(MIN_ROWS, Math.floor(block / metrics.height))
     }
   }
   const engine = await load_engine(wasm_url)

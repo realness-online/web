@@ -1,0 +1,15 @@
+@font-face {
+  font-family: 'Realness Mono';
+  src: url(/fonts/terminal/JetBrainsMonoNerdFontMono-Regular.woff2)
+    format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Realness Mono';
+  src: url(/fonts/terminal/JetBrainsMonoNerdFontMono-Bold.woff2) format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+}
