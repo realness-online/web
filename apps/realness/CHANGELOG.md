@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-v - 2026-10-31
+
 - **Chat no longer wakes the halo** - Only opening the terminal does. Chat
   answers in the browser; its bash tool starts your VM on the first command.
 - **`npm run watch` tracks production on GCP** - It reads production sync
