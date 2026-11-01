@@ -98,6 +98,7 @@
     span[data-identity] {
       display: inline-flex;
       align-items: center;
+      margin-inline-start: auto;
       gap: calc(var(--base-line) * 0.5);
     }
 
