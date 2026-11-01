@@ -51,12 +51,29 @@ describe('@/components/site-nav', () => {
     expect(nav.find('a[href="/terms"]').text()).toBe('Legal')
   })
 
-  it('ends the menu with the account icon, labeled with the name', () => {
+  it('keeps About and Docs in view and folds the rest behind the overflow', () => {
+    const wrapper = mount()
+    const primary = wrapper.get('menu[data-primary]')
+    expect(primary.findAll('a').map(link => link.text())).toEqual([
+      'About',
+      'Docs'
+    ])
+    const more = wrapper.get('details[data-nav-more] menu')
+    expect(more.findAll('a').map(link => link.text())).toEqual([
+      'Pricing',
+      'Prints',
+      'Legal'
+    ])
+  })
+
+  it('keeps the account icon beside the logo, labeled with the name', () => {
     mock_current_user.value = { uid: 'person-1' }
     mock_me.value = { name: 'Scott' }
-    const account = mount().find('menu > a:last-child')
+    const wrapper = mount()
+    const account = wrapper.get('nav > a#account')
     expect(account.attributes('href')).toBe('/account')
     expect(account.attributes('aria-label')).toBe('Scott')
+    expect(account.element.nextElementSibling.tagName).toBe('LOGO-AS-LINK-STUB')
   })
 
   it('marks Pricing current on each tier, but not on another page', () => {

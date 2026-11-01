@@ -1,5 +1,5 @@
 section[data-page] {
-  padding-top: calc(env(safe-area-inset-top) - (var(--base-line) * 0.75));
+  padding-top: env(safe-area-inset-top, 0px);
   margin-bottom: calc(var(--base-line) * 4);
   width: 100%;
   & > header {

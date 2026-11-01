@@ -502,7 +502,7 @@
         pointer-events: none;
       }
       position: fixed;
-      bottom: calc(var(--visible-bottom, 0px) + base-line * 1.5);
+      bottom: calc(var(--visible-bottom, 0px) + var(--base-line) * 1.5);
       left: 50%;
       transform: translateX(-50%);
       width: 100%;
