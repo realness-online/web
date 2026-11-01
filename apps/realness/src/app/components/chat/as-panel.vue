@@ -229,11 +229,15 @@
       inset-block: auto;
       top: var(--visible-top, 0px);
       block-size: var(--visible-height, 100dvh);
+      padding-block-end: env(safe-area-inset-bottom, 0px);
+    }
+    aside#chat-panel > aside {
+      margin-block-end: 0;
     }
     aside#chat-panel > form[data-chat] {
-      padding-block-end: base-line * 0.25;
+      padding-block-end: base-line * 0.5;
       & > div.working-border {
-        inset-block-end: base-line * 0.25;
+        inset-block-end: base-line * 0.5;
         & > div {
           width: base-line * 8;
           height: base-line * 2;

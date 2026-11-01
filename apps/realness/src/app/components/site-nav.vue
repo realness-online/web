@@ -62,8 +62,9 @@
       gap: calc(var(--base-line) * 0.5) var(--base-line);
 
       @media (max-width: 40rem) {
-        justify-content: space-between;
-        column-gap: calc(var(--base-line) * 0.5);
+        justify-content: flex-start;
+        column-gap: calc(var(--base-line) * 0.75);
+        row-gap: calc(var(--base-line) * 0.5);
       }
 
       list-style: none;
@@ -84,6 +85,9 @@
 
       a[href='/terms'] {
         font-size: smaller;
+        @media (max-width: 40rem) {
+          font-size: inherit;
+        }
       }
 
       & > a#account {

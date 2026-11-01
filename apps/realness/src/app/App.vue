@@ -211,6 +211,19 @@
   /** @param {DragEvent} event */
   const allow_drop = event => event.preventDefault()
 
+  /** Track the visual viewport so fixed chrome follows it on touch browsers,
+   * where the layout viewport shifts as the toolbar collapses. */
+  const track_visible = () => {
+    const visible = globalThis.visualViewport
+    if (!visible) return
+    const root = document.documentElement
+    const gap = root.clientHeight - (visible.offsetTop + visible.height)
+    root.style.setProperty(
+      '--visible-bottom',
+      `${Math.max(0, Math.round(gap))}px`
+    )
+  }
+
   mounted(() => {
     if (window.matchMedia('(display-mode: standalone)').matches)
       sessionStorage.about = true
@@ -221,6 +234,10 @@
       drama_front.value = true
     }
 
+    track_visible()
+    globalThis.visualViewport?.addEventListener('resize', track_visible)
+    globalThis.visualViewport?.addEventListener('scroll', track_visible)
+
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
     window.addEventListener('paste', paste_image)
@@ -228,6 +245,8 @@
     window.addEventListener('drop', drop_image)
   })
   unmounted(() => {
+    globalThis.visualViewport?.removeEventListener('resize', track_visible)
+    globalThis.visualViewport?.removeEventListener('scroll', track_visible)
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
     window.removeEventListener('paste', paste_image)
@@ -483,7 +502,7 @@
         pointer-events: none;
       }
       position: fixed;
-      bottom: base-line * 1.5;
+      bottom: calc(var(--visible-bottom, 0px) + base-line * 1.5);
       left: 50%;
       transform: translateX(-50%);
       width: 100%;

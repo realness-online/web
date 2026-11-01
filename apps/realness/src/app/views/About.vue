@@ -53,7 +53,7 @@
 
   /** @type {import('vue').Ref<HTMLElement | null>} */
   const about_el = ref(null)
-  const about_ready = ref(false)
+  const about_ready = ref(true)
   const about_motion = ref(false)
   /** @type {IntersectionObserver | null} */
   let section_observer = null
@@ -149,11 +149,10 @@
   }
 
   mounted(async () => {
-    await posters_for_admin({ id: import.meta.env.VITE_ADMIN_ID })
-    await balance_gallery()
-    about_ready.value = true
     await tick()
     observe_sections()
+    await posters_for_admin({ id: import.meta.env.VITE_ADMIN_ID })
+    await balance_gallery()
   })
 
   unmounted(() => {
