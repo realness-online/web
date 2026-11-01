@@ -80,6 +80,7 @@
   nav[itemtype$='/SiteNavigationElement'] {
     width: 100%;
     box-sizing: border-box;
+    min-block-size: var(--header-size);
     display: flex;
     align-items: center;
     justify-content: flex-start;

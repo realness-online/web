@@ -686,6 +686,8 @@
       }
     }
     & > header {
+      box-sizing: border-box;
+      min-block-size: var(--header-size);
       display: flex;
       align-items: center;
       justify-content: flex-start;
@@ -693,6 +695,7 @@
       padding-block: round((base-line / 2), 2);
       color: var(--accent);
       & > h1 {
+        margin: 0;
         width: auto;
       }
       & > a > svg {

@@ -158,6 +158,8 @@
       transition-duration: 0.01ms;
     }
     & > header {
+      box-sizing: border-box;
+      min-block-size: var(--header-size);
       display: flex;
       align-items: center;
       justify-content: space-between;

@@ -3,6 +3,8 @@ section[data-page] {
   margin-bottom: calc(var(--base-line) * 4);
   width: 100%;
   & > header {
+    box-sizing: border-box;
+    min-block-size: var(--header-size);
     padding: var(--base-line);
     display: flex;
     justify-content: space-between;
