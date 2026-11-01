@@ -1,30 +1,17 @@
 #!/usr/bin/env node
 import {
-  existsSync as exists_sync,
-  readFileSync as read_file_sync,
-  readdirSync as readdir_sync,
-  copyFileSync as copy_file_sync,
-  appendFileSync as append_file_sync,
-  rmSync as rm_sync
+  readFileSync as read_file_sync
 } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { execFileSync as exec_file_sync } from 'node:child_process'
 import { fileURLToPath as file_url_to_path } from 'node:url'
+import { render_mermaid } from '../lib/mermaid-render.js'
 
-const root = join(dirname(file_url_to_path(import.meta.url)), '../../..')
-/** Pi's bundle where Realness installs and runs it (`.pi/runtime`), else an older npm install. */
-const chunks = [
-  join(root, '.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks'),
-  join(root, '.pi/agent/npm/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks')
-].find(dir => exists_sync(dir))
-if (!chunks) {
-  console.error('mermaid-fit: no installed Pi bundle under .pi/runtime')
-  process.exit(2)
-}
+const ROOT = join(dirname(file_url_to_path(import.meta.url)), '../../..')
 
 /** Bash tools have no tty; walk up to pi's terminal and ask its size. The feed
  * pads each side and keeps a scrollbar column, so leave 4 spare. */
-const paneWidth = () => {
+const pane_width = () => {
   const sh = (cmd, ...a) => exec_file_sync(cmd, a, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
   try {
     for (let pid = process.pid; pid > 1; pid = Number(sh('ps', '-o', 'ppid=', '-p', String(pid)))) {
@@ -37,29 +24,17 @@ const paneWidth = () => {
 
 const args = process.argv.slice(2)
 const maxAt = args.indexOf('--max')
-const max = maxAt >= 0 ? Number(args.splice(maxAt, 2)[1]) : (paneWidth() ?? 70)
+const max = maxAt >= 0 ? Number(args.splice(maxAt, 2)[1]) : (pane_width() ?? 70)
 const input = args[0] && args[0] !== '-' ? read_file_sync(args[0], 'utf8') : read_file_sync(0, 'utf8')
 const fence = input.match(/```mermaid\n([\s\S]*?)```/)
 const src = (fence ? fence[1] : input).trim()
 
-const chunk = readdir_sync(chunks).find(
-  f =>
-    f.endsWith('.js') && read_file_sync(join(chunks, f), 'utf8').includes('function createMermaidMarkdownTransformer')
-)
-if (!chunk) {
-  console.error('pi mermaid renderer not found')
+const rendered = await render_mermaid(src)
+if (!rendered) {
+  console.error(`mermaid-fit: no installed Pi bundle under ${join(ROOT, '.pi/runtime')}`)
   process.exit(2)
 }
-const probe = join(chunks, `zz-mermaid-fit-${process.pid}.js`)
-copy_file_sync(join(chunks, chunk), probe)
-append_file_sync(probe, ';export {render as __mermaidFit};')
-let art
-try {
-  art = (await import(probe)).__mermaidFit(src)
-} finally {
-  rm_sync(probe, { force: true })
-}
-
+const art = rendered.art
 if (!art) {
   console.log('unparseable: pi shows the raw fence')
   process.exit(1)

@@ -425,38 +425,36 @@ for (const [name, gone] of [['a personal file', 'vault/notes/gone.md']])
 it('a fresh actor skips past-month sessions and pulls the sealed and current months', async () => {
   const owner = '+14155550132'
   const prefix = `people/${owner}/harness/`
+  // Month names come from the clock, so derive them instead of pinning a date.
+  const now = new Date()
+  const current_month = now.toISOString().slice(0, 7)
+  const earlier = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 3, 6)
+  )
+  const past_month = earlier.toISOString().slice(0, 7)
+  const sealed = `${past_month}.turns.html.gz`
+  const past_session = `${past_month}-06T02-00-00-000Z_abcdef.html`
+  const current_session = `${current_month}-20T02-00-00-000Z_abcdef.html`
   await storage.put(`${prefix}.ignore`, '')
   await storage.put(`${prefix}package.json`, JSON.stringify({}))
+  await storage.put(`${prefix}.memory/turns/${sealed}`, 'sealed earlier')
+  await storage.put(`${prefix}vault/Sessions/${past_session}`, 'old session')
   await storage.put(
-    `${prefix}.memory/turns/2026-08.turns.html.gz`,
-    'sealed august'
-  )
-  await storage.put(
-    `${prefix}vault/Sessions/2026-08-06T02-00-00-000Z_abcdef.html`,
-    'old session'
-  )
-  await storage.put(
-    `${prefix}vault/Sessions/2026-10-20T02-00-00-000Z_abcdef.html`,
+    `${prefix}vault/Sessions/${current_session}`,
     'current session'
   )
   const root = join(dir, 'months')
   await run(root, [issue_recovery_pass({ phone: owner, id }, secret)])
   assert.equal(
-    await readFile(join(root, '.memory/turns/2026-08.turns.html.gz'), 'utf8'),
-    'sealed august'
+    await readFile(join(root, '.memory/turns', sealed), 'utf8'),
+    'sealed earlier'
   )
   assert.equal(
-    await readFile(
-      join(root, 'vault/Sessions/2026-10-20T02-00-00-000Z_abcdef.html'),
-      'utf8'
-    ),
+    await readFile(join(root, 'vault/Sessions', current_session), 'utf8'),
     'current session'
   )
   await assert.rejects(
-    readFile(
-      join(root, 'vault/Sessions/2026-08-06T02-00-00-000Z_abcdef.html'),
-      'utf8'
-    ),
+    readFile(join(root, 'vault/Sessions', past_session), 'utf8'),
     { code: 'ENOENT' }
   )
 })

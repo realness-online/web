@@ -36,8 +36,7 @@ const routes = [
   {
     path: '/pay',
     component: () => import('@/views/Pay'),
-    meta: { support: true },
-    beforeEnter: signed_in_first
+    meta: { support: true }
   },
   {
     path: '/admin',

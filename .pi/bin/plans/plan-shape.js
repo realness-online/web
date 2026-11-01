@@ -5,6 +5,7 @@ import { join, dirname, basename } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { plans_path, plans_ignore } from '../lib/harness-settings.js'
 import { legend } from '../lib/palette.js'
+import { render_mermaid } from '../lib/mermaid-render.js'
 
 const ROOT = join(dirname(file_url_to_path(import.meta.url)), '../../..')
 const plans_at = process.argv.indexOf('--plans')
@@ -12,6 +13,7 @@ const PLANS = plans_at > 0 ? process.argv[plans_at + 1] : join(ROOT, plans_path(
 const IGNORED = new Set(plans_ignore(ROOT))
 
 const LEGEND = new Set(legend(ROOT))
+const rendered = await render_mermaid('flowchart LR\n  a[a]')
 
 const find = (text, re) => {
   const at = text.search(re)
@@ -59,7 +61,7 @@ const table_ids = text => {
   return ids
 }
 
-const check = (name, text) => {
+const check = async (name, text) => {
   const problems = []
   const bad = (rule, detail) => problems.push({ rule, detail })
   const lines = text.split('\n')
@@ -100,6 +102,12 @@ const check = (name, text) => {
     }
     const stray = g.body.replace(/[✅🔄⛔🚦✓◐✕◆]/g, '')
     if (/[^\x00-\x7F]/.test(stray)) bad('ascii', `non-ASCII character in the fence at line ${g.line}`)
+    if (rendered) {
+      const { art } = await render_mermaid(g.body)
+      if (!art) bad('render', `fence at line ${g.line}: the mermaid engine could not parse it`)
+      else if (art.warnings.length)
+        bad('render', `fence at line ${g.line}: ${art.warnings.join('; ').slice(0, 80)}`)
+    }
   }
 
   return problems
@@ -115,7 +123,7 @@ const files = readdir_sync(PLANS)
   .sort()
 let failed = 0
 for (const file of files) {
-  const problems = check(file, read_file_sync(join(PLANS, file), 'utf8'))
+  const problems = await check(file, read_file_sync(join(PLANS, file), 'utf8'))
   const errors = problems.filter(p => !p.rule.includes('warn'))
   if (!problems.length) continue
   if (errors.length) failed++

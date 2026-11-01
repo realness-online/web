@@ -68,9 +68,13 @@ describe('build-hosting-config', () => {
     expect(result.status).toBe(0)
   })
 
-  it('production routes only to sync, never the proxy (m2)', () => {
+  it('production routes to sync and the pay proxy (m2)', () => {
     const { config } = build('--env', 'production')
-    expect(services(config)).toEqual(['realness-sync', 'realness-sync'])
+    expect(services(config)).toEqual([
+      'realness-sync',
+      'realness-proxy',
+      'realness-sync'
+    ])
     expect(config.hosting.some(hosting => hosting.rewrites?.length)).toBe(true)
   })
 

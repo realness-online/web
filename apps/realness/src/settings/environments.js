@@ -44,7 +44,7 @@ const environments = {
       sync_url: 'https://realness-sync-276668807926.us-west2.run.app',
       proxy_url: 'https://realness-proxy-276668807926.us-west2.run.app',
       gate_url: 'https://realness-gate-276668807926.us-west2.run.app',
-      hosting_routes: ['realness-sync'],
+      hosting_routes: ['realness-sync', 'realness-proxy'],
       origins:
         'https://realness.online,https://realness-online.web.app,https://realness-online.firebaseapp.com'
     }

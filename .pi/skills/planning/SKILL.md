@@ -89,7 +89,8 @@ flowchart LR
 
 Node ids lead the label (`a1`, `b3`) so the table can refer to them. Gates use
 the `{{...}}` hexagon and the `gate` classDef. Keep labels to a few words and put
-effort in the table, not the graph.
+effort in the table, not the graph. Node ids take no hyphens: a hyphen in an id
+plus a hyphen in its quoted label makes the chat renderer drop the whole graph.
 
 Inside a mermaid fence, ASCII only: `-` for dashes, `"` for quotes, `...` for an
 ellipsis, `-->` or `->` for an arrow. Prose keeps its wider characters.

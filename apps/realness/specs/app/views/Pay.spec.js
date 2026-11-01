@@ -75,14 +75,12 @@ const serve = status =>
   )
 
 describe('pay page', () => {
-  it('shows free use, the warning, and subscribes through Stripe', async () => {
+  it('shows the offer and subscribes through Stripe', async () => {
     serve(free_status(230000))
     const page = mount(Pay)
     await flush_promises()
-    expect(page.text()).toContain('Today: 230,000 of 250,000 free tokens')
-    expect(page.find('[role="status"]').text()).toBe(
-      "You've used 90% of today's free model use."
-    )
+    expect(page.text()).not.toContain('free')
+    expect(page.text()).toContain('a month')
     await page.find('button').trigger('click')
     await flush_promises()
     expect(calls.at(-1)).toMatchObject({
@@ -108,16 +106,38 @@ describe('pay page', () => {
     })
     const page = mount(Pay)
     await flush_promises()
-    expect(page.text()).toContain('House model credit: $1.25 of $5.00')
-    expect(page.text()).toContain('renews on 2026-11-01')
+    expect(page.text()).toContain('$1.25 of $5.00 used')
+    expect(page.text()).toContain('Renews 2026-11-01')
     expect(page.find('button').exists()).toBe(false)
   })
 
-  it('signed out: no calls', async () => {
+  it('signed out: shows the offer, and Subscribe goes to sign-in first', async () => {
     current_user.value = null
     serve(free_status())
-    mount(Pay)
+    const page = mount(Pay)
     await flush_promises()
     expect(calls).toHaveLength(0)
+    expect(page.text()).toContain('a month')
+    await page.get('button').trigger('click')
+    expect(assign).toHaveBeenCalledWith('/sign-on?next=/pay')
+  })
+
+  it('a failed limits read still shows the offer', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('<!doctype html>', { status: 200 }))
+    )
+    const page = mount(Pay)
+    await flush_promises()
+    expect(page.find('[role="alert"]').exists()).toBe(false)
+    expect(page.get('button').text()).toBe('Subscribe')
+  })
+
+  it('reads limits past any cache', async () => {
+    const fetch = vi.fn(async () => new Response(JSON.stringify(free_status())))
+    vi.stubGlobal('fetch', fetch)
+    mount(Pay)
+    await flush_promises()
+    expect(fetch.mock.calls[0][1].cache).toBe('no-store')
   })
 })

@@ -29,6 +29,10 @@ it('the plan checker reads either configured folder', async () => {
   )
   await copyFile(new URL('../../lib/product.js', import.meta.url), `${fixture}/.pi/bin/lib/product.js`)
   await copyFile(new URL('../../lib/palette.js', import.meta.url), `${fixture}/.pi/bin/lib/palette.js`)
+  await copyFile(
+    new URL('../../lib/mermaid-render.js', import.meta.url),
+    `${fixture}/.pi/bin/lib/mermaid-render.js`
+  )
   await mkdir(`${fixture}/apps`, { recursive: true })
   await symlink(new URL('../../../../apps/realness', import.meta.url), `${fixture}/apps/realness`)
   for (const plans of ['plans', 'vault/plans']) {

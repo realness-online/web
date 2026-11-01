@@ -93,7 +93,7 @@ it('hosting configuration retains targets, rules and secondary hosting paths', c
   )
 })
 
-it('production hosting routes only to sync, in its region (m2)', context => {
+it('production hosting routes to sync and the proxy, in their region (m2)', context => {
   const { output_root, run } = fixture(context)
   run('scripts/build-hosting-config.js', output_root, '--env', 'production')
   const generated = JSON.parse(
@@ -107,6 +107,10 @@ it('production hosting routes only to sync, in its region (m2)', context => {
       {
         source: '/v1/**',
         run: { serviceId: 'realness-sync', region: 'us-west2' }
+      },
+      {
+        source: '/pay/**',
+        run: { serviceId: 'realness-proxy', region: 'us-west2' }
       },
       {
         source: '/sites/**',

@@ -62,8 +62,8 @@ describe('@/router', () => {
     })
   })
 
-  it('signs on before /pay, /admin, and /terminal, then returns', async () => {
-    for (const path of ['/pay', '/admin', '/terminal']) {
+  it('signs on before /admin and /terminal, and leaves /pay open', async () => {
+    for (const path of ['/admin', '/terminal']) {
       const enter = route_for(path).beforeEnter
       current_user.value = null
       expect(await enter({ fullPath: `${path}?paid` })).toEqual({
@@ -73,6 +73,7 @@ describe('@/router', () => {
       current_user.value = { uid: 'u' }
       expect(await enter({ fullPath: path })).toBe(true)
     }
+    expect(route_for('/pay').beforeEnter).toBeUndefined()
     current_user.value = null
   })
 
