@@ -2,7 +2,13 @@
   import LogoAsLink from '@/components/logo-as-link'
   import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
   import Icon from '@/components/icon.vue'
-  import { computed, ref, watch } from 'vue'
+  import {
+    computed,
+    onMounted as mounted,
+    onUnmounted as unmounted,
+    ref,
+    watch
+  } from 'vue'
   import { useRoute as use_route } from 'vue-router'
   import { current_user, me } from '@/utils/serverless'
 
@@ -12,11 +18,20 @@
     () => (current_user.value && me.value?.name) || 'Account'
   )
 
-  const more = ref(null)
+  const NARROW = '(max-width: 40rem)'
+  const narrow = () =>
+    typeof matchMedia === 'function' && matchMedia(NARROW).matches
+  /** Open on wide screens so the full list reads inline; closed on narrow. */
+  const more_open = ref(typeof matchMedia === 'function' ? !narrow() : true)
+  const sync_more = () => {
+    more_open.value = !narrow()
+  }
+  mounted(() => matchMedia(NARROW)?.addEventListener('change', sync_more))
+  unmounted(() => matchMedia(NARROW)?.removeEventListener('change', sync_more))
   watch(
     () => route?.fullPath,
     () => {
-      if (more.value) more.value.open = false
+      if (narrow()) more_open.value = false
     }
   )
 </script>
@@ -31,7 +46,10 @@
       <router-link to="/about" replace>About</router-link>
       <router-link to="/docs" replace>Docs</router-link>
     </menu>
-    <details ref="more" data-nav-more>
+    <details
+      data-nav-more
+      :open="more_open"
+      @toggle="more_open = $event.target.open">
       <summary aria-label="More">...</summary>
       <menu>
         <router-link
@@ -44,15 +62,17 @@
         <router-link to="/terms" replace>Legal</router-link>
       </menu>
     </details>
-    <router-link
-      id="account"
-      to="/account"
-      replace
-      :aria-label="account_label"
-      :title="account_label">
-      <icon name="silhouette" />
-    </router-link>
-    <logo-as-link />
+    <span data-identity>
+      <router-link
+        id="account"
+        to="/account"
+        replace
+        :aria-label="account_label"
+        :title="account_label">
+        <icon name="silhouette" />
+      </router-link>
+      <logo-as-link />
+    </span>
   </nav>
 </template>
 
@@ -62,7 +82,7 @@
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: var(--base-line);
     padding: var(--base-line);
     padding-top: calc(env(safe-area-inset-top, 0px) + var(--base-line));
@@ -73,6 +93,12 @@
       align-items: center;
       gap: calc(var(--base-line) * 0.5) var(--base-line);
       list-style: none;
+    }
+
+    span[data-identity] {
+      display: inline-flex;
+      align-items: center;
+      gap: calc(var(--base-line) * 0.5);
     }
 
     details[data-nav-more] {
@@ -101,7 +127,7 @@
       }
     }
 
-    & > a#account {
+    & > span[data-identity] > a#account {
       display: inline-flex;
       & > svg {
         width: calc(var(--base-line) * 1.33);

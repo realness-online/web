@@ -70,7 +70,7 @@ describe('@/components/site-nav', () => {
     mock_current_user.value = { uid: 'person-1' }
     mock_me.value = { name: 'Scott' }
     const wrapper = mount()
-    const account = wrapper.get('nav > a#account')
+    const account = wrapper.get('nav > span[data-identity] > a#account')
     expect(account.attributes('href')).toBe('/account')
     expect(account.attributes('aria-label')).toBe('Scott')
     expect(account.element.nextElementSibling.tagName).toBe('LOGO-AS-LINK-STUB')
