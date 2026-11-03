@@ -1,11 +1,11 @@
 {
   "fork": {
-    "commit": "f25129c9",
-    "version": "1.4.0"
+    "commit": "b36be911",
+    "version": "1.5.0"
   },
   "module": {
     "commit": "f76a29f0",
     "version": "0.1.0"
   },
-  "built": "2026-11-01T18:13:08.748Z"
+  "built": "2026-11-03T17:32:18.785Z"
 }
