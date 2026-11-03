@@ -131,7 +131,7 @@ describe('@/components/chat/as-workspace', () => {
     const terminal = page.findComponent({ name: 'AsTui' })
     expect(terminal.props('actor')).toBe(null)
     expect(terminal.props('progress').stage).toBe('restoring_files')
-    expect(page.get('#chat-panel [role="status"]').text()).toBe('')
+    expect(page.find('#chat-panel [role="status"]').exists()).toBe(false)
     expect(page.find('#chat-panel textarea').exists()).toBe(true)
     controller.enqueue(
       new TextEncoder().encode(

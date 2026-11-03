@@ -163,14 +163,17 @@ const copy_files = async (from, to) => {
  *
  * @param {string} root Harness root.
  * @param {string} name App name.
- * @param {{drafts?: boolean, example?: string}} [options]
+ * @param {{drafts?: boolean, example?: string, seen?: Set<string>}} [options]
  */
 export const build_app = async (
   root,
   name,
-  { drafts = false, example: local } = {}
+  { drafts = false, example: local, seen = new Set() } = {}
 ) => {
   if (!/^[a-z0-9-]+$/.test(name)) throw new Error(`bad app name: ${name}`)
+  if (seen.has(name)) throw new Error(`app includes itself: ${name}`)
+  const seen_next = new Set(seen)
+  seen_next.add(name)
   const app_dir = join(root, 'apps', name)
   const { app, sources, assets, pages } = await app_sources(app_dir)
   const example = await engine(root, local)
@@ -192,6 +195,22 @@ export const build_app = async (
     await rm(output, { recursive: true, force: true })
   }
 
+  const included = []
+  for (const include of Array.isArray(app.includes) ? app.includes : []) {
+    if (
+      !/^[a-z0-9-]+$/.test(include?.app ?? '') ||
+      !/^[a-z0-9-]+$/.test(include?.path ?? '')
+    )
+      throw new Error(`bad include in ${name}`)
+    const built = await build_app(root, include.app, {
+      drafts,
+      example: local,
+      seen: seen_next
+    })
+    await overlay_app(join(target, 'dist'), built.dist, include.path)
+    included.push(...built.sources)
+  }
+
   return {
     id: app.id,
     type: app.type,
@@ -202,9 +221,59 @@ export const build_app = async (
       ...pages.map(({ id, path }) => ({
         id,
         route: `/${path.replace(/index\.html$/, '')}`
-      }))
+      })),
+      ...included
     ]
   }
+}
+
+/** An included app serves pages beside this one, with its partials kept apart. */
+const overlay_app = async (dist, from, prefix) => {
+  const page = async (file, name) => {
+    const target = join(dist, name)
+    if (exists_sync(target)) return
+    const text = await read_file(file, 'utf8')
+    await mkdir(dirname(target), { recursive: true })
+    await write_file(
+      target,
+      text.replace(
+        /(src|href)="\/partials\//g,
+        (_, attribute) => `${attribute}="/${prefix}/partials/`
+      )
+    )
+  }
+  const asset = async (file, name) => {
+    const target = join(dist, name)
+    if (exists_sync(target)) return
+    await mkdir(dirname(target), { recursive: true })
+    await write_file(target, await read_file(file))
+  }
+  const walk = async (dir, base = '') => {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const name = base ? `${base}/${entry.name}` : entry.name
+      const file = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        await walk(file, name)
+        continue
+      }
+      if (!entry.isFile() || name === 'index.html') continue
+      if (
+        [
+          'sitemap.xml',
+          'robots.txt',
+          'manifest.webmanifest',
+          'sources.json'
+        ].includes(name)
+      )
+        continue
+      if (name.startsWith('partials/')) await page(file, `${prefix}/${name}`)
+      else if (name.endsWith('.html')) await page(file, name)
+      else await asset(file, name)
+    }
+  }
+  await walk(from)
+  const index = join(from, 'index.html')
+  if (exists_sync(index)) await page(index, `${prefix}/index.html`)
 }
 
 /**

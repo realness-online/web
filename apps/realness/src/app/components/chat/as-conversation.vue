@@ -204,6 +204,7 @@
       name="message"
       rows="1"
       aria-label="Message"
+      placeholder="Message"
       required
       @focusout="on_leave"
       @keydown="on_key" />

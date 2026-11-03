@@ -43,15 +43,14 @@ export const verify_release = runtime => {
  * Installed commands link inside their own runtime. A copy made without
  * verbatim links points back at its source, and breaks when that is removed.
  */
-export const verify_install = runtime => {
-  const bin = join(runtime, 'node_modules/.bin')
+const verify_commands = (root, bin) => {
   const names = exists_sync(bin) ? readdir_sync(bin) : []
   for (const name of names) {
     const link = join(bin, name)
     if (!lstat_sync(link).isSymbolicLink()) continue
     const target = readlink_sync(link)
     assert.ok(!is_absolute(target), `Installed command is an absolute link: ${name} -> ${target}`)
-    const reached = relative(resolve(runtime), resolve(dirname(link), target))
+    const reached = relative(resolve(root), resolve(dirname(link), target))
     assert.ok(
       reached && !reached.startsWith('..') && !is_absolute(reached),
       `Installed command leaves the runtime: ${name} -> ${target}`
@@ -60,3 +59,8 @@ export const verify_install = runtime => {
   }
   return names.length
 }
+
+export const verify_install = runtime => verify_commands(runtime, join(runtime, 'node_modules/.bin'))
+
+/** Commands inside one release's node_modules, which activation compares before switching. */
+export const verify_modules = modules => verify_commands(modules, join(modules, '.bin'))

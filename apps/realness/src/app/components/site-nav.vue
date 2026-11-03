@@ -14,9 +14,20 @@
 
   const route = use_route()
   const pricing_current = computed(() => route?.path?.startsWith('/pricing/'))
+  const is_home = computed(() => route?.path === '/')
   const account_label = computed(
     () => (current_user.value && me.value?.name) || 'Account'
   )
+
+  const from_blog = ref('')
+  if (
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('from') === 'blog'
+  )
+    from_blog.value = document.referrer || history.state?.back || ''
+
+  const version = import.meta.env.PACKAGE_VERSION ?? ''
+  const version_parts = version.split('.')
 
   const NARROW = '(max-width: 40rem)'
   const narrow = () =>
@@ -42,11 +53,12 @@
     itemtype="https://schema.org/SiteNavigationElement"
     aria-label="Site">
     <as-chat-toggle v-if="current_user" />
-    <menu data-primary>
+    <menu v-if="!is_home" data-primary>
       <router-link to="/about" replace>About</router-link>
       <router-link to="/docs" replace>Docs</router-link>
     </menu>
     <details
+      v-if="!is_home"
       data-nav-more
       :open="more_open"
       @toggle="more_open = $event.target.open">
@@ -63,7 +75,9 @@
       </menu>
     </details>
     <span data-identity>
+      <a v-if="from_blog" :href="from_blog">←</a>
       <router-link
+        v-if="!is_home"
         id="account"
         to="/account"
         replace
@@ -71,7 +85,13 @@
         :title="account_label">
         <icon name="silhouette" />
       </router-link>
-      <logo-as-link />
+      <logo-as-link v-if="!is_home" />
+      <router-link v-if="is_home" id="about" to="/about" tabindex="-1">
+        <span>{{ version_parts[0] }}</span>
+        <span>?</span>
+        <span>{{ version_parts[1] }}</span>
+        <span>{{ version_parts[2] }}</span>
+      </router-link>
     </span>
   </nav>
 </template>
@@ -80,7 +100,7 @@
   nav[itemtype$='/SiteNavigationElement'] {
     width: 100%;
     box-sizing: border-box;
-    min-block-size: var(--header-size);
+    block-size: calc(env(safe-area-inset-top, 0px) + var(--header-size));
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -135,6 +155,74 @@
         width: calc(var(--base-line) * 1.33);
         height: calc(var(--base-line) * 1.33);
         fill: currentColor;
+      }
+    }
+
+    & > span[data-identity] > a#about {
+      font-weight: bold;
+      font-size: calc(var(--base-line) * 1.44);
+      -webkit-user-select: none;
+      user-select: none;
+      display: grid;
+      grid-template-columns: auto auto auto;
+      grid-template-rows: auto auto;
+      align-items: baseline;
+      & > span {
+        font-size: 0.266em;
+        vertical-align: sub;
+        opacity: 0.67;
+        transition-property: opacity, color;
+        transition-timing-function: ease;
+        transition-duration: 0.66s;
+        @media (prefers-reduced-motion: reduce) {
+          transition-duration: 0.01ms;
+        }
+      }
+      & > span:first-child {
+        grid-column: 1;
+        grid-row: 1;
+        margin-right: 0.1em;
+        margin-left: calc(var(--base-line) * -0.25);
+      }
+      & > span:nth-child(2) {
+        grid-column: 2;
+        grid-row: 1;
+        font-size: 1em;
+        opacity: 1;
+        transform: scale(1);
+        transition-property: transform, color;
+        transition-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
+        transition-duration: 0.66s;
+        @media (prefers-reduced-motion: reduce) {
+          transition-duration: 0.01ms;
+        }
+      }
+      & > span:nth-child(3) {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: center;
+        transform: translateY(calc(var(--base-line) * -0.25));
+      }
+      & > span:last-child {
+        grid-column: 3;
+        grid-row: 1;
+        margin-left: 0.1em;
+        margin-right: calc(var(--base-line) * -0.25);
+      }
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          color: var(--accent);
+          & > span:nth-child(2) {
+            color: var(--emphasis);
+            transform: scale(1.15);
+            @media (prefers-reduced-motion: reduce) {
+              transform: scale(1);
+            }
+          }
+          & > span:not(:nth-child(2)) {
+            opacity: 0.3;
+          }
+        }
       }
     }
   }

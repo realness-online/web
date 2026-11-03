@@ -58,6 +58,8 @@ async function fixture(type = 'blog') {
   await writeFile(join(vault, 'private.md'), 'PRIVATE NOTE')
   await writeFile(join(vault, 'private.svg'), '<svg>PRIVATE IMAGE</svg>')
   const source = await add(vault, 'public.md')
+  await writeFile(join(vault, 'draft.md'), '---\ndraft: true\n---\n\n# Draft\n')
+  const draft = await add(vault, 'draft.md')
   await writeFile(
     join(vault, 'public.svg'),
     '<svg xmlns="http://www.w3.org/2000/svg"><title>Selected image</title></svg>'
@@ -67,7 +69,10 @@ async function fixture(type = 'blog') {
     id,
     type,
     vault: '../../vault',
-    sources: [{ id: source.id, slug: 'public' }],
+    sources: [
+      { id: source.id, slug: 'public' },
+      { id: draft.id, slug: 'draft' }
+    ],
     assets: [{ id: image.id, path: 'media/public.svg' }]
   })
   await writeFile(
@@ -96,6 +101,7 @@ async function fixture(type = 'blog') {
     root,
     vault,
     source,
+    draft,
     storage,
     issuer,
     phone,
@@ -138,6 +144,17 @@ for (const type of ['blog', 'plans'])
       assert.match(await page.text(), /Selected content/)
       const index = await (await fetch(`${f.url}/sites/${id}/`)).text()
       assert.match(index, new RegExp(`href="/sites/${id}/blog/public"`))
+      const published = await (await fetch(`${f.url}/sites/index.json`)).json()
+      assert.deepEqual(
+        published.find(entry => entry.id === f.source.id),
+        { id: f.source.id, url: page_url },
+        'the site index joins an itemid to its published page'
+      )
+      assert.equal(
+        published.some(entry => entry.id === f.draft.id),
+        false,
+        'the site index never lists a draft it did not build'
+      )
       assert.equal(
         (await fetch(`${f.url}/sites/${id}/blog/public/`)).status,
         200,
@@ -368,4 +385,64 @@ it('rooted URLs get a site prefix without changing external URLs or double-prefi
     site_links('url(/fonts/body.woff2)', prefix),
     new RegExp(`url\\(${prefix}fonts/`)
   )
+})
+
+it('one snapshot serves an included app under its path', async () => {
+  const f = await fixture('plans')
+  try {
+    await writeFile(join(f.vault, 'side.md'), '# Side\n\nSide body.\n')
+    const side = await add(f.vault, 'side.md')
+    await write_app(join(f.root, 'apps/side'), {
+      id: 'a-111111111111',
+      type: 'plans',
+      vault: '../../vault',
+      sources: [{ id: side.id, slug: 'side' }]
+    })
+    await writeFile(
+      join(f.root, 'apps/side/site.json'),
+      JSON.stringify({
+        name: 'Side',
+        url: '',
+        tagline: '',
+        poster: 'example.svg'
+      })
+    )
+    const app_dir = join(f.root, 'apps/test')
+    await write_app(app_dir, {
+      ...(await read_app(app_dir)),
+      includes: [{ app: 'side', path: 'articles' }]
+    })
+    const result = await publish_app(f.root, 'test', f.options)
+    assert.equal((await fetch(`${result.url}articles/`)).status, 200)
+    const article = await fetch(`${result.url}blog/side`)
+    assert.equal(article.status, 200)
+    const html = await article.text()
+    assert.match(html, /Side body/)
+    assert.match(html, /\/articles\/partials\/header\.fragment/)
+    assert.ok(
+      result.sources.some(
+        source => source.id === side.id && source.url.endsWith('/blog/side')
+      ),
+      'the included page joins the itemid index'
+    )
+  } finally {
+    await f.close()
+  }
+})
+
+it('a local preview publish can include drafts', async () => {
+  const f = await fixture('blog')
+  try {
+    const preview = await publish_app(f.root, 'test', {
+      ...f.options,
+      drafts: true
+    })
+    const entry = preview.sources.find(source => source.id === f.draft.id)
+    assert.ok(entry, 'the draft joins the receipt')
+    assert.equal((await fetch(entry.url)).status, 200)
+    const index = await (await fetch(`${preview.url}sources.json`)).json()
+    assert.ok(index.sources.some(source => source.id === f.draft.id))
+  } finally {
+    await f.close()
+  }
 })

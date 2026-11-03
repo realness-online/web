@@ -1,4 +1,5 @@
 import { randomBytes as random_bytes } from 'node:crypto'
+import { existsSync as exists_sync } from 'node:fs'
 import { readFile as read_file, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { skipped } from '#root/src/files/skip.js'
@@ -86,6 +87,7 @@ const snapshot = async (directory, prefix) => {
  * @param {typeof fetch} [options.fetcher]
  * @param {string} [options.example] an engine directory to build from,
  *   instead of the app's own sources
+ * @param {boolean} [options.drafts] include drafts; local preview only
  */
 export const publish_app = async (
   root,
@@ -95,14 +97,15 @@ export const publish_app = async (
     site_url = url,
     get_token = token_source(),
     fetcher = fetch,
-    example
+    example,
+    drafts = false
   } = {}
 ) => {
   if (!url || !/^https?:\/\//.test(url))
     throw new Error('publish needs a sync URL')
   const base = url.replace(/\/$/, '')
   const reads_from = (site_url ?? url).replace(/\/$/, '')
-  const built = await build_app(root, name, { example })
+  const built = await build_app(root, name, { example, drafts })
   const prefix = `/sites/${built.id}/`
   const files = await snapshot(built.dist, prefix)
   const version = random_bytes(ID_BYTES).toString('hex')
@@ -134,16 +137,28 @@ export const publish_app = async (
       throw new Error(`publish ${method} ${path}: ${response.status}`)
     return response
   }
+  const reads = reads_from
+  const built_route = source => {
+    const file = join(built.dist, source.route.slice(1))
+    return (
+      exists_sync(file) ||
+      exists_sync(`${file}.html`) ||
+      exists_sync(join(file, 'index.html'))
+    )
+  }
+  const sources = built.sources.filter(built_route).map(source => {
+    const route = source.route.slice(1)
+    return { id: source.id, url: `${reads}${prefix}${route}` }
+  })
+  files.push({
+    name: 'sources.json',
+    bytes: Buffer.from(JSON.stringify({ id: built.id, version, sources }))
+  })
   for (const { name, bytes } of files) {
     const encoded = name.split('/').map(encodeURIComponent).join('/')
     await call('PUT', `versions/${version}/files/${encoded}`, bytes)
   }
   await call('POST', 'activate', version)
-  const reads = reads_from
-  const sources = built.sources.map(source => {
-    const route = source.route.slice(1)
-    return { id: source.id, url: `${reads}${prefix}${route}` }
-  })
   return {
     id: built.id,
     version,

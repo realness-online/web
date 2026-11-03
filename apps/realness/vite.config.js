@@ -348,6 +348,13 @@ export default define_config(({ mode }) => ({
             : 'https://realness-sync-639469569733.us-central1.run.app',
         changeOrigin: true
       },
+      '/sites/': {
+        target:
+          mode === 'dev-local'
+            ? `http://127.0.0.1:${local_settings.sync_port}`
+            : 'https://realness-sync-639469569733.us-central1.run.app',
+        changeOrigin: true
+      },
       '/pay/': {
         target: 'https://realness-proxy-639469569733.us-central1.run.app',
         changeOrigin: true

@@ -177,9 +177,11 @@ const commands = {
         `${name} -> ${values.github} ${values.branch ?? 'gh-pages'}: ${result.summary}${result.changed && !push ? ' (dry run, not pushed)' : ''}`
       )
     } else if (action === 'publish') {
+      if (values.drafts) console.error('drafts included: local preview only')
       const result = await publish_app(root, words[0], {
         url: values.url ?? SYNC_URL,
-        site_url: values['site-url'] ?? values.url ?? SYNC_URL
+        site_url: values['site-url'] ?? values.url ?? SYNC_URL,
+        drafts: Boolean(values.drafts)
       })
       console.log(result.url)
       for (const source of result.sources) console.log(`  ${source.url}`)

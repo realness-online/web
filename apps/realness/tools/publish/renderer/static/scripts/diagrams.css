@@ -96,3 +96,40 @@ pre.mermaid {
     }
   }
 }
+
+:is(
+  html[data-site='plans'] section pre.mermaid,
+  section pre.mermaid[aria-pressed]
+) {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding-inline: var(--base-line);
+  box-sizing: border-box;
+  background: none;
+  overflow: auto;
+  max-height: 80dvh;
+  cursor: zoom-out;
+
+  &:focus {
+    outline: none;
+  }
+
+  &[aria-pressed='false'] {
+    cursor: zoom-in;
+  }
+
+  &[aria-pressed='false'] svg {
+    width: auto;
+    max-width: 100% !important;
+    max-height: 80dvh;
+  }
+
+  & svg {
+    display: block;
+    width: auto;
+    max-width: none !important;
+    height: auto;
+    max-height: none;
+    margin-inline: auto;
+  }
+}

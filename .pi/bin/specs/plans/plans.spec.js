@@ -9,7 +9,7 @@ const { parseHTML: parse_html } = harness_require('linkedom')
 import { size_diagrams } from '../../../../apps/realness/tools/publish/renderer/static/scripts/plan-diagrams.js'
 
 const css = readFileSync(
-  new URL('../../../../apps/realness/tools/publish/renderer/static/plans.css', import.meta.url),
+  new URL('../../../../apps/realness/tools/publish/renderer/static/scripts/diagrams.css', import.meta.url),
   'utf8'
 )
 const covers = readFileSync(
@@ -18,11 +18,10 @@ const covers = readFileSync(
 )
 
 it('plan diagrams keep their native size instead of shrinking to the viewport', () => {
-  const section = css.slice(css.indexOf('section {\n  pre.mermaid {'))
-  const svg = section.match(/& svg \{([^}]+)\}/)[1]
+  const svg = css.match(/& svg \{([^}]+)\}/)[1]
   assert.match(svg, /width: auto/)
   assert.match(svg, /max-height: none/)
-  assert.match(css, /section \{\s*> article > figure > pre\.mermaid \{\s*max-height: 24rem;/)
+  assert.match(css, /max-height: 80dvh;/)
 })
 
 it('fitted diagrams shrink to fit without enlarging small plans', () => {

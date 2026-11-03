@@ -19,6 +19,7 @@ describe('conversation input', () => {
     const chat = fake_chat()
     const wrapper = mount(AsConversation, { props: { chat } })
     expect(wrapper.find('menu').exists()).toBe(false)
+    expect(wrapper.get('textarea').attributes('placeholder')).toBe('Message')
     chat.draft.value = '/th'
     await wrapper.vm.$nextTick()
     const buttons = wrapper.findAll('menu button')

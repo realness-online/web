@@ -203,7 +203,7 @@ describe('@/components/chat/as-panel', () => {
     expect(panel.find('section[aria-label="Connection status"]').exists()).toBe(
       false
     )
-    expect(panel.get('[role="status"]').text()).toBe('')
+    expect(panel.find('[role="status"]').exists()).toBe(false)
     expect(calls).toHaveLength(0)
   })
 
@@ -221,13 +221,66 @@ describe('@/components/chat/as-panel', () => {
     expect(panel.get('ol').text()).toContain('Hello')
   })
 
-  it('shows the status in the box below the conversation', async () => {
+  it('titles the chat page', async () => {
     home_view.value = 'chat'
     const panel = open_panel({ actor: null })
     await flush_promises()
-    const box = panel.find('aside#chat-panel > aside')
-    expect(box.find('p[role="status"]').exists()).toBe(true)
-    expect(box.attributes('aria-hidden')).toBeUndefined()
+    expect(panel.get('aside#chat-panel > header > h1').text()).toBe('Chat')
+  })
+
+  it('shows the status box only when it has something to say', async () => {
+    home_view.value = 'chat'
+    const panel = open_panel({ actor: null })
+    await flush_promises()
+    expect(
+      panel.find('aside#chat-panel > aside[aria-label="Status"]').exists()
+    ).toBe(false)
+    ask.mockRejectedValueOnce(new Error('Model connection failed'))
+    await panel.get('textarea').setValue('Hi')
+    await panel.get('form').trigger('submit')
+    await flush_promises()
+    const box = panel.get('aside#chat-panel > aside')
+    expect(box.get('p[role="status"]').text()).toBe('Model connection failed')
+  })
+
+  it('follows the visible viewport for a keyboard, not for browser chrome', async () => {
+    const handlers = {}
+    const visible = {
+      offsetTop: 0,
+      height: 700,
+      addEventListener: (name, handler) => {
+        handlers[name] = handler
+      },
+      removeEventListener: vi.fn()
+    }
+    vi.stubGlobal('visualViewport', visible)
+    Object.defineProperty(document.documentElement, 'clientHeight', {
+      configurable: true,
+      value: 780
+    })
+    home_view.value = 'chat'
+    const panel = mount(AsPanel, {
+      attachTo: document.body,
+      props: { actor: null },
+      global: { stubs: { RouterLink: true } }
+    })
+    await flush_promises()
+    const element = panel.get('#chat-panel').element
+    expect(element.style.getPropertyValue('--visible-height')).toBe('')
+    expect(element.style.getPropertyValue('--visible-top')).toBe('')
+
+    visible.offsetTop = 80
+    visible.height = 380
+    handlers.resize()
+    expect(element.style.getPropertyValue('--visible-height')).toBe('380px')
+    expect(element.style.getPropertyValue('--visible-top')).toBe('80px')
+
+    visible.offsetTop = 0
+    visible.height = 740
+    handlers.resize()
+    expect(element.style.getPropertyValue('--visible-height')).toBe('')
+    expect(element.style.getPropertyValue('--visible-top')).toBe('')
+    delete document.documentElement.clientHeight
   })
 
   it('Escape asks to leave; Cmd+K clears the view', async () => {

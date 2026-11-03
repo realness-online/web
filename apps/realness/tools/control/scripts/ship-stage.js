@@ -108,7 +108,7 @@ export const ships = path => {
     name === '.DS_Store' ||
     name.startsWith('._') ||
     is_history(name) ||
-    parts.includes('node_modules') ||
+    parts.some(part => part.startsWith('node_modules')) ||
     parts.includes('.git') ||
     is_test_scratch(parts)
   )

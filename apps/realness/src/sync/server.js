@@ -776,6 +776,13 @@ const answer_vault = async (vault, path, request, response) => {
     const text = await vault.note(query.get('path'))
     if (text === null) throw new Status(HTTP.NOT_FOUND)
     body = { path: query.get('path'), text }
+  } else if (path === 'v1/vault/find') {
+    const found = vault.find({
+      key: query.get('key'),
+      itemid: query.get('itemid')
+    })
+    if (!found) throw new Status(HTTP.NOT_FOUND)
+    body = found
   } else throw new Status(HTTP.NOT_FOUND)
   response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
   response.end(JSON.stringify(body))
@@ -996,7 +1003,11 @@ export const sync_service = ({
     }
     if (path.startsWith('v1/vault/') && method === 'GET') {
       const who = await who_is(request)
-      if (!vault?.allows(who)) throw new Status(HTTP.NOT_FOUND)
+      const public_key =
+        path === 'v1/vault/find' &&
+        new URL(request.url ?? '/', 'http://sync').searchParams.get('key')
+      if (!vault) throw new Status(HTTP.NOT_FOUND)
+      if (!public_key && !vault.allows(who)) throw new Status(HTTP.NOT_FOUND)
       await answer_vault(vault, path, request, response)
       return who
     }

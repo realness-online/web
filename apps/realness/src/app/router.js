@@ -32,7 +32,7 @@ const signed_in_first = async to =>
     : { path: '/sign-on', query: { next: to.fullPath } }
 
 const routes = [
-  { path: '/', component: Thoughts },
+  { path: '/', component: Thoughts, meta: { support: true } },
   {
     path: '/pay',
     component: () => import('@/views/Pay'),
@@ -69,6 +69,11 @@ const routes = [
     path: '/docs',
     component: () => import('@/views/Documentation'),
     meta: { support: true }
+  },
+  {
+    path: '/vault',
+    component: () => import('@/views/Vault'),
+    meta: { note: true }
   },
   {
     path: '/sign-on',
@@ -139,6 +144,7 @@ const router = create_router({
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition
+    if (to.meta?.note) return { top: 0 }
     if (to.hash) return { el: to.hash, behavior: 'smooth' }
 
     if (to.path.startsWith('/pricing') && from.path.startsWith('/pricing'))

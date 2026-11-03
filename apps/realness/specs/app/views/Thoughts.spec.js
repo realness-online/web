@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test'
 import { ref, nextTick, defineComponent, h } from 'vue'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import Thoughts from '@/views/Thoughts.vue'
-import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
 import { del } from 'idb-keyval'
 import { posting, scroll_position } from '@/use/posting'
 import { storytelling, only_mine } from '@/utils/preference'
@@ -315,7 +314,7 @@ describe('Thoughts', () => {
       const wrapper = await settled(mount())
       expect(wrapper.find('section#thoughts[data-page]').exists()).toBe(true)
       expect(wrapper.find('h1').text()).toBe('Thoughts')
-      expect(wrapper.findComponent(AsChatToggle).exists()).toBe(true)
+      expect(wrapper.find('section#thoughts > header').exists()).toBe(false)
       expect(wrapper.findComponent({ name: 'AsWorkspace' }).exists()).toBe(
         false
       )
@@ -346,17 +345,18 @@ describe('Thoughts', () => {
       wrapper.unmount()
     })
 
-    it('shows a blog back-link when arriving from blog', async () => {
+    it('leaves the blog back-link and version to the site nav', async () => {
       window.history.replaceState(
         { back: 'https://blog.example/post' },
         '',
         '/?from=blog'
       )
       const wrapper = await settled(mount())
-      const link = wrapper.find('header a[href="https://blog.example/post"]')
-      expect(link.exists()).toBe(true)
-      expect(link.text()).toBe('←')
+      expect(
+        wrapper.find('header a[href="https://blog.example/post"]').exists()
+      ).toBe(false)
       wrapper.unmount()
+      window.history.replaceState({}, '', '/')
     })
 
     it('adds storytelling class when storytelling is on', async () => {

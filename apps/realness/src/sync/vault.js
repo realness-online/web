@@ -109,6 +109,42 @@ export const vault_door = ({ dir, index, owner }) => {
       } catch {
         return null
       }
+    },
+    /**
+     * The note a stored key or itemid names, from the index's note text.
+     * `key` is public; `itemid` carries the owner's phone.
+     * @param {{ key?: unknown, itemid?: unknown }} query
+     * @returns {{ path: string, title: string, text: string, itemid: string | null } | null}
+     */
+    find({ key, itemid }) {
+      const by_key = typeof key === 'string' && key
+      const by_itemid = !by_key && typeof itemid === 'string' && itemid
+      if (!by_key && !by_itemid) return null
+      const property = by_key ? 'key' : 'itemid'
+      const value = by_key ? key : itemid
+      if (!property || !value || !index || !exists_sync(index)) return null
+      const escaped = String(value).replace(/[\\%_]/g, '\\$&')
+      const db = new DatabaseSync(index, { readOnly: true })
+      try {
+        const row = db
+          .prepare(
+            "SELECT path, title, text FROM note WHERE text LIKE ? ESCAPE '\\' LIMIT 1"
+          )
+          .get(`%\n${property}: "${escaped}"%`)
+        if (!row) return null
+        const raw = String(row.text)
+        const front = /^---\n([\s\S]*?)\n---\n?/.exec(raw)?.[1] ?? ''
+        const itemid = /^itemid:\s*"?([^"\n]+)"?\s*$/m.exec(front)?.[1] ?? null
+        const text = raw.replace(/^---\n[\s\S]*?\n---\n?/, '')
+        return {
+          path: String(row.path),
+          title: String(row.title),
+          text,
+          itemid
+        }
+      } finally {
+        db.close()
+      }
     }
   }
 }

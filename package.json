@@ -21,7 +21,8 @@
   "realness": {
     "plans": "vault/Projects",
     "plansIgnore": [
-      "Todo's.md"
+      "Todo's.md",
+      "site.md"
     ],
     "examples": ".pi/examples",
     "light": {
@@ -58,7 +59,7 @@
     "check:skills": "node ./.pi/bin/checks/check-skills.js",
     "check:tooling": "node ./.pi/bin/checks/check-tooling.js",
     "test:tooling": "node --test .pi/bin/specs/checks/check-tooling.spec.js",
-    "pi:update": "node .pi/bin/harness/install-pi.js",
+    "pi:reinstall": "node .pi/bin/harness/install-pi.js",
     "pi:list": "./.pi/bin/pi list",
     "test:sessions": "./.pi/bin/checks/test-sessions.sh",
     "feeds": "./.pi/skills/vault/rebuild-feeds.sh",

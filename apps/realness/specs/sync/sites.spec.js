@@ -212,3 +212,47 @@ it('bad paths, missing versions and invalid passes cannot publish', async () => 
     200
   )
 })
+
+it('publishes one index of itemid to page, from the active snapshots', async () => {
+  const other = 'a-abcdefabcdef'
+  const sources = JSON.stringify({
+    id: other,
+    version: 'cccccccccccc',
+    sources: [{ id: '/+1555/plans/9', url: `${base}/sites/${other}/p/9/` }]
+  })
+  assert.equal(
+    await status(
+      'PUT',
+      `v1/sites/${other}/versions/cccccccccccc/files/index.html`,
+      {
+        phone: owner,
+        body: '<h1>page</h1>'
+      }
+    ),
+    201
+  )
+  assert.equal(
+    await status(
+      'PUT',
+      `v1/sites/${other}/versions/cccccccccccc/files/sources.json`,
+      {
+        phone: owner,
+        body: sources
+      }
+    ),
+    201
+  )
+  assert.equal(
+    await status('POST', `v1/sites/${other}/activate`, {
+      phone: owner,
+      body: 'cccccccccccc'
+    }),
+    200
+  )
+  const index = await call('GET', 'sites/index.json')
+  assert.equal(index.status, 200)
+  const entries = await index.json()
+  assert.deepEqual(entries, [
+    { id: '/+1555/plans/9', url: `${base}/sites/${other}/p/9/` }
+  ])
+})

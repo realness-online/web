@@ -27,9 +27,19 @@
 
   /** Fit the panel to the visible viewport, so the phone keyboard cannot slide it away. */
   const panel = ref(null)
+  /** A covered area smaller than this is browser chrome, not a keyboard. */
+  const KEYBOARD_GAP = 180
   const fit_viewport = () => {
     const visible = globalThis.visualViewport
     if (!visible || !panel.value) return
+    const covered =
+      document.documentElement.clientHeight -
+      (visible.offsetTop + visible.height)
+    if (covered < KEYBOARD_GAP) {
+      panel.value.style.removeProperty('--visible-top')
+      panel.value.style.removeProperty('--visible-height')
+      return
+    }
     panel.value.style.setProperty('--visible-top', `${visible.offsetTop}px`)
     panel.value.style.setProperty('--visible-height', `${visible.height}px`)
   }
@@ -94,6 +104,9 @@
   const status_line = computed(() =>
     failed.value || chat.status.value === 'Starting...' ? '' : chat.status.value
   )
+  const has_status = computed(() =>
+    Boolean(failed.value || status_line.value || fps_mounted.value)
+  )
 
   const retry = () => chat.retry()
   on_before_unmount(() => chat.stop())
@@ -111,10 +124,11 @@
     @transitionstart.self="on_reveal"
     @transitionend.self="on_reveal">
     <header>
+      <h1>Chat</h1>
       <slot />
     </header>
     <as-conversation ref="talk" :chat="chat" />
-    <aside aria-label="Status">
+    <aside v-if="has_status" aria-label="Status">
       <as-connection-feedback
         v-if="failed"
         :problem="chat.connection_problem.value"
@@ -138,6 +152,7 @@
     display: flex;
     flex-direction: column;
     padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     background: var(--surface);
     border-inline-end: round(base-line * 0.1, 2) solid var(--code-surface);
     translate: -100% 0;
@@ -164,6 +179,10 @@
       align-items: center;
       justify-content: space-between;
       padding: base-line;
+      & > h1 {
+        margin: 0;
+        line-height: 1;
+      }
       & > :last-child {
         margin-inline-start: auto;
       }

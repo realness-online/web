@@ -38,13 +38,18 @@ export const is_admin_directory = itemid => {
 export const sync_later = async (id, action) => {
   const mutex = mutex_for('sync:offline')
   await mutex.lock()
-  const offline = (await get('sync:offline')) || []
-  const exists = offline.some(item => item.id === id && item.action === action)
-  if (!exists) {
-    offline.push({ id, action })
-    await set('sync:offline', offline)
+  try {
+    const offline = (await get('sync:offline')) || []
+    const exists = offline.some(
+      item => item.id === id && item.action === action
+    )
+    if (!exists) {
+      offline.push({ id, action })
+      await set('sync:offline', offline)
+    }
+  } finally {
+    mutex.unlock()
   }
-  mutex.unlock()
 }
 
 /**

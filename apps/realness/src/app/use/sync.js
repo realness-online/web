@@ -508,24 +508,28 @@ export const sync_offline_actions = async () => {
   const offline_mutex = mutex_for('sync:offline')
   await offline_mutex.lock()
   /** @type {Sync_Offline_Item[]|undefined} */
-  const offline = await get('sync:offline')
-  if (offline) {
-    const sync_next = async () => {
-      const item = offline.pop()
-      if (!item) return
+  let offline
+  try {
+    offline = await get('sync:offline')
+    if (offline) {
+      const sync_next = async () => {
+        const item = offline?.pop()
+        if (!item) return
 
-      if (item.action === 'save')
-        if (item.id.endsWith('/relations')) {
-          const html = localStorage.getItem(item.id)
-          if (html) await new Relation().save({ outerHTML: html })
-        } else await new Offline(item.id).save()
-      else if (item.action === 'delete') await new Offline(item.id).delete()
-      return sync_next()
+        if (item.action === 'save')
+          if (item.id.endsWith('/relations')) {
+            const html = localStorage.getItem(item.id)
+            if (html) await new Relation().save({ outerHTML: html })
+          } else await new Offline(item.id).save()
+        else if (item.action === 'delete') await new Offline(item.id).delete()
+        return sync_next()
+      }
+      await sync_next()
+      await del('sync:offline')
     }
-    await sync_next()
-    await del('sync:offline')
+  } finally {
+    offline_mutex.unlock()
   }
-  offline_mutex.unlock()
 
   if (!offline?.length && current_user.value) return
 

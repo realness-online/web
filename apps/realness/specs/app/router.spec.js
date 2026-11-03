@@ -110,6 +110,15 @@ describe('@/router', () => {
     expect(scrollBehavior({ path: '/about' }, { path: '/' }, saved)).toBe(saved)
   })
 
+  it('treats a note link as the note, not an element id', () => {
+    const to = {
+      path: '/vault',
+      hash: '#olxW625le8JL7L-NKakKIw',
+      meta: { note: true }
+    }
+    expect(scrollBehavior(to, { path: '/' }, null)).toEqual({ top: 0 })
+  })
+
   it('scrolls a hash into view', () => {
     const to = { path: '/docs', hash: '#install' }
     expect(scrollBehavior(to, { path: '/' }, null)).toEqual({

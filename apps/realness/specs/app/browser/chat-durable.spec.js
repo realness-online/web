@@ -321,7 +321,7 @@ describe('chat with the real Durable browser bundle', () => {
     await wait_for(() =>
       expect(terminal.props('problem')).toContain('Warm-up unavailable')
     )
-    expect(page.get('#chat-panel [role="status"]').text()).toBe('')
+    expect(page.find('#chat-panel [role="status"]').exists()).toBe(false)
     expect(page.find('#chat-panel [role="alert"]').exists()).toBe(false)
     replies.push({ content: 'We can still talk.' })
     await page.get('textarea[name="message"]').setValue('Can we still talk?')

@@ -46,21 +46,11 @@
   import { after_layout } from '@/utils/after-layout'
   import { poster_delete_log } from '@/utils/poster-delete-log'
   import AsTextarea from '@/components/thoughts/as-textarea.vue'
-  import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
   import { use_home_view } from '@/use/home-view'
-
-  const from_blog = ref(
-    new URLSearchParams(window.location.search).get('from') === 'blog'
-      ? document.referrer || history.state?.back || ''
-      : ''
-  )
 
   const on_toggle_keyboard = active => {
     posting.value = active ?? !posting.value
   }
-
-  const version = import.meta.env.PACKAGE_VERSION
-  const version_parts = version.split('.')
 
   const set_working = inject('set_working')
   const select_photo = inject('select_photo')
@@ -555,16 +545,6 @@
     :data-slice="aspect_ratio_mode !== 'auto' || undefined"
     :data-chat="home_view === 'chat-thoughts' || undefined"
     :inert="!shows.thoughts || undefined">
-    <header>
-      <as-chat-toggle v-if="current_user" />
-      <a v-if="from_blog" :href="from_blog">←</a>
-      <router-link id="about" to="/about" tabindex="-1">
-        <span>{{ version_parts[0] }}</span>
-        <span>?</span>
-        <span>{{ version_parts[1] }}</span>
-        <span>{{ version_parts[2] }}</span>
-      </router-link>
-    </header>
     <h1>Thoughts</h1>
     <as-textarea
       @toggle-keyboard="on_toggle_keyboard"
@@ -678,99 +658,11 @@
     &[data-storytelling] {
       flex: 1;
       min-height: 100vh;
-      & > header,
       & > h1,
       & > section[data-processing-queue],
       & > fieldset:has(> textarea#wat) {
         display: none;
       }
-    }
-    & > header {
-      box-sizing: border-box;
-      min-block-size: var(--header-size);
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: base-line;
-      padding-block: round((base-line / 2), 2);
-      color: var(--accent);
-      & > h1 {
-        margin: 0;
-        width: auto;
-      }
-      & > a > svg {
-       fill: var(--accent);
-      }
-      & > a#about {
-        margin-left: auto;
-        font-weight: bold;
-        font-size: base-line * 1.44;
-        -webkit-user-select: none;
-        user-select: none;
-        display: grid;
-        grid-template-columns: auto auto auto;
-        grid-template-rows: auto auto;
-        align-items: baseline;
-        & > span {
-          font-size: 0.266em;
-          vertical-align: sub;
-          opacity: 0.67;
-          transition-property: opacity, color;
-          transition-timing-function: ease;
-          transition-duration: 0.66s;
-          @media (prefers-reduced-motion: reduce) {
-            transition-duration: 0.01ms;
-          }
-        }
-        & > span:first-child {
-          grid-column: 1;
-          grid-row: 1;
-          margin-right: 0.1em;
-          margin-left: -(base-line * 0.25);
-        }
-        & > span:nth-child(2) {
-          grid-column: 2;
-          grid-row: 1;
-          font-size: 1em;
-          opacity: 1;
-          transform: scale(1);
-          transition-property: transform, color;
-          transition-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
-          transition-duration: 0.66s;
-          @media (prefers-reduced-motion: reduce) {
-            transition-duration: 0.01ms;
-          }
-        }
-        & > span:nth-child(3) {
-          grid-column: 2;
-          grid-row: 2;
-          justify-self: center;
-          transform: translateY(-(base-line * 0.25));
-        }
-        & > span:last-child {
-          grid-column: 3;
-          grid-row: 1;
-          margin-left: 0.1em;
-          margin-right: -(base-line * 0.25);
-        }
-        @media (hover: hover) and (pointer: fine) {
-          &:hover {
-            & > span:nth-child(2) {
-              color: var(--emphasis);
-              transform: scale(1.15);
-              @media (prefers-reduced-motion: reduce) {
-                transform: scale(1);
-              }
-            }
-            & > span:not(:nth-child(2)) {
-              opacity: 0.3;
-            }
-          }
-        }
-      }
-    }
-    & > nav {
-      display: none;
     }
     svg[data-icon='working'] {
      fill: var(--accent);

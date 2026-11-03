@@ -71,7 +71,7 @@ The harness uses a pinned build of our Pi fork, packaged under `.pi/runtime/`.
 download upstream Pi or borrow a globally installed Pi.
 
 The release pin records the fork commit, upstream commit, and archive hashes.
-`npm run pi:update` reinstalls the current pin; it does not advance upstream.
+`npm run pi:reinstall` reinstalls the current pin; it does not advance upstream.
 New fork releases follow `work/pi/FORK.md` and require review before changing the pin.
 An explicit local `fork-path` marker still takes priority for development.
 
@@ -165,7 +165,7 @@ this index.
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | `npm start` / `npm run realness`     | Start through `.pi/bin/pi`; Node >= 22.19.                                                                                        |
 | `npm run pi:list`                    | List installed pi packages.                                                                                                   |
-| `npm run pi:update`                  | Reinstall the reviewed Pi fork pin; upstream updates require a new reviewed release.                                          |
+| `npm run pi:reinstall`               | Reinstall the reviewed Pi fork pin; upstream updates require a new reviewed release.                                          |
 | `npm test`                           | Run the memory index tests.                                                                                                   |
 | `npm run check:ext`                  | Run `.pi/bin/checks/no-mjs.js` to reject `.mjs` files across the workspace (excluding artifacts, dependencies, and git metadata). |
 | `npm run check:skills`               | Check every skill: spec rules via `uv`, stale paths, scripts that do not parse, long code blocks.                             |

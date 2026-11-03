@@ -24,7 +24,7 @@ workspace's separate selected-fork installation is not changed by this installer
 6. Verify an isolated install, SDK, CLI, compressed write/resume, and read-only decoder.
 7. Review the archive list and lockfile before approving the new repository pin.
 
-`npm run pi:update` only reinstalls this pin. It does not choose an upstream
+`npm run pi:reinstall` only reinstalls this pin. It does not choose an upstream
 release. Provider credentials must come from each user, never from this package.
 
 Current release evidence is local at `artifacts/pi/release-v1.4.0/`.

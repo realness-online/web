@@ -22,7 +22,7 @@ const walk = directory => {
     const path = join(directory, entry.name)
     const file = relative(root, path).replaceAll('\\', '/')
     if (entry.isDirectory()) {
-      if (!skip.has(entry.name) && file !== '.pi/agent') walk(path)
+      if (!skip.has(entry.name) && !entry.name.startsWith('node_modules') && file !== '.pi/agent') walk(path)
     } else if (extname(file) === '.mjs' || (file.startsWith('.pi/') && typescript.has(extname(file))))
       forbidden.push(file)
     else if (extname(file) === '.cjs') commonjs.push(file)

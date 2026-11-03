@@ -95,6 +95,27 @@ const list_versions = async (storage, response, id) => {
   )
 }
 
+/** Every active site's `sources.json` in one list, so an itemid finds its page. */
+const serve_index = async (storage, response) => {
+  const listing = await storage.list('sites/')
+  const sites = await Promise.all(
+    listing.folders
+      .filter(id => ID.test(id))
+      .map(async id => {
+        const active = await storage.get(active_key(id))
+        const version = active?.body.toString('utf8')
+        if (!version || !VERSION.test(version)) return []
+        const file = await storage.get(file_key(id, version, 'sources.json'))
+        if (!file) return []
+        return JSON.parse(file.body.toString('utf8')).sources ?? []
+      })
+  )
+  return send(response, HTTP.OK, JSON.stringify(sites.flat()), {
+    'content-type': 'application/json',
+    'cache-control': 'no-cache'
+  })
+}
+
 /** Serve one file from a published site, with the index fallbacks. */
 const serve_public = async (storage, response, { id, parts }) => {
   const relative = parts.slice(2).join('/')
@@ -128,6 +149,38 @@ const serve_public = async (storage, response, { id, parts }) => {
   })
 }
 
+const activate_version = async ({ storage, id, version, response }) => {
+  if (!VERSION.test(version)) throw new SiteError(HTTP.BAD_REQUEST)
+  if (!(await storage.get(file_key(id, version, 'index.html'))))
+    throw new SiteError(HTTP.NOT_FOUND)
+  await storage
+    .put(`sites/${id}/versions/${version}/saved`, new Date().toISOString(), {
+      if_absent: true
+    })
+    .catch(error => {
+      if (error.code !== 'conflict') throw error
+    })
+  await storage.put(active_key(id), version)
+  return send(
+    response,
+    HTTP.OK,
+    JSON.stringify({ url: `/sites/${id}/`, version }),
+    { 'content-type': 'application/json' }
+  )
+}
+
+const delete_active = async ({ storage, id, response }) => {
+  const active = await storage.get(active_key(id))
+  if (!active) throw new SiteError(HTTP.NOT_FOUND)
+  await storage.delete(active_key(id))
+  return send(
+    response,
+    HTTP.OK,
+    JSON.stringify({ version: active.body.toString('utf8') }),
+    { 'content-type': 'application/json' }
+  )
+}
+
 export const site_request = async ({
   storage,
   method,
@@ -139,6 +192,8 @@ export const site_request = async ({
   const parts = path.split('/')
   const public_site = parts[0] === 'sites'
   const [root, id] = public_site ? parts : parts.slice(1)
+  if (public_site && method === 'GET' && id === 'index.json')
+    return await serve_index(storage, response)
   if ((public_site && method !== 'GET') || !ID.test(id ?? ''))
     throw new SiteError(HTTP.NOT_FOUND)
   if (!public_site && (root !== 'sites' || parts[0] !== 'v1' || !who?.phone))
@@ -169,34 +224,9 @@ export const site_request = async ({
     return await list_versions(storage, response, id)
   if (method === 'POST' && tail.join('/') === 'activate') {
     const version = (await read_body()).toString('utf8')
-    if (!VERSION.test(version)) throw new SiteError(HTTP.BAD_REQUEST)
-    if (!(await storage.get(file_key(id, version, 'index.html'))))
-      throw new SiteError(HTTP.NOT_FOUND)
-    await storage
-      .put(`sites/${id}/versions/${version}/saved`, new Date().toISOString(), {
-        if_absent: true
-      })
-      .catch(error => {
-        if (error.code !== 'conflict') throw error
-      })
-    await storage.put(active_key(id), version)
-    return send(
-      response,
-      HTTP.OK,
-      JSON.stringify({ url: `/sites/${id}/`, version }),
-      { 'content-type': 'application/json' }
-    )
+    return await activate_version({ storage, id, version, response })
   }
-  if (method === 'DELETE' && tail.join('/') === 'active') {
-    const active = await storage.get(active_key(id))
-    if (!active) throw new SiteError(HTTP.NOT_FOUND)
-    await storage.delete(active_key(id))
-    return send(
-      response,
-      HTTP.OK,
-      JSON.stringify({ version: active.body.toString('utf8') }),
-      { 'content-type': 'application/json' }
-    )
-  }
+  if (method === 'DELETE' && tail.join('/') === 'active')
+    return await delete_active({ storage, id, response })
   throw new SiteError(HTTP.METHOD_NOT_ALLOWED)
 }
