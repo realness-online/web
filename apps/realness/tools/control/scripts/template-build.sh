@@ -327,7 +327,6 @@ chroot "$TREE" /usr/bin/fdfind --version
 log "realness starts, and resolves pi without the network"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/realness \
   /usr/local/bin/realness --version
-chroot "$TREE" /realness/.pi/node_modules/.bin/prettier --version
 test ! -e "$TREE/realness/node_modules"
 
 log "warm the extension caches"
