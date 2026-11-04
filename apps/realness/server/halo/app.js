@@ -18,6 +18,6 @@ if (!['start', 'stop'].includes(command) || !arg) {
   process.exit(2)
 }
 const store = new AppStore(values)
-if (command === 'start') console.log(JSON.stringify(await store.start(arg)))
+if (command === 'start') console.info(JSON.stringify(await store.start(arg)))
 else await store.stop(arg)
 process.exit(0)

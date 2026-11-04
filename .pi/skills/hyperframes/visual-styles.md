@@ -28,9 +28,9 @@ Named visual identities for HyperFrames videos. Each style is grounded in a real
 ```yaml
 name: Swiss Pulse
 colors:
-  primary: "#1a1a1a"
-  on-primary: "#ffffff"
-  accent: "#0066FF"
+  primary: '#1a1a1a'
+  on-primary: '#ffffff'
+  accent: '#0066FF'
 typography:
   headline:
     fontFamily: Helvetica Neue
@@ -54,9 +54,9 @@ spacing:
 motion:
   energy: high
   easing:
-    entry: "expo.out"
-    exit: "power4.in"
-    ambient: "none"
+    entry: 'expo.out'
+    exit: 'power4.in'
+    ambient: 'none'
   duration:
     entrance: 0.4
     hold: 1.5
@@ -78,9 +78,9 @@ Grid-locked compositions. Every element snaps to an invisible 12-column grid. Nu
 ```yaml
 name: Velvet Standard
 colors:
-  primary: "#0a0a0a"
-  on-primary: "#ffffff"
-  accent: "#1a237e"
+  primary: '#0a0a0a'
+  on-primary: '#ffffff'
+  accent: '#1a237e'
 typography:
   headline:
     fontFamily: Inter
@@ -103,9 +103,9 @@ spacing:
 motion:
   energy: calm
   easing:
-    entry: "sine.inOut"
-    exit: "power1.in"
-    ambient: "sine.inOut"
+    entry: 'sine.inOut'
+    exit: 'power1.in'
+    ambient: 'sine.inOut'
   duration:
     entrance: 1.2
     hold: 3.0
@@ -127,9 +127,9 @@ Generous negative space. Symmetrical, centered, architectural precision. Thin sa
 ```yaml
 name: Deconstructed
 colors:
-  primary: "#1a1a1a"
-  on-primary: "#f0f0f0"
-  accent: "#D4501E"
+  primary: '#1a1a1a'
+  on-primary: '#f0f0f0'
+  accent: '#D4501E'
 typography:
   headline:
     fontFamily: Space Grotesk
@@ -149,9 +149,9 @@ spacing:
 motion:
   energy: high
   easing:
-    entry: "back.out(2.5)"
-    exit: "steps(8)"
-    ambient: "elastic.out(1.2, 0.4)"
+    entry: 'back.out(2.5)'
+    exit: 'steps(8)'
+    ambient: 'elastic.out(1.2, 0.4)'
   duration:
     entrance: 0.3
     hold: 1.0
@@ -174,10 +174,10 @@ Type at angles, overlapping edges, escaping frames. Bold industrial weight. Grit
 ```yaml
 name: Maximalist Type
 colors:
-  primary: "#0a0a0a"
-  on-primary: "#ffffff"
-  accent-red: "#E63946"
-  accent-yellow: "#FFD60A"
+  primary: '#0a0a0a'
+  on-primary: '#ffffff'
+  accent-red: '#E63946'
+  accent-yellow: '#FFD60A'
 typography:
   headline:
     fontFamily: Anton
@@ -196,9 +196,9 @@ spacing:
 motion:
   energy: high
   easing:
-    entry: "expo.out"
-    exit: "back.out(1.8)"
-    ambient: "power3.out"
+    entry: 'expo.out'
+    exit: 'back.out(1.8)'
+    ambient: 'power3.out'
   duration:
     entrance: 0.3
     hold: 0.8
@@ -220,10 +220,10 @@ Text IS the visual. Overlapping type layers at different scales and angles, fill
 ```yaml
 name: Data Drift
 colors:
-  primary: "#0a0a0a"
-  on-primary: "#e0e0e0"
-  accent-purple: "#7c3aed"
-  accent-cyan: "#06b6d4"
+  primary: '#0a0a0a'
+  on-primary: '#e0e0e0'
+  accent-purple: '#7c3aed'
+  accent-cyan: '#06b6d4'
 typography:
   headline:
     fontFamily: Inter
@@ -245,9 +245,9 @@ spacing:
 motion:
   energy: moderate
   easing:
-    entry: "sine.inOut"
-    exit: "power2.out"
-    ambient: "sine.inOut"
+    entry: 'sine.inOut'
+    exit: 'power2.out'
+    ambient: 'sine.inOut'
   duration:
     entrance: 1.0
     hold: 2.5
@@ -270,11 +270,11 @@ Thin futuristic sans-serif - floating, weightless, minimal. Fluid morphing compo
 ```yaml
 name: Soft Signal
 colors:
-  primary: "#FFF8EC"
-  on-primary: "#2a2a2a"
-  accent-amber: "#F5A623"
-  accent-rose: "#C4A3A3"
-  accent-sage: "#8FAF8C"
+  primary: '#FFF8EC'
+  on-primary: '#2a2a2a'
+  accent-amber: '#F5A623'
+  accent-rose: '#C4A3A3'
+  accent-sage: '#8FAF8C'
 typography:
   headline:
     fontFamily: Playfair Display
@@ -298,9 +298,9 @@ spacing:
 motion:
   energy: calm
   easing:
-    entry: "sine.inOut"
-    exit: "power1.inOut"
-    ambient: "sine.inOut"
+    entry: 'sine.inOut'
+    exit: 'power1.inOut'
+    ambient: 'sine.inOut'
   duration:
     entrance: 1.0
     hold: 3.0
@@ -322,12 +322,12 @@ Handwritten-style or humanist serif fonts. Personal, lowercase, delicate. Close-
 ```yaml
 name: Folk Frequency
 colors:
-  primary: "#ffffff"
-  on-primary: "#1a1a1a"
-  accent-pink: "#FF1493"
-  accent-blue: "#0047AB"
-  accent-yellow: "#FFE000"
-  accent-green: "#009B77"
+  primary: '#ffffff'
+  on-primary: '#1a1a1a'
+  accent-pink: '#FF1493'
+  accent-blue: '#0047AB'
+  accent-yellow: '#FFE000'
+  accent-green: '#009B77'
 typography:
   headline:
     fontFamily: Fredoka One
@@ -349,9 +349,9 @@ spacing:
 motion:
   energy: high
   easing:
-    entry: "back.out(1.6)"
-    exit: "elastic.out(1, 0.5)"
-    ambient: "sine.inOut"
+    entry: 'back.out(1.6)'
+    exit: 'elastic.out(1, 0.5)'
+    ambient: 'sine.inOut'
   duration:
     entrance: 0.5
     hold: 1.5
@@ -374,10 +374,10 @@ Bold warm rounded type. Pattern and repetition - folk art rhythm and density. La
 ```yaml
 name: Shadow Cut
 colors:
-  primary: "#0a0a0a"
-  on-primary: "#f0f0f0"
-  surface: "#3a3a3a"
-  accent: "#C1121F"
+  primary: '#0a0a0a'
+  on-primary: '#f0f0f0'
+  surface: '#3a3a3a'
+  accent: '#C1121F'
 typography:
   headline:
     fontFamily: Oswald
@@ -398,9 +398,9 @@ spacing:
 motion:
   energy: moderate
   easing:
-    entry: "power3.out"
-    exit: "power4.in"
-    ambient: "sine.inOut"
+    entry: 'power3.out'
+    exit: 'power4.in'
+    ambient: 'sine.inOut'
   duration:
     entrance: 0.8
     hold: 2.5

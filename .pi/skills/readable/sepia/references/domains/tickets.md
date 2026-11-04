@@ -8,14 +8,14 @@ Imperative, minimal, complete-enough. The assignee should be able to start witho
 
 ## AI tells in this domain
 
-| Tell | Fix |
-|---|---|
-| Novel-length background before the ask | Context is only what the assignee doesn't already know; link the rest |
-| Description that restates the title in sentences | The description starts where the title stops |
-| Obvious steps enumerated ("1. Open the repository. 2. Locate the file…") | Only the non-obvious steps and the exact commands |
-| Vague acceptance: "works correctly", "improved performance" | Testable criteria: the command to run and the output that means done ("p95 < 200ms on the staging load test") |
-| Every template field filled with prose for completeness | Empty is a valid value; "N/A" beats a paragraph of nothing |
-| Round scope words: "refactor the module", "clean up" | The concrete boundary: which files/functions in, which explicitly out |
+| Tell                                                                     | Fix                                                                                                           |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Novel-length background before the ask                                   | Context is only what the assignee doesn't already know; link the rest                                         |
+| Description that restates the title in sentences                         | The description starts where the title stops                                                                  |
+| Obvious steps enumerated ("1. Open the repository. 2. Locate the file…") | Only the non-obvious steps and the exact commands                                                             |
+| Vague acceptance: "works correctly", "improved performance"              | Testable criteria: the command to run and the output that means done ("p95 < 200ms on the staging load test") |
+| Every template field filled with prose for completeness                  | Empty is a valid value; "N/A" beats a paragraph of nothing                                                    |
+| Round scope words: "refactor the module", "clean up"                     | The concrete boundary: which files/functions in, which explicitly out                                         |
 
 ## Rules
 

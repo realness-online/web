@@ -4,8 +4,12 @@ import { readFile as read_file, stat } from 'node:fs/promises'
 import { dirname, extname, join, normalize } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 
+import { HTTP } from '#root/lib/http.js'
+
+const DEFAULT_PORT = 3000
+
 const OUT = 'dist'
-const PORT = Number(process.env.PORT) || 3000
+const PORT = Number(process.env.PORT) || DEFAULT_PORT
 const types = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css',
@@ -44,11 +48,11 @@ create_server(async (request, response) => {
   const path = await resolve(request.url)
   const body = await read_file(path).catch(() => null)
   if (!body) {
-    response.writeHead(404).end('not found')
+    response.writeHead(HTTP.NOT_FOUND).end('not found')
     return
   }
-  response.writeHead(200, {
+  response.writeHead(HTTP.OK, {
     'content-type': types[extname(path)] || 'application/octet-stream'
   })
   response.end(body)
-}).listen(PORT, () => console.log(`http://localhost:${PORT}`))
+}).listen(PORT, () => console.info(`http://localhost:${PORT}`))

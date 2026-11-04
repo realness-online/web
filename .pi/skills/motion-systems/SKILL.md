@@ -5,12 +5,12 @@ metadata:
   check: 'node ../../bin/checks/check-skills.js motion-systems'
   category: Design & Frontend
   pairs-with:
-  - skill: motion-choreography-patterns
-    reason: Sibling skill - this covers mechanism selection and tokens; choreography covers multi-element sequencing
-  - skill: user-interface
-    reason: UX decides what state changes need motion; this skill decides how they move
-  - skill: soundness
-    reason: Animation decisions for realness projects (realness defers entirely to this skill); native HTML attributes (open, disabled) drive the state changes CSS transitions respond to
+    - skill: motion-choreography-patterns
+      reason: Sibling skill - this covers mechanism selection and tokens; choreography covers multi-element sequencing
+    - skill: user-interface
+      reason: UX decides what state changes need motion; this skill decides how they move
+    - skill: soundness
+      reason: Animation decisions for realness projects (realness defers entirely to this skill); native HTML attributes (open, disabled) drive the state changes CSS transitions respond to
 ---
 
 # CSS Motion Systems

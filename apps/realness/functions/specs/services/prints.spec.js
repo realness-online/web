@@ -32,7 +32,9 @@ describe('#services/prints', () => {
     it('rejects other authors, other types, and garbage', () => {
       expect(is_print_poster('/+15551234567/posters/1', AUTHOR)).toBe(false)
       expect(is_print_poster(`${AUTHOR}/statements/1`, AUTHOR)).toBe(false)
-      expect(is_print_poster(`${AUTHOR}/posters/not-a-number`, AUTHOR)).toBe(false)
+      expect(is_print_poster(`${AUTHOR}/posters/not-a-number`, AUTHOR)).toBe(
+        false
+      )
       expect(is_print_poster(`${AUTHOR}/posters/1/../2`, AUTHOR)).toBe(false)
       expect(is_print_poster(undefined, AUTHOR)).toBe(false)
     })
@@ -50,13 +52,20 @@ describe('#services/prints', () => {
       const [[path, options]] = mock_stripe_request.mock.calls
       expect(path).toBe('payment_intents/search')
       expect(options.params.query).toContain("status:'succeeded'")
-      expect(options.params.query).toContain("metadata['realness_product']:'print'")
-      expect(options.params.query).toContain(`metadata['poster_id']:'${POSTER}'`)
+      expect(options.params.query).toContain(
+        "metadata['realness_product']:'print'"
+      )
+      expect(options.params.query).toContain(
+        `metadata['poster_id']:'${POSTER}'`
+      )
     })
 
     it('pages past repeat $500 sales to find scarce editions', async () => {
       mock_stripe_request
-        .mockResolvedValueOnce({ data: [{ amount: 50000 }], next_page: 'page_2' })
+        .mockResolvedValueOnce({
+          data: [{ amount: 50000 }],
+          next_page: 'page_2'
+        })
         .mockResolvedValueOnce({ data: [{ amount: 500 }, { amount: 10000 }] })
       expect(await paid_print_amounts(POSTER)).toEqual([500, 10000, 50000])
       expect(mock_stripe_request.mock.calls[1][1].params.page).toBe('page_2')
@@ -65,13 +74,27 @@ describe('#services/prints', () => {
 
   describe('return_origin', () => {
     it('keeps realness origins and falls back to production', () => {
-      expect(return_origin('https://realness.online')).toBe('https://realness.online')
-      expect(return_origin('https://haight.realness.online')).toBe('https://haight.realness.online')
-      expect(return_origin('http://localhost:5173')).toBe('http://localhost:5173')
-      expect(return_origin('https://evil.example')).toBe('https://realness.online')
-      expect(return_origin('https://evilrealness.online')).toBe('https://realness.online')
-      expect(return_origin('https://realness.online.evil.example')).toBe('https://realness.online')
-      expect(return_origin('https://realness.local')).toBe('https://realness.online')
+      expect(return_origin('https://realness.online')).toBe(
+        'https://realness.online'
+      )
+      expect(return_origin('https://haight.realness.online')).toBe(
+        'https://haight.realness.online'
+      )
+      expect(return_origin('http://localhost:5173')).toBe(
+        'http://localhost:5173'
+      )
+      expect(return_origin('https://evil.example')).toBe(
+        'https://realness.online'
+      )
+      expect(return_origin('https://evilrealness.online')).toBe(
+        'https://realness.online'
+      )
+      expect(return_origin('https://realness.online.evil.example')).toBe(
+        'https://realness.online'
+      )
+      expect(return_origin('https://realness.local')).toBe(
+        'https://realness.online'
+      )
       expect(return_origin(undefined)).toBe('https://realness.online')
     })
   })
@@ -108,7 +131,9 @@ describe('#services/prints', () => {
         realness_product: 'print'
       })
       expect(params.payment_intent_data.metadata).toEqual(params.metadata)
-      expect(params.shipping_address_collection.allowed_countries).toEqual(['US'])
+      expect(params.shipping_address_collection.allowed_countries).toEqual([
+        'US'
+      ])
       expect(params.success_url).toBe(
         'http://localhost:5173/prints?session_id={CHECKOUT_SESSION_ID}'
       )

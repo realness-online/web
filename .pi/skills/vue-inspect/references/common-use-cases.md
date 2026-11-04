@@ -8,27 +8,39 @@ already open with `agent-browser open <url>`.
 Verified live in `apps/realness` `/colors` against `Colors.vue`:
 
 ```js
-(() => {
+;(() => {
   const find = (instance, name, depth) => {
     if (!instance || depth > 8) return null
     const iname = instance.type?.name || instance.type?.__name
     if (iname === name) return instance
     const children = []
-    const collect = (vnode) => {
+    const collect = vnode => {
       if (!vnode) return
       if (vnode.component) children.push(vnode.component)
       else if (Array.isArray(vnode.children))
-        vnode.children.forEach(c => c && c.component ? children.push(c.component)
-          : (Array.isArray(c?.children) ? c.children.forEach(collect) : null))
-      else if (vnode.children && typeof vnode.children === 'object') collect(vnode.children)
+        vnode.children.forEach(c =>
+          c && c.component
+            ? children.push(c.component)
+            : Array.isArray(c?.children)
+              ? c.children.forEach(collect)
+              : null
+        )
+      else if (vnode.children && typeof vnode.children === 'object')
+        collect(vnode.children)
     }
     collect(instance.subTree)
-    for (const c of children) { const found = find(c, name, depth + 1); if (found) return found }
+    for (const c of children) {
+      const found = find(c, name, depth + 1)
+      if (found) return found
+    }
     return null
   }
   const app = document.querySelector('#app').__vue_app__
   const colors = find(app._instance, 'Colors', 0)
-  return { icon_index: colors.setupState.icon_index, roles_weights_open: colors.setupState.roles_weights_open }
+  return {
+    icon_index: colors.setupState.icon_index,
+    roles_weights_open: colors.setupState.roles_weights_open
+  }
 })()
 ```
 
@@ -58,7 +70,7 @@ finding the exact chain of parent components to walk down from.
 
 ## 3. Inspecting one instance out of a `v-for` list
 
-The name-finder returns the *first* match. To get every instance of a repeated
+The name-finder returns the _first_ match. To get every instance of a repeated
 component (e.g. six `<icon>` swatches in a `v-for`), collect all matches instead of
 returning early:
 
@@ -68,13 +80,19 @@ const findAll = (instance, name, depth, out = []) => {
   const iname = instance.type?.name || instance.type?.__name
   if (iname === name) out.push(instance)
   const children = []
-  const collect = (vnode) => {
+  const collect = vnode => {
     if (!vnode) return
     if (vnode.component) children.push(vnode.component)
     else if (Array.isArray(vnode.children))
-      vnode.children.forEach(c => c && c.component ? children.push(c.component)
-        : (Array.isArray(c?.children) ? c.children.forEach(collect) : null))
-    else if (vnode.children && typeof vnode.children === 'object') collect(vnode.children)
+      vnode.children.forEach(c =>
+        c && c.component
+          ? children.push(c.component)
+          : Array.isArray(c?.children)
+            ? c.children.forEach(collect)
+            : null
+      )
+    else if (vnode.children && typeof vnode.children === 'object')
+      collect(vnode.children)
   }
   collect(instance.subTree)
   children.forEach(c => findAll(c, name, depth + 1, out))
@@ -85,12 +103,12 @@ const findAll = (instance, name, depth, out = []) => {
 
 ## 4. Checking resolved props instead of source defaults
 
-`instance.props` is the *resolved* value after parent bindings, not the prop
+`instance.props` is the _resolved_ value after parent bindings, not the prop
 definition. Useful when a prop looks wrong and you're not sure if the parent is
 passing a bad value or the child is misusing a correct one:
 
 ```js
-find(app._instance, 'preview-mark', 0).props   // { name: 'star', label: 'water fill' }
+find(app._instance, 'preview-mark', 0).props // { name: 'star', label: 'water fill' }
 ```
 
 ## 5. Confirming a component actually mounted (or didn't)

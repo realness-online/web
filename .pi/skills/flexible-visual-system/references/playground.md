@@ -10,14 +10,14 @@ Render many seeds in a grid so coherence and variety are both visible at once.
 ```js
 function contact_sheet({ seeds, generate, params, cols = 4 }) {
   const tiles = seeds
-    .map((seed) => {
-      const art = generate({ ...params, seed });
+    .map(seed => {
+      const art = generate({ ...params, seed })
       return `<div class="tile">
       <div class="art">${art}</div>
       <div class="seed">seed ${seed}</div>
-    </div>`;
+    </div>`
     })
-    .join("");
+    .join('')
   return `<!doctype html><meta charset="utf-8">
   <style>
     body { margin: 0; background: #111; font: 12px monospace; color: #888 }
@@ -25,13 +25,13 @@ function contact_sheet({ seeds, generate, params, cols = 4 }) {
     .art svg { width: 100%; display: block; background: #fff }
     .seed { padding: 4px 0 }
   </style>
-  <div class="grid">${tiles}</div>`;
+  <div class="grid">${tiles}</div>`
 }
 
 // usage
-const seeds = Array.from({ length: 16 }, (_, i) => i + 1);
-const html = contact_sheet({ seeds, generate, params: { palette } });
-await writeFile("out/sheet.html", html);
+const seeds = Array.from({ length: 16 }, (_, i) => i + 1)
+const html = contact_sheet({ seeds, generate, params: { palette } })
+await writeFile('out/sheet.html', html)
 ```
 
 Open `out/sheet.html` in a browser (or via the agent-browser skill) to read the
@@ -65,10 +65,8 @@ family.
 To understand one parameter, hold the seed fixed and sweep the knob:
 
 ```js
-const accent_rates = [0, 0.1, 0.2, 0.35, 0.5, 0.75];
-const tiles = accent_rates.map((p) =>
-  generate({ palette, seed: 7, accent_p: p }),
-);
+const accent_rates = [0, 0.1, 0.2, 0.35, 0.5, 0.75]
+const tiles = accent_rates.map(p => generate({ palette, seed: 7, accent_p: p }))
 ```
 
 Same seed, varying `accent_p`, shows exactly what that knob does. Do this for

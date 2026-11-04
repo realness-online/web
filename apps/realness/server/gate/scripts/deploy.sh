@@ -7,7 +7,7 @@ account="${SERVICE_ACCOUNT:-realness-gate@$project.iam.gserviceaccount.com}"
 halo_name="${GATE_HALO_NAME:-realness-1}"
 halo_zone="${GATE_HALO_ZONE:-us-west2-a}"
 halo_address="${GATE_HALO:-$(gcloud compute instances describe "$halo_name" --zone "$halo_zone" --project "$project" --format='value(networkInterfaces[0].networkIP)'):8081}"
-stage="$(bash "$root/server/scripts/stage-service.sh" gate "" "${1:-}")"
+stage="$(node "$root/tools/control/scripts/stage.js" service gate "" "${1:-}")"
 bash "$root/server/gate/scripts/wake-access.sh" "${1:-}"
 
 gcloud run deploy realness-gate \

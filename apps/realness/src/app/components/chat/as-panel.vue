@@ -182,6 +182,7 @@
       & > h1 {
         margin: 0;
         line-height: 1;
+        color: var(--muted-text);
       }
       & > :last-child {
         margin-inline-start: auto;

@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
-import { dirname, join } from 'node:path'
-import { fileURLToPath as file_url_to_path } from 'node:url'
+import { join } from 'node:path'
 import { parseArgs as parse_args } from 'node:util'
 import { Door } from '#root/src/halo/door.js'
 import { ChromePool, render_page } from '#root/src/halo/chrome-pool.js'
@@ -30,8 +29,12 @@ import { promisify } from 'node:util'
 import { issue_model_pass } from '#root/src/proxy/model-pass.js'
 import { environment_settings } from '#root/src/settings/environments.js'
 
+import { MS_PER_HOUR } from '#root/lib/units.js'
+
+const PROBE_MS = 5000
+const WEB_PRUNE_HOURS = 6
+
 const LOG = logger('halo')
-const HERE = dirname(file_url_to_path(import.meta.url))
 const FLUSH_MS = 5000
 const SWEEP_MS = 60_000
 const APP_SWEEP_MS = 5000
@@ -69,7 +72,7 @@ const { positionals, values } = parse_args({
   }
 })
 
-const command = positionals[0]
+const [command] = positionals
 if (command !== 'serve' && command !== 'seed') {
   console.error('usage: main.js serve|seed [--volume PATH] ...')
   process.exit(2)
@@ -132,17 +135,21 @@ if (site_sync_url)
     secret: halo_pass_secret()
   })
 const listen = (what, port, address = values.listen) =>
-  new Promise(done => what.listen(Number(port), address, done))
+  new Promise(done => {
+    what.listen(Number(port), address, done)
+  })
 
 const addresses = list =>
   (list ?? values.listen)
     .split(',')
     .map(part => part.trim())
     .filter(Boolean)
-for (const address of addresses(values['pty-listen'])) {
-  await listen(pty.make_server(store), values['pty-port'], address)
-  LOG.info(`pty stream on ${address}:${values['pty-port']}`)
-}
+await Promise.all(
+  addresses(values['pty-listen']).map(async address => {
+    await listen(pty.make_server(store), values['pty-port'], address)
+    LOG.info(`pty stream on ${address}:${values['pty-port']}`)
+  })
+)
 const proxy_url = (
   environment.services.starter_proxy_url ?? environment.services.proxy_url
 ).replace(/\/$/, '')
@@ -154,13 +161,13 @@ const limits = process.env.MODEL_PASS_SECRET
       )
       const reply = await fetch(`${proxy_url}/limit`, {
         headers: { authorization: `Bearer ${pass}` },
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(PROBE_MS)
       })
       if (!reply.ok) throw new Error(`proxy /limit ${reply.status}`)
       return reply.json()
     }
   : null
-const halo = hostname().split('.')[0]
+const [halo] = hostname().split('.')
 const record_secret_file = process.env.RECORD_SECRET_FILE
 if (sync_url && !record_secret_file)
   throw new Error('a halo with sync needs RECORD_SECRET_FILE')
@@ -207,7 +214,7 @@ const web = new WebEngine({
       ? read_file_sync(web_firecrawl_file, 'utf8').trim()
       : null)
 })
-setInterval(() => web.prune(), 6 * 3_600_000).unref()
+setInterval(() => web.prune(), WEB_PRUNE_HOURS * MS_PER_HOUR).unref()
 new Door(store, values['site-url'] ?? site_url, loops, chrome, web).start()
 const apps = new AppStore({
   volume: values.volume,
@@ -215,14 +222,16 @@ const apps = new AppStore({
   kernel: values.kernel,
   firecracker: values.firecracker
 })
-for (const address of addresses(values['api-listen'])) {
-  await listen(
-    server.make_server(store, apps, undefined, loops, { limits }),
-    values.port,
-    address
-  )
-  LOG.info(`listening on ${address}:${values.port}`)
-}
+await Promise.all(
+  addresses(values['api-listen']).map(async address => {
+    await listen(
+      server.make_server(store, apps, undefined, loops, { limits }),
+      values.port,
+      address
+    )
+    LOG.info(`listening on ${address}:${values.port}`)
+  })
+)
 
 const parker =
   values.park && mirror

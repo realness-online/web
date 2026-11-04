@@ -2,7 +2,7 @@
 name: web-md
 description: Read web pages as compact markdown instead of raw HTML or full browser snapshots. Use when you need to read, research, summarize, or quote content from a URL, compare several pages, or check docs online. A plain fetch runs first; agent-browser or Firecrawl renders the page only when it needs JavaScript. Not for clicking, filling forms, or logging in - use agent-browser for those.
 metadata:
-  check: "node ../../bin/web/web-md.js 2>&1 | grep -q usage"
+  check: 'node ../../bin/web/web-md.js 2>&1 | grep -q usage'
 ---
 
 # web-md
@@ -102,18 +102,18 @@ read one page at a time: each run takes about 100 MB, and three at once
 stall the actor.
 
 ```js
-const urls = ["https://a.com/docs", "https://b.com/post"];
+const urls = ['https://a.com/docs', 'https://b.com/post']
 const rs = await Promise.allSettled(
-  urls.map((u) =>
+  urls.map(u =>
     tools.bash({
       command: `.pi/bin/web/web-md.js ${u} --max 4000 2>/dev/null`,
-      timeout: 60,
-    }),
-  ),
-);
+      timeout: 60
+    })
+  )
+)
 return rs
-  .map((r, i) => (r.status === "fulfilled" ? r.value.output : `ERR ${urls[i]}`))
-  .join("\n\n");
+  .map((r, i) => (r.status === 'fulfilled' ? r.value.output : `ERR ${urls[i]}`))
+  .join('\n\n')
 ```
 
 - Start with a small `--max` (2000-4000). Fetch more only if the header shows content was cut.

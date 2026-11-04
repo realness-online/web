@@ -10,9 +10,10 @@
  * fails instead of quietly running against prod.
  *
  *    node tools/control/bin/webspace.js local halo up lima-1
- *    node tools/control/bin/webspace.js development halo up realness-2 --smoke
+ *    node tools/control/bin/webspace.js development halo up realness-2
  */
 
+import { GIB } from '#root/lib/units.js'
 import {
   environment_settings,
   local_settings
@@ -71,7 +72,7 @@ export const ENVIRONMENTS = {
     /** o7: when `status` calls for attention. */
     attention: {
       free_pct: 15,
-      mem_available_bytes: 2 * 1024 ** 3,
+      mem_available_bytes: 2 * GIB,
       spend_day: 5,
       quiet_running_h: 2,
       deep_loop: 2,
@@ -127,7 +128,7 @@ export const ENVIRONMENTS = {
     /** o7: when `status` calls for attention. */
     attention: {
       free_pct: 15,
-      mem_available_bytes: 2 * 1024 ** 3,
+      mem_available_bytes: 2 * GIB,
       spend_day: 5,
       quiet_running_h: 2,
       deep_loop: 2,
@@ -178,7 +179,7 @@ export const ENVIRONMENTS = {
     },
     attention: {
       free_pct: 15,
-      mem_available_bytes: 2 * 1024 ** 3,
+      mem_available_bytes: 2 * GIB,
       spend_day: 5,
       quiet_running_h: 2,
       deep_loop: 2,

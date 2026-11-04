@@ -145,3 +145,15 @@ export const rewrite_session_state = ({
   }
   return { edits, records: changed, archive }
 }
+
+/**
+ * Point each session header at the new name of its parent session.
+ * @param {object[]} entries
+ * @param {Map<string, string>} mapping old parent path to new
+ */
+export const repoint_parents = (entries, mapping) =>
+  entries.map(entry =>
+    entry.type === 'session' && mapping.has(entry.parentSession)
+      ? { ...entry, parentSession: mapping.get(entry.parentSession) }
+      : entry
+  )

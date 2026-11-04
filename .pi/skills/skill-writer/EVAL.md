@@ -68,11 +68,11 @@ cd "$EVAL_DIR"
 Then invoke the harness you are in, non-interactively, with the filled-in
 template as the prompt:
 
-| Harness     | Command                                             |
-| ----------- | --------------------------------------------------- |
+| Harness     | Command                                                 |
+| ----------- | ------------------------------------------------------- |
 | pi          | `./.pi/bin/pi -p --no-session "$(cat eval-prompt.txt)"` |
-| Claude Code | `claude -p "$(cat eval-prompt.txt)"`                |
-| Cursor      | `cursor-agent -p "$(cat eval-prompt.txt)"`          |
+| Claude Code | `claude -p "$(cat eval-prompt.txt)"`                    |
+| Cursor      | `cursor-agent -p "$(cat eval-prompt.txt)"`              |
 
 For deterministic traces to diff baseline against candidate, add the harness's
 JSON output flag (pi: `--mode json`).

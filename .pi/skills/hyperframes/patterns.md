@@ -23,11 +23,18 @@ Animate a wrapper div for position/size. The video fills the wrapper. The wrappe
 
 ```js
 tl.to(
-  "#pip-frame",
-  { top: 700, left: 1360, width: 500, height: 280, borderRadius: 16, duration: 1 },
-  10,
-);
-tl.to("#pip-frame", { left: 40, duration: 0.6 }, 30);
+  '#pip-frame',
+  {
+    top: 700,
+    left: 1360,
+    width: 500,
+    height: 280,
+    borderRadius: 16,
+    duration: 1
+  },
+  10
+)
+tl.to('#pip-frame', { left: 40, duration: 0.6 }, 30)
 ```
 
 ## Text Behind Subject (transparent webm overlay)
@@ -76,21 +83,25 @@ Three layers, plus one critical rule:
 ```
 
 ```js
-const tl = gsap.timeline({ paused: true });
-const CUT = 3.3;
+const tl = gsap.timeline({ paused: true })
+const CUT = 3.3
 
 // Reveal headline early
-tl.to("#cf-headline", { clipPath: "inset(0 0 0% 0)", duration: 0.6, ease: "expo.out" }, 0.25);
+tl.to(
+  '#cf-headline',
+  { clipPath: 'inset(0 0 0% 0)', duration: 0.6, ease: 'expo.out' },
+  0.25
+)
 
 // At the cut, flip the cutout wrapper visible - the presenter's silhouette
 // punches through the headline.
-tl.set(".cutout-wrap", { opacity: 1 }, CUT);
+tl.set('.cutout-wrap', { opacity: 1 }, CUT)
 
 // Sentinel: extend timeline to the composition's full duration so the
 // renderer doesn't bail past the last meaningful tween.
-tl.set({}, {}, 6);
+tl.set({}, {}, 6)
 
-window.__timelines["cover-flip"] = tl;
+window.__timelines['cover-flip'] = tl
 ```
 
 **Why a wrapper div, not opacity on the video itself?**
@@ -118,8 +129,8 @@ So both decode in sync from t=0. Late-mounting the cutout (`data-start=3.3`) mak
 ```
 
 ```js
-tl.to("#title-card h1", { opacity: 1, duration: 0.6 }, 0.3);
-tl.to("#title-card", { opacity: 0, duration: 0.5 }, 4);
+tl.to('#title-card h1', { opacity: 1, duration: 0.6 }, 0.3)
+tl.to('#title-card', { opacity: 0, duration: 0.5 }, 4)
 ```
 
 ## Slide Show with Section Headers
@@ -127,9 +138,15 @@ tl.to("#title-card", { opacity: 0, duration: 0.5 }, 4);
 Use separate elements on the same track, each with its own time range. Slides auto-mount/unmount based on `data-start`/`data-duration`.
 
 ```html
-<div class="slide" data-start="0" data-duration="30" data-track-index="3">...</div>
-<div class="slide" data-start="30" data-duration="25" data-track-index="3">...</div>
-<div class="slide" data-start="55" data-duration="20" data-track-index="3">...</div>
+<div class="slide" data-start="0" data-duration="30" data-track-index="3">
+  ...
+</div>
+<div class="slide" data-start="30" data-duration="25" data-track-index="3">
+  ...
+</div>
+<div class="slide" data-start="55" data-duration="20" data-track-index="3">
+  ...
+</div>
 ```
 
 ## Top-Level Composition Example
@@ -162,8 +179,20 @@ Use separate elements on the same track, each with its own time range. Slides au
     muted
     playsinline
   ></video>
-  <img id="el-3" data-start="5" data-duration="4" data-track-index="1" src="..." />
-  <audio id="el-4" data-start="0" data-duration="30" data-track-index="2" src="..." />
+  <img
+    id="el-3"
+    data-start="5"
+    data-duration="4"
+    data-track-index="1"
+    src="..."
+  />
+  <audio
+    id="el-4"
+    data-start="0"
+    data-duration="30"
+    data-track-index="2"
+    src="..."
+  />
 
   <!-- Sub-compositions loaded from files -->
   <div
@@ -184,8 +213,8 @@ Use separate elements on the same track, each with its own time range. Slides au
 
   <script>
     // Just register the timeline - framework auto-nests sub-compositions
-    const tl = gsap.timeline({ paused: true });
-    window.__timelines["my-video"] = tl;
+    const tl = gsap.timeline({ paused: true })
+    window.__timelines['my-video'] = tl
   </script>
 </div>
 ```

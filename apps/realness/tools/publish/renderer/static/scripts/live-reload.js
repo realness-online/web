@@ -1,3 +1,5 @@
+const RECONNECT_MS = 400
+
 /** @type {string | null} */
 let stamp = null
 setInterval(async () => {
@@ -7,4 +9,4 @@ setInterval(async () => {
   if (!next) return
   if (stamp && next !== stamp) location.reload()
   stamp = next
-}, 400)
+}, RECONNECT_MS)

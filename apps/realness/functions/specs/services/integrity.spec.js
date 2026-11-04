@@ -9,15 +9,15 @@ const { mock_fetch, mock_phone_numbers } = vi.hoisted(() => {
 vi.mock('twilio', () => ({
   default: vi.fn().mockImplementation(
     // eslint-disable-next-line prefer-arrow-callback
-    function () { // soundness-allow: a constructor cannot be an arrow
+    function () {
+      // soundness-allow: a constructor cannot be an arrow
       return { lookups: { v2: { phoneNumbers: mock_phone_numbers } } }
     }
   )
 }))
 
-const { validate_phone_integrity, lookup_phone_integrity } = await import(
-  '#services/integrity.js'
-)
+const { validate_phone_integrity, lookup_phone_integrity } =
+  await import('#services/integrity.js')
 
 describe('#services/integrity', () => {
   describe('validate_phone_integrity', () => {

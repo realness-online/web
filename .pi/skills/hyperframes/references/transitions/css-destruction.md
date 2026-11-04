@@ -23,21 +23,21 @@ This transition has three systems working together:
 ```js
 function noise(x) {
   var ix = Math.floor(x),
-    fx = x - ix;
-  var a = Math.sin(ix * 127.1 + 311.7) * 43758.5453;
-  var b = Math.sin((ix + 1) * 127.1 + 311.7) * 43758.5453;
-  var t = fx * fx * (3 - 2 * fx);
-  return a - Math.floor(a) + (b - Math.floor(b) - (a - Math.floor(a))) * t;
+    fx = x - ix
+  var a = Math.sin(ix * 127.1 + 311.7) * 43758.5453
+  var b = Math.sin((ix + 1) * 127.1 + 311.7) * 43758.5453
+  var t = fx * fx * (3 - 2 * fx)
+  return a - Math.floor(a) + (b - Math.floor(b) - (a - Math.floor(a))) * t
 }
 
 function fireRadiusAtAngle(angle, progress) {
-  var base = progress * maxRadius;
+  var base = progress * maxRadius
   return (
     base +
     noise(angle * 3 + progress * 4) * 50 +
     noise(angle * 8 + progress * 9) * 20 +
     noise(angle * 15 + progress * 15) * 8
-  );
+  )
 }
 ```
 
@@ -47,16 +47,28 @@ At ~90% through the burn, the incoming scene fades in SLOWLY from black - the ba
 
 ```js
 // Scene 2 stays at opacity: 0 during the burn - black behind the fire
-tl.set("#s2-title", { opacity: 0 }, T);
-tl.set("#s2-subtitle", { opacity: 0 }, T);
+tl.set('#s2-title', { opacity: 0 }, T)
+tl.set('#s2-subtitle', { opacity: 0 }, T)
 
 // At 90% through, scene bg fades in slowly from black
-var contentReveal = T + BURN_DURATION * 0.9;
-tl.to("#scene2", { opacity: 1, duration: 1.2, ease: "power1.out" }, contentReveal);
+var contentReveal = T + BURN_DURATION * 0.9
+tl.to(
+  '#scene2',
+  { opacity: 1, duration: 1.2, ease: 'power1.out' },
+  contentReveal
+)
 
 // Content fades in staggered on top, even slower
-tl.to("#s2-title", { opacity: 1, duration: 1.0, ease: "power1.out" }, contentReveal + 0.5);
-tl.to("#s2-subtitle", { opacity: 1, duration: 0.8, ease: "power1.out" }, contentReveal + 0.7);
+tl.to(
+  '#s2-title',
+  { opacity: 1, duration: 1.0, ease: 'power1.out' },
+  contentReveal + 0.5
+)
+tl.to(
+  '#s2-subtitle',
+  { opacity: 1, duration: 0.8, ease: 'power1.out' },
+  contentReveal + 0.7
+)
 ```
 
 **Content burns with the page - no falling debris.** The clip-path on scene1 IS the effect - as the fire shape expands, everything behind the fire edge (text, images, lines) disappears naturally. Don't clone elements, don't create falling debris. The content is part of the page being consumed. The scorched canvas edge provides the visual char line at the burn boundary.
@@ -69,25 +81,25 @@ tl.to(
   {
     progress: 1,
     duration: BURN_DURATION,
-    ease: "none",
+    ease: 'none',
     onUpdate: function () {
-      var wp = burnState.progress;
-      var scene1 = document.getElementById("scene1");
+      var wp = burnState.progress
+      var scene1 = document.getElementById('scene1')
       if (wp <= 0) {
-        scene1.style.clipPath = "none"; // fully visible when rewound
+        scene1.style.clipPath = 'none' // fully visible when rewound
       } else if (wp < 1) {
-        scene1.style.clipPath = buildClipPath(wp);
+        scene1.style.clipPath = buildClipPath(wp)
       }
-      drawEdge(wp);
-    },
+      drawEdge(wp)
+    }
     // NO onComplete - use tl.set instead
   },
-  T,
-);
+  T
+)
 
 // Hide scene1 at exact burn end - reversible via timeline
-tl.set("#scene1", { opacity: 0 }, T + BURN_DURATION);
-tl.set("#scene1", { clipPath: "none" }, T + BURN_DURATION);
+tl.set('#scene1', { opacity: 0 }, T + BURN_DURATION)
+tl.set('#scene1', { clipPath: 'none' }, T + BURN_DURATION)
 ```
 
 The `onUpdate` handles clip-path and canvas edge per-frame. The `tl.set` handles the final hide - and GSAP automatically reverses it when scrubbing backward, restoring scene1 to `opacity: 1`.

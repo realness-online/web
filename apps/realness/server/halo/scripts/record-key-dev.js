@@ -10,15 +10,18 @@ import { hostname } from 'node:os'
 import { disk } from '#root/src/can/disk.js'
 import { store_of } from '#root/src/can/store.js'
 
+const KEY_BYTES = 32
+const OWNER_ONLY = 0o600
+
 const path = '/etc/realness/record-secret'
 const name = hostname()
 mkdir_sync('/etc/realness', { recursive: true, mode: 0o700 })
 if (!exists_sync(path))
-  write_file_sync(path, random_bytes(32).toString('hex'), {
+  write_file_sync(path, random_bytes(KEY_BYTES).toString('hex'), {
     mode: 0o600,
     flag: 'wx'
   })
-chmod_sync(path, 0o600)
+chmod_sync(path, OWNER_ONLY)
 const key = read_file_sync(path, 'utf8').trim()
 const storage = store_of(disk(process.env.SYNC_DIR))
 await storage.put(`halo-keys/${name}`, key)

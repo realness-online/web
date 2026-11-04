@@ -7,7 +7,8 @@ const changelog = vi.hoisted(() => ({ text: '', version: '2.0.0' }))
 vi.mock('../../../scripts/lib/changelog.js', async original => ({
   ...(await original()),
   read_changelog: () => changelog.text,
-  package_version: () => changelog.version
+  package_version: () => changelog.version,
+  commits_since_tag: () => ({ tag: 'v2.0.0', subjects: ['Fix VM wake'] })
 }))
 
 const { main } = await import('../../../scripts/check-release.js')
@@ -58,7 +59,9 @@ describe('check-release', () => {
 
   it('refuses versioning when Unreleased is empty', () => {
     changelog.text = '# Changelog\n\n## Unreleased\n\n## v2.0.0\n\n- shipped\n'
-    expect(() => main(['--unreleased'])).toThrow(/Unreleased is empty/)
+    expect(() => main(['--unreleased'])).toThrow(
+      /Unreleased is empty[\s\S]*Commits since v2\.0\.0:\n- Fix VM wake/
+    )
   })
 
   it('passes when the manifest matches the package version', () => {

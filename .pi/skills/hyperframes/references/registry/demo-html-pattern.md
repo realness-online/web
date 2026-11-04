@@ -25,14 +25,19 @@ A demo is a complete, standalone HTML composition:
     </style>
   </head>
   <body>
-    <div data-composition-id="<name>-demo" data-width="1920" data-height="1080" data-duration="N">
+    <div
+      data-composition-id="<name>-demo"
+      data-width="1920"
+      data-height="1080"
+      data-duration="N"
+    >
       <!-- Demo content showing the effect -->
       <!-- Component snippet inlined here -->
     </div>
     <script>
       // GSAP timeline demonstrating the effect
-      window.__timelines = window.__timelines || {};
-      window.__timelines["<name>-demo"] = tl;
+      window.__timelines = window.__timelines || {}
+      window.__timelines['<name>-demo'] = tl
     </script>
   </body>
 </html>

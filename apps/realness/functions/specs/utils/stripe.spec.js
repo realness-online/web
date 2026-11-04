@@ -67,7 +67,9 @@ describe('#utils/stripe', () => {
     })
 
     it('rejects a different secret', () => {
-      expect(verify_signature(body, sign(now, body, 'whsec_other'), secret, now)).toBe(false)
+      expect(
+        verify_signature(body, sign(now, body, 'whsec_other'), secret, now)
+      ).toBe(false)
     })
 
     it('rejects a signature older than five minutes', () => {

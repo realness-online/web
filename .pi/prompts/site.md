@@ -1,6 +1,6 @@
 ---
 description: Start a static site from the example, build it, and publish it
-argument-hint: "[folder] [what to change]"
+argument-hint: '[folder] [what to change]'
 ---
 
 From the harness root, start a site in `${1:-apps/site}` from the static

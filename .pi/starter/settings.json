@@ -10,21 +10,15 @@
     "npm:pi-autoresearch",
     "npm:pi-claude-oauth-adapter"
   ],
-  "extensions": [
-    "../extensions"
-  ],
-  "prompts": [
-    "../prompts"
-  ],
+  "extensions": ["../extensions"],
+  "prompts": ["../prompts"],
   "theme": "realness-light/realness-dark",
   "hideThinkingBlock": false,
   "quietStartup": "header",
   "warnings": {
     "anthropicExtraUsage": false
   },
-  "defaultTools": [
-    "+codemode"
-  ],
+  "defaultTools": ["+codemode"],
   "editorPaddingX": 2,
   "showHardwareCursor": true,
   "collapseChangelog": true

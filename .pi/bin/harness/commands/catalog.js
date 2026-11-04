@@ -219,7 +219,7 @@ export const collect_commands = async root => {
     let position = text.indexOf(needle)
     while (position !== -1) {
       const after = text[position + needle.length]
-      if (!after || /[\s'"`;)\]]/.test(after)) return true
+      if (!after || /[\s'"`;,)\]]/.test(after)) return true
       position = text.indexOf(needle, position + 1)
     }
     return false

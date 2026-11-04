@@ -8,7 +8,6 @@ import {
   statSync as stat_sync
 } from 'node:fs'
 import { basename, join, relative, resolve } from 'node:path'
-import { has_repo, repo_args } from '../../lib/repo-git.js'
 
 const root = resolve(import.meta.dirname, '../../../..')
 
@@ -24,10 +23,10 @@ const allowed = new Map([
   ['apps/realness/public/brands/inkscape.svg', 'third-party logo; its authoring metadata names its designer']
 ])
 
-const HOME = /(?:\/Users|\/home)\/(?!person\b|runner\b|<)[a-z][a-z0-9._-]*/i
+const HOME = /(?<![\w.-])(?:\/Users|\/home)\/(?!person\b|runner\b|<)[a-z][a-z0-9._-]*/i
 
 const shipped_by_git = directory =>
-  exec_file_sync('git', [...repo_args(directory), 'ls-files', '-co', '--exclude-standard', '-z'], {
+  exec_file_sync('git', ['-C', directory, 'ls-files', '-co', '--exclude-standard', '-z'], {
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024
   })
@@ -62,7 +61,7 @@ const walk = (directory, found = []) => {
 }
 
 const scanned = () =>
-  (has_repo(root) ? shipped_by_git(root) : walk(root)).filter(
+  (exists_sync(join(root, '.git')) ? shipped_by_git(root) : walk(root)).filter(
     path => !skipped_files.has(basename(path)) && !path.endsWith('.log') && stat_sync(path).size < 2_000_000
   )
 
@@ -76,6 +75,12 @@ it("shared files name no one's home folder", () => {
     if (match) offenders.push(`${name}: ${match[0]}`)
   }
   assert.deepEqual(offenders, [], 'Use a path relative to the checkout, a {{placeholder}}, or /home/person in fixtures')
+})
+
+it('a home path is found, and a URL path that ends in users is not', () => {
+  assert.match(`cd /${'Users'}/ann/Desktop`, HOME)
+  assert.match(`file:///${'home'}/ann/x`, HOME)
+  assert.doesNotMatch('https://gmail.googleapis.com/gmail/v1/users/me/messages', HOME)
 })
 
 it('allowed recordings still exist, so the list cannot rot', () => {

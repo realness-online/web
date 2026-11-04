@@ -16,8 +16,7 @@ import {
   statSync as stat_sync,
   statfsSync as statfs_sync,
   unlinkSync as unlink_sync,
-  writeFileSync as write_file_sync,
-  appendFileSync as append_file_sync
+  writeFileSync as write_file_sync
 } from 'node:fs'
 import { arch } from 'node:os'
 import { performance } from 'node:perf_hooks'
@@ -36,6 +35,7 @@ import {
 import * as firecracker from './firecracker.js'
 import * as syscalls from './syscalls.js'
 import { logger } from './log.js'
+import { Store, now_iso } from './store.js'
 import * as vsock from './vsock.js'
 import { next_step } from './lifecycle.js'
 import { sessions_busy } from './sessions-busy.js'
@@ -105,7 +105,6 @@ const sleep = ms =>
   new Promise(done => {
     setTimeout(done, ms)
   })
-const now_iso = () => new Date().toISOString().replace(/\.\d+Z$/, '+00:00')
 /** MemAvailable in bytes, or null where /proc/meminfo cannot be read. */
 const read_mem_available = () => {
   try {
@@ -386,7 +385,7 @@ const warm_pi = async (uds, seconds = PI_WARM_SECONDS) => {
  * @property {{ publish: (owner: string, site: string, staging: string, source: string) => Promise<object>, versions: (owner: string, site: string) => Promise<object[]>, restore: (owner: string, site: string, version: string) => Promise<object>, remove: (owner: string, site: string) => Promise<object> } | null} [sync_sites]
  */
 
-export class ActorStore {
+export class ActorStore extends Store {
   runtime = 'firecracker'
   /** @type {string} */
   volume
@@ -436,10 +435,6 @@ export class ActorStore {
   firecracker_version
   /** @type {Mutex} */
   lock
-  /** @type {Map<string, Set<string>>} */
-  busy = new Map()
-  /** @type {Set<string>} */
-  turned = new Set()
   /** hs-over: the last TAP taken reads as a full halo, not a halo failure. */
   #free_tap() {
     try {
@@ -456,6 +451,7 @@ export class ActorStore {
 
   /** @param {Partial<ActorStoreOptions>} options */
   constructor(options) {
+    super()
     Object.assign(this, {
       guest_cid: 3,
       vsock_port: vsock.VSOCK_PORT,
@@ -477,8 +473,6 @@ export class ActorStore {
     this.lock = new Mutex()
     /** Publishing only copies a tree out, so it waits on other publishes, never on a sync or boot. */
     this.publishing = new Mutex()
-    this.busy = new Map()
-    this.turned = new Set()
     this.firecracker_version = firecracker.version(this.firecracker)
     syscalls.require_root('creating TAPs and Firecracker')
     syscalls.require_mount(
@@ -1172,40 +1166,6 @@ export class ActorStore {
     this.closed = false
   }
 
-  /**
-   * Hold an actor busy under one key, so the idle sweep and parking leave it
-   * alone. The key's kind is the text before `:`; holding a key twice is one hold.
-   */
-  begin_work(id, key = 'work') {
-    const held = this.busy.get(id) ?? new Set()
-    held.add(key)
-    this.busy.set(id, held)
-  }
-
-  /** Release one key; releasing a key not held does nothing. */
-  end_work(id, key = 'work') {
-    const held = this.busy.get(id)
-    if (!held?.delete(key)) return
-    if (!held.size) this.busy.delete(id)
-    this.touch(id).catch(() => {})
-  }
-
-  is_busy(id) {
-    return this.busy.has(id)
-  }
-
-  /** Busy actors and held work by kind: connection, turn, loop, exec, browser. */
-  activity() {
-    /** @type {Record<string, number>} */
-    const kinds = {}
-    for (const held of this.busy.values())
-      for (const key of held) {
-        const [kind] = key.split(':')
-        kinds[kind] = (kinds[kind] ?? 0) + 1
-      }
-    return { actors: this.busy.size, kinds }
-  }
-
   /** Record activity, writing at most once a minute. */
   touch(id) {
     return this.lock.run(() => {
@@ -1442,49 +1402,6 @@ export class ActorStore {
     })
   }
 
-  #trace_path(id) {
-    return join(this.traces_dir, `${id}.jsonl`)
-  }
-
-  /** Best effort: a trace that cannot be written must not fail what it describes. */
-  trace(id, event, fields = {}) {
-    const line = Object.fromEntries(
-      Object.entries({ ts: now_iso(), event, ...fields }).sort(([a], [b]) =>
-        a < b ? -1 : 1
-      )
-    )
-    try {
-      mkdir_sync(this.traces_dir, { recursive: true })
-      append_file_sync(this.#trace_path(id), `${JSON.stringify(line)}\n`)
-    } catch (error) {
-      LOG.warn(`could not trace ${id} ${event}: ${error.message}`)
-    }
-  }
-
-  trace_of(id, limit) {
-    const path = this.#trace_path(id)
-    if (!exists_sync(path)) return []
-    const events = read_file_sync(path, 'utf8')
-      .split('\n')
-      .filter(line => line.trim())
-      .map(line => JSON.parse(line))
-    return limit ? events.slice(-limit) : events
-  }
-
-  /**
-   * m3: time from create to the first accepted turn, the moment user code runs.
-   * Recorded once; a halo restart re-reads the trace rather than trusting memory.
-   */
-  first_turn(id, now = Date.now()) {
-    if (this.turned.has(id)) return null
-    this.turned.add(id)
-    if (this.trace_of(id).some(row => row.event === 'first-turn')) return null
-    const created = Date.parse(this.get(id).created)
-    const ms = Number.isFinite(created) ? now - created : null
-    this.trace(id, 'first-turn', ms === null ? {} : { ms })
-    return ms
-  }
-
   /**
    * Copy a directory out of a running actor and serve it. The tree is
    * untrusted: only files, directories, and links survive, and the server
@@ -1700,7 +1617,7 @@ export class ActorStore {
         syscalls.run(['tar', '-czf', artifacts, '-C', tree, ...ARTIFACT_PATHS])
       )
       const listed = syscalls.run(['tar', '-tzf', artifacts]).output
-      const trace_path = this.#trace_path(id)
+      const trace_path = this.trace_path(id)
       const trace_text = exists_sync(trace_path)
         ? read_file_sync(trace_path, 'utf8')
         : ''
@@ -1784,7 +1701,7 @@ export class ActorStore {
               '--no-same-owner'
             ])
           )
-          const trace_path = this.#trace_path(record.id)
+          const trace_path = this.trace_path(record.id)
           const current = exists_sync(trace_path)
             ? read_file_sync(trace_path, 'utf8')
             : ''

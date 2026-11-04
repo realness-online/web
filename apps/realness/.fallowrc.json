@@ -3,10 +3,7 @@
   "entry": [
     "index.html",
     "src/app/workers/*.js",
-    "scripts/*.js",
     "tools/publish/renderer/static/**",
-    "**/*.check.js",
-    "specs/**/*.spec.js",
     "src/settings/cli.js",
     "server/halo/app.js",
     "server/halo/main.js",
@@ -21,9 +18,6 @@
     "themes/load.js",
     "themes/adapters/*.js",
     "themes/*/palette.css",
-    "vite.config.js",
-    "vite.prerender.config.js",
-    "workers.config.js",
     "public/push-handlers.js",
     "src/app/prerender/entry-server.js",
     "server/sync/bin/realness.js",
@@ -32,8 +26,34 @@
     "packages/*/src/index.js",
     "packages/store/src/firebase.js",
     "packages/store/src/local-only.js",
-    "durable.config.js",
     "src/app/utils/durable-entry.js"
+  ],
+  "framework": [
+    {
+      "name": "realness-tests",
+      "enablers": [
+        "vite-plus"
+      ],
+      "entryPoints": [
+        "**/*.check.js",
+        "specs/**/*.spec.js"
+      ],
+      "entryPointRole": "test"
+    },
+    {
+      "name": "realness-build",
+      "enablers": [
+        "vite-plus"
+      ],
+      "entryPoints": [
+        "scripts/*.js",
+        "vite.config.js",
+        "vite.prerender.config.js",
+        "workers.config.js",
+        "durable.config.js"
+      ],
+      "entryPointRole": "support"
+    }
   ],
   "ignorePatterns": [
     "**/artifacts/**",
@@ -73,7 +93,7 @@
     "unused-files": "warn",
     "unused-exports": "warn",
     "unused-types": "off",
-    "private-type-leaks": "off",
+    "private-type-leaks": "warn",
     "unused-class-members": "warn",
     "duplicate-exports": "warn",
     "circular-dependencies": "error",
@@ -224,11 +244,11 @@
           "symbol-use",
           "api-surface"
         ],
-        "project_config_hash": "sha256:923ef0f4b184f5f2670e38ad4f2713ccf0d7661f043ae426a5d8e02c287b97f2",
+        "project_config_hash": "sha256:329afdebfd962d6be91c2544abafcd270a8f83d4c040a9ad0066524e2b911ee3",
         "backend_family": "typescript-go",
         "completeness": "partial"
       },
-      "totalIssues": 10,
+      "totalIssues": 0,
       "unusedFiles": 0,
       "unusedExports": 0,
       "unusedTypes": 0,
@@ -244,43 +264,7 @@
       "reExportCycles": 0,
       "typeOnlyDependencies": 0,
       "testOnlyDependencies": 0,
-      "devDependenciesInProduction": 2,
-      "boundaryViolations": 0,
-      "boundaryCoverageViolations": 0,
-      "boundaryCallViolations": 0,
-      "policyViolations": 0
-    }
-  },
-  "regression": {
-    "baseline":     {
-      "analysisIdentity": {
-        "mode": "type-aware",
-        "semantic_schema_version": 2,
-        "capabilities": [
-          "symbol-use",
-          "api-surface"
-        ],
-        "project_config_hash": "sha256:b24f61e425d0f0e5426e0e11b86cb01e3ba4096de21a083c16410fa838e40ed9",
-        "backend_family": "typescript-go",
-        "completeness": "partial"
-      },
-      "totalIssues": 10,
-      "unusedFiles": 0,
-      "unusedExports": 0,
-      "unusedTypes": 0,
-      "unusedDependencies": 0,
-      "unusedDevDependencies": 0,
-      "unusedOptionalDependencies": 0,
-      "unusedEnumMembers": 0,
-      "unusedClassMembers": 0,
-      "unresolvedImports": 0,
-      "unlistedDependencies": 0,
-      "duplicateExports": 0,
-      "circularDependencies": 0,
-      "reExportCycles": 0,
-      "typeOnlyDependencies": 0,
-      "testOnlyDependencies": 0,
-      "devDependenciesInProduction": 2,
+      "devDependenciesInProduction": 0,
       "boundaryViolations": 0,
       "boundaryCoverageViolations": 0,
       "boundaryCallViolations": 0,

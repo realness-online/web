@@ -105,6 +105,6 @@ it('the gate deploy may start one instance and writes its record through sync', 
   assert.match(access, /compute instances add-iam-policy-binding "\$halo_name"/)
   assert.doesNotMatch(access, /buckets add-iam-policy-binding/)
   assert.doesNotMatch(gate, /SYNC_URL/)
-  assert.match(gate, /stage-service\.sh" gate "" "\$\{1:-\}"/)
+  assert.match(gate, /stage\.js" service gate "" "\$\{1:-\}"/)
   assert.doesNotMatch(access, /projects add-iam-policy-binding/)
 })

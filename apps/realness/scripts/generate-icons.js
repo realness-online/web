@@ -1,7 +1,7 @@
-import { createCanvas as create_canvas, loadImage as load_image } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath as file_url_to_path } from 'url'
+import sharp from 'sharp'
 import { oklch_to_rgb } from '../src/app/utils/color-converters.js'
 import { run_entry } from './lib/entry.js'
 
@@ -55,31 +55,21 @@ export const replace_oklch_with_rgb = svg =>
     }
   )
 
-const generate_icon_png = async (size, output_path, icons_svg) => {
-  const img = await render_symbol_image(size, icons_svg)
-  const canvas = create_canvas(size, size)
-  const ctx = canvas.getContext('2d')
+const generate_icon_png = (size, output_path, icons_svg) =>
+  sharp(Buffer.from(symbol_svg(size, icons_svg)))
+    .flatten({ background: THEME_COLOR })
+    .png()
+    .toFile(output_path)
 
-  ctx.fillStyle = THEME_COLOR
-  ctx.fillRect(0, 0, size, size)
-  ctx.drawImage(img, 0, 0, size, size)
-
-  fs.writeFileSync(output_path, canvas.toBuffer('image/png'))
-}
-
-const render_symbol_image = (size, icons_svg) => {
+const symbol_svg = (size, icons_svg) => {
   const { symbol_content, fills_defs, shapes_defs, symbol_viewbox } =
     extract_realness_symbol(icons_svg)
   const { x, y, width, height } = symbol_viewbox
-
-  const svg_content =
-    replace_oklch_with_rgb(`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${x} ${y} ${width} ${height}">
+  return replace_oklch_with_rgb(`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${x} ${y} ${width} ${height}">
   ${shapes_defs}
   ${fills_defs}
   ${symbol_content}
 </svg>`)
-
-  return load_image(Buffer.from(svg_content))
 }
 
 /**

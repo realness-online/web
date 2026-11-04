@@ -1,7 +1,7 @@
 /**
  * An actor halo: create it, put code on it, take it away.
  *
- *   realness development halo up realness-2 [--smoke]
+ *   realness development halo up realness-2
  *   realness development halo down realness-2 [--delete] [--no-drain]
  *   realness development halo restart realness-2
  *
@@ -69,15 +69,10 @@ const sizes = (config, options) => ({
  * @param {any} cloud
  * @param {any} config
  * @param {string} name
- * @param {{ smoke?: boolean, expire?: string, imageProject?: string, imageFamily?: string, machineType?: string, bootSize?: string, actorsSize?: string }} [options]
+ * @param {{ expire?: string, imageProject?: string, imageFamily?: string, machineType?: string, bootSize?: string, actorsSize?: string }} [options]
  *   expire: a GCE duration such as 2h, after which the provider deletes the halo
  */
-export const up = async (
-  cloud,
-  config,
-  name,
-  { smoke = false, expire, ...options } = {}
-) => {
+export const up = async (cloud, config, name, { expire, ...options } = {}) => {
   const { imageFamily, machineType, bootSize, actorsSize } = sizes(
     config,
     options
@@ -180,14 +175,6 @@ export const up = async (
   )
   await ensure_template(cloud, config, name)
 
-  if (smoke) {
-    step('smoke test')
-    await cloud.ssh(
-      name,
-      `bash ${config.root}/server/halo/scripts/halo-smoke.sh`
-    )
-  }
-
   await provision_record_key(cloud, config, name)
   await install_secrets(cloud, config, name)
   await serve(cloud, config, name)
@@ -246,8 +233,9 @@ const push = async (cloud, config, name) => {
   await mkdir(scratch, { recursive: true })
   const stage = await mkdtemp(join(scratch, 'push-'))
   try {
-    await run('bash', [
-      join(ROOT, 'tools/control/scripts/stage-halo.sh'),
+    await run(process.execPath, [
+      join(ROOT, 'tools/control/scripts/stage.js'),
+      'halo',
       stage
     ])
     await cloud.ssh(

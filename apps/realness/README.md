@@ -7,7 +7,7 @@ using Vite+ for dev, test, lint, and build.
 
 ```sh
 npm install
-npm test
+npm --prefix ../.. test
 npm run build
 npm run realness -- local status
 ```
@@ -34,7 +34,7 @@ nothing while it sleeps. Halos are VMs in their environment's project; developme
 - `src/can/`: Node, no dependencies. `can()`, rights pages, and phone identity,
   which every door imports; and where the paths `can()` asks about live, one
   adapter per provider (`disk.js`, `gcs.js`) against a shared contract.
-  `GCS_TEST_BUCKET=<bucket> npm run test:node` includes the cloud contract.
+  `GCS_TEST_BUCKET=<bucket> npm run spec:node` includes the cloud contract.
 - `src/sync/`: Node. The sync service, the only holder of storage keys: phone token,
   then `can()`, then storage. `npm run dev:sync` runs it locally on disk;
   `server/sync/scripts/deploy.sh development` deploys it to Cloud Run in realness-development.
@@ -162,7 +162,7 @@ A halo is a GCP VM in the environment's project, `realness-development` for
 development, that boots the fleet image and serves actors. Everything below runs from the Mac.
 
 ```bash
-node tools/cli/bin/realness.js development halo up realness-2 --smoke    # create, bootstrap, check, serve
+node tools/cli/bin/realness.js development halo up realness-2            # create, bootstrap, serve
 node tools/cli/bin/realness.js development halo restart realness-2       # push the current code, re-serve
 node tools/cli/bin/realness.js development halo down realness-2          # park: stop, disks kept ($0.80/mo)
 node tools/cli/bin/realness.js development halo down realness-2 --delete # drain actors, then delete ($0)

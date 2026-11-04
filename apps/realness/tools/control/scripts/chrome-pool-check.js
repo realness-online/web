@@ -7,6 +7,9 @@ import { join } from 'node:path'
 import { out_path } from '#root/lib/output.js'
 import { ChromePool } from '#root/src/halo/chrome-pool.js'
 import { ChromeVm, mib, rss } from './chrome-vm.js'
+import { MS_PER_SECOND } from '#root/lib/units.js'
+
+const DEFAULT_MIB = 1024
 
 const URL = process.env.URL ?? 'https://example.com/'
 const COPIES = Number(process.env.COPIES ?? 3)
@@ -15,7 +18,7 @@ const run = out_path(
 )
 const pool = new ChromePool({
   root: process.env.POOL_ROOT ?? '/opt/fc/chrome-pool',
-  mib: Number(process.env.MIB ?? 1024)
+  mib: Number(process.env.MIB ?? DEFAULT_MIB)
 })
 /**
  * The check report, read by the summary at the end.
@@ -42,7 +45,7 @@ try {
   const leased = await Promise.all(
     Array.from({ length: COPIES }, () => pool.restore())
   )
-  result.restore_all_s = (performance.now() - clock) / 1000
+  result.restore_all_s = (performance.now() - clock) / MS_PER_SECOND
   result.restored = leased.map(({ n, address, disk_s, restore_s, pid }) => ({
     n,
     address,
@@ -57,7 +60,7 @@ try {
   const pages = await Promise.all(
     leased.map(c => render(c.address, URL, { screenshot: false }))
   )
-  result.render_all_s = (performance.now() - clock) / 1000
+  result.render_all_s = (performance.now() - clock) / MS_PER_SECOND
   /** @type {{ n: number, ok: boolean, reason: string | null, load: number, title: string, chars: number }[]} */
   const rendered = pages.map(({ ok, reason, load, title, chars }, i) => ({
     n: leased[i].n,
@@ -100,6 +103,6 @@ write_file_sync(
   join(run, 'result.json'),
   `${JSON.stringify(result, null, 2)}\n`
 )
-console.log(JSON.stringify(result, null, 2))
-console.log(`run: ${run}`)
+console.info(JSON.stringify(result, null, 2))
+console.info(`run: ${run}`)
 process.exit(result.ok ? 0 : 1)

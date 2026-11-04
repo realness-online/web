@@ -2,16 +2,13 @@
 set -uo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-. "$REPO/lib/output.sh"
-RUN="${RUNS_DIR:-$OUT}/app-check-$(date -u +%Y%m%dT%H%M%SZ)"
+. "$REPO/lib/check.sh"
+check_start app-check
 export RUNS_DIR="$RUN"
-mkdir -p "$RUN"
 S="$REPO/tools/control/scripts"
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 
-PASS=0
-FAIL=0
 step() {
   local name="$1" want="$2"
   shift 2
@@ -41,5 +38,4 @@ for check in "$REPO"/checks/halo/app-*.check.js; do
 done
 
 echo
-echo "$PASS passed, $FAIL failed  (run: $RUN)"
-[ "$FAIL" = 0 ]
+check_end

@@ -1,4 +1,3 @@
-
 # HyperFrames Registry
 
 The registry provides reusable blocks and components installable via `hyperframes add <name>`.

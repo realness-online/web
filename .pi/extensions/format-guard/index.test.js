@@ -10,7 +10,8 @@ test('prettier rewriting code is caught, however it is reached', () => {
     'prettier --write .',
     'npx prettier --write notes.md src/a.js',
     'npx prettier --write .pi/runtime/x.js',
-    'npx prettier --write .pi/bin/a.js apps/realness/src/a.js'
+    'npx prettier --write .pi/bin/a.js apps/realness/src/a.js',
+    '.pi/node_modules/.bin/prettier --write .pi/bin/plans/plans.js .pi/extensions/x/index.js'
   ])
     assert.ok(prettier_rewrites_code(command), command)
 })
@@ -22,8 +23,7 @@ test('markdown, checks, and other tools pass', () => {
     'npx vp fmt src/a.js',
     'rg -n prettier .pi',
     'cat .prettierrc.json',
-    'npm ls prettier',
-    '.pi/node_modules/.bin/prettier --write .pi/bin/plans/plans.js .pi/extensions/x/index.js'
+    'npm ls prettier'
   ])
     assert.equal(prettier_rewrites_code(command), null, command)
 })

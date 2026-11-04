@@ -12,7 +12,6 @@
  */
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { vault_door } from '#root/src/sync/vault.js'
-import { resolve } from 'node:path'
 import { google_certs } from '#root/src/can/index.js'
 import { disk } from '#root/src/can/disk.js'
 import { create_gcs, gcloud_token, metadata_token } from '#root/src/can/gcs.js'
@@ -24,8 +23,10 @@ import { store_of } from '#root/src/can/store.js'
 import { gce_statuses } from '#root/src/sync/halo-power.js'
 import { sync_dir } from '#root/src/settings/output.js'
 
+const DEFAULT_PORT = 8787
+
 const dev = process.argv.includes('--dev')
-const port = Number(process.env.PORT ?? 8787)
+const port = Number(process.env.PORT ?? DEFAULT_PORT)
 const host =
   process.env.LISTEN ?? (process.env.K_SERVICE ? '0.0.0.0' : '127.0.0.1')
 
@@ -57,9 +58,9 @@ let issuer
 if (dev) {
   const tokens = dev_issuer()
   ;({ project, certs } = tokens)
-  console.log('# dev tokens, valid one hour:')
-  console.log(`export A=${tokens.token('+15555550100')}`)
-  console.log(`export B=${tokens.token('+15555550101')}`)
+  console.info('# dev tokens, valid one hour:')
+  console.info(`export A=${tokens.token('+15555550100')}`)
+  console.info(`export B=${tokens.token('+15555550101')}`)
 } else {
   if (!project) throw new Error('set PROJECT, e.g. realness-online')
   ;({ certs = google_certs(), issuer } = token_trust(project))
@@ -104,5 +105,5 @@ sync_service({
   halo_statuses,
   ...alerts
 }).listen(port, host, () =>
-  console.log(`# sync service on http://${host}:${port}, storage ${where}`)
+  console.info(`# sync service on http://${host}:${port}, storage ${where}`)
 )

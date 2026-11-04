@@ -9,11 +9,29 @@ import {
 } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
-import { repo_args } from '../lib/repo-git.js'
+import { harness_specs } from '../harness/steps.js'
 
 const root = resolve(file_url_to_path(new URL('../../..', import.meta.url)))
 const product = join(root, 'apps/realness')
 const out = join(root, 'artifacts/coverage')
+
+/** Run argv with output on screen and in `log`; the status is the command's, not tee's. */
+const tee_run = (argv, log, options = {}) =>
+  spawn_sync('bash', ['-o', 'pipefail', '-c', '"$@" 2>&1 | tee "$0"', log, ...argv], {
+    stdio: 'inherit',
+    ...options
+  })
+
+/** Failing test lines from Node and Vitest output, once each, without colour. */
+export const failures = text => [
+  ...new Set(
+    text
+      .replace(/\x1b\[[0-9;]*m/g, '')
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => /^(✖|FAIL|×) /.test(line) && line !== '✖ failing tests:')
+  )
+]
 
 /**
  * What Node coverage counts, from the harness root. Both Node parts count all
@@ -32,24 +50,16 @@ const NODE_INCLUDE = [
 ]
 const NODE_EXCLUDE = ['**/*.test.js', '**/*.spec.js', '**/node_modules/**', '**/dist/**', 'apps/realness/src/app/**']
 
-/** The test globs `npm run test:harness` runs, read from its script so the two never drift. */
-export const harness_files = (
-  script = JSON.parse(read_file_sync(join(root, 'package.json'), 'utf8')).scripts['test:harness']
-) =>
-  script
-    .split(/\s+/)
-    .map(word => word.replace(/^'|'$/g, ''))
-    .filter(word => word.endsWith('.test.js'))
-
 /** Node's built-in coverage, run from the harness root, writing lcov to `name.lcov`. */
 const node_part = (name, files) => ({
   name,
   lcov: join(out, `${name}.lcov`),
+  log: join(out, `${name}.log`),
   base: root,
   run: () =>
-    spawn_sync(
-      process.execPath,
+    tee_run(
       [
+        process.execPath,
         '--test',
         '--experimental-test-coverage',
         ...NODE_INCLUDE.map(glob => `--test-coverage-include=${glob}`),
@@ -60,7 +70,8 @@ const node_part = (name, files) => ({
         `--test-reporter-destination=${join(out, `${name}.lcov`)}`,
         ...files
       ],
-      { cwd: root, stdio: 'inherit' }
+      join(out, `${name}.log`),
+      { cwd: root }
     )
 })
 
@@ -68,12 +79,13 @@ const node_part = (name, files) => ({
 const npm_part = (name, script, lcov, base) => ({
   name,
   lcov,
+  log: join(out, `${name}.log`),
   base,
-  run: () => spawn_sync('npm', ['--prefix', product, 'run', script], { stdio: 'inherit' })
+  run: () => tee_run(['npm', '--prefix', product, 'run', script], join(out, `${name}.log`))
 })
 
 const parts = () => [
-  node_part('harness', harness_files()),
+  node_part('harness', harness_specs),
   node_part('backend', ['apps/realness/specs/!(app)/**/*.spec.js']),
   npm_part(
     'functions',
@@ -150,11 +162,10 @@ const NOT_SOURCE =
 /** Tracked and new source files under the measured roots, relative to the harness root. */
 export const source_files = (
   list = () =>
-    spawn_sync('git', [...repo_args(root), 'ls-files', '-co', '--exclude-standard', '--', ...SOURCE_ROOTS], {
+    spawn_sync('git', ['-C', root, 'ls-files', '-co', '--exclude-standard', '--', ...SOURCE_ROOTS], {
       cwd: root,
       encoding: 'utf8'
-    })
-      .stdout
+    }).stdout
 ) =>
   list()
     .split('\n')
@@ -186,13 +197,20 @@ export const summary = (rows, whole) =>
 
 if (process.argv[1] === file_url_to_path(import.meta.url)) {
   mkdir_sync(out, { recursive: true })
-  const rows = parts().map(part => {
+  const rows = []
+  for (const part of parts()) {
     process.stdout.write(`\n== ${part.name} coverage\n`)
     rm_sync(part.lcov, { force: true })
-    const { status } = part.run()
+    if (part.run().status !== 0) {
+      const found = exists_sync(part.log) ? failures(read_file_sync(part.log, 'utf8')) : []
+      process.stdout.write(
+        `\n${part.name} failed (${relative(root, part.log)}):\n${found.join('\n') || 'no failing test named; see the log'}\n`
+      )
+      process.exit(1)
+    }
     const files = exists_sync(part.lcov) ? parse_lcov(read_file_sync(part.lcov, 'utf8'), part.base) : null
-    return { name: part.name, files, ok: status === 0 }
-  })
+    rows.push({ name: part.name, files, ok: true })
+  }
   const whole = merge(rows.map(({ files }) => files).filter(Boolean))
   const { scripts, other } = untested(source_files(), whole)
   write_file_sync(join(out, 'untested.txt'), `${[...scripts, ...other].join('\n')}\n`)
@@ -202,5 +220,4 @@ if (process.argv[1] === file_url_to_path(import.meta.url)) {
       `not measured: ${other.length} shell, Python, Rust, and TypeScript files\n` +
       `lists: ${join(out, 'untested.txt')}\nreports: ${out}, product functions/coverage, artifacts/realness/frontend/coverage\n`
   )
-  process.exitCode = rows.every(({ ok }) => ok) ? 0 : 1
 }

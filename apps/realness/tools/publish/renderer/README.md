@@ -1,13 +1,6 @@
 # Static renderer
 
-```sh
-npm ci
-npm run build
-npm run dev
-npm test
-```
-
-Run `build.js` from a site folder. Its `site.json`, `content/articles`,
+Run `node tools/publish/renderer/build.js [--drafts]` from a site folder; root `npm test` runs its specs. Its `site.json`, `content/articles`,
 `static`, `partials`, and optional `pages` supply the inputs.
 
 `site.json` selects `type: "blog"` (default) or `type: "plans"`.

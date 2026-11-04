@@ -4,13 +4,13 @@ Use with `@realness.online/web` (`work/web`) or any project that has Vitest cove
 
 ## Commands (web `package.json`)
 
-| Script | What it does |
-| --- | --- |
-| `npm run test:coverage` | Vitest + `coverage/coverage-final.json` (`dot` reporter - quiet per-test noise) |
-| `npm run fallow` | `npx fallow` - human-readable terminal output |
-| `npm run fallow:report` | writes `fallow-report.json` for the risk script |
-| `npm run test:risk` | coverage -> `fallow:report` -> risk report |
-| `npm run test:risk:report` | risk report only (existing JSON artifacts) |
+| Script                     | What it does                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `npm run test:coverage`    | Vitest + `coverage/coverage-final.json` (`dot` reporter - quiet per-test noise) |
+| `npm run fallow`           | `npx fallow` - human-readable terminal output                                   |
+| `npm run fallow:report`    | writes `fallow-report.json` for the risk script                                 |
+| `npm run test:risk`        | coverage -> `fallow:report` -> risk report                                      |
+| `npm run test:risk:report` | risk report only (existing JSON artifacts)                                      |
 
 ## Agent workflow
 
@@ -22,9 +22,9 @@ Use with `@realness.online/web` (`work/web`) or any project that has Vitest cove
 
 ## Scripts
 
-| Script | Output |
-| --- | --- |
-| `scripts/summarize-coverage.js` | coverage-only table |
+| Script                                | Output                   |
+| ------------------------------------- | ------------------------ |
+| `scripts/summarize-coverage.js`       | coverage-only table      |
 | `scripts/prioritize-refactor-risk.js` | coverage + fallow merged |
 
 Both accept `--root <project>`.
@@ -82,21 +82,21 @@ Per-path rule tweaks (e.g. test mocks, `unresolved-imports` off for icon paths).
 
 ### Changelog (skill <-> config)
 
-| Date | Change |
-| --- | --- |
+| Date       | Change                                                                                           |
+| ---------- | ------------------------------------------------------------------------------------------------ |
 | 2026-05-18 | Initial integration: `test:risk` scripts, `prioritize-refactor-risk.js`, explicit `health` block |
 
 Add a row when you change `.fallowrc.json` for this skill.
 
 ## Judgment (test vs delete vs refactor)
 
-| Signal | Action |
-| --- | --- |
-| fallow `unused-files` | Delete, wire an entry point, or `fallow-ignore-file` - not tests |
-| High risk score + low coverage + used in graph | **Test-first**, then refactor |
-| fallow `extract_complex_functions` / cycles | Tests around public API, then structural refactor |
-| Good coverage + high complexity | Refactor with regression tests |
-| P0 path in [web-realness.md](web-realness.md) | Bump priority even if score is lower |
+| Signal                                         | Action                                                           |
+| ---------------------------------------------- | ---------------------------------------------------------------- |
+| fallow `unused-files`                          | Delete, wire an entry point, or `fallow-ignore-file` - not tests |
+| High risk score + low coverage + used in graph | **Test-first**, then refactor                                    |
+| fallow `extract_complex_functions` / cycles    | Tests around public API, then structural refactor                |
+| Good coverage + high complexity                | Refactor with regression tests                                   |
+| P0 path in [web-realness.md](web-realness.md)  | Bump priority even if score is lower                             |
 
 ## Related
 

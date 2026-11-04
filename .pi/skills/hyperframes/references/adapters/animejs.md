@@ -1,4 +1,3 @@
-
 # Anime.js for HyperFrames
 
 HyperFrames can seek Anime.js instances through its `animejs` runtime adapter. The composition owns the animation objects; HyperFrames owns the clock.
@@ -19,17 +18,17 @@ The adapter seeks every registered instance with `instance.seek(timeMs)`, where 
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.0.2/lib/anime.iife.min.js"></script>
 <script>
   const anim = anime({
-    targets: ".mark",
+    targets: '.mark',
     translateX: 280,
-    rotate: "1turn",
+    rotate: '1turn',
     opacity: [0, 1],
     duration: 1200,
-    easing: "easeOutExpo",
-    autoplay: false,
-  });
+    easing: 'easeOutExpo',
+    autoplay: false
+  })
 
-  window.__hfAnime = window.__hfAnime || [];
-  window.__hfAnime.push(anim);
+  window.__hfAnime = window.__hfAnime || []
+  window.__hfAnime.push(anim)
 </script>
 ```
 
@@ -39,25 +38,25 @@ The adapter seeks every registered instance with `instance.seek(timeMs)`, where 
 <script>
   const tl = anime.timeline({
     autoplay: false,
-    easing: "easeOutCubic",
-  });
+    easing: 'easeOutCubic'
+  })
 
   tl.add({
-    targets: ".title",
+    targets: '.title',
     translateY: [40, 0],
     opacity: [0, 1],
-    duration: 650,
+    duration: 650
   }).add(
     {
-      targets: ".accent",
+      targets: '.accent',
       scaleX: [0, 1],
-      duration: 450,
+      duration: 450
     },
-    250,
-  );
+    250
+  )
 
-  window.__hfAnime = window.__hfAnime || [];
-  window.__hfAnime.push(tl);
+  window.__hfAnime = window.__hfAnime || []
+  window.__hfAnime.push(tl)
 </script>
 ```
 
@@ -67,16 +66,16 @@ If you use an ES module build, the adapter does not care how the instance was cr
 
 ```html
 <script type="module">
-  import { animate } from "https://cdn.jsdelivr.net/npm/animejs/+esm";
+  import { animate } from 'https://cdn.jsdelivr.net/npm/animejs/+esm'
 
-  const anim = animate(".chip", {
-    x: "18rem",
+  const anim = animate('.chip', {
+    x: '18rem',
     duration: 900,
-    autoplay: false,
-  });
+    autoplay: false
+  })
 
-  window.__hfAnime = window.__hfAnime || [];
-  window.__hfAnime.push(anim);
+  window.__hfAnime = window.__hfAnime || []
+  window.__hfAnime.push(anim)
 </script>
 ```
 

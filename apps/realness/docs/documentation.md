@@ -462,7 +462,7 @@ Realness frontend lists every loop across halos; a stop is a Storage write at
 `loops/<id>/stop.html` that the halo obeys on its next 30-second probe. Sync
 serves the view, and `can()` admits only the admins named in `admins.html`.
 Each bucket needs its own `admins.html`; without it admin login fails with 403.
-Manage it with `npm run webspace -- <env> admins list|add <phone> [name]|remove <phone>`;
+Manage it with `npm run realness -- <env> admins list|add <phone> [name]|remove <phone>`;
 changes are a dry run until `--yes`, writes fail if someone else edited the
 list first, and the last admin cannot be removed. Sync picks changes up within
 30 seconds.
@@ -533,7 +533,7 @@ stays as the measurement.
 
 `halo up <name>` makes a halo from the fleet image: boot disk, instance with
 nested virt and no service account, actors volume, then `halo-bootstrap.sh` on
-it (`--smoke` also runs `halo-smoke.sh`). `halo down <name>` stops it with
+it. `halo down <name>` stops it with
 its disks; `--delete` takes the disks too and leaves the image as the only cost.
 
 `halo down --delete` does not ask what is on the halo.
@@ -600,17 +600,14 @@ The family `realness-halo` bakes /opt/fc (pinned Node included), the scripts and
 the idle guard into a 20 GB-geometry image, so a halo is one command:
 
 ```bash
-node tools/control/bin/webspace.js development halo up realness-2 --smoke
+node tools/control/bin/webspace.js development halo up realness-2
 ```
 
 It creates the boot disk and the instance by name, waits for ssh, adds a 30 GB
 actors volume, copies `server/halo/`, and runs its `scripts/halo-bootstrap.sh` on the
 halo: grow the root partition if it lags, `net-up.sh`, `actors-volume.sh`,
-`idle-guard.sh`, then one state line per resource. `--smoke` then runs
-`halo-smoke.sh`, which builds the seed, serves on loopback, creates an actor,
-execs in it, destroys it, and checks the actor's machine-id is not the seed's.
-It predates the halo secrets and now kills the serving halo, so deployed halos
-are checked with `check:halo` through a tunnel instead (`.tooling.md`).
+`idle-guard.sh`, then one state line per resource. Deployed halos are checked
+with `npm run live halo` through a tunnel.
 
 Measured: **2m50s** from nothing to a halo that serves an actor (the seed is 36s
 of that), and 5/5 on the smoke test.
@@ -627,7 +624,7 @@ gcloud compute images create realness-halo-v<N> --family realness-halo \
 
 v3 carries Node and a source tree with only `server/halo/`; a fresh halo from it
 printed `node v22.23.3 present` at bootstrap. Delete older images once a new one
-passes `--smoke`.
+passes `npm run live halo`.
 
 The image already carries a grown root partition, so `growpart` reports NOCHANGE
 on a halo built from it; 20 GB is the floor because an image cannot be smaller

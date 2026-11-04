@@ -5,10 +5,10 @@ metadata:
   check: 'node ../../bin/checks/check-skills.js user-interface'
   category: Design & UX
   pairs-with:
-  - skill: soundness
-    reason: Native elements carry affordance before CSS; boolean attributes are state CSS reads directly
-  - skill: motion-systems
-    reason: This skill decides what changes; motion-systems decides how it moves
+    - skill: soundness
+      reason: Native elements carry affordance before CSS; boolean attributes are state CSS reads directly
+    - skill: motion-systems
+      reason: This skill decides what changes; motion-systems decides how it moves
   tags:
     - ux
     - ui
@@ -45,6 +45,19 @@ interfaces where detailed explanation is the product.
    action, visible priority. Dense is fine if it stays scannable. Don't
    name every section - that's the AI verbosity bias.
 
+## Template tells
+
+These defaults make a page read as generated. Use one only when the content
+asks for it.
+
+- All-caps eyebrow labels above headings.
+- Meta strings joined with middle dots (`A · B · C`).
+- `→` appended to link and button text.
+- Numbered markers (01 / 02 / 03) on content that is not a sequence.
+- One accent word in a headline, set in italic, bold, or another color.
+- Content chopped into identical rounded cards with the same shadow.
+- A fade-and-slide-up entrance on every section.
+
 ## Review
 
 1. Remove the descriptive text - does the interface still work?
@@ -54,6 +67,7 @@ interfaces where detailed explanation is the product.
 5. Delete anything that does not directly enable action - helper text under
    every input, onboarding tooltips for simple flows, pages that explain
    before allowing interaction.
+6. Does any template tell appear without a reason in the content?
 
 ## Integration
 

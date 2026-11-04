@@ -48,8 +48,7 @@ it('an article shows its owner phone from the itemid, not only in attributes', a
   const { article_body } =
     await import('../../../tools/publish/renderer/src/templates/article.js')
   const poster = () => ''
-  const html = article_body(
-    poster,
+  const html = article_body(poster)(
     { itemid: '/+14155551234/pages/1' },
     'T',
     '<p>x</p>',
@@ -57,5 +56,5 @@ it('an article shows its owner phone from the itemid, not only in attributes', a
   )
   assert.ok(html.replace(/<[^>]*>/g, ' ').includes('+14155551234'))
   assert.match(html, /<address itemprop="author"/)
-  assert.doesNotMatch(article_body(poster, {}, 'T', '', ''), /<address/)
+  assert.doesNotMatch(article_body(poster)({}, 'T', '', ''), /<address/)
 })

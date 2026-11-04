@@ -19,28 +19,17 @@ export { History } from '@/persistence/History'
 /**
  * @extends {Storage}
  */
-class Cached extends Folder(Large(Cloud(Storage))) {
-  async save(
-    items = document.querySelector(`[itemid="${this.id}"]`) ?? undefined
-  ) {
-    await super.save(items ?? undefined)
-  }
-}
+export class Poster extends Folder(Large(Cloud(Storage))) {}
 
 /**
  * @extends {Storage}
  */
-export class Poster extends Folder(Large(Cloud(Storage))) {}
+export class Cutout extends Folder(Large(Cloud(Storage))) {}
 
 /**
- * @extends {Cached}
+ * @extends {Storage}
  */
-export class Cutout extends Cached {}
-
-/**
- * @extends {Cached}
- */
-export class Shadow extends Cached {}
+export class Shadow extends Folder(Large(Cloud(Storage))) {}
 
 /**
  * @extends {Storage}

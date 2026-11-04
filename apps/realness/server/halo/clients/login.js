@@ -20,13 +20,13 @@
  */
 import { createConnection as create_connection } from 'node:net'
 import { readFileSync as read_file_sync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath as file_url_to_path } from 'node:url'
 import { issue_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
 import { secret_path } from '#root/src/settings/secrets.js'
 
-const HERE = dirname(file_url_to_path(import.meta.url))
-const ROOT = join(HERE, '..', '..', '..')
+const MIN_SECRET = 32
+const PROBE_MS = 5000
+const DEFAULT_ROWS = 24
+
 const configured_secret = process.env.HALO_PASS_SECRET_FILE
 /** @type {string[]} */
 const SECRET_FILES = [
@@ -46,7 +46,7 @@ const read_secret = () => {
   for (const path of SECRET_FILES)
     try {
       const secret = read_file_sync(path, 'utf8').trim()
-      if (secret.length < 32)
+      if (secret.length < MIN_SECRET)
         throw new Error(`${path} holds a secret shorter than 32 bytes`)
       return secret
     } catch (error) {
@@ -90,8 +90,8 @@ const frames = socket => {
     send: frame => socket.write(`${JSON.stringify(frame)}\n`),
     next: () =>
       new Promise((resolve, reject) => {
-        if (queue.length) return resolve(queue.shift())
-        waiters.push({ resolve, reject })
+        if (queue.length) resolve(queue.shift())
+        else waiters.push({ resolve, reject })
       })
   }
 }
@@ -111,7 +111,7 @@ const create_actor = async ({ api, pass, phone }) => {
 const release = async ({ api, pass, actor, keep }) => {
   const init = {
     headers: { authorization: `Bearer ${pass}` },
-    signal: AbortSignal.timeout(5000)
+    signal: AbortSignal.timeout(PROBE_MS)
   }
   const action = keep
     ? fetch(`${api}/v1/actors/${actor}/idle`, {
@@ -172,7 +172,7 @@ const main = async argv => {
   stream.send({
     actor,
     cols: process.stdout.columns || 80,
-    rows: process.stdout.rows || 24,
+    rows: process.stdout.rows || DEFAULT_ROWS,
     pass
   })
   const hello = await stream.next()
@@ -216,13 +216,16 @@ const main = async argv => {
       data_b64: Buffer.from(`${send}\n`).toString('base64')
     })
 
-  for (;;) {
+  /** Print data frames until the stream ends or the shell exits. */
+  const pump = async () => {
     const frame = await stream.next().catch(() => null)
     if (!frame) return finish(0)
     if (frame.op === 'exit') return finish(frame.code ?? 0)
     if (frame.op === 'data')
       process.stdout.write(Buffer.from(frame.data_b64, 'base64'))
+    return pump()
   }
+  return pump()
 }
 
 try {

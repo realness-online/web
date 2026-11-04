@@ -72,7 +72,7 @@ Every visible element must have continuous motion. A still image on a still back
 
 | Element type                           | Mid-scene activity                                                                                                                           |
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Image / screenshot                     | Slow zoom (scale 1->1.03), slow pan, or Ken Burns                                                                                             |
+| Image / screenshot                     | Slow zoom (scale 1->1.03), slow pan, or Ken Burns                                                                                            |
 | Stat / number                          | Counter animates from 0 to target                                                                                                            |
 | Logo grid                              | Subtle shimmer sweep, or gentle scale pulse                                                                                                  |
 | Any persistent element                 | Subtle float (y ±4-6px, sine.inOut, yoyo)                                                                                                    |
@@ -179,25 +179,25 @@ Rules below came out of two independent website-to-hyperframes builds (2026-04-2
   <!-- BAD: two transforms on one element -->
   <img class="hero" src="..." />
   <script>
-    tl.from(".hero", { y: 50, opacity: 0, duration: 0.6 }, 0);
-    tl.to(".hero", { scale: 1.04, duration: beat }, 0); // kills the entrance
+    tl.from('.hero', { y: 50, opacity: 0, duration: 0.6 }, 0)
+    tl.to('.hero', { scale: 1.04, duration: beat }, 0) // kills the entrance
   </script>
 
   <!-- GOOD option A: combine into one tween -->
   <script>
     tl.fromTo(
-      ".hero",
+      '.hero',
       { y: 50, opacity: 0, scale: 1.0 },
-      { y: 0, opacity: 1, scale: 1.04, duration: beat, ease: "none" },
-      0,
-    );
+      { y: 0, opacity: 1, scale: 1.04, duration: beat, ease: 'none' },
+      0
+    )
   </script>
 
   <!-- GOOD option B: split across parent + child -->
   <div class="hero-wrap"><img class="hero" src="..." /></div>
   <script>
-    tl.from(".hero-wrap", { y: 50, opacity: 0, duration: 0.6 }, 0); // entrance on parent
-    tl.to(".hero", { scale: 1.04, duration: beat }, 0); // Ken Burns on child
+    tl.from('.hero-wrap', { y: 50, opacity: 0, duration: 0.6 }, 0) // entrance on parent
+    tl.to('.hero', { scale: 1.04, duration: beat }, 0) // Ken Burns on child
   </script>
   ```
 
@@ -205,25 +205,25 @@ Rules below came out of two independent website-to-hyperframes builds (2026-04-2
 
   ```js
   // BRITTLE: immediateRender interacts badly with scene boundaries
-  tl.from(el, { opacity: 0, y: 50, duration: 0.6 }, t);
+  tl.from(el, { opacity: 0, y: 50, duration: 0.6 }, t)
 
   // DETERMINISTIC: state is defined at both ends, no immediateRender surprise
-  tl.fromTo(el, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.6 }, t);
+  tl.fromTo(el, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.6 }, t)
   ```
 
 - **Ambient pulses must attach to the seekable `tl`, never bare `gsap.to()`.** Auras, shimmers, gentle float loops, logo breathing - all of these must be added to the scene's timeline, not fired standalone. Standalone tweens run on wallclock time and do not scrub with the capture engine, so the effect is absent in the rendered video even though it looks correct in the studio preview:
 
   ```js
   // BAD: lives outside the timeline, never renders in capture
-  gsap.to(".aura", { scale: 1.08, yoyo: true, repeat: 5, duration: 1.2 });
+  gsap.to('.aura', { scale: 1.08, yoyo: true, repeat: 5, duration: 1.2 })
 
   // GOOD: seekable, deterministic, renders
-  tl.to(".aura", { scale: 1.08, yoyo: true, repeat: 5, duration: 1.2 }, 0);
+  tl.to('.aura', { scale: 1.08, yoyo: true, repeat: 5, duration: 1.2 }, 0)
   ```
 
 - **Hard-kill every scene boundary, not just captions.** The caption hard-kill rule above generalizes: any element whose visibility changes at a beat boundary needs a deterministic `tl.set()` kill after its fade, because later tweens on the same element (or `immediateRender` from a sibling tween) can resurrect it. Apply to every element with an exit animation:
 
   ```js
-  tl.to(el, { opacity: 0, duration: 0.3 }, beatEnd);
-  tl.set(el, { opacity: 0, visibility: "hidden" }, beatEnd + 0.3); // deterministic kill
+  tl.to(el, { opacity: 0, duration: 0.3 }, beatEnd)
+  tl.set(el, { opacity: 0, visibility: 'hidden' }, beatEnd + 0.3) // deterministic kill
   ```

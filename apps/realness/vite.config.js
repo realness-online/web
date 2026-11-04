@@ -291,6 +291,12 @@ export default define_config(({ mode }) => ({
         }
       },
       {
+        files: ['tools/desktop/**'],
+        globals: {
+          Deno: 'readonly'
+        }
+      },
+      {
         files: ['scripts/**', 'src/app/views/OgCandidates.vue'],
         rules: {
           'no-await-in-loop': 'off'

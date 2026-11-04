@@ -43,6 +43,6 @@ it('installed Pi loads the JavaScript extensions and their registrations', async
     cwd: fixture
   })
   assert.equal(result.details.projects, 1)
-  assert.match(result.content[0].text, /test:node/)
+  assert.match(result.content[0].text, /spec:node/)
   assert.doesNotMatch(result.content[0].text, /Not found under/)
 })

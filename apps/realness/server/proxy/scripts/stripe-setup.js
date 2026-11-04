@@ -35,13 +35,13 @@ if (!key)
     `no STRIPE_SECRET_KEY in ${project}; add it with: gcloud secrets create STRIPE_SECRET_KEY --data-file=- --project=${project}`
   )
 const live = key.startsWith('sk_live_') || key.startsWith('rk_live_')
-console.log(`stripe: ${live ? 'LIVE' : 'test'} mode`)
+console.info(`stripe: ${live ? 'LIVE' : 'test'} mode`)
 const stripe = stripe_api(key)
 
 const prices = await stripe.get(
   `/prices?active=true&lookup_keys[]=${PRICE_KEY}`
 )
-let price = prices.data[0]
+let [price] = prices.data
 if (!price) {
   const product = await stripe.post('/products', {
     name: PLAN.name,
@@ -54,8 +54,8 @@ if (!price) {
     recurring: { interval: PLAN.interval },
     lookup_key: PRICE_KEY
   })
-  console.log(`price: created ${price.id}`)
-} else console.log(`price: ${price.id} exists`)
+  console.info(`price: created ${price.id}`)
+} else console.info(`price: ${price.id} exists`)
 
 const proxy = gcloud([
   'run',
@@ -69,7 +69,7 @@ const url = `${proxy}/pay/webhook`
 const endpoints = await stripe.get('/webhook_endpoints?limit=100')
 const existing = endpoints.data.find(endpoint => endpoint.url === url)
 const stored = secret('STRIPE_WEBHOOK_SECRET')
-if (existing && stored) console.log(`webhook: ${existing.id} exists`)
+if (existing && stored) console.info(`webhook: ${existing.id} exists`)
 else {
   if (existing)
     await stripe.post(`/webhook_endpoints/${existing.id}`, { disabled: true })
@@ -92,7 +92,7 @@ else {
     ['secrets', 'versions', 'add', 'STRIPE_WEBHOOK_SECRET', '--data-file=-'],
     endpoint.secret
   )
-  console.log(`webhook: created ${endpoint.id} -> ${url}; secret stored`)
+  console.info(`webhook: created ${endpoint.id} -> ${url}; secret stored`)
 }
 const account = gcloud([
   'run',
@@ -112,4 +112,4 @@ for (const name of ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'])
     '--condition=None'
   ])
 
-console.log('next: server/proxy/scripts/deploy.sh')
+console.info('next: server/proxy/scripts/deploy.sh')

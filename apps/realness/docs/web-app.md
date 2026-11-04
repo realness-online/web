@@ -22,7 +22,7 @@ For developers: HTML is the database, so an application can be built without coo
 
 ## Install
 
-Realness uses [Vite+](https://viteplus.dev), a unified toolchain whose CLI is `vp`. The npm scripts proxy to it, so `npm run dev`, `npm run build`, and `npm test` all work - you can also call `vp` directly.
+Realness uses [Vite+](https://viteplus.dev), a unified toolchain whose CLI is `vp`. The npm scripts proxy to it, so `npm run dev:frontend` and `npm run build` work, and root `npm test` runs the specs - you can also call `vp` directly.
 
 ### Clone and install
 
@@ -30,7 +30,7 @@ Realness uses [Vite+](https://viteplus.dev), a unified toolchain whose CLI is `v
 git clone git@github.com:realness-online/web.git
 cd web
 npm install
-npm run dev
+npm run dev:frontend
 ```
 
 This starts a plain HTTP dev server on `http://localhost:5173`.
@@ -67,7 +67,7 @@ Once your project is created you will want to enable phone authentication and fi
 
 ### Deploy to firebase
 
-`npm run deploy` builds the WebAssembly tracer, the workers, and the app, then deploys hosting and storage. Building the tracer needs [Rust](https://rustup.rs) and [wasm-pack](https://rustwasm.github.io/wasm-pack/).
+`npm run realness -- frontend deploy --env production` builds the WebAssembly tracer, the workers, and the app, then deploys hosting and storage. Building the tracer needs [Rust](https://rustup.rs) and [wasm-pack](https://rustwasm.github.io/wasm-pack/).
 
 Install the Firebase CLI, log in, and deploy:
 
@@ -76,7 +76,7 @@ npm install -g firebase-tools
 
 firebase login
 
-npm run deploy
+npm run realness -- frontend deploy --env production
 ```
 
 Visit `https://${project-name}.web.app`. You can sign in and invite your friends.
@@ -121,7 +121,7 @@ do not rebuild between them. Firebase account must own the project
    manifesto, then GitHub as root of trust). `release:gh` attaches
    `dist/build-manifest.json` and changelog notes to GitHub release `vX.Y.Z`.
 
-Or step through: `npm run deploy` then `npm run release:gh` then `npm run verify`.
+Or step through: `npm run realness -- frontend deploy --env production` then `npm run release:gh` then `npm run verify`.
 
 Anyone else can run `npm run verify` after step 3. Detail:
 [docs/verify-release.md](verify-release.md).

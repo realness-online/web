@@ -58,14 +58,14 @@ Think about what the transition _communicates_, not just what it looks like.
 
 ## Presets
 
-| Preset     | Duration | Easing            |
-| ---------- | -------- | ----------------- |
-| `snappy`   | 0.2s     | `power4.inOut`    |
-| `smooth`   | 0.4s     | `power2.inOut`    |
-| `gentle`   | 0.6s     | `sine.inOut`      |
+| Preset     | Duration | Easing             |
+| ---------- | -------- | ------------------ |
+| `snappy`   | 0.2s     | `power4.inOut`     |
+| `smooth`   | 0.4s     | `power2.inOut`     |
+| `gentle`   | 0.6s     | `sine.inOut`       |
 | `dramatic` | 0.5s     | `power3.in` -> out |
-| `instant`  | 0.15s    | `expo.inOut`      |
-| `luxe`     | 0.7s     | `power1.inOut`    |
+| `instant`  | 0.15s    | `expo.inOut`       |
+| `luxe`     | 0.7s     | `power1.inOut`     |
 
 ## Implementation
 

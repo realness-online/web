@@ -8,7 +8,7 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
 . "$root/server/scripts/service-env.sh"
 account="realness-sync@$project.iam.gserviceaccount.com"
-stage="$(bash "$root/server/scripts/stage-service.sh" sync)"
+stage="$(node "$root/tools/control/scripts/stage.js" service sync)"
 
 bucket_json="$(curl -sf -H "authorization: Bearer $(gcloud auth print-access-token)" \
   "https://storage.googleapis.com/storage/v1/b/$bucket?fields=versioning,lifecycle")"

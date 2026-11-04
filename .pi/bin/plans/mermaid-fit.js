@@ -1,7 +1,5 @@
 #!/usr/bin/env node
-import {
-  readFileSync as read_file_sync
-} from 'node:fs'
+import { readFileSync as read_file_sync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { execFileSync as exec_file_sync } from 'node:child_process'
 import { fileURLToPath as file_url_to_path } from 'node:url'

@@ -32,33 +32,17 @@
     "sessions": "vault/Sessions"
   },
   "scripts": {
-    "check:quality": "npm run -C apps/realness check:quality",
     "prepare": "git config core.hooksPath .pi/bin/hooks",
     "postinstall": "npm --prefix .pi ci && node .pi/bin/harness/install-pi.js && node .pi/bin/graphics/themes.js",
     "realness": "./.pi/bin/pi",
     "start": "./.pi/bin/pi",
     "local": "node .pi/bin/harness/local.js",
     "watch": "npm --prefix apps/realness run realness -- watch",
-    "test": "npm run test:harness && npm run check:harness && npm run test:product",
-    "test:harness": "node --test '.pi/bin/specs/**/*.spec.js' '.pi/extensions/**/*.test.js' '.pi/skills/**/*.test.js'",
-    "check:harness": "npm run check:tooling && npm run check:skills && npm run check:ext && npm run check:soundness:gate && npm run check:comments && npm run plan-shape && npm run check:palette && npm run check:ds-store",
-    "check:ds-store": "node ./.pi/bin/checks/ds-store.js",
-    "fallow": "npm run fallow:harness && npm run -C apps/realness dead-code",
-    "fallow:harness": "apps/realness/node_modules/.bin/fallow dead-code",
-    "test:product": "npm --prefix apps/realness test",
-    "test:node": "npm --prefix apps/realness run test:node",
-    "test:frontend": "npm --prefix apps/realness run test:frontend",
-    "test:functions": "npm --prefix apps/realness run test:functions",
-    "test:coverage": "node .pi/bin/checks/coverage.js",
-    "plan-shape": "node ./.pi/bin/plans/plan-shape.js",
+    "check": "node .pi/bin/harness/run-steps.js check",
+    "test": "node .pi/bin/harness/run-steps.js test",
+    "live": "node .pi/bin/harness/run-steps.js live",
     "check:soundness": "node ./.pi/bin/checks/soundness-check.js apps/realness work/blog work/decision-ontology work/kata-machine work/realness-flex work/seeq-models .pi/bin",
-    "check:soundness:gate": "node ./.pi/bin/checks/soundness-check.js apps/realness .pi/bin",
-    "check:comments": "node ./.pi/bin/checks/comment-check.js apps/realness apps/blog work/seeq-app work/decision-ontology work/realness-flex work/seeq-models work/site work/haight-ship work/nvim work/kata-machine .pi/bin skills .pi/skills .pi/extensions",
     "check:site": "node ./.pi/bin/checks/soundness-check.js --site",
-    "check:ext": "node ./.pi/bin/checks/no-mjs.js",
-    "check:skills": "node ./.pi/bin/checks/check-skills.js",
-    "check:tooling": "node ./.pi/bin/checks/check-tooling.js",
-    "test:tooling": "node --test .pi/bin/specs/checks/check-tooling.spec.js",
     "pi:reinstall": "node .pi/bin/harness/install-pi.js",
     "pi:list": "./.pi/bin/pi list",
     "test:sessions": "./.pi/bin/checks/test-sessions.sh",
@@ -72,7 +56,6 @@
     "gallery": "node ./.pi/bin/graphics/gallery.js",
     "prune:artifacts": "node ./.pi/bin/harness/artifacts-prune.js",
     "palette": "node ./.pi/bin/graphics/themes.js && node ./.pi/bin/graphics/palette-sync.js",
-    "check:palette": "node ./.pi/bin/graphics/themes.js --check && node ./.pi/bin/graphics/palette-sync.js --check",
     "web-md:report": "node ./.pi/bin/web/web-md-report.js",
     "web-md:times": "node ./.pi/bin/web/web-md-report.js --times",
     "web-md:prune": "node ./.pi/bin/web/web-md-report.js --prune"
@@ -81,6 +64,12 @@
   "type": "module",
   "engines": {
     "node": ">=22.19.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
   },
   "packageManager": "npm@11.14.1"
 }

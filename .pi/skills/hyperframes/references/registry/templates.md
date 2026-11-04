@@ -55,7 +55,7 @@ Copy-paste starter templates for each component type. These embed the proven pat
         visibility: hidden;
       }
       .cw {
-        font-family: "Montserrat", sans-serif;
+        font-family: 'Montserrat', sans-serif;
         font-weight: 900;
         font-size: 128px;
         color: #ffffff;
@@ -88,83 +88,104 @@ Copy-paste starter templates for each component type. These embed the proven pat
       ></div>
     </div>
     <script>
-      (function () {
-        window.__timelines = window.__timelines || {};
+      ;(function () {
+        window.__timelines = window.__timelines || {}
 
         // REPLACE with actual transcript data
         var WORDS = [
-          { text: "Welcome", start: 0.3, end: 0.65 },
-          { text: "to", start: 0.65, end: 0.8 },
-          { text: "the", start: 0.8, end: 0.95 },
-          { text: "future", start: 0.95, end: 1.4 },
+          { text: 'Welcome', start: 0.3, end: 0.65 },
+          { text: 'to', start: 0.65, end: 0.8 },
+          { text: 'the', start: 0.8, end: 0.95 },
+          { text: 'future', start: 0.95, end: 1.4 }
           // ... add all words
-        ];
+        ]
 
         var GROUPS = [
-          { start: 0.3, end: 1.3, wordStart: 0, wordEnd: 3, text: "Welcome to the future" },
+          {
+            start: 0.3,
+            end: 1.3,
+            wordStart: 0,
+            wordEnd: 3,
+            text: 'Welcome to the future'
+          }
           // ... add all groups
-        ];
+        ]
 
-        var container = document.getElementById("cc-BLOCKNAME");
+        var container = document.getElementById('cc-BLOCKNAME')
 
         GROUPS.forEach(function (g, gi) {
-          var groupEl = document.createElement("div");
-          groupEl.id = "PREFIX-cg-" + gi;
-          groupEl.className = "cg";
+          var groupEl = document.createElement('div')
+          groupEl.id = 'PREFIX-cg-' + gi
+          groupEl.className = 'cg'
 
           for (var wi = g.wordStart; wi <= g.wordEnd; wi++) {
-            var wordEl = document.createElement("span");
-            wordEl.id = "PREFIX-cw-" + wi;
-            wordEl.className = "cw";
-            wordEl.textContent = WORDS[wi].text;
-            groupEl.appendChild(wordEl);
+            var wordEl = document.createElement('span')
+            wordEl.id = 'PREFIX-cw-' + wi
+            wordEl.className = 'cw'
+            wordEl.textContent = WORDS[wi].text
+            groupEl.appendChild(wordEl)
           }
 
           // Pretext overflow prevention
           if (window.__hyperframes && window.__hyperframes.fitTextFontSize) {
-            var _fit = window.__hyperframes.fitTextFontSize(g.text.toUpperCase(), {
-              fontFamily: "Montserrat",
-              fontWeight: 900,
-              maxWidth: 1550,
-              baseFontSize: 128,
-              minFontSize: 48,
-            });
+            var _fit = window.__hyperframes.fitTextFontSize(
+              g.text.toUpperCase(),
+              {
+                fontFamily: 'Montserrat',
+                fontWeight: 900,
+                maxWidth: 1550,
+                baseFontSize: 128,
+                minFontSize: 48
+              }
+            )
             if (_fit.fontSize < 128) {
               for (var _fi = 0; _fi < groupEl.children.length; _fi++) {
-                groupEl.children[_fi].style.fontSize = _fit.fontSize + "px";
+                groupEl.children[_fi].style.fontSize = _fit.fontSize + 'px'
               }
             }
           }
-          container.appendChild(groupEl);
-        });
+          container.appendChild(groupEl)
+        })
 
-        var tl = gsap.timeline({ paused: true });
+        var tl = gsap.timeline({ paused: true })
 
         GROUPS.forEach(function (g, gi) {
-          var groupEl = document.getElementById("PREFIX-cg-" + gi);
+          var groupEl = document.getElementById('PREFIX-cg-' + gi)
 
           // SHOW - set opacity to 1 (never use tl.from with opacity:0 here)
-          tl.set(groupEl, { opacity: 1, visibility: "visible" }, g.start);
+          tl.set(groupEl, { opacity: 1, visibility: 'visible' }, g.start)
 
           // ENTRANCE - customize this per style
-          tl.from(groupEl, { scale: 1.3, duration: 0.15, ease: "back.out(2)" }, g.start);
+          tl.from(
+            groupEl,
+            { scale: 1.3, duration: 0.15, ease: 'back.out(2)' },
+            g.start
+          )
 
           // KARAOKE - highlight each word
           for (var wi = g.wordStart; wi <= g.wordEnd; wi++) {
-            var wordEl = document.getElementById("PREFIX-cw-" + wi);
-            tl.to(wordEl, { color: "#FFD700", scale: 1.1, duration: 0.06 }, WORDS[wi].start);
-            tl.to(wordEl, { color: "#FFFFFF", scale: 1, duration: 0.08 }, WORDS[wi].end);
+            var wordEl = document.getElementById('PREFIX-cw-' + wi)
+            tl.to(
+              wordEl,
+              { color: '#FFD700', scale: 1.1, duration: 0.06 },
+              WORDS[wi].start
+            )
+            tl.to(
+              wordEl,
+              { color: '#FFFFFF', scale: 1, duration: 0.08 },
+              WORDS[wi].end
+            )
           }
 
           // EXIT
-          tl.to(groupEl, { opacity: 0, scale: 0.9, duration: 0.1 }, g.end - 0.1);
+          tl.to(groupEl, { opacity: 0, scale: 0.9, duration: 0.1 }, g.end - 0.1)
 
           // HARD KILL (mandatory)
-          tl.set(groupEl, { opacity: 0, visibility: "hidden" }, g.end);
-        });
+          tl.set(groupEl, { opacity: 0, visibility: 'hidden' }, g.end)
+        })
 
-        window.__timelines["BLOCKNAME"] = tl;
-      })();
+        window.__timelines['BLOCKNAME'] = tl
+      })()
     </script>
   </body>
 </html>
@@ -178,7 +199,6 @@ Copy-paste starter templates for each component type. These embed the proven pat
 - Entrance animation -> your style's entrance
 - Karaoke highlight -> your style's active word treatment
 - Colors -> your style's palette
-
 
 ## registry-item.json Templates
 
@@ -232,7 +252,6 @@ Tags by category:
 - Blocks: `lower-third`, `social`, `title-card`, `data-viz`
 - Components: `effect`, `overlay`, `text-treatment`
 
-
 ## Component Template
 
 ```html
@@ -266,11 +285,11 @@ Tags by category:
       <!-- Your reusable effect/overlay here -->
     </div>
     <script>
-      (function () {
+      ;(function () {
         // Component snippet - no data-composition-id, no __timelines.
         // The parent composition controls timing.
         // Keep all class names and IDs prefixed with COMPNAME.
-      })();
+      })()
     </script>
   </body>
 </html>

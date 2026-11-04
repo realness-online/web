@@ -29,6 +29,8 @@ import { store_of } from '#root/src/can/store.js'
 import { create_gcs, gcloud_token, metadata_token } from '#root/src/can/gcs.js'
 import { out_path } from '#root/lib/output.js'
 
+const DEFAULT_PORT = 8788
+
 const { env } = process
 const project = env.IDENTITY_PROJECT ?? 'realness-online'
 const bucket = env.PINS_BUCKET
@@ -95,10 +97,10 @@ const handler = proxy_handler({
     : undefined,
   origins
 })
-const port = Number(env.PORT ?? 8788)
+const port = Number(env.PORT ?? DEFAULT_PORT)
 const listen = env.LISTEN ?? (env.K_SERVICE ? '0.0.0.0' : '127.0.0.1')
 create_server(handler).listen(port, listen, () =>
-  console.log(
+  console.info(
     `proxy on ${listen}:${port}${stripe ? ', payments on' : ''}${operator_secret ? ', usage report on' : ''}${traces ? `, traces to ${traces.url}` : ''}`
   )
 )

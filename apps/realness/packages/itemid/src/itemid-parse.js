@@ -1,7 +1,4 @@
-/** @typedef {string} Author */
-/** @typedef {number} Created */
-/** @typedef {string} Id */
-/** @typedef {import('./vocabulary.js').Type} Type */
+/** @import { Created, Id, Type } from './types.js' */
 
 import {
   types as realness_types,

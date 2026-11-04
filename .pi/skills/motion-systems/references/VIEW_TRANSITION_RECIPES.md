@@ -5,15 +5,15 @@
 ```js
 function updateLayout(nextMode) {
   const runUpdate = () => {
-    document.documentElement.dataset.layout = nextMode;
-  };
-
-  if (!document.startViewTransition) {
-    runUpdate();
-    return;
+    document.documentElement.dataset.layout = nextMode
   }
 
-  document.startViewTransition(runUpdate);
+  if (!document.startViewTransition) {
+    runUpdate()
+    return
+  }
+
+  document.startViewTransition(runUpdate)
 }
 ```
 

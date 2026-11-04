@@ -1,4 +1,3 @@
-
 # Lottie for HyperFrames
 
 HyperFrames can seek both `lottie-web` and dotLottie players through its `lottie` runtime adapter. Lottie is a strong fit because the animation timeline is already encoded in the asset; HyperFrames only needs a player object it can seek.
@@ -20,15 +19,15 @@ The adapter seeks `lottie-web` with `goToAndStop(timeMs, false)` and dotLottie w
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
 <script>
   const anim = lottie.loadAnimation({
-    container: document.getElementById("logo-lottie"),
-    renderer: "svg",
+    container: document.getElementById('logo-lottie'),
+    renderer: 'svg',
     loop: false,
     autoplay: false,
-    path: "assets/logo-reveal.json",
-  });
+    path: 'assets/logo-reveal.json'
+  })
 
-  window.__hfLottie = window.__hfLottie || [];
-  window.__hfLottie.push(anim);
+  window.__hfLottie = window.__hfLottie || []
+  window.__hfLottie.push(anim)
 </script>
 ```
 
@@ -46,14 +45,14 @@ The adapter seeks `lottie-web` with `goToAndStop(timeMs, false)` and dotLottie w
 <script src="https://unpkg.com/@lottiefiles/dotlottie-web"></script>
 <script>
   const player = new DotLottie({
-    canvas: document.getElementById("product-lottie"),
-    src: "assets/product-flow.lottie",
+    canvas: document.getElementById('product-lottie'),
+    src: 'assets/product-flow.lottie',
     autoplay: false,
-    loop: false,
-  });
+    loop: false
+  })
 
-  window.__hfLottie = window.__hfLottie || [];
-  window.__hfLottie.push(player);
+  window.__hfLottie = window.__hfLottie || []
+  window.__hfLottie.push(player)
 </script>
 ```
 
@@ -70,10 +69,10 @@ The adapter seeks `lottie-web` with `goToAndStop(timeMs, false)` and dotLottie w
 Push each player into the same registry:
 
 ```js
-window.__hfLottie = window.__hfLottie || [];
-window.__hfLottie.push(backgroundAnim);
-window.__hfLottie.push(iconAnim);
-window.__hfLottie.push(confettiAnim);
+window.__hfLottie = window.__hfLottie || []
+window.__hfLottie.push(backgroundAnim)
+window.__hfLottie.push(iconAnim)
+window.__hfLottie.push(confettiAnim)
 ```
 
 HyperFrames seeks them all to the same composition time.

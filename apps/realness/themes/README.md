@@ -16,7 +16,7 @@ Run the commands below from the workspace root.
 
 ```sh
 npm run palette
-npm run check:palette
+npm run check palette
 node --test .pi/bin/specs/graphics/themes.spec.js
 ```
 

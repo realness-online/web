@@ -9,7 +9,7 @@ description:
   and Progressive Web App build and browser checks. Defer motion to
   motion-systems and client type voice to typography.
 metadata:
-  check: "node ../../bin/checks/check-skills.js soundness"
+  check: 'node ../../bin/checks/check-skills.js soundness'
   category: Design & Frontend
   tags:
     - architecture
@@ -205,7 +205,7 @@ node .pi/bin/checks/soundness-check.js <paths...>
 ```
 
 `npm run check:soundness` covers the projects that follow this skill, realness
-included. `npm run check:soundness:gate` is what `npm test` runs: the projects
+included. `npm run check soundness` covers the projects
 this repo owns, so another repo cannot fail the realness suite. A line with
 `soundness-allow: <reason>` excuses the matching hit. Everything else in this skill
 is prose and stays yours to apply.
@@ -253,7 +253,7 @@ checkout: this skill's values and
 Every numbered value in this skill is the default for every project. Start each
 project by linking realness's `palette.css` and `color.css` unchanged, synced
 from source (`npm run palette`), plus root spacing properties. Other CSS uses
-roles like `--accent`, never color literals; `npm run check:palette` enforces it.
+roles like `--accent`, never color literals; `npm run check palette` enforces it.
 
 ## References
 

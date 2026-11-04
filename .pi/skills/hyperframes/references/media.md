@@ -1,4 +1,3 @@
-
 # HyperFrames Media Preprocessing
 
 Three CLI commands that produce assets for compositions: `tts` (speech), `transcribe` (timestamps), and `remove-background` (transparent video). Each downloads a model on first run and caches it under `~/.cache/hyperframes/`. Drop the output into the project, then reference it from the composition HTML - see the `hyperframes` skill for the audio/video element conventions.
@@ -116,7 +115,7 @@ Uses `u2net_human_seg` (MIT). First run downloads ~168 MB of weights to `~/.cach
 
 Pass `--background-output` (or `-b`) to emit a **second** transparent video alongside the cutout: same source RGB, alpha is `255 - mask` instead of `mask`. The cutout is the subject with a transparent background; the plate is the original surroundings with a transparent hole where the subject was.
 
-| File                             | Alpha is...                                                 | Use it for                                                      |
+| File                             | Alpha is...                                               | Use it for                                                      |
 | -------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------- |
 | `-o subject.webm`                | The mask - subject opaque, background transparent         | Foreground layer, place on top                                  |
 | `--background-output plate.webm` | Inverse - surroundings opaque, subject region transparent | Bottom layer; put text or graphics between this and the subject |

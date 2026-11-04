@@ -1,3 +1,5 @@
+const HEX = 16
+
 const escape = text =>
   text
     .replace(/&/g, '&amp;')
@@ -53,7 +55,7 @@ export const to_hex = value => {
   context.fillStyle = value
   context.fillRect(0, 0, 1, 1)
   const [r, g, b] = context.getImageData(0, 0, 1, 1).data
-  return `#${[r, g, b].map(channel => channel.toString(16).padStart(2, '0')).join('')}`
+  return `#${[r, g, b].map(channel => channel.toString(HEX).padStart(2, '0')).join('')}`
 }
 
 /**

@@ -8,6 +8,8 @@ import {
   readdirSync as readdir_sync
 } from 'node:fs'
 
+const MODE = { folder: 0o755, file: 0o644 }
+
 const here = dirname(Deno.execPath())
 const workspace = join(here, 'realness-workspace')
 const agent_dir = join(workspace, '.pi', 'agent')
@@ -24,7 +26,7 @@ for (const part of ['skills', 'extensions', 'prompts', 'themes', 'AGENTS.md']) {
 /** Embedded files arrive read-only; the extracted copy must be editable. */
 const make_writable = (path: string) => {
   const info = stat_sync(path)
-  chmod_sync(path, info.isDirectory() ? 0o755 : 0o644)
+  chmod_sync(path, info.isDirectory() ? MODE.folder : MODE.file)
   if (info.isDirectory())
     for (const child of readdir_sync(path)) make_writable(join(path, child))
 }

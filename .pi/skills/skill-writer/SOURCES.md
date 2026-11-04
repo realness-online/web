@@ -4,16 +4,16 @@ This file tracks source material synthesized into `skill-writer`, plus iterative
 
 ## Current source inventory
 
-| Source | Type | Trust tier | Retrieved | Confidence | Contribution | Usage constraints | Notes |
-|---|---|---|---|---|---|---|---|
-| `plugins/sentry-skills/skills/skill-writer/SKILL.md` | local canonical | canonical | 2026-03-05 | high | Baseline orchestration, path model, quality gates | local repository authority | Primary source of current behavior |
-| `plugins/sentry-skills/skills/skill-writer/references/*.md` | local canonical | canonical | 2026-03-05 | high | Detailed path guidance, examples, validation requirements | local repository authority | Includes synthesis/iteration/evaluation paths |
-| `plugins/sentry-skills/skills/skill-creator/SKILL.md` | local compatibility alias | canonical | 2026-03-05 | high | Backward-compatible invocation behavior | local repository authority | Confirms alias delegates to `skill-writer` |
-| `.codex/skills/.system/skill-creator/SKILL.md` | local Codex upstream | secondary | 2026-03-05 | medium | Codex-native skill authoring conventions and structure | environment-local snapshot; may diverge from upstream | Used to align cross-agent portability expectations |
-| `https://github.com/anthropics/skills/tree/main/skills/skill-creator` | external Claude upstream | canonical | 2026-03-05 | medium | Claude-native prior art and updated guidance | verify periodically against upstream changes | Track for periodic refresh as upstream evolves |
-| `https://agentskills.io/specification` | external canonical spec | canonical | 2026-03-05 | high | Portable skill spec requirements | spec-level constraints take precedence over local preferences | Cross-agent compatibility baseline |
-| `AGENTS.md` | repo convention | canonical | 2026-03-05 | high | Repository-specific workflow requirements | repository-local policy | Registration + validator expectations |
-| `README.md` | repo convention | canonical | 2026-03-05 | high | Skill table format and authoring conventions | repository-local policy | Registration and discoverability source |
+| Source                                                                | Type                      | Trust tier | Retrieved  | Confidence | Contribution                                              | Usage constraints                                             | Notes                                              |
+| --------------------------------------------------------------------- | ------------------------- | ---------- | ---------- | ---------- | --------------------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| `plugins/sentry-skills/skills/skill-writer/SKILL.md`                  | local canonical           | canonical  | 2026-03-05 | high       | Baseline orchestration, path model, quality gates         | local repository authority                                    | Primary source of current behavior                 |
+| `plugins/sentry-skills/skills/skill-writer/references/*.md`           | local canonical           | canonical  | 2026-03-05 | high       | Detailed path guidance, examples, validation requirements | local repository authority                                    | Includes synthesis/iteration/evaluation paths      |
+| `plugins/sentry-skills/skills/skill-creator/SKILL.md`                 | local compatibility alias | canonical  | 2026-03-05 | high       | Backward-compatible invocation behavior                   | local repository authority                                    | Confirms alias delegates to `skill-writer`         |
+| `.codex/skills/.system/skill-creator/SKILL.md`                        | local Codex upstream      | secondary  | 2026-03-05 | medium     | Codex-native skill authoring conventions and structure    | environment-local snapshot; may diverge from upstream         | Used to align cross-agent portability expectations |
+| `https://github.com/anthropics/skills/tree/main/skills/skill-creator` | external Claude upstream  | canonical  | 2026-03-05 | medium     | Claude-native prior art and updated guidance              | verify periodically against upstream changes                  | Track for periodic refresh as upstream evolves     |
+| `https://agentskills.io/specification`                                | external canonical spec   | canonical  | 2026-03-05 | high       | Portable skill spec requirements                          | spec-level constraints take precedence over local preferences | Cross-agent compatibility baseline                 |
+| `AGENTS.md`                                                           | repo convention           | canonical  | 2026-03-05 | high       | Repository-specific workflow requirements                 | repository-local policy                                       | Registration + validator expectations              |
+| `README.md`                                                           | repo convention           | canonical  | 2026-03-05 | high       | Skill table format and authoring conventions              | repository-local policy                                       | Registration and discoverability source            |
 
 ## Decisions
 
@@ -30,5 +30,5 @@ This file tracks source material synthesized into `skill-writer`, plus iterative
 
 ## Changelog
 
-- 2026-10-01: `quick_validate.py` - running without PyYAML prints the `uv run` command instead of a traceback; trigger phrases also accept "use on/before/after", "when the user", "when asked"; integration depth gates run only with `--strict-depth`. Realness-specific checks live in `.pi/bin/checks/check-skills.js` (`npm run check:skills`).
+- 2026-10-01: `quick_validate.py` - running without PyYAML prints the `uv run` command instead of a traceback; trigger phrases also accept "use on/before/after", "when the user", "when asked"; integration depth gates run only with `--strict-depth`. Realness-specific checks live in `.pi/bin/checks/check-skills.js` (`npm run check skills`).
 - 2026-03-05: Initialized `SOURCES.md` with baseline source pack (local canonical, Codex upstream, Claude upstream, spec, and repo conventions).

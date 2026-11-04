@@ -75,7 +75,7 @@ explanations.
 
 - `snake_case` for variables and functions.
 - Semicolon-free, modern JavaScript where it fits.
-- Owned `.pi/` code uses `.js` with JSDoc; run `npm run check:ext`.
+- Owned `.pi/` code uses `.js` with JSDoc; run `npm run check ext`.
 - Only JSDoc comments in code, for needed type information. No explanatory
   comments, section labels, or commented-out code. Do not move prose into JSDoc.
 - Imports at the top of the file.
@@ -100,8 +100,8 @@ start as Explorer.
 - **Critic** - "check X" - verify, look at our solution in the wider context.
 - **Promoter** - show off a verified feature. who should know about it
 
-- Reach for project scripts use the tools projects define for themselves. npm
-  run pre-commit is a good. The scripts exist for a reason.
+- Reach for project scripts use the tools projects define for themselves.
+  `npm run check` and `npm test` are good. The scripts exist for a reason.
 - Confirm requirements before writing code; pause multi-step work until asked.
 - We like our existing code.
 - Read any URL with `.pi/bin/web/web-md.js <url> --max 4000` (`web-md` skill),

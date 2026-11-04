@@ -1,10 +1,5 @@
 <!doctype html>
-<html
-  lang="en"
-  itemscope
-  itemtype="https://schema.org/WebPage"
-  itemid="/+16282281824/pages/1791752490821"
->
+<html lang="en" itemscope itemtype="https://schema.org/WebPage" itemid="/+16282281824/pages/1791752490821">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -22,10 +17,7 @@
       <header>
         <a href="/">Plans</a>
         <h1 itemprop="name">Commands</h1>
-        <p>
-          Run from the Realness root. Replace &lt;placeholders&gt; before
-          running.
-        </p>
+        <p>Run from the Realness root. Replace &lt;placeholders&gt; before running.</p>
       </header>
       <search>
         <label for="command-search">Find a command</label>
@@ -44,53 +36,23 @@
       </fieldset>
       <fieldset id="review-filters">
         <legend>Filter by review</legend>
-        <button
-          type="button"
-          value="all"
-          aria-pressed="true"
-          aria-controls="command-list"
-        >
-          All
-        </button>
-        <button
-          type="button"
-          value="Keep"
-          aria-pressed="false"
-          aria-controls="command-list"
-        >
-          Keep
-        </button>
-        <button
-          type="button"
-          value="Remove"
-          aria-pressed="false"
-          aria-controls="command-list"
-        >
-          Remove
-        </button>
-        <button
-          type="button"
-          value="Unknown"
-          aria-pressed="false"
-          aria-controls="command-list"
-        >
-          Unknown
-        </button>
+        <button type="button" value="all" aria-pressed="true" aria-controls="command-list">All</button>
+        <button type="button" value="Keep" aria-pressed="false" aria-controls="command-list">Keep</button>
+        <button type="button" value="Remove" aria-pressed="false" aria-controls="command-list">Remove</button>
+        <button type="button" value="Unknown" aria-pressed="false" aria-controls="command-list">Unknown</button>
       </fieldset>
       <div id="command-list">{{commands}}</div>
       <details>
         <summary>Audit notes</summary>
         <p>{{scope}}</p>
         <p>
-          Inventory refreshed by <code>npm run commands</code> and
-          <code>npm run plans</code>. Defined commands are not proof of
-          successful execution.
+          Inventory refreshed by <code>npm run commands</code> and <code>npm run plans</code>. Defined commands are not
+          proof of successful execution.
         </p>
         {{warnings}}
         <h2>Package executables</h2>
         <p>
-          Bare names require installation. Desktop CLI entries above copy full
-          paths; actor commands run inside actors.
+          Bare names require installation. Desktop CLI entries above copy full paths; actor commands run inside actors.
         </p>
         {{bins}}
       </details>
@@ -104,19 +66,16 @@
           <dt>CLI command</dt>
           <dd>A subcommand accepted by a command-line interface.</dd>
           <dt>Entry file</dt>
-          <dd>
-            A detected source entry. Arguments and execution context need
-            review.
-          </dd>
+          <dd>A detected source entry. Arguments and execution context need review.</dd>
           <dt>--</dt>
           <dd>Passes arguments to an npm script.</dd>
           <dt>npx</dt>
-          <dd>
-            Runs a package executable; external tools own their command lists.
-          </dd>
+          <dd>Runs a package executable; external tools own their command lists.</dd>
         </dl>
       </details>
     </main>
-  <address itemprop="author" itemscope itemtype="https://schema.org/Person"><a itemprop="telephone" href="tel:+16282281824">+16282281824</a></address>
+    <address itemprop="author" itemscope itemtype="https://schema.org/Person">
+      <a itemprop="telephone" href="tel:+16282281824">+16282281824</a>
+    </address>
   </body>
 </html>

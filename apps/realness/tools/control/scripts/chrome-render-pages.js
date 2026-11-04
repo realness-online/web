@@ -5,9 +5,13 @@ import {
   writeFileSync as write_file_sync
 } from 'node:fs'
 import { join } from 'node:path'
+import { setTimeout as sleep } from 'node:timers/promises'
 import { out_path } from '#root/lib/output.js'
 import { ChromeVm, cpu, mib, rss } from './chrome-vm.js'
 
+const DEFAULT_MIB = 512
+/** How long a page sits idle after load, to measure its background CPU. */
+const IDLE_MS = 5000
 const urls = read_file_sync(process.argv[2], 'utf8')
   .split('\n')
   .map(line => line.trim())
@@ -17,7 +21,7 @@ const run = out_path(
 )
 const vm = new ChromeVm({
   work: join(run, 'vm'),
-  mib: Number(process.env.MIB ?? 512),
+  mib: Number(process.env.MIB ?? DEFAULT_MIB),
   vcpus: Number(process.env.VCPUS ?? 2),
   huge_pages: process.env.HUGE_PAGES
 })
@@ -31,12 +35,12 @@ try {
     await vm.snapshot()
     await vm.restore()
   }
-  for (const url of urls) {
+  for await (const url of urls) {
     const before = cpu(vm.pid)
     const page = await vm.render(url, { screenshot: false })
     const spent = cpu(vm.pid) - before
     const after = cpu(vm.pid)
-    await new Promise(done => setTimeout(done, 5000))
+    await sleep(IDLE_MS)
     const idle = cpu(vm.pid) - after
     rows.push({
       url,
@@ -50,7 +54,7 @@ try {
     rss_mib = mib(rss(vm.pid))
     const line = `${page.ok ? 'ok  ' : 'FAIL'} ${page.load}s ${rows.at(-1).cpu_s}cpu ${rows.at(-1).idle_cpu_s}idle ${url}${page.reason ? ` (${page.reason})` : ''}`
     append_file_sync(join(run, 'progress.log'), `${line}\n`)
-    console.log(line)
+    console.info(line)
   }
 } finally {
   await vm.stop().catch(() => {})
@@ -90,5 +94,5 @@ write_file_sync(
   join(run, 'summary.json'),
   `${JSON.stringify(summary, null, 2)}\n`
 )
-console.log(JSON.stringify(summary, null, 2))
-console.log(`run: ${run}`)
+console.info(JSON.stringify(summary, null, 2))
+console.info(`run: ${run}`)

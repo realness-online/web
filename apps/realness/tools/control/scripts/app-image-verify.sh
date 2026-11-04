@@ -5,15 +5,8 @@ ROOT="${ROOT:-/opt/fc}"
 IMG="${IMG:-$ROOT/app.ext4}"
 KERNEL="${KERNEL:-$ROOT/vmlinux-6.1.155}"
 TAP="${TAP:-fc-tap0}"
-. "$(dirname "${BASH_SOURCE[0]}")/../../../lib/output.sh"
-RUNS="${RUNS_DIR:-$OUT}"
-RUN="$RUNS/app-image-check-$(date -u +%Y%m%dT%H%M%SZ)"
-mkdir -p "$RUN"
-
-PASS=0
-FAIL=0
-ok()   { printf '  ok   %s\n' "$*"; PASS=$((PASS + 1)); }
-bad()  { printf '  FAIL %s\n' "$*" >&2; FAIL=$((FAIL + 1)); }
+. "$(dirname "${BASH_SOURCE[0]}")/../../../lib/check.sh"
+check_start app-image-check
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 [ -f "$IMG" ] || { echo "no image at $IMG - run app-image-build.sh first" >&2; exit 1; }
@@ -110,5 +103,4 @@ fi
 
 echo
 lines="$(grep -cE '.' "$RUN/serial.log" || true)"
-echo "$PASS passed, $FAIL failed  (serial: $RUN/serial.log, ${lines:-0} lines)"
-[ "$FAIL" = 0 ]
+check_end "serial: $RUN/serial.log, ${lines:-0} lines"

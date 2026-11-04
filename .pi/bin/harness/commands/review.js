@@ -6,6 +6,14 @@
  * "Unknown" on purpose, so unreviewed commands stay visible.
  */
 export const reviewed = {
+  'apps/realness/package.json#scripts.check:frontend:fix': [
+    'Keep',
+    'Writes the format and lint fixes that `npm run check` reports.'
+  ],
+  'apps/realness/package.json#scripts.reset:local': [
+    'Keep',
+    'Rebuilds the local Lima halo from nothing; iCloud data is untouched.'
+  ],
   'package.json#scripts.test:sessions': [
     'Keep',
     'Runs the Pi suite once per session format; the fork still reads both.'
@@ -15,14 +23,8 @@ export const reviewed = {
     'Maintenance command; covered by .pi/bin/specs/harness/artifacts-prune.spec.js.'
   ],
 
-  'apps/realness/package.json#scripts.deploy:sync': [
-    'Keep',
-    'Deploys the record service; documented by script path in .tooling.md.'
-  ],
-  'apps/realness/package.json#scripts.deploy:proxy': [
-    'Keep',
-    'Deploys the model proxy; documented by script path in .tooling.md.'
-  ],
+  'apps/realness/package.json#scripts.deploy:sync': ['Keep', 'Deploys the record service; `ship` calls it.'],
+  'apps/realness/package.json#scripts.deploy:proxy': ['Keep', 'Deploys the model proxy; `ship` calls it.'],
   'apps/realness/package.json#scripts.serve:halo': ['Keep', 'Runs the host service locally.'],
   'apps/realness/package.json#scripts.start:sync': ['Keep', 'Runs the record service locally.'],
   'apps/realness/package.json#scripts.start:proxy': ['Keep', 'Runs the model proxy locally.'],
@@ -80,7 +82,10 @@ export const reviewed = {
     'Keep',
     'Described in server/halo/guest/realness-chat.md.'
   ],
-  'apps/realness/server/halo/guest/realness-site.js#remove': ['Keep', 'Described in server/halo/guest/realness-chat.md.'],
+  'apps/realness/server/halo/guest/realness-site.js#remove': [
+    'Keep',
+    'Described in server/halo/guest/realness-chat.md.'
+  ],
 
   'apps/realness/tools/cli/bin/realness.js#frontend build': [
     'Keep',
@@ -103,14 +108,8 @@ export const reviewed = {
   'apps/realness/tools/cli/bin/realness.js#example app <destination>': ['Keep', 'Creates the Vue app starter.'],
   'apps/realness/tools/cli/bin/realness.js#fold': ['Keep', 'Merges conflict session copies; part of sync recovery.'],
 
-  'apps/realness/tools/control/bin/webspace.js#local setup': [
-    'Keep',
-    'One-time Lima host setup; documented in .tooling.md.'
-  ],
-  'apps/realness/tools/control/bin/webspace.js#local build': [
-    'Keep',
-    'Builds the local host template; documented in .tooling.md.'
-  ],
+  'apps/realness/tools/control/bin/webspace.js#local setup': ['Keep', 'One-time Lima host setup.'],
+  'apps/realness/tools/control/bin/webspace.js#local build': ['Keep', 'Builds the local host template.'],
 
   'apps/realness/tools/publish/bin/publish.js#items list': ['Keep', 'Publishing surface for vault item identities.'],
   'apps/realness/tools/publish/bin/publish.js#items mint <vault-file> --type <type>': [

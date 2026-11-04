@@ -1,9 +1,10 @@
+import { execFileSync as exec_file_sync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 
 const script_path = file_url_to_path(import.meta.url)
-export const changelog_root = path.join(path.dirname(script_path), '../..')
+const changelog_root = path.join(path.dirname(script_path), '../..')
 export const changelog_path = path.join(changelog_root, 'CHANGELOG.md')
 
 /** @param {string} version */
@@ -146,6 +147,21 @@ export const release_notes_footer = version => {
 export const package_version = () => {
   const package_path = path.join(changelog_root, 'package.json')
   return JSON.parse(fs.readFileSync(package_path, 'utf8')).version
+}
+
+/**
+ * Subjects of commits that touch this app since the last tag.
+ * @returns {{ tag: string, subjects: string[] }}
+ */
+export const commits_since_tag = () => {
+  const git = (/** @type {string[]} */ args) =>
+    exec_file_sync('git', args, {
+      cwd: changelog_root,
+      encoding: 'utf8'
+    }).trim()
+  const tag = git(['describe', '--tags', '--abbrev=0'])
+  const log = git(['log', '--format=%s', `${tag}..HEAD`, '--', '.'])
+  return { tag, subjects: log ? log.split('\n') : [] }
 }
 
 export const read_changelog = () => fs.readFileSync(changelog_path, 'utf8')

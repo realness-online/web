@@ -25,7 +25,7 @@ export const create_images = default_poster => {
   const render_image = async name => {
     if (
       typeof name !== 'string' ||
-      /[/\\\x00-\x1f]/.test(name) ||
+      /[/\\]|\p{Cc}/u.test(name) ||
       !/\.svg$/i.test(name)
     )
       throw new Error(`invalid poster name: ${name}`)
@@ -59,13 +59,19 @@ export const create_images = default_poster => {
     },
 
     async load_poster_sizes() {
-      for (const name of await readdir(posters)) {
-        if (!name.endsWith('.svg')) continue
-        const svg = await read_file(join(posters, name), 'utf8')
-        const box = svg.match(/viewBox="[\d.-]+ [\d.-]+ ([\d.]+) ([\d.]+)"/)
+      const names = (await readdir(posters)).filter(name =>
+        name.endsWith('.svg')
+      )
+      const svgs = await Promise.all(
+        names.map(name => read_file(join(posters, name), 'utf8'))
+      )
+      names.forEach((name, index) => {
+        const box = svgs[index].match(
+          /viewBox="[\d.-]+ [\d.-]+ ([\d.]+) ([\d.]+)"/
+        )
         if (box)
           poster_sizes[name] = { width: Number(box[1]), height: Number(box[2]) }
-      }
+      })
     }
   }
 }

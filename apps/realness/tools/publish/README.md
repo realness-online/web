@@ -39,7 +39,7 @@ node apps/realness/tools/publish/bin/publish.js app build plans
 ## Tests
 
 ```sh
-cd apps/realness && npm test
+npm test
 ```
 
 The publish checks run the public command against a real local sync service,

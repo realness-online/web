@@ -24,7 +24,7 @@ const UNIX = 3
 export const month_of = name => MONTH.exec(name.split('/').at(-1) ?? '')?.[1] ?? null
 
 /** This month, as `YYYY-MM`, in UTC like session names. */
-export const this_month = (now = new Date()) => now.toISOString().slice(0, 7)
+const this_month = (now = new Date()) => now.toISOString().slice(0, 7)
 
 /** Whether a session name falls in a month that is already over. */
 export const is_past = (name, now = new Date()) => {
@@ -32,10 +32,13 @@ export const is_past = (name, now = new Date()) => {
   return month !== null && month < this_month(now)
 }
 
-const escape = text =>
-  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/\n/g, '&#10;')
+const escape = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/\n/g, '&#10;')
 const unescape = text =>
-  text.replace(/&#10;/g, '\n').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&amp;/g, '&')
+  text
+    .replace(/&#10;/g, '\n')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&amp;/g, '&')
 
 /** One zip for the same rows on any machine: mtime 0, a fixed OS byte. */
 const zip = text => {
@@ -122,15 +125,16 @@ export const seal = (db, { root, folder, files, now = new Date() }) => {
       const same = month_files.every(file => names.has(portable(root, file)))
       if (sessions > month_files.length || (sessions === month_files.length && same)) continue
     }
-    const rows = month_files.flatMap(file =>
-      /** @type {Array<Record<string, string>>} */ (select.all(file)).map(row => ({
-        turn_id: String(row.turn_id),
-        session_id: String(row.session_id),
-        session: portable(root, file),
-        project: String(row.project),
-        ts: String(row.ts),
-        text: String(row.text)
-      }))
+    const rows = month_files.flatMap(
+      file =>
+        /** @type {Array<Record<string, string>>} */ (select.all(file)).map(row => ({
+          turn_id: String(row.turn_id),
+          session_id: String(row.session_id),
+          session: portable(root, file),
+          project: String(row.project),
+          ts: String(row.ts),
+          text: String(row.text)
+        }))
     )
     mkdirSync(folder, { recursive: true })
     const html = month_html(rows, month_files.length)
@@ -164,9 +168,12 @@ export const load = (db, { root, folder, force = new Set() }) => {
       )
       for (const row of rows)
         insert.run(row.turn_id, row.session_id, join(root, row.session), row.project, row.ts, row.text)
-      db.prepare(
-        'INSERT OR REPLACE INTO session_file(path, mtime_ms, turns, indexed_at) VALUES (?,?,?,?)'
-      ).run(path, mtime, rows.length, new Date().toISOString())
+      db.prepare('INSERT OR REPLACE INTO session_file(path, mtime_ms, turns, indexed_at) VALUES (?,?,?,?)').run(
+        path,
+        mtime,
+        rows.length,
+        new Date().toISOString()
+      )
       db.exec('COMMIT')
     } catch (error) {
       db.exec('ROLLBACK')

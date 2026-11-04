@@ -22,15 +22,13 @@ const CLOUD_RUN = ['realness-sync', 'realness-proxy', 'realness-gate']
 const NAME_WIDTH = 16
 const ENVIRONMENT = 'production'
 const HALO_FLAG = '--halo='.length
+const REPO = file_url_to_path(new URL('../../../../', import.meta.url))
 const VERSION = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z]))?$/
 
 const out = text => process.stdout.write(`${text}\n`)
 const err = text => process.stderr.write(`${text}\n`)
 
-const GIT = file_url_to_path(
-  new URL('../../../scripts/git.sh', import.meta.url)
-)
-const git = args => exec_file_sync(GIT, args, { encoding: 'utf8' }).trim()
+const git = args => exec_file_sync('git', args, { encoding: 'utf8' }).trim()
 
 const run = (program, args) => {
   const result = spawn_sync(program, args, { stdio: 'inherit' })
@@ -202,13 +200,8 @@ export const main = () => {
   }
 
   if (!resume)
-    for (const suite of [
-      'test:coverage:node',
-      'test:coverage',
-      'test:browser',
-      'test:functions'
-    ])
-      run('npm', ['run', suite])
+    for (const args of [['run', 'check'], ['test'], ['run', 'live', 'browser']])
+      run('npm', ['--prefix', REPO, ...args])
 
   const before = revisions(settings)
   for (const step of release_plan(targets, { resume }))

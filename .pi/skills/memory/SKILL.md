@@ -1,8 +1,8 @@
 ---
 name: memory
-description: "Store and retrieve durable learnings about how realness actually works - success patterns, failure modes, corrections, and next-time hints. Use before doing a task similar to a past one (check AGENTS.md Learnings first), and after a notable outcome or a user correction (append a general learning to AGENTS.md, which is injected into every session). Also runs the critical refinement loop: on a correction or repeated failure, prove it with evidence, note the root cause, and propose a fix to the skill/process at fault rather than mutating it directly."
+description: 'Store and retrieve durable learnings about how realness actually works - success patterns, failure modes, corrections, and next-time hints. Use before doing a task similar to a past one (check AGENTS.md Learnings first), and after a notable outcome or a user correction (append a general learning to AGENTS.md, which is injected into every session). Also runs the critical refinement loop: on a correction or repeated failure, prove it with evidence, note the root cause, and propose a fix to the skill/process at fault rather than mutating it directly.'
 metadata:
-  check: "node ../../bin/checks/check-skills.js memory"
+  check: 'node ../../bin/checks/check-skills.js memory'
 ---
 
 # Memory
@@ -26,7 +26,7 @@ still guides a decision in unrelated work, it is a learning. If it falls apart
 without those names, it is a fact; route it instead:
 
 - Project fact (deploy flags, sync rules, test numbers) - that project's
-  `.tooling.md`
+  code: help text, a refusal, or a spec
 - Skill or process fact (plan format, poster scripts) - that skill's `SKILL.md`,
   proposed as a diff
 - Tool quirk (nvim, pi, agent-browser, npm) - the skill or notes for that tool

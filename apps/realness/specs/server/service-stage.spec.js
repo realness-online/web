@@ -30,8 +30,8 @@ for (const service of ['sync', 'proxy', 'gate']) {
       })
       try {
         const { stdout } = await run(
-          'bash',
-          ['server/scripts/stage-service.sh', service, directory],
+          process.execPath,
+          ['tools/control/scripts/stage.js', 'service', service, directory],
           { cwd: root }
         )
         const stage = stdout.trim()

@@ -261,3 +261,9 @@ it("an actor's checkout without apps/realness still builds the catalog, leaving 
     await rm(bare, { recursive: true, force: true })
   }
 })
+
+it('a script named in a list, followed by a comma, counts as called', () => {
+  const entry = catalog.entries.find(entry => entry.id === 'apps/realness/package.json#scripts.test:functions:coverage')
+  assert.equal(entry.review, 'Keep')
+  assert.match(entry.review_reason, /\.pi\/bin\/checks\/coverage\.js/)
+})

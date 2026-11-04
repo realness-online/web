@@ -16,7 +16,13 @@ const seed = () => {
   writeFileSync(join(root, 'old/package.json'), '{}')
   writeFileSync(stale, 'x')
   const old = new Date(Date.now() - 2 * 3_600_000)
-  for (const path of [stale, join(root, 'old/node_modules/pkg'), join(root, 'old/node_modules'), join(root, 'old/package.json'), join(root, 'old')])
+  for (const path of [
+    stale,
+    join(root, 'old/node_modules/pkg'),
+    join(root, 'old/node_modules'),
+    join(root, 'old/package.json'),
+    join(root, 'old')
+  ])
     utimesSync(path, old, old)
 }
 
@@ -40,11 +46,14 @@ const settle = ({ has_ui = true, answer = false } = {}) => {
 process.env.ARTIFACTS_ROOT = root
 
 test('a report reads items, bytes, and a warning', () => {
-  assert.deepEqual(read_report('would prune 3 item(s), freed 2048 bytes\nwarning: artifacts exceed 2000 MB (2100.0 MB)\n'), {
-    items: 3,
-    bytes: 2048,
-    warning: 'artifacts exceed 2000 MB (2100.0 MB)'
-  })
+  assert.deepEqual(
+    read_report('would prune 3 item(s), freed 2048 bytes\nwarning: artifacts exceed 2000 MB (2100.0 MB)\n'),
+    {
+      items: 3,
+      bytes: 2048,
+      warning: 'artifacts exceed 2000 MB (2100.0 MB)'
+    }
+  )
   assert.deepEqual(read_report(''), { items: 0, bytes: 0, warning: null })
 })
 

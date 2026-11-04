@@ -12,6 +12,9 @@ import { dirname, join, relative } from 'node:path'
 import { highlight, plate, footnote, strip_tags } from './markdown.js'
 import { title_case } from './text.js'
 
+/** Search results show about this many characters of a description. */
+const DESCRIPTION_CHARS = 160
+
 /**
  * @param {import('./types.js').Site} site
  * @param {import('./templates.js').Templates} templates
@@ -58,9 +61,13 @@ export const create_pages = (site, templates, images, drafts = false) => {
      * @param {string[]} files
      */
     async load_groups(files) {
-      for (const file of files) {
-        const src = await read_file(file, 'utf8')
-        const { frontmatter: data } = await parse(src)
+      const read = await Promise.all(
+        files.map(async file => {
+          const src = await read_file(file, 'utf8')
+          return { file, src, data: (await parse(src)).frontmatter }
+        })
+      )
+      for (const { file, src, data } of read) {
         const links = (Array.isArray(data.related) ? data.related : []).filter(
           l => l?.title && l?.href
         )
@@ -86,11 +93,10 @@ export const create_pages = (site, templates, images, drafts = false) => {
       let body = await render(src)
       const heading = !data.title && body.match(leading_h1)
       if (heading) body = body.replace(leading_h1, '')
-      const title = data.title
-        ? title_case(data.title)
-        : heading
-          ? strip_tags(heading[1])
-          : title_case((slug.split('/').pop() ?? '').replace(/-/g, ' '))
+      const named = heading
+        ? strip_tags(heading[1])
+        : title_case((slug.split('/').pop() ?? '').replace(/-/g, ' '))
+      const title = data.title ? title_case(data.title) : named
       const draft = data.draft === true || data.draft === 'true'
       if (draft && !drafts) return { slug, title, date: data.date, draft }
       const { html, notes } = footnote(plate(await highlight(body)))
@@ -102,7 +108,7 @@ export const create_pages = (site, templates, images, drafts = false) => {
         related_nav(groups.get(`/blog/${slug}`), `/blog/${slug}`)
       )
       const description =
-        data.description || strip_tags(html).slice(0, 160).trim()
+        data.description || strip_tags(html).slice(0, DESCRIPTION_CHARS).trim()
       const og_image_path = await raster_og_image(data.img)
       const page = shell(title, article, {
         url: `/blog/${slug}`,
@@ -157,23 +163,25 @@ export const create_pages = (site, templates, images, drafts = false) => {
       if (!exists_sync(pages_directory)) return []
       const names = (await readdir(pages_directory))
         .filter(f => f.endsWith('.html'))
-        .map(f => f.slice(0, -5))
+        .map(f => f.slice(0, -'.html'.length))
       const og_image_path = await raster_og_image()
-      for (const name of names) {
-        const meta = site.pages?.[name] || {}
-        const body =
-          related_nav(groups.get(`/${name}`), `/${name}`) +
-          (await read_file(join(pages_directory, `${name}.html`), 'utf8'))
-        await write_route(
-          `/${name}`,
-          shell(meta.title || title_case(name.replace(/-/g, ' ')), body, {
-            url: `/${name}`,
-            og_image_path,
-            description: meta.description,
-            type: meta.type
-          })
-        )
-      }
+      await Promise.all(
+        names.map(async name => {
+          const meta = site.pages?.[name] || {}
+          const body =
+            related_nav(groups.get(`/${name}`), `/${name}`) +
+            (await read_file(join(pages_directory, `${name}.html`), 'utf8'))
+          await write_route(
+            `/${name}`,
+            shell(meta.title || title_case(name.replace(/-/g, ' ')), body, {
+              url: `/${name}`,
+              og_image_path,
+              description: meta.description,
+              type: meta.type
+            })
+          )
+        })
+      )
       return names
     },
 

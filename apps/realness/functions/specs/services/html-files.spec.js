@@ -13,9 +13,11 @@ describe('unique_html_files', () => {
   })
 
   it('ignores suffix lookalikes', () => {
-    expect(unique_html_files([
-      { name: 'index.html.gz.extra' },
-      { name: 'index.html.gzip' }
-    ])).toEqual([])
+    expect(
+      unique_html_files([
+        { name: 'index.html.gz.extra' },
+        { name: 'index.html.gzip' }
+      ])
+    ).toEqual([])
   })
 })

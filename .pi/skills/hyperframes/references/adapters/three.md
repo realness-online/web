@@ -1,4 +1,3 @@
-
 # Three.js for HyperFrames
 
 HyperFrames supports Three.js through its `three` runtime adapter. The adapter does not own your scene. It publishes HyperFrames time and dispatches a seek event so your composition can render the exact frame.
@@ -18,36 +17,40 @@ The adapter sets `window.__hfThreeTime` and dispatches `new CustomEvent("hf-seek
 ```html
 <canvas id="three-layer"></canvas>
 <script type="module">
-  import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.181.2/+esm";
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.181.2/+esm'
 
-  const canvas = document.getElementById("three-layer");
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  const canvas = document.getElementById('three-layer')
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    alpha: true,
+    antialias: true
+  })
   // Match these to your composition's frame size.
-  renderer.setSize(1920, 1080, false);
-  renderer.setPixelRatio(1);
+  renderer.setSize(1920, 1080, false)
+  renderer.setPixelRatio(1)
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(35, 1920 / 1080, 0.1, 100);
-  camera.position.set(0, 0, 6);
+  const scene = new THREE.Scene()
+  const camera = new THREE.PerspectiveCamera(35, 1920 / 1080, 0.1, 100)
+  camera.position.set(0, 0, 6)
 
   const mesh = new THREE.Mesh(
     new THREE.IcosahedronGeometry(1.4, 4),
-    new THREE.MeshStandardMaterial({ color: 0x64d2ff, roughness: 0.38 }),
-  );
-  scene.add(mesh);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x223344, 2));
+    new THREE.MeshStandardMaterial({ color: 0x64d2ff, roughness: 0.38 })
+  )
+  scene.add(mesh)
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x223344, 2))
 
   function renderAt(time) {
-    mesh.rotation.y = time * 0.7;
-    mesh.rotation.x = Math.sin(time * 0.6) * 0.16;
-    renderer.render(scene, camera);
+    mesh.rotation.y = time * 0.7
+    mesh.rotation.x = Math.sin(time * 0.6) * 0.16
+    renderer.render(scene, camera)
   }
 
-  window.addEventListener("hf-seek", (event) => {
-    renderAt(event.detail.time);
-  });
+  window.addEventListener('hf-seek', event => {
+    renderAt(event.detail.time)
+  })
 
-  renderAt(window.__hfThreeTime || 0);
+  renderAt(window.__hfThreeTime || 0)
 </script>
 ```
 
@@ -65,8 +68,8 @@ For GLTF or authored clip animation, seek the mixer directly:
 
 ```js
 function renderAt(time) {
-  mixer.setTime(time);
-  renderer.render(scene, camera);
+  mixer.setTime(time)
+  renderer.render(scene, camera)
 }
 ```
 

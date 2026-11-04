@@ -2,7 +2,7 @@
 name: vault
 description: Read, search, and maintain the user's Obsidian vault at vault, a PARA-structured knowledge base of projects, interests, and reference material. Creates one if none exists. Use when the user asks about their notes or interests, or wants links categorized or feeds rebuilt.
 metadata:
-  check: "command -v rg && bash -n rebuild-feeds.sh"
+  check: 'command -v rg && bash -n rebuild-feeds.sh'
 ---
 
 # Vault
@@ -121,14 +121,14 @@ See `skills/vault/github-stars-map.yaml` for the categorization mapping. Overrid
 - **Frontmatter format:**
   ```yaml
   ---
-  title: "Filename as Title"
-  source: "https://example.com/article" # extracted from first URL in file
+  title: 'Filename as Title'
+  source: 'https://example.com/article' # extracted from first URL in file
   author:
-    - "[[Domain]]" # derived from source URL
+    - '[[Domain]]' # derived from source URL
   published:
   created: YYYY-MM-DD # from filesystem ctime
-  description: ""
+  description: ''
   tags:
-    - "reference"
+    - 'reference'
   ---
   ```

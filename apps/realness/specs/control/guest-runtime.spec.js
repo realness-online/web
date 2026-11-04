@@ -58,7 +58,7 @@ it('every runtime file a guest wrapper calls is copied into the template', () =>
   assert.ok(called.length >= 2, 'expected the actor sync and recovery wrappers')
   assert.match(
     build,
-    /bash "\$REPO\/tools\/control\/scripts\/stage-runtime\.sh" "\$runtime"/
+    /node "\$REPO\/tools\/control\/scripts\/stage\.js" runtime "\$runtime"/
   )
   for (const full of called) {
     assert.ok(
@@ -84,10 +84,14 @@ it('the copied actor CLI and its cloud dependency chain load from the staged tre
   mkdir_sync(artifacts, { recursive: true })
   const scratch = mkdtemp_sync(join(artifacts, 'runtime-check-'))
   t.after(() => rm_sync(scratch, { recursive: true, force: true }))
-  exec_file_sync('bash', ['tools/control/scripts/stage-runtime.sh', scratch], {
-    cwd: ROOT,
-    encoding: 'utf8'
-  })
+  exec_file_sync(
+    process.execPath,
+    ['tools/control/scripts/stage.js', 'runtime', scratch],
+    {
+      cwd: ROOT,
+      encoding: 'utf8'
+    }
+  )
   assert.equal(exists_sync(join(scratch, 'node_modules')), false)
   const options = {
     cwd: scratch,

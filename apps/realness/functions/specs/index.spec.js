@@ -29,7 +29,9 @@ vi.mock('#handlers/http/check-phone-integrity.js', () => ({
 vi.mock('#handlers/http/prints-checkout.js', () => ({
   prints_checkout: fake_prints_checkout
 }))
-vi.mock('#handlers/http/print-share.js', () => ({ print_share: fake_print_share }))
+vi.mock('#handlers/http/print-share.js', () => ({
+  print_share: fake_print_share
+}))
 vi.mock('#handlers/http/prints-webhook.js', () => ({
   prints_webhook: fake_prints_webhook
 }))

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { resolve } from 'node:path'
 import { it } from 'node:test'
-import { harness_files, merge, parse_lcov, source_files, summary, totals, untested } from '../../checks/coverage.js'
+import { merge, parse_lcov, source_files, summary, totals, untested, failures } from '../../checks/coverage.js'
 
 const report = files =>
   files
@@ -129,9 +129,14 @@ it('untested files are the sources no report mentions, scripts apart from other 
   })
 })
 
-it('harness coverage runs the same test globs as npm run test:harness', () => {
-  assert.deepEqual(harness_files("node --test '.pi/bin/**/*.test.js' '.pi/extensions/**/*.test.js'"), [
-    '.pi/bin/**/*.test.js',
-    '.pi/extensions/**/*.test.js'
-  ])
+it('names each failing test once, from Node and Vitest output, without colour', () => {
+  const text = [
+    '✔ passes',
+    '\x1b[31m✖ breaks (2ms)\x1b[39m',
+    '✖ failing tests:',
+    '✖ breaks (2ms)',
+    ' FAIL  specs/a.spec.js > a > fails',
+    '   × fails 3ms'
+  ].join('\n')
+  assert.deepEqual(failures(text), ['✖ breaks (2ms)', 'FAIL  specs/a.spec.js > a > fails', '× fails 3ms'])
 })

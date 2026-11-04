@@ -23,18 +23,18 @@ A profile body loads when any of its triggers is met. Every trigger is an explic
 
 Fiction signature (5 rubric rows, verbatim headings; ≥3 recorded → suggest):
 
-| # | Rubric row | Recorded as |
-|---|---|---|
-| 1 | Group A — Thematic explicitness | observed signal with quoted evidence |
-| 2 | Group A — Narrator thematic commentary | observed signal with quoted evidence |
-| 3 | Group B — Dominant emotion mode | embodied dominance flagged |
-| 4 | Group B — Setting as psychological mirror | observed signal with quoted evidence |
-| 5 | Group C — Resolution mode | internal acceptance flagged |
+| #   | Rubric row                                | Recorded as                          |
+| --- | ----------------------------------------- | ------------------------------------ |
+| 1   | Group A — Thematic explicitness           | observed signal with quoted evidence |
+| 2   | Group A — Narrator thematic commentary    | observed signal with quoted evidence |
+| 3   | Group B — Dominant emotion mode           | embodied dominance flagged           |
+| 4   | Group B — Setting as psychological mirror | observed signal with quoted evidence |
+| 5   | Group C — Resolution mode                 | internal acceptance flagged          |
 
 Fiction anti-signal (recorded → `Voice fit: none`):
 
-| # | Recorded item |
-|---|---|
-| a | An over-correction advisory on "Depth of interior access" or "Thematic explicitness" (the two costs the profile documents) |
+| #   | Recorded item                                                                                                              |
+| --- | -------------------------------------------------------------------------------------------------------------------------- |
+| a   | An over-correction advisory on "Depth of interior access" or "Thematic explicitness" (the two costs the profile documents) |
 
 Dialogue share is not an anti-signal here; the profile's own dialogue row carries the calibration caution (a measured Gemini fingerprint) and applies it when the voice is used.

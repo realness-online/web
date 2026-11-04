@@ -57,10 +57,6 @@ it('product services and ops share one install; Functions has its own package', 
       code: 'ENOENT'
     })
   assert.equal(
-    manifest.scripts['pre-commit:functions'],
-    'npm run check:functions && npm run test:functions'
-  )
-  assert.equal(
     manifest.scripts['test:functions:coverage'],
     'npm --prefix functions run test:coverage'
   )

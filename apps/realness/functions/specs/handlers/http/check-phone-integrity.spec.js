@@ -15,9 +15,8 @@ vi.mock('#utils/log.js', () => ({
   log_error: mock_log_error
 }))
 
-const { check_phone_integrity_handler } = await import(
-  '#handlers/http/check-phone-integrity.js'
-)
+const { check_phone_integrity_handler } =
+  await import('#handlers/http/check-phone-integrity.js')
 
 const fake_res = () => ({
   status: vi.fn().mockReturnThis(),

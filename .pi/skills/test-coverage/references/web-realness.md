@@ -12,27 +12,27 @@ Read the nearest existing spec under `specs/app/**` before adding a new one.
 
 ## Architecture map (coverage priority)
 
-| Area | Path | Test home | Priority |
-| --- | --- | --- | --- |
-| Item IDs / sync | `src/app/utils/itemid.js`, `itemid-parse.js` | `specs/app/utils/`, `specs/app/sync-*` | **P0** |
-| Auth / me | `src/app/utils/serverless.js`, `src/app/persistence/` | `specs/app/components/`, `specs/app/use/` | **P0** |
-| Sponsorship / Stripe | `src/app/use/sponsor.js`, `src/app/components/sponsor/` | `specs/app/components/sponsor/` | **P0** |
-| Posters / SVG | `src/app/use/poster.js`, `src/app/components/posters/` | `specs/app/components/posters/` | **P1** |
-| 3D viewer | `src/app/3d/`, `as-viewer-3d.vue` | `specs/app/3d/` or component specs | **P1** |
-| Potrace | `src/app/potrace/` | `specs/app/potrace/` | **P1** |
-| Views | `src/app/views/` | `specs/app/views/` | **P1** |
-| Preferences | `src/app/utils/preference.js` | extend `specs/app/App.spec.js` mocks | **P2** |
+| Area                 | Path                                                    | Test home                                 | Priority |
+| -------------------- | ------------------------------------------------------- | ----------------------------------------- | -------- |
+| Item IDs / sync      | `src/app/utils/itemid.js`, `itemid-parse.js`            | `specs/app/utils/`, `specs/app/sync-*`    | **P0**   |
+| Auth / me            | `src/app/utils/serverless.js`, `src/app/persistence/`   | `specs/app/components/`, `specs/app/use/` | **P0**   |
+| Sponsorship / Stripe | `src/app/use/sponsor.js`, `src/app/components/sponsor/` | `specs/app/components/sponsor/`           | **P0**   |
+| Posters / SVG        | `src/app/use/poster.js`, `src/app/components/posters/`  | `specs/app/components/posters/`           | **P1**   |
+| 3D viewer            | `src/app/3d/`, `as-viewer-3d.vue`                       | `specs/app/3d/` or component specs        | **P1**   |
+| Potrace              | `src/app/potrace/`                                      | `specs/app/potrace/`                      | **P1**   |
+| Views                | `src/app/views/`                                        | `specs/app/views/`                        | **P1**   |
+| Preferences          | `src/app/utils/preference.js`                           | extend `specs/app/App.spec.js` mocks      | **P2**   |
 
 ## Stack
 
-| Piece | What we use |
-| --- | --- |
-| Runner | Vite Plus - `vp test`, imports from `vite-plus/test` |
-| Engine | Vitest (via `vite-plus-test` alias) |
-| DOM | `happy-dom` |
-| Vue | `@vue/test-utils` - prefer `shallowMount` |
-| Language | JavaScript + JSDoc |
-| Matchers | `@testing-library/jest-dom` (in setup) |
+| Piece    | What we use                                          |
+| -------- | ---------------------------------------------------- |
+| Runner   | Vite Plus - `vp test`, imports from `vite-plus/test` |
+| Engine   | Vitest (via `vite-plus-test` alias)                  |
+| DOM      | `happy-dom`                                          |
+| Vue      | `@vue/test-utils` - prefer `shallowMount`            |
+| Language | JavaScript + JSDoc                                   |
+| Matchers | `@testing-library/jest-dom` (in setup)               |
 
 ## Commands
 
@@ -114,17 +114,17 @@ Do not mock `as-fps` globally - `specs/app/components/fps.spec.js` mounts the re
 
 ## Spec file map
 
-| src area | tests home | Example |
-| --- | --- | --- |
-| `src/app/utils/` | `specs/app/utils/` | `itemid.spec.js` |
-| `src/app/use/` | `specs/app/use/` | `poster.spec.js` |
-| `src/app/components/` | `specs/app/components/` | `account/as-notifications.spec.js` |
-| `src/app/views/` | `specs/app/views/` | `Account.spec.js` |
-| `src/app/persistence/` | `specs/app/persistence/` | `Directory.spec.js` |
-| `src/app/3d/` | `specs/app/3d/` | `scenes/create-poster-scene.spec.js` |
-| `src/app/workers/` | `specs/app/workers/` | `vector.spec.js` |
-| `src/app/potrace/` | `specs/app/potrace/` | `index.spec.js` |
-| App shell | `specs/app/` | `App.spec.js` |
+| src area               | tests home               | Example                              |
+| ---------------------- | ------------------------ | ------------------------------------ |
+| `src/app/utils/`       | `specs/app/utils/`       | `itemid.spec.js`                     |
+| `src/app/use/`         | `specs/app/use/`         | `poster.spec.js`                     |
+| `src/app/components/`  | `specs/app/components/`  | `account/as-notifications.spec.js`   |
+| `src/app/views/`       | `specs/app/views/`       | `Account.spec.js`                    |
+| `src/app/persistence/` | `specs/app/persistence/` | `Directory.spec.js`                  |
+| `src/app/3d/`          | `specs/app/3d/`          | `scenes/create-poster-scene.spec.js` |
+| `src/app/workers/`     | `specs/app/workers/`     | `vector.spec.js`                     |
+| `src/app/potrace/`     | `specs/app/potrace/`     | `index.spec.js`                      |
+| App shell              | `specs/app/`             | `App.spec.js`                        |
 
 ## Patterns
 
@@ -183,8 +183,7 @@ Reset ref `.value` in `beforeEach`.
 `shallowMount`, stub children, semantic DOM queries (not `data-testid`).
 
 ```javascript
-const mount = () =>
-  shallowMount(MyView, { global: { stubs: { icon: true } } })
+const mount = () => shallowMount(MyView, { global: { stubs: { icon: true } } })
 ```
 
 `flushPromises()` after async emits. **Refs:** `as-notifications.spec.js`, `Account.spec.js`.
@@ -265,16 +264,16 @@ Person prop: `{ id, name, type: 'person' }`.
 
 ## What we do not do
 
-| Avoid | Use instead |
-| --- | --- |
-| Jest | `vite-plus/test` + `vp test` |
-| TypeScript test files | `.spec.js` + JSDoc |
-| Co-located `src/app/foo.test.ts` | `specs/app/foo.spec.js` |
-| React Testing Library | `@vue/test-utils` |
-| `@faker-js/faker` | Domain fixtures (item IDs, directories) |
-| supertest / live DB | Mock `idb-keyval`, `serverless` |
-| Snapshot-heavy UI | DOM text, attributes, mock calls |
-| 100% coverage | 80% gate + risk report |
+| Avoid                            | Use instead                             |
+| -------------------------------- | --------------------------------------- |
+| Jest                             | `vite-plus/test` + `vp test`            |
+| TypeScript test files            | `.spec.js` + JSDoc                      |
+| Co-located `src/app/foo.test.ts` | `specs/app/foo.spec.js`                 |
+| React Testing Library            | `@vue/test-utils`                       |
+| `@faker-js/faker`                | Domain fixtures (item IDs, directories) |
+| supertest / live DB              | Mock `idb-keyval`, `serverless`         |
+| Snapshot-heavy UI                | DOM text, attributes, mock calls        |
+| 100% coverage                    | 80% gate + risk report                  |
 
 ## Fallow
 
@@ -283,5 +282,4 @@ Person prop: `{ id, name, type: 'person' }`.
 
 ## Docs before recommending work
 
-- `apps/realness/.tooling.md` - vp test, check commands
 - Nearest `specs/app/**` mirror for the uncovered file

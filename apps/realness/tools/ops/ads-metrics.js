@@ -33,6 +33,16 @@ import {
   yellow
 } from './hosting-traffic.js'
 
+import {
+  ISO_DATE,
+  MS_PER_DAY,
+  MS_PER_SECOND,
+  PERCENT
+} from '#root/lib/units.js'
+
+/** Cost per thousand impressions. */
+const PER_MILLE = 1000
+
 const script_path = file_url_to_path(import.meta.url)
 const ads_api_base = 'https://api.ads.openai.com/v1'
 const default_days = 7
@@ -107,7 +117,7 @@ export const parse_args = (argv = process.argv.slice(2)) => {
  * with hosting-traffic.js, which buckets days in UTC.
  * @param {Date} date
  */
-const utc_date_str = date => date.toISOString().slice(0, 10)
+const utc_date_str = date => date.toISOString().slice(0, ISO_DATE)
 
 /**
  * @param {Record<string, unknown>} row
@@ -145,7 +155,7 @@ export const fetch_ad_account_timezone = async api_key => {
  */
 const day_in_tz = (unix_seconds, tz) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(
-    new Date(unix_seconds * 1000)
+    new Date(unix_seconds * MS_PER_SECOND)
   )
 
 /**
@@ -167,7 +177,7 @@ const query_param_value = (request_url, param_name) => {
 const record_day = entry => {
   const record = /** @type {Record<string, unknown>} */ (entry)
   const ts = record.timestamp
-  return typeof ts === 'string' ? ts.slice(0, 10) : null
+  return typeof ts === 'string' ? ts.slice(0, ISO_DATE) : null
 }
 
 /**
@@ -214,9 +224,8 @@ export const aggregate_topic_hits_by_day = (
 export const fetch_ads_daily_metrics = async ({ api_key, since, until }) => {
   /** @type {Map<string, { impressions: number, clicks: number, spend: number }>} */
   const raw_by_utc_day = new Map()
-  let after = null
-
-  while (true) {
+  /** Fetch one page of insights into the day totals, then the next page. */
+  const page = async after => {
     const params = new URLSearchParams()
     params.append('time_granularity', 'hourly')
     params.append('aggregation_level', 'ad_account')
@@ -261,9 +270,9 @@ export const fetch_ads_daily_metrics = async ({ api_key, since, until }) => {
       raw_by_utc_day.set(date, existing)
     }
 
-    if (!payload.has_more) break
-    after = payload.last_id
+    if (payload.has_more) await page(payload.last_id)
   }
+  await page(null)
 
   /** @type {Map<string, Record<string, number>>} */
   const by_date = new Map()
@@ -273,7 +282,9 @@ export const fetch_ads_daily_metrics = async ({ api_key, since, until }) => {
       ctr: totals.impressions > 0 ? totals.clicks / totals.impressions : 0,
       cpc: totals.clicks > 0 ? totals.spend / totals.clicks : 0,
       cpm:
-        totals.impressions > 0 ? (totals.spend / totals.impressions) * 1000 : 0
+        totals.impressions > 0
+          ? (totals.spend / totals.impressions) * PER_MILLE
+          : 0
     })
 
   return by_date
@@ -312,7 +323,7 @@ export const format_combined_report = (
       String(ads.impressions ?? 0),
       String(ads.clicks ?? 0),
       (ads.spend ?? 0).toFixed(2),
-      `${((ads.ctr ?? 0) * 100).toFixed(2)}%`,
+      `${((ads.ctr ?? 0) * PERCENT).toFixed(2)}%`,
       (ads.cpc ?? 0).toFixed(2),
       (ads.cpm ?? 0).toFixed(2),
       ...by_day_paths.map(p => String(row.paths[p]?.humans ?? 0)),
@@ -355,8 +366,8 @@ const main = async () => {
   const cache_path = default_cache_path(project, args.host, false)
 
   const ads_tz = await fetch_ad_account_timezone(api_key)
-  const day_ms = 24 * 60 * 60 * 1000
-  const today_tz = day_in_tz(Date.now() / 1000, ads_tz)
+  const day_ms = MS_PER_DAY
+  const today_tz = day_in_tz(Date.now() / MS_PER_SECOND, ads_tz)
   const today_tz_utc_midnight = new Date(`${today_tz}T00:00:00Z`).getTime()
   const until = utc_date_str(new Date(today_tz_utc_midnight - day_ms))
   const since = utc_date_str(
@@ -407,7 +418,7 @@ const main = async () => {
   })
 
   const out_color = stream_color(process.stdout)
-  console.log(
+  console.info(
     format_combined_report(
       ads_by_date,
       traffic_rows,

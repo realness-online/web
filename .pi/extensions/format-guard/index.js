@@ -2,11 +2,9 @@
  * Format guard: code is formatted by its project's own tool, never prettier.
  *
  * A Vite Plus project formats with `vp fmt` (its `fmt` block in
- * `vite.config.js`). Harness code under `.pi/` formats with prettier and
- * `.pi/.prettierrc.json`. A `bash` call that runs prettier to rewrite
- * anything else but markdown is blocked with the command to use instead.
- * Checking (`--check`, `--list-different`) and markdown stay allowed, so
- * the readable skill's `wrap.sh` still works.
+ * `vite.config.js`); `.pi/` has its own. A `bash` call that runs prettier
+ * to rewrite anything but markdown is blocked with the command to use
+ * instead. Checking (`--check`, `--list-different`) and markdown stay allowed.
  *
  * Public extension API only (`tool_call` blocks); no change to Pi itself.
  */
@@ -14,7 +12,6 @@
 const PRETTIER = /(^|[\s;&|(`/])prettier(\s[^;&|\n]*)?/g
 const WRITES = /(^|\s)(--write|-w)(\s|$)/
 const PROSE = /\.(md|mdx|markdown)$/i
-const HARNESS = /^(\.\/)?\.pi\/(?!node_modules\/|runtime\/)/
 
 /** Why a command may not run, or null when it may. */
 export const prettier_rewrites_code = command => {
@@ -24,8 +21,7 @@ export const prettier_rewrites_code = command => {
     const targets = [...args.matchAll(/"([^"]*)"|'([^']*)'|(\S+)/g)]
       .map(([, double, single, bare]) => double ?? single ?? bare)
       .filter(word => !word.startsWith('-') && !/^[<>]|^\d?>/.test(word))
-    if (!targets.length || targets.some(target => !PROSE.test(target) && !HARNESS.test(target)))
-      return 'prettier rewriting code'
+    if (!targets.length || targets.some(target => !PROSE.test(target))) return 'prettier rewriting code'
   }
   return null
 }
@@ -39,7 +35,7 @@ const format_guard = pi => {
     return {
       block: true,
       reason:
-        'Code is formatted by its project, never prettier (AGENTS.md). In a project with vite.config.js run `npx vp fmt <files>` from that project; prettier is for markdown (.pi/skills/readable/scripts/wrap.sh) and harness code under .pi/ (.pi/.prettierrc.json).'
+        'Code is formatted by its project, never prettier (AGENTS.md). Run `npx vp fmt <files>` from the project that holds them; `.pi/` and `apps/realness` each have a vite.config.js.'
     }
   })
 }

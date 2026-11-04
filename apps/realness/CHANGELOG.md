@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **The header stays still between views** - Every header bar has one
+  height, so the page no longer jumps when you move between Thoughts, chat,
+  and the other views.
+- **Pricing, Prints, and Legal are back in the nav** - They were hidden at
+  every width. On a phone they fold into a menu that closes when you pick
+  one; the account icon sits beside the logo.
+- **Phone layout lines up** - The footer stays at the bottom as the browser
+  toolbar collapses, chat spaces its input evenly, and the About page shows
+  at once.
+- **/pay opens without signing on first**
+
 ## v3.0.0-x - 2026-10-31
 
 - **Your VM wakes even when another took its network slot** - It moves to a

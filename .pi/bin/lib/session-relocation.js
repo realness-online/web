@@ -21,7 +21,7 @@ import {
   entryToHtmlLine as entry_to_html_line,
   sessionHtmlToEntries as session_html_to_entries
 } from '../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-html.js'
-import { prepare_session_state, rewrite_session_state } from './session-state.js'
+import { prepare_session_state, repoint_parents, rewrite_session_state } from './session-state.js'
 
 const harness_root = resolve(import.meta.dirname, '../../..')
 const artifacts = join(harness_root, 'artifacts')
@@ -85,12 +85,6 @@ const encode = (path, entries) =>
   path.endsWith('.html.gz')
     ? compress_session_chunk(entries.map(entry => entry_to_html_line(entry, entries[0].id)).join('\n') + '\n')
     : Buffer.from(entries.map(stringify).join('\n') + '\n')
-const repoint = (entries, mapping) =>
-  entries.map(entry =>
-    entry.type === 'session' && mapping.has(entry.parentSession)
-      ? { ...entry, parentSession: mapping.get(entry.parentSession) }
-      : entry
-  )
 const copy = (path, bytes) => {
   mkdir_sync(dirname(path), { recursive: true, mode: 0o700 })
   write_file_sync(path, bytes, { flag: 'wx', mode: 0o600, flush: true })
@@ -141,7 +135,7 @@ export const relocate_history = ({ harness, source, target, state, deferred, liv
     closed(path)
     const bytes = read_file_sync(path)
     const original = decode(path, bytes)
-    const entries = repoint(original, mapping)
+    const entries = repoint_parents(original, mapping)
     const output = is_deep_strict_equal(original, entries) ? bytes : encode(destination, entries)
     assert.deepEqual(decode(destination, output), entries)
     return { name: relative(source, path), target_name: basename(destination), sha: hash(bytes), bytes, output }
@@ -213,7 +207,7 @@ export const restore_history = (manifest_path, { live = false } = {}) => {
     const destination = mapping.get(path)
     closed(path)
     const bytes = read_file_sync(path)
-    const entries = repoint(decode(path, bytes), mapping)
+    const entries = repoint_parents(decode(path, bytes), mapping)
     const existing = exists_sync(destination) && read_file_sync(destination)
     if (existing) closed(destination)
     const original = originals.get(path)

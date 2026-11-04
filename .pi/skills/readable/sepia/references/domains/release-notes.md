@@ -8,14 +8,14 @@ Terse, factual, user-impact-first. The reader is deciding **whether to upgrade a
 
 ## AI tells in this domain
 
-| Tell | Fix |
-|---|---|
-| Marketing inflation: "We're thrilled/excited to announce", "powerful new features", "seamless experience", "supercharge your workflow" | State what changed. The feature is the news; enthusiasm is not |
-| Benefit claims with no mechanism: "improved performance", "enhanced stability" | The number or the change itself: "cold start 1.8s → 0.4s", "fixed a race in the retry queue (#412)" |
-| Every change narrated as a sentence-long story | One line per change, verb-first, no adjectives |
-| Emoji headers and exclamation marks throughout | Match the repo's existing notes; default to none |
-| An intro paragraph about the journey and a closing paragraph about the road ahead | Delete both. Version, date, changes, done |
-| Symmetric prose for every item regardless of importance | Order by user impact; breaking changes first, one-word fixes last |
+| Tell                                                                                                                                   | Fix                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Marketing inflation: "We're thrilled/excited to announce", "powerful new features", "seamless experience", "supercharge your workflow" | State what changed. The feature is the news; enthusiasm is not                                      |
+| Benefit claims with no mechanism: "improved performance", "enhanced stability"                                                         | The number or the change itself: "cold start 1.8s → 0.4s", "fixed a race in the retry queue (#412)" |
+| Every change narrated as a sentence-long story                                                                                         | One line per change, verb-first, no adjectives                                                      |
+| Emoji headers and exclamation marks throughout                                                                                         | Match the repo's existing notes; default to none                                                    |
+| An intro paragraph about the journey and a closing paragraph about the road ahead                                                      | Delete both. Version, date, changes, done                                                           |
+| Symmetric prose for every item regardless of importance                                                                                | Order by user impact; breaking changes first, one-word fixes last                                   |
 
 ## Rules
 

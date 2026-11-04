@@ -465,6 +465,10 @@ export class WebEngine {
     }
   }
 
+  /**
+   * @param {string} raw
+   * @param {{ actor?: string | null, fresh?: boolean }} [options]
+   */
   async read(raw, { actor = null, fresh = false } = {}) {
     const url = check_url(raw).href
     const started = this.now()

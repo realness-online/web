@@ -6,6 +6,8 @@ import { sign_in_dir } from '#root/src/settings/secrets.js'
 import { sign_in_issuer } from '#root/src/sign-in/issuer.js'
 import { sign_in_handler } from '#root/src/sign-in/server.js'
 
+const DEFAULT_PORT = 8793
+
 const { env } = process
 const project = env.IDENTITY_PROJECT
 if (!project) throw new Error('sign-in needs IDENTITY_PROJECT')
@@ -15,7 +17,7 @@ const handler = sign_in_handler({
   issuer,
   storage,
   deliver: (phone, code) => {
-    console.log(`sign-in code for ${phone}: ${code}`)
+    console.info(`sign-in code for ${phone}: ${code}`)
     if (process.platform === 'darwin')
       exec_file(
         'osascript',
@@ -28,8 +30,8 @@ const handler = sign_in_handler({
   }
 })
 
-const port = Number(env.PORT ?? 8793)
+const port = Number(env.PORT ?? DEFAULT_PORT)
 const listen = env.LISTEN ?? '127.0.0.1'
 create_server(handler).listen(port, listen, () =>
-  console.log(`sign-in on ${listen}:${port} for ${project}`)
+  console.info(`sign-in on ${listen}:${port} for ${project}`)
 )

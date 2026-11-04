@@ -1,4 +1,11 @@
-import { existsSync as exists_sync, readdirSync as readdir_sync, readFileSync as read_file_sync, copyFileSync as copy_file_sync, appendFileSync as append_file_sync, rmSync as rm_sync } from 'node:fs'
+import {
+  existsSync as exists_sync,
+  readdirSync as readdir_sync,
+  readFileSync as read_file_sync,
+  copyFileSync as copy_file_sync,
+  appendFileSync as append_file_sync,
+  rmSync as rm_sync
+} from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 
@@ -21,7 +28,8 @@ export const render_mermaid = async src => {
   const chunks = chunks_dir()
   if (!chunks) return null
   const chunk = readdir_sync(chunks).find(
-    f => f.endsWith('.js') && read_file_sync(join(chunks, f), 'utf8').includes('function createMermaidMarkdownTransformer')
+    f =>
+      f.endsWith('.js') && read_file_sync(join(chunks, f), 'utf8').includes('function createMermaidMarkdownTransformer')
   )
   if (!chunk) return null
   const probe = join(chunks, `zz-mermaid-fit-${process.pid}.js`)

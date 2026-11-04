@@ -28,7 +28,11 @@ A path draws itself in real-time, like someone tracing with a pen. Use for revea
   }
 </style>
 <script>
-  tl.to(".draw-path", { strokeDashoffset: 0, duration: 0.7, ease: "power2.out" }, 0.5);
+  tl.to(
+    '.draw-path',
+    { strokeDashoffset: 0, duration: 0.7, ease: 'power2.out' },
+    0.5
+  )
 </script>
 ```
 
@@ -43,42 +47,42 @@ Animated noise, particle fields, data visualizations - anything that evolves fra
 ```html
 <canvas id="proc-canvas" width="1920" height="1080"></canvas>
 <script>
-  var canvas = document.getElementById("proc-canvas");
-  var ctx = canvas.getContext("2d");
+  var canvas = document.getElementById('proc-canvas')
+  var ctx = canvas.getContext('2d')
 
   function hash(x, y) {
-    var n = x * 374761393 + y * 668265263;
-    n = (n ^ (n >> 13)) * 1274126177;
-    return ((n ^ (n >> 16)) & 0x7fffffff) / 0x7fffffff;
+    var n = x * 374761393 + y * 668265263
+    n = (n ^ (n >> 13)) * 1274126177
+    return ((n ^ (n >> 16)) & 0x7fffffff) / 0x7fffffff
   }
 
   function drawFrame(t) {
-    ctx.fillStyle = "#0a0a0a";
-    ctx.fillRect(0, 0, 1920, 1080);
+    ctx.fillStyle = '#0a0a0a'
+    ctx.fillRect(0, 0, 1920, 1080)
     for (var i = 0; i < 200; i++) {
-      var x = hash(i, 0) * 1920;
-      var y = hash(i, 1) * 1080;
-      var brightness = hash(i, Math.floor(t * 10)) * 255;
-      ctx.fillStyle = "rgba(255, 255, 255, " + brightness / 255 + ")";
-      ctx.beginPath();
-      ctx.arc(x, y, 2, 0, Math.PI * 2);
-      ctx.fill();
+      var x = hash(i, 0) * 1920
+      var y = hash(i, 1) * 1080
+      var brightness = hash(i, Math.floor(t * 10)) * 255
+      ctx.fillStyle = 'rgba(255, 255, 255, ' + brightness / 255 + ')'
+      ctx.beginPath()
+      ctx.arc(x, y, 2, 0, Math.PI * 2)
+      ctx.fill()
     }
   }
 
-  var proxy = { time: 0 };
+  var proxy = { time: 0 }
   tl.to(
     proxy,
     {
       time: 5,
       duration: 5,
-      ease: "none",
+      ease: 'none',
       onUpdate: function () {
-        drawFrame(proxy.time);
-      },
+        drawFrame(proxy.time)
+      }
     },
-    0,
-  );
+    0
+  )
 </script>
 ```
 
@@ -98,7 +102,11 @@ Perspective rotations create depth. Use for product showcases, card flips, archi
   </div>
 </div>
 <script>
-  tl.to(".card-3d", { rotationY: 360, rotationX: 15, duration: 1.2, ease: "sine.inOut" }, 0);
+  tl.to(
+    '.card-3d',
+    { rotationY: 360, rotationX: 15, duration: 1.2, ease: 'sine.inOut' },
+    0
+  )
 </script>
 ```
 
@@ -127,10 +135,10 @@ Words appear one-by-one, synced to transcript.json timestamps. The core techniqu
 </style>
 <script>
   // Word onset times from transcript.json (seconds relative to beat start)
-  var timings = [0.0, 0.23, 0.28, 0.63, 0.78];
-  var slides = [80, 60, 50, 25, 12]; // horizontal slide decay (px)
+  var timings = [0.0, 0.23, 0.28, 0.63, 0.78]
+  var slides = [80, 60, 50, 25, 12] // horizontal slide decay (px)
 
-  document.querySelectorAll(".word").forEach(function (word, i) {
+  document.querySelectorAll('.word').forEach(function (word, i) {
     tl.from(
       word,
       {
@@ -138,11 +146,11 @@ Words appear one-by-one, synced to transcript.json timestamps. The core techniqu
         y: 14,
         opacity: 0,
         duration: 0.35,
-        ease: "power2.out",
+        ease: 'power2.out'
       },
-      timings[i],
-    );
-  });
+      timings[i]
+    )
+  })
 </script>
 ```
 
@@ -166,8 +174,12 @@ Vector animations that play inside a composition. Use for logos, character anima
 >
 </dotlottie-player>
 <script>
-  gsap.set(".lottie", { scale: 0.3, opacity: 0 });
-  tl.to(".lottie", { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(1.6)" }, 0.2);
+  gsap.set('.lottie', { scale: 0.3, opacity: 0 })
+  tl.to(
+    '.lottie',
+    { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(1.6)' },
+    0.2
+  )
 </script>
 ```
 
@@ -175,12 +187,12 @@ Or use lottie-web for more control:
 
 ```javascript
 var anim = lottie.loadAnimation({
-  container: document.getElementById("anim"),
-  renderer: "svg",
+  container: document.getElementById('anim'),
+  renderer: 'svg',
   loop: false,
   autoplay: false,
-  path: "../capture/assets/lottie/animation-0.json",
-});
+  path: '../capture/assets/lottie/animation-0.json'
+})
 ```
 
 ---
@@ -190,7 +202,10 @@ var anim = lottie.loadAnimation({
 Embed real video footage inside compositions. Videos must be `muted` with `playsinline`.
 
 ```html
-<div class="video-frame" style="width:680px;height:840px;border-radius:16px;overflow:hidden;">
+<div
+  class="video-frame"
+  style="width:680px;height:840px;border-radius:16px;overflow:hidden;"
+>
   <video
     id="footage"
     src="../capture/assets/videos/clip.mp4"
@@ -201,7 +216,11 @@ Embed real video footage inside compositions. Videos must be `muted` with `plays
 </div>
 <script>
   // Video playback is controlled by the framework - don't call play() manually
-  tl.from(".video-frame", { scale: 0.9, opacity: 0, duration: 0.3, ease: "power2.out" }, 0);
+  tl.from(
+    '.video-frame',
+    { scale: 0.9, opacity: 0, duration: 0.3, ease: 'power2.out' },
+    0
+  )
 </script>
 ```
 
@@ -217,26 +236,33 @@ Terminal typing effect using `tl.call()` to update text content character by cha
 <div class="terminal-line">
   <span class="prompt">❯</span>
   <span class="typed" id="typed-text"></span>
-  <span class="cursor" style="width:11px;height:22px;background:#333;display:inline-block;"></span>
+  <span
+    class="cursor"
+    style="width:11px;height:22px;background:#333;display:inline-block;"
+  ></span>
 </div>
 <script>
-  var CMD = "npx hyperframes init";
-  var typed = document.getElementById("typed-text");
+  var CMD = 'npx hyperframes init'
+  var typed = document.getElementById('typed-text')
 
   // Cursor blinks
-  tl.to(".cursor", { opacity: 0, duration: 0.12, yoyo: true, repeat: 20, ease: "steps(1)" }, 0);
+  tl.to(
+    '.cursor',
+    { opacity: 0, duration: 0.12, yoyo: true, repeat: 20, ease: 'steps(1)' },
+    0
+  )
 
   // Type each character
   for (var i = 0; i < CMD.length; i++) {
-    (function (idx) {
+    ;(function (idx) {
       tl.call(
         function () {
-          typed.textContent = CMD.substring(0, idx + 1);
+          typed.textContent = CMD.substring(0, idx + 1)
         },
         null,
-        (idx / CMD.length) * 0.9,
-      );
-    })(i);
+        (idx / CMD.length) * 0.9
+      )
+    })(i)
   }
 </script>
 ```
@@ -254,8 +280,8 @@ Animate font-variation-settings to reshape glyphs in real-time. Works with varia
   /* Load the captured local variable font - do NOT use Google Fonts @import.
      Replace this placeholder with an @font-face pointing to ../capture/assets/fonts/. */
   @font-face {
-    font-family: "Fraunces";
-    src: url("../capture/assets/fonts/Fraunces-Variable.woff2") format("woff2");
+    font-family: 'Fraunces';
+    src: url('../capture/assets/fonts/Fraunces-Variable.woff2') format('woff2');
     font-weight: 100 900;
     font-style: normal;
     font-display: block;
@@ -263,15 +289,19 @@ Animate font-variation-settings to reshape glyphs in real-time. Works with varia
   .wordmark {
     --opsz: 144;
     --wght: 440;
-    font-family: "Fraunces", serif;
+    font-family: 'Fraunces', serif;
     font-variation-settings:
-      "opsz" var(--opsz),
-      "wght" var(--wght);
+      'opsz' var(--opsz),
+      'wght' var(--wght);
     font-size: 200px;
   }
 </style>
 <script>
-  tl.to(".wordmark", { "--opsz": 72, "--wght": 300, duration: 0.45, ease: "power2.out" }, 0);
+  tl.to(
+    '.wordmark',
+    { '--opsz': 72, '--wght': 300, duration: 0.45, ease: 'power2.out' },
+    0
+  )
 </script>
 ```
 
@@ -285,18 +315,23 @@ Animate an element along an arbitrary SVG path. Use for sliders following curves
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/MotionPathPlugin.min.js"></script>
-<div class="dot" style="width:20px;height:20px;background:#2a8a7c;border-radius:50%;"></div>
+<div
+  class="dot"
+  style="width:20px;height:20px;background:#2a8a7c;border-radius:50%;"
+></div>
 <script>
-  gsap.registerPlugin(MotionPathPlugin);
+  gsap.registerPlugin(MotionPathPlugin)
   tl.to(
-    ".dot",
+    '.dot',
     {
-      motionPath: { path: "M 12 300 C 280 280 520 80 820 50 S 1200 48 1308 38" },
+      motionPath: {
+        path: 'M 12 300 C 280 280 520 80 820 50 S 1200 48 1308 38'
+      },
       duration: 1.5,
-      ease: "power2.out",
+      ease: 'power2.out'
     },
-    0,
-  );
+    0
+  )
 </script>
 ```
 
@@ -309,29 +344,29 @@ Exit one beat and enter the next with matched velocities - creates perceived con
 ```javascript
 // EXIT (in outgoing composition): accelerating with blur
 tl.to(
-  ".content",
+  '.content',
   {
     y: -150,
-    filter: "blur(30px)",
+    filter: 'blur(30px)',
     opacity: 0,
     duration: 0.33,
-    ease: "power2.in", // accelerates
+    ease: 'power2.in' // accelerates
   },
-  beatDuration - 0.33,
-);
+  beatDuration - 0.33
+)
 
 // ENTRY (in incoming composition): decelerating from blur
-gsap.set(".content", { y: 150, filter: "blur(30px)" });
+gsap.set('.content', { y: 150, filter: 'blur(30px)' })
 tl.to(
-  ".content",
+  '.content',
   {
     y: 0,
-    filter: "blur(0px)",
+    filter: 'blur(0px)',
     duration: 1.0,
-    ease: "power2.out", // decelerates
+    ease: 'power2.out' // decelerates
   },
-  0,
-);
+  0
+)
 ```
 
 The fastest point of both curves meets at the cut - the viewer perceives smooth camera motion. Match ease families: `.in` for exits, `.out` for entries.
@@ -352,15 +387,17 @@ for (var f = 0; f < AUDIO_DATA.totalFrames; f++) {
   tl.call(
     (function (frame) {
       return function () {
-        var bass = frame.bands[0]; // 0-1
-        var treble = frame.bands[13];
-        gsap.set(".logo", { scale: 1 + bass * 0.04 }); // 3-4% pulse on bass
-        gsap.set(".cta", { filter: `drop-shadow(0 0 ${treble * 24}px #00C3FF)` });
-      };
+        var bass = frame.bands[0] // 0-1
+        var treble = frame.bands[13]
+        gsap.set('.logo', { scale: 1 + bass * 0.04 }) // 3-4% pulse on bass
+        gsap.set('.cta', {
+          filter: `drop-shadow(0 0 ${treble * 24}px #00C3FF)`
+        })
+      }
     })(AUDIO_DATA.frames[f]),
     [],
-    f / AUDIO_DATA.fps,
-  );
+    f / AUDIO_DATA.fps
+  )
 }
 ```
 

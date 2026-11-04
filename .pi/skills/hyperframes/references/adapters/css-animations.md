@@ -1,4 +1,3 @@
-
 # CSS Animations for HyperFrames
 
 HyperFrames can seek CSS keyframe animations through its `css` runtime adapter. Use this for simple repeated motifs, background motion, shimmer, glow, masks, and non-sequenced decoration.

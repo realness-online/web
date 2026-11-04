@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="${ROOT:-/opt/fc}"
-OUT="${OUT:-$ROOT/runtimes}"
+RUNTIMES="${RUNTIMES:-$ROOT/runtimes}"
 
 case "$(uname -m)" in
   x86_64) NODE_ARCH=x64 ;;
@@ -18,7 +18,7 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 log() { printf '\n==> %s\n' "$*"; }
-mkdir -p "$OUT"
+mkdir -p "$RUNTIMES"
 
 fetch() {
   [ -f "$ROOT/$2" ] && return 0
@@ -30,7 +30,7 @@ fetch "$NODE_URL" "$NODE"
 (cd "$ROOT" && curl -fsSL "$NODE_URL/SHASUMS256.txt" | grep " $NODE\$" | sha256sum -c -)
 
 disk() {
-  local name="$1" tree="$2" img="$OUT/$1.ext4" kib
+  local name="$1" tree="$2" img="$RUNTIMES/$1.ext4" kib
   kib=$(du -sk "$tree" | cut -f1)
   rm -f "$img.new"
   truncate -s "$(( (kib * 5 / 4 + 16384) * 1024 ))" "$img.new"
@@ -50,10 +50,12 @@ rm -rf "$work/node/lib/node_modules/npm" "$work/node/lib/node_modules/corepack" 
   "$work/node/include" "$work/node/share"
 "$work/node/bin/node" --version
 install -D -m 0644 "$REPO/server/halo/guest/realness-serve.js" "$work/node/realness/serve.js"
+install -D -m 0644 "$REPO/lib/http.js" "$work/node/realness/lib/http.js"
+printf '{ "type": "module", "imports": { "#root/*": "./*" } }\n' > "$work/node/realness/package.json"
 "$work/node/bin/node" --check "$work/node/realness/serve.js"
 disk node "$work/node"
 
-rm -f "$OUT/python.ext4"
+rm -f "$RUNTIMES/python.ext4"
 
 log "done"
-ls -lh "$OUT"
+ls -lh "$RUNTIMES"

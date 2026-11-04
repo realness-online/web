@@ -4,13 +4,16 @@ import { join } from 'node:path'
 import { out_path } from '#root/lib/output.js'
 import { ChromeVm, mib, rss, seconds } from './chrome-vm.js'
 
+const DEFAULT_MIB = 1024
+/** A real screenshot is larger than an empty PNG. */
+const MIN_PNG_BYTES = 1000
 const URL = process.env.URL ?? 'https://example.com/'
 const run = out_path(
   `chrome-snapshot-${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')}`
 )
 const vm = new ChromeVm({
   work: join(run, 'vm'),
-  mib: Number(process.env.MIB ?? 1024),
+  mib: Number(process.env.MIB ?? DEFAULT_MIB),
   vcpus: Number(process.env.VCPUS ?? 2)
 })
 const result = {
@@ -53,6 +56,6 @@ write_file_sync(
   join(run, 'result.json'),
   `${JSON.stringify(result, null, 2)}\n`
 )
-console.log(JSON.stringify(result, null, 2))
-console.log(`run: ${run}`)
-process.exit(result.png_bytes > 1000 ? 0 : 1)
+console.info(JSON.stringify(result, null, 2))
+console.info(`run: ${run}`)
+process.exit(result.png_bytes > MIN_PNG_BYTES ? 0 : 1)

@@ -76,19 +76,14 @@ const register = async (lima, config) => {
   })
 }
 
-export const up = async (
-  lima,
-  config,
-  name,
-  { smoke = false, fresh = false } = {}
-) => {
+export const up = async (lima, config, name, { fresh = false } = {}) => {
   if (name && name !== config.vm)
     throw new Error(
       `dev has one Lima halo, "${config.vm}". To use "${name}", add a config block for it.`
     )
 
   try {
-    return await up_steps(lima, config, name, { smoke, fresh })
+    return await up_steps(lima, config, name, { fresh })
   } catch (error) {
     write_halo_status('failed', error.message.split('\n')[0])
     throw error
@@ -101,7 +96,7 @@ const doing = (heading, words) => {
   write_halo_status('starting', words)
 }
 
-const up_steps = async (lima, config, name, { smoke, fresh }) => {
+const up_steps = async (lima, config, name, { fresh }) => {
   doing(`lima: ${config.vm}`, 'starting the Linux VM')
   note(await lima.start(join(ROOT, 'server', 'lima', 'fc-local.yaml')))
 
@@ -116,13 +111,6 @@ const up_steps = async (lima, config, name, { smoke, fresh }) => {
   doing('start the stack', 'starting the agent server')
   const started = await startStack(lima, config, { fresh })
   note(started.alreadyUp ? 'already up' : 'started')
-
-  if (smoke) {
-    step('smoke test')
-    await lima.streamScript('server/halo/scripts/halo-smoke.sh', {
-      user: 'root'
-    })
-  }
 
   write_halo_status('starting', 'waiting for the agent server to answer')
   const health = await wait_for_health(config.api, { tries: 90, delayMs: 2000 })

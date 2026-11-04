@@ -24,7 +24,9 @@ describe('tools/repair-people', () => {
 
     it('hashes the html, not the compressed bytes', () => {
       const html = profile_html(e64)
-      expect(content_hash(html)).not.toBe(content_hash(compress(html).toString()))
+      expect(content_hash(html)).not.toBe(
+        content_hash(compress(html).toString())
+      )
     })
   })
 
@@ -36,7 +38,9 @@ describe('tools/repair-people', () => {
     })
 
     it('writes statements as an empty feed', () => {
-      expect(statements_html(e64)).toContain('itemid="/+14155550101/statements"')
+      expect(statements_html(e64)).toContain(
+        'itemid="/+14155550101/statements"'
+      )
       expect(statements_html(e64)).toMatch(/><\/section>$/)
     })
 

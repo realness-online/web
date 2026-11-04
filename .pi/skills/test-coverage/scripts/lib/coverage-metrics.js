@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { join, relative } from 'node:path'
+import { parseArgs as parse_args } from 'node:util'
 
 /**
  * @param {Record<string, number | number[]>} hits
@@ -63,4 +64,22 @@ export const load_coverage_by_src = (
   }
 
   return by_src
+}
+
+/**
+ * Command-line options both coverage scripts share.
+ * @param {number} top how many files to list by default
+ */
+export const coverage_args = top => {
+  const { values } = parse_args({
+    options: {
+      root: { type: 'string', default: process.cwd() },
+      threshold: { type: 'string', default: '80' },
+      top: { type: 'string', default: String(top) },
+      coverage: { type: 'string' },
+      fallow: { type: 'string' },
+      'coverage-only': { type: 'boolean', default: false }
+    }
+  })
+  return { ...values, threshold: Number(values.threshold), top: Number(values.top) }
 }

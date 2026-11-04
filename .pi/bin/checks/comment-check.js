@@ -6,38 +6,13 @@
  * @returns {void}
  */
 
-import {
-  existsSync as exists_sync,
-  readFileSync as read_file_sync,
-  readdirSync as readdir_sync,
-  statSync as stat_sync
-} from 'node:fs'
-import { parse, join } from 'node:path'
+import { readFileSync as read_file_sync } from 'node:fs'
+import { parse } from 'node:path'
 import { comment_ranges, has_parser } from '../lib/comments.js'
+import { inside, is_minified, source_files } from '../lib/source-files.js'
 
-const SKIP = new Set([
-  'node_modules',
-  '.git',
-  'artifacts',
-  'vault',
-  'dist',
-  'build',
-  'coverage',
-  '.obsidian',
-  'sessions',
-  '.agents',
-  '.claude',
-  '.cursor',
-  '.cache',
-  'vendor',
-  '.venv',
-  'site-packages',
-  '__pycache__',
-  '.pytest_cache',
-  '.mypy_cache',
-  'tmp',
-  'public'
-])
+/** Folders this check leaves out: vendored, served as is, or scratch. */
+const LEFT_OUT = new Set(['vendor', 'public', 'tmp', 'build'])
 
 /** Files written by a tool, checked by their generator rather than by hand. */
 const GENERATED = ['apps/realness/src/app/wasm/tracer.js']
@@ -62,17 +37,6 @@ const EXT = new Set([
   '.lua'
 ])
 
-const is_minified = text => {
-  let start = 0
-  let line = text.indexOf('\n', start)
-  while (line !== -1) {
-    if (line - start > 1000) return true
-    start = line + 1
-    line = text.indexOf('\n', start)
-  }
-  return text.length - start > 1000
-}
-
 const hits = []
 const scan = file => {
   if (/\.(test|spec)\.(js|ts|mjs|cjs)$/.test(file) || file.endsWith('.d.ts')) return
@@ -85,19 +49,6 @@ const scan = file => {
     const line = text.slice(0, range.start).split('\n').length
     hits.push(`${file}:${line}  comment  ${raw.split('\n')[0].trim().slice(0, 90)}`)
   }
-}
-
-const walk = target => {
-  if (!exists_sync(target)) return
-  const info = stat_sync(target)
-  if (info.isDirectory()) {
-    if (SKIP.has(parse(target).base)) return
-    for (const entry of readdir_sync(target, { withFileTypes: true })) {
-      if (entry.isDirectory()) {
-        if (!SKIP.has(entry.name)) walk(join(target, entry.name))
-      } else if (entry.isFile() && EXT.has(parse(entry.name).ext)) scan(join(target, entry.name))
-    }
-  } else if (info.isFile() && EXT.has(parse(target).ext)) scan(target)
 }
 
 const DEFAULTS = [
@@ -119,7 +70,8 @@ const DEFAULTS = [
 const targets = process.argv.slice(2).length ? process.argv.slice(2) : DEFAULTS
 if (!has_parser())
   console.error('comment-check: @babel/parser and @vue/compiler-sfc not found; JS and Vue are not checked')
-targets.forEach(walk)
+for (const target of targets)
+  source_files(target, name => EXT.has(parse(name).ext) && !inside(name, LEFT_OUT)).forEach(scan)
 hits.forEach(hit => console.log(hit))
 console.log(`comments: ${hits.length} hit(s)`)
 process.exit(hits.length ? 1 : 0)

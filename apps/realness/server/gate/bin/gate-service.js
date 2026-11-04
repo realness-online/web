@@ -17,6 +17,8 @@ import {
   read_lifecycle
 } from '#root/src/sync/halo-lifecycle.js'
 
+const DEFAULT_PORT = 8792
+
 const { env } = process
 /** The gate names its environment on the command line; sync's address comes from it. */
 const { values: args } = parse_args({
@@ -68,7 +70,7 @@ const halo_for = env.GATE_HALOS
           /** @type {string} */ (env.GATE_HALO),
           env.GATE_API_PORT ? Number(env.GATE_API_PORT) : undefined
         )
-        return async () => one()
+        return () => Promise.resolve(one())
       })()
     )
 
@@ -110,8 +112,8 @@ const gate = make_gate({
   unreachable
 })
 
-const port = Number(env.PORT ?? 8792)
+const port = Number(env.PORT ?? DEFAULT_PORT)
 const listen = env.LISTEN ?? (env.K_SERVICE ? '0.0.0.0' : '127.0.0.1')
 gate.listen(port, listen, () =>
-  console.log(`gate on ${listen}:${port} -> ${env.GATE_HALO}`)
+  console.info(`gate on ${listen}:${port} -> ${env.GATE_HALO}`)
 )

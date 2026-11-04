@@ -53,10 +53,10 @@ Guide agents through decision points with clear branching:
 When branches get large, push them into separate reference files:
 
 ```markdown
-| Task Type | Read This Reference |
-|-----------|-------------------|
+| Task Type          | Read This Reference      |
+| ------------------ | ------------------------ |
 | Creating documents | `references/creation.md` |
-| Editing documents | `references/editing.md` |
+| Editing documents  | `references/editing.md`  |
 ```
 
 ## Feedback Loops
@@ -76,6 +76,7 @@ Use a validate-fix-repeat pattern for tasks where output quality matters:
 ```
 
 This pattern works for:
+
 - Code generation (lint -> fix -> re-lint)
 - Document editing (validate XML -> fix -> re-validate)
 - Data processing (check schema -> fix -> re-check)
@@ -94,6 +95,7 @@ For complex, high-stakes tasks, have the agent create a plan file before executi
 ```
 
 Benefits:
+
 - Catches errors before changes are applied
 - Machine-verifiable intermediate output
 - Agent can iterate on the plan without touching originals

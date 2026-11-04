@@ -78,11 +78,11 @@ Use `window.__hyperframes.fitTextFontSize()`:
 
 ```js
 var result = window.__hyperframes.fitTextFontSize(group.text.toUpperCase(), {
-  fontFamily: "Outfit",
+  fontFamily: 'Outfit',
   fontWeight: 900,
-  maxWidth: 1600,
-});
-el.style.fontSize = result.fontSize + "px";
+  maxWidth: 1600
+})
+el.style.fontSize = result.fontSize + 'px'
 ```
 
 Options: `maxWidth` (1600 landscape, 900 portrait), `baseFontSize` (78), `minFontSize` (42), `fontWeight`, `fontFamily`, `step` (2).
@@ -96,25 +96,33 @@ CSS safety nets: `max-width` on container, `overflow: visible` (**not** `hidden`
 Every group **must** have a hard kill after exit animation:
 
 ```js
-tl.to(groupEl, { opacity: 0, scale: 0.95, duration: 0.12, ease: "power2.in" }, group.end - 0.12);
-tl.set(groupEl, { opacity: 0, visibility: "hidden" }, group.end); // deterministic kill
+tl.to(
+  groupEl,
+  { opacity: 0, scale: 0.95, duration: 0.12, ease: 'power2.in' },
+  group.end - 0.12
+)
+tl.set(groupEl, { opacity: 0, visibility: 'hidden' }, group.end) // deterministic kill
 ```
 
 Self-lint after building timeline - place **before** `window.__timelines[id] = tl` so it runs at composition init:
 
 ```js
 GROUPS.forEach(function (group, gi) {
-  var el = document.getElementById("cg-" + gi);
-  if (!el) return;
-  tl.seek(group.end + 0.01);
-  var computed = window.getComputedStyle(el);
-  if (computed.opacity !== "0" && computed.visibility !== "hidden") {
+  var el = document.getElementById('cg-' + gi)
+  if (!el) return
+  tl.seek(group.end + 0.01)
+  var computed = window.getComputedStyle(el)
+  if (computed.opacity !== '0' && computed.visibility !== 'hidden') {
     console.warn(
-      "[caption-lint] group " + gi + " still visible at t=" + (group.end + 0.01).toFixed(2) + "s",
-    );
+      '[caption-lint] group ' +
+        gi +
+        ' still visible at t=' +
+        (group.end + 0.01).toFixed(2) +
+        's'
+    )
   }
-});
-tl.seek(0);
+})
+tl.seek(0)
 ```
 
 ## Pre-Built Caption Components

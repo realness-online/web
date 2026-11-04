@@ -1,4 +1,3 @@
-
 *,
 *::before,
 *::after {
@@ -33,49 +32,25 @@
 }
 
 html {
-  font-size: clamp(
-    var(--min-font),
-    calc(1rem + (1.125 - 1) * (100dvw - 20rem) / (60 - 20)),
-    var(--max-font)
-  );
+  font-size: clamp(var(--min-font), calc(1rem + (1.125 - 1) * (100dvw - 20rem) / (60 - 20)), var(--max-font));
 }
 h1 {
-  font-size: clamp(
-    var(--h1-min),
-    calc(2.074rem + (3.157 - 2.074) * (100dvw - 20rem) / (60 - 20)),
-    var(--h1-max)
-  );
+  font-size: clamp(var(--h1-min), calc(2.074rem + (3.157 - 2.074) * (100dvw - 20rem) / (60 - 20)), var(--h1-max));
 }
 h2 {
-  font-size: clamp(
-    var(--h2-min),
-    calc(1.728rem + (2.369 - 1.728) * (100dvw - 20rem) / (60 - 20)),
-    var(--h2-max)
-  );
+  font-size: clamp(var(--h2-min), calc(1.728rem + (2.369 - 1.728) * (100dvw - 20rem) / (60 - 20)), var(--h2-max));
 }
 h3 {
-  font-size: clamp(
-    var(--h3-min),
-    calc(1.44rem + (1.777 - 1.44) * (100dvw - 20rem) / (60 - 20)),
-    var(--h3-max)
-  );
+  font-size: clamp(var(--h3-min), calc(1.44rem + (1.777 - 1.44) * (100dvw - 20rem) / (60 - 20)), var(--h3-max));
 }
 h4 {
-  font-size: clamp(
-    var(--h4-min),
-    calc(1.2rem + (1.333 - 1.2) * (100dvw - 20rem) / (60 - 20)),
-    var(--h4-max)
-  );
+  font-size: clamp(var(--h4-min), calc(1.2rem + (1.333 - 1.2) * (100dvw - 20rem) / (60 - 20)), var(--h4-max));
 }
 h5 {
   font-size: var(--h5-min);
 }
 h6 {
-  font-size: clamp(
-    var(--h6-max),
-    calc(0.833rem + (0.75 - 0.833) * (100dvw - 20rem) / (60 - 20)),
-    var(--h6-min)
-  );
+  font-size: clamp(var(--h6-max), calc(0.833rem + (0.75 - 0.833) * (100dvw - 20rem) / (60 - 20)), var(--h6-min));
 }
 
 p,

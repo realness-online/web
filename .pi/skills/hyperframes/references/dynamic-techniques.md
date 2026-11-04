@@ -26,22 +26,25 @@ No special wiring is needed. The group loop already iterates over every caption 
 
 ```js
 // Load audio data inline (same pattern as TRANSCRIPT)
-var AUDIO = JSON.parse(audioDataJson); // { fps, totalFrames, frames: [{ bands: [...] }] }
+var AUDIO = JSON.parse(audioDataJson) // { fps, totalFrames, frames: [{ bands: [...] }] }
 
 GROUPS.forEach(function (group, gi) {
-  var groupEl = document.getElementById("cg-" + gi);
-  if (!groupEl) return;
+  var groupEl = document.getElementById('cg-' + gi)
+  if (!groupEl) return
 
   // Read peak energy for this group's time range
-  var startFrame = Math.floor(group.start * AUDIO.fps);
-  var endFrame = Math.min(Math.floor(group.end * AUDIO.fps), AUDIO.totalFrames - 1);
-  var peakBass = 0;
-  var peakTreble = 0;
+  var startFrame = Math.floor(group.start * AUDIO.fps)
+  var endFrame = Math.min(
+    Math.floor(group.end * AUDIO.fps),
+    AUDIO.totalFrames - 1
+  )
+  var peakBass = 0
+  var peakTreble = 0
   for (var f = startFrame; f <= endFrame; f++) {
-    var frame = AUDIO.frames[f];
-    if (!frame) continue;
-    peakBass = Math.max(peakBass, frame.bands[0] || 0, frame.bands[1] || 0);
-    peakTreble = Math.max(peakTreble, frame.bands[6] || 0, frame.bands[7] || 0);
+    var frame = AUDIO.frames[f]
+    if (!frame) continue
+    peakBass = Math.max(peakBass, frame.bands[0] || 0, frame.bands[1] || 0)
+    peakTreble = Math.max(peakTreble, frame.bands[6] || 0, frame.bands[7] || 0)
   }
 
   // Modulate entrance - louder groups enter bigger and glowier
@@ -50,16 +53,20 @@ GROUPS.forEach(function (group, gi) {
     {
       scale: 1 + peakBass * 0.06,
       textShadow:
-        "0 0 " + Math.round(peakTreble * 12) + "px rgba(255,255,255," + peakTreble * 0.4 + ")",
+        '0 0 ' +
+        Math.round(peakTreble * 12) +
+        'px rgba(255,255,255,' +
+        peakTreble * 0.4 +
+        ')',
       duration: 0.3,
-      ease: "power2.out",
+      ease: 'power2.out'
     },
-    group.start,
-  );
+    group.start
+  )
 
   // Reset at exit so audio-driven values don't persist
-  tl.set(groupEl, { scale: 1, textShadow: "none" }, group.end - 0.15);
-});
+  tl.set(groupEl, { scale: 1, textShadow: 'none' }, group.end - 0.15)
+})
 ```
 
 This shapes the animation at build time, not playback time - no per-frame callbacks, no `tl.call()` loops, no async fetch timing issues. Loud groups come in with more weight and glow; quiet groups come in soft. The audio data modulates _how much_, the content determines _what_.

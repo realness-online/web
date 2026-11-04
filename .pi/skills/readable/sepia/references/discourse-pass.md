@@ -4,15 +4,15 @@ The layer between plot and sentences: how paragraphs advance, where the energy s
 
 ## 1 The QUD check — what question does each paragraph answer?
 
-Every paragraph implicitly answers a question. In QUDsim's tested samples, two models given the same premise independently reused the sequence *scene briefing → justifying the deception → social consequences → the weight of responsibility* (Q). Surface rewording does not change that question sequence; changing it requires reordering or replacing the underlying moves.
+Every paragraph implicitly answers a question. In QUDsim's tested samples, two models given the same premise independently reused the sequence _scene briefing → justifying the deception → social consequences → the weight of responsibility_ (Q). Surface rewording does not change that question sequence; changing it requires reordering or replacing the underlying moves.
 
 **Check:** List one implicit question per paragraph/scene of the outline or draft. Flags:
 
-| Flag | Symptom |
-|---|---|
-| Linear interview | Each question follows administratively from the last (what happened → why → what resulted → what it means) |
-| The reflection tail | Final paragraphs answer "what does this mean / how does she feel about it now" — the machine's closing move |
-| Missing move types | No paragraph *compares* (two times, two characters, two versions of an event), none *verifies* (doubts or contradicts an earlier paragraph's account), none *digresses* (memory or association that earns its place later) |
+| Flag                | Symptom                                                                                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Linear interview    | Each question follows administratively from the last (what happened → why → what resulted → what it means)                                                                                                                 |
+| The reflection tail | Final paragraphs answer "what does this mean / how does she feel about it now" — the machine's closing move                                                                                                                |
+| Missing move types  | No paragraph _compares_ (two times, two characters, two versions of an event), none _verifies_ (doubts or contradicts an earlier paragraph's account), none _digresses_ (memory or association that earns its place later) |
 
 **Fix:** Reorder so at least one question arrives before its setup. Replace one consequence-paragraph with a comparison or a contradiction — LLMs use consequence/procedure moves ~19% of the time and comparison/verification moves ~0.2–0.3% (Q); a single "but that isn't how her sister remembers it" paragraph does more de-AI work than a page of rewording.
 
@@ -30,17 +30,17 @@ Detectors and human judges find AI text most identifiable in the **body**, least
 
 ## 3 Structural positions on the page
 
-Position patterns survive paraphrase better than word choice does — after full paraphrasing, position tells became *more* visible to expert detectors, not less (R).
+Position patterns survive paraphrase better than word choice does — after full paraphrasing, position tells became _more_ visible to expert detectors, not less (R).
 
-| Position tell | Machine habit | Human habit |
-|---|---|---|
-| Paragraph lengths | Uniform | Ragged — including a one-sentence paragraph |
-| Quoted speech / key lines | Always closing a paragraph | Anywhere, including mid-paragraph |
-| Lists of qualities, reasons, images | Exactly three items | Two, four, one — three sometimes |
-| Scene transitions | Same connective formula each time | Varied: hard cut, time skip, dialogue pickup |
-| Emphasis | Evenly distributed | Clustered where it matters, absent elsewhere |
+| Position tell                       | Machine habit                     | Human habit                                  |
+| ----------------------------------- | --------------------------------- | -------------------------------------------- |
+| Paragraph lengths                   | Uniform                           | Ragged — including a one-sentence paragraph  |
+| Quoted speech / key lines           | Always closing a paragraph        | Anywhere, including mid-paragraph            |
+| Lists of qualities, reasons, images | Exactly three items               | Two, four, one — three sometimes             |
+| Scene transitions                   | Same connective formula each time | Varied: hard cut, time skip, dialogue pickup |
+| Emphasis                            | Evenly distributed                | Clustered where it matters, absent elsewhere |
 
-The paragraph-length row means uniformity *within the text*. Paragraph length and paragraph count on their own are not signals: measured directions contradict across corpora (LLM paragraphs longer in how-to text, shorter in generated papers, more numerous in Chinese answers) and follow prompt limits and venue conventions; see the syntax section of the repository research ledger.
+The paragraph-length row means uniformity _within the text_. Paragraph length and paragraph count on their own are not signals: measured directions contradict across corpora (LLM paragraphs longer in how-to text, shorter in generated papers, more numerous in Chinese answers) and follow prompt limits and venue conventions; see the syntax section of the repository research ledger.
 
 ## 4 Openings
 

@@ -1,6 +1,6 @@
 # Chapter 4 - Errors Handling
 
-Rust enforces a strict error handling approach, but *how* you handle them defines where your code feels ergonomic, consistent and safe - as opposing cryptic and painful. This chapter dives into best practices for modeling and managing fallible operations across libraries and binaries.
+Rust enforces a strict error handling approach, but _how_ you handle them defines where your code feels ergonomic, consistent and safe - as opposing cryptic and painful. This chapter dives into best practices for modeling and managing fallible operations across libraries and binaries.
 
 > Even if you decide to crash you application with `unwrap` or `expect`, Rust forces you to declare that intentionally.
 
@@ -8,7 +8,8 @@ Rust enforces a strict error handling approach, but *how* you handle them define
 
 Rust has a powerful type that wraps fallible data, [`Result<T, E>`](https://doc.rust-lang.org/std/result/), this allows us to handle Error cases according to our needs and manage the state of the application based on that.
 
-* If your function can fail, prefer to return a `Result`:
+- If your function can fail, prefer to return a `Result`:
+
 ```rust
 fn divide(x: f64, y: f64) -> Result<f64, DivisionError> {
     if y == 0.0 {
@@ -19,28 +20,32 @@ fn divide(x: f64, y: f64) -> Result<f64, DivisionError> {
 }
 ```
 
-* Use `panic!` only in unrecoverable conditions - typically tests, assertions, bugs or a need to crash the application for some explicit reason.
-* There are 3 relevant macros that can replace `panic!` in appropriate conditions:
-    * `todo!`, similar to panic, but alerts the compiler that you are aware that there is code missing.
-    * `unreachable!`, you have reasoned about the code block and are sure that condition `xyz` is not possible and if ever becomes possible you want to be alerted.
-    * `unimplemented!`, specially useful for alerting that a block is not yet implement with a reason.
+- Use `panic!` only in unrecoverable conditions - typically tests, assertions, bugs or a need to crash the application for some explicit reason.
+- There are 3 relevant macros that can replace `panic!` in appropriate conditions:
+  - `todo!`, similar to panic, but alerts the compiler that you are aware that there is code missing.
+  - `unreachable!`, you have reasoned about the code block and are sure that condition `xyz` is not possible and if ever becomes possible you want to be alerted.
+  - `unimplemented!`, specially useful for alerting that a block is not yet implement with a reason.
 
 ## 4.2 Avoid `unwrap`/`expect` in Production
 
 Although `expect` is preferred to `unwrap`, as it can have context, they should be avoided in production code as there are smarter alternatives to them. Considering that, they should be used in the following scenarios:
+
 - In tests, assertions or test helper functions.
 - When failure is impossible.
 - When the smarter options can't handle the specific case.
 
 ### 🚨 Alternative ways of handling `unwrap`/`expect`:
 
-* If your `Result` (or `Option`) can have a predefined early return value in case of `Result::Err`, that doesn't need to know the `Err` value, use `let Ok(..) = else { return ... }` pattern, as it helps with flatten functions:
+- If your `Result` (or `Option`) can have a predefined early return value in case of `Result::Err`, that doesn't need to know the `Err` value, use `let Ok(..) = else { return ... }` pattern, as it helps with flatten functions:
+
 ```rust
 let Ok(json) = serde_json::from_str(&input) else {
     return Err(MyError::InvalidJson);
 }
 ```
-* If your `Result` (or `Option`) needs error recovery in case of `Result::Err`, that doesn't need to know the `Err` value, use `if let Ok(..) else { ... }` pattern:
+
+- If your `Result` (or `Option`) needs error recovery in case of `Result::Err`, that doesn't need to know the `Err` value, use `if let Ok(..) else { ... }` pattern:
+
 ```rust
 if let Ok(json) = serde_json::from_str(&input) else {
     ...
@@ -48,8 +53,9 @@ if let Ok(json) = serde_json::from_str(&input) else {
     Err(do_something_with_input(&input))
 }
 ```
-* Functions that can have to handle `Option::None` values are recommended to return `Result<T, E>`, where `E` is a crate or module level error, like the examples above.
-* Lastly `unwrap_or`, `unwrap_or_else` or `unwrap_or_default`, these functions help you create alternative exits to unwrap that manage the uninitialized values.
+
+- Functions that can have to handle `Option::None` values are recommended to return `Result<T, E>`, where `E` is a crate or module level error, like the examples above.
+- Lastly `unwrap_or`, `unwrap_or_else` or `unwrap_or_default`, these functions help you create alternative exits to unwrap that manage the uninitialized values.
 
 ## 4.3 `thiserror` for Crate level errors
 
@@ -106,13 +112,14 @@ fn main() -> Result<()> {
 
 ### 🚨 `Anyhow` Gotchas
 
-* Keeping the `context` and `anyhow` strings up-to-date in all code base is harder than keeping `thiserror` messages as you don't have a single point of entry.
-* `anyhow::Result` erases context that a caller might need, so avoid using it in a library.
-* test helper functions can use `anyhow` with little to no issues.
+- Keeping the `context` and `anyhow` strings up-to-date in all code base is harder than keeping `thiserror` messages as you don't have a single point of entry.
+- `anyhow::Result` erases context that a caller might need, so avoid using it in a library.
+- test helper functions can use `anyhow` with little to no issues.
 
 ## 4.5 Use `?` to Bubble Errors
 
 Prefer using `?` over verbose alternatives like `match` chains:
+
 ```rust
 fn handle_request(req: &Request) -> Result<ValidatedRequest, MyError> {
     validate_headers(req)?;

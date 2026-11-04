@@ -1,4 +1,3 @@
-
 # TypeGPU / WebGPU for HyperFrames
 
 HyperFrames supports TypeGPU and raw WebGPU through its `typegpu` runtime adapter. The adapter does not own your pipeline. It publishes HyperFrames time and dispatches a seek event so your composition can render the exact GPU frame.
@@ -18,49 +17,49 @@ The adapter sets `window.__hfTypegpuTime` and dispatches `new CustomEvent("hf-se
 ```html
 <canvas id="gpu-layer"></canvas>
 <script>
-  (async () => {
-    if (!navigator.gpu) return;
-    const adapter = await navigator.gpu.requestAdapter();
-    if (!adapter) return;
-    const device = await adapter.requestDevice();
-    const canvas = document.getElementById("gpu-layer");
-    canvas.width = 1920;
-    canvas.height = 1080;
-    const ctx = canvas.getContext("webgpu");
-    const fmt = navigator.gpu.getPreferredCanvasFormat();
-    ctx.configure({ device, format: fmt, alphaMode: "opaque" });
+  ;(async () => {
+    if (!navigator.gpu) return
+    const adapter = await navigator.gpu.requestAdapter()
+    if (!adapter) return
+    const device = await adapter.requestDevice()
+    const canvas = document.getElementById('gpu-layer')
+    canvas.width = 1920
+    canvas.height = 1080
+    const ctx = canvas.getContext('webgpu')
+    const fmt = navigator.gpu.getPreferredCanvasFormat()
+    ctx.configure({ device, format: fmt, alphaMode: 'opaque' })
 
     // Build your pipeline, buffers, bind groups...
-    const timeUniform = new Float32Array([0]);
+    const timeUniform = new Float32Array([0])
     const timeBuf = device.createBuffer({
       size: 16,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    })
 
     function render(t) {
-      timeUniform[0] = t;
-      device.queue.writeBuffer(timeBuf, 0, timeUniform);
-      const enc = device.createCommandEncoder();
+      timeUniform[0] = t
+      device.queue.writeBuffer(timeBuf, 0, timeUniform)
+      const enc = device.createCommandEncoder()
       const pass = enc.beginRenderPass({
         colorAttachments: [
           {
             view: ctx.getCurrentTexture().createView(),
-            loadOp: "clear",
+            loadOp: 'clear',
             clearValue: { r: 0, g: 0, b: 0, a: 1 },
-            storeOp: "store",
-          },
-        ],
-      });
-      pass.setPipeline(pipeline);
-      pass.setBindGroup(0, bindGroup);
-      pass.draw(3);
-      pass.end();
-      device.queue.submit([enc.finish()]);
+            storeOp: 'store'
+          }
+        ]
+      })
+      pass.setPipeline(pipeline)
+      pass.setBindGroup(0, bindGroup)
+      pass.draw(3)
+      pass.end()
+      device.queue.submit([enc.finish()])
     }
 
-    render(0);
-    window.addEventListener("hf-seek", (e) => render(e.detail.time));
-  })();
+    render(0)
+    window.addEventListener('hf-seek', e => render(e.detail.time))
+  })()
 </script>
 ```
 
@@ -69,21 +68,21 @@ The adapter sets `window.__hfTypegpuTime` and dispatches `new CustomEvent("hf-se
 GSAP tweens that drive text, captions, or HTML elements must be registered **synchronously** - before any `await`:
 
 ```js
-const tl = gsap.timeline({ paused: true });
+const tl = gsap.timeline({ paused: true })
 
 // Caption tweens: synchronous, added before WebGPU init
-gsap.set(".cap", { opacity: 0 });
-tl.to("#cap-1", { opacity: 1, duration: 0.3 }, 1.0);
-tl.to("#cap-1", { opacity: 0, duration: 0.2 }, 3.5);
+gsap.set('.cap', { opacity: 0 })
+tl.to('#cap-1', { opacity: 1, duration: 0.3 }, 1.0)
+tl.to('#cap-1', { opacity: 0, duration: 0.2 }, 3.5)
 
-window.__timelines["my-comp"] = tl;
+window.__timelines['my-comp'] = tl
 
 // GPU-dependent tweens can go inside the async IIFE
-(async () => {
+;(async () => {
   // ... WebGPU init ...
-  const proxy = { value: 0 };
-  tl.to(proxy, { value: 1, duration: 2, onUpdate: render }, 0.5);
-})();
+  const proxy = { value: 0 }
+  tl.to(proxy, { value: 1, duration: 2, onUpdate: render }, 0.5)
+})()
 ```
 
 ## Video-Backed Effects (Liquid Glass, Distortion)
@@ -91,27 +90,33 @@ window.__timelines["my-comp"] = tl;
 To use a `<video>` as the GPU input texture:
 
 ```js
-const videoEl = document.getElementById("aroll");
+const videoEl = document.getElementById('aroll')
 
 // Wait for video metadata before creating the texture
-await new Promise((r) => {
-  if (videoEl.readyState >= 1) r();
-  else videoEl.addEventListener("loadedmetadata", r, { once: true });
-});
+await new Promise(r => {
+  if (videoEl.readyState >= 1) r()
+  else videoEl.addEventListener('loadedmetadata', r, { once: true })
+})
 
 // Create texture at the video's NATIVE resolution
 const vw = videoEl.videoWidth,
-  vh = videoEl.videoHeight;
+  vh = videoEl.videoHeight
 const bgTex = device.createTexture({
   size: [vw, vh],
-  format: "rgba8unorm",
+  format: 'rgba8unorm',
   usage:
-    GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
-});
+    GPUTextureUsage.COPY_DST |
+    GPUTextureUsage.TEXTURE_BINDING |
+    GPUTextureUsage.RENDER_ATTACHMENT
+})
 
 function render(t) {
   try {
-    device.queue.copyExternalImageToTexture({ source: videoEl }, { texture: bgTex }, [vw, vh]);
+    device.queue.copyExternalImageToTexture(
+      { source: videoEl },
+      { texture: bgTex },
+      [vw, vh]
+    )
   } catch (_) {
     /* frame not decoded yet */
   }

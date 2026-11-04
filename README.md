@@ -60,7 +60,7 @@ They live in pi's standard project folders, `.pi/skills/`, `.pi/extensions/`, an
 
 Write a skill once in `.pi/skills/`, and it is available in every harness.
 
-Owned code in `.pi/` uses `.js` with JSDoc. `npm run check:ext` rejects TypeScript there and `.mjs` in owned source. Installed dependencies, private agent state, external projects, and build output are excluded.
+Owned code in `.pi/` uses `.js` with JSDoc. `npm run check ext` rejects TypeScript there and `.mjs` in owned source. Installed dependencies, private agent state, external projects, and build output are excluded.
 
 The shipped starter keeps `skills/`, `extensions/`, and `prompts/` at its root; the ship stage copies them from `.pi/`.
 
@@ -116,7 +116,7 @@ Plans live in a configured folder. This harness sets `realness.plans` to `vault/
 </p>
 ```
 
-Without it, a fresh checkout mints nothing. It also makes you an admin of your local stack, and the first admin of a new environment when you deploy its sync. After that, admins live in each environment's bucket: `npm --prefix apps/realness run webspace -- <env> admins`.
+Without it, a fresh checkout mints nothing. It also makes you an admin of your local stack, and the first admin of a new environment when you deploy its sync. After that, admins live in each environment's bucket: `npm --prefix apps/realness run realness -- <env> admins`.
 
 ## How conversations go
 
@@ -166,9 +166,9 @@ this index.
 | `npm start` / `npm run realness`     | Start through `.pi/bin/pi`; Node >= 22.19.                                                                                        |
 | `npm run pi:list`                    | List installed pi packages.                                                                                                   |
 | `npm run pi:reinstall`               | Reinstall the reviewed Pi fork pin; upstream updates require a new reviewed release.                                          |
-| `npm test`                           | Run the memory index tests.                                                                                                   |
-| `npm run check:ext`                  | Run `.pi/bin/checks/no-mjs.js` to reject `.mjs` files across the workspace (excluding artifacts, dependencies, and git metadata). |
-| `npm run check:skills`               | Check every skill: spec rules via `uv`, stale paths, scripts that do not parse, long code blocks.                             |
+| `npm run check [step]`               | Read the code: lint, types, dead code, format. Steps: `.pi/bin/harness/steps.js`.                                             |
+| `npm test`                           | Every spec, harness and realness, with one merged coverage report.                                                            |
+| `npm run live [name]`                | Checks that need a halo, the network, a browser, or the emulator.                                                             |
 | `npm run make:animation -- clip.mov` | Run `.pi/bin/graphics/make-animation.js`; requirements below.                                                                     |
 | `npm run feeds`                      | Rebuild personal vault feeds; requires the local vault setup.                                                                 |
 | `npm run plans`                      | Build every plan in the plans folder through `apps/plans` into `artifacts/apps/plans/dist`.                                   |

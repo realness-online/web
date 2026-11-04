@@ -12,7 +12,7 @@ Apply repository registration and quality checks before completion.
 
 ## Validation checklist
 
-1. Run `npm run check:skills` (every skill, spec plus realness checks), or one
+1. Run `npm run check skills` (every skill, spec plus realness checks), or one
    skill with depth gates:
 
 ```bash

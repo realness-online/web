@@ -11,6 +11,15 @@
  *   npm run traffic -- --refresh
  */
 import { spawnSync as spawn_sync } from 'node:child_process'
+import { HTTP } from '#root/lib/http.js'
+import {
+  HOURS_PER_DAY,
+  ISO_DATE,
+  MIB,
+  MS_PER_DAY,
+  MS_PER_SECOND,
+  PERCENT
+} from '#root/lib/units.js'
 import { createHash as create_hash } from 'node:crypto'
 import {
   appendFileSync as append_file_sync,
@@ -38,25 +47,37 @@ const default_days = 7
 const default_buckets = 4
 const default_page_size = 1000
 
+/** ANSI select graphic rendition codes. */
+const SGR = { bold: 1, dim: 2, normal: 22, green: 32, yellow: 33, plain: 39 }
+const UA_LENGTH = 120
+const VISITOR_ID_LENGTH = 12
+const EVENT_ID_LENGTH = 24
+const TOP_REFERERS = 15
+const HOURS_SHOWN = 36
+const COUNT_WIDTH = 6
+const VISITOR_WIDTH = 4
+const PATH_MIN_WIDTH = 12
+const LOG_BUFFER_MIB = 64
+
 const paint = (open, close) => (s, on) =>
   on ? `\u001b[${open}m${s}\u001b[${close}m` : s
-export const bold = paint(1, 22)
-export const dim = paint(2, 22)
-export const green = paint(32, 39)
-export const yellow = paint(33, 39)
+export const bold = paint(SGR.bold, SGR.normal)
+export const dim = paint(SGR.dim, SGR.normal)
+export const green = paint(SGR.green, SGR.plain)
+export const yellow = paint(SGR.yellow, SGR.plain)
 
 /**
  * Compact age, largest unit that keeps the number small: 12s, 4m, 3h, 2d.
  * @param {number} ms
  */
 export const format_age = ms => {
-  const s = Math.round(ms / 1000)
+  const s = Math.round(ms / MS_PER_SECOND)
   if (s < 90) return `${s}s`
   const m = Math.round(s / 60)
   if (m < 90) return `${m}m`
   const h = Math.round(m / 60)
-  if (h < 36) return `${h}h`
-  return `${Math.round(h / 24)}d`
+  if (h < HOURS_SHOWN) return `${h}h`
+  return `${Math.round(h / HOURS_PER_DAY)}d`
 }
 
 /** stream is colorable when it's a TTY and NO_COLOR isn't set. */
@@ -119,6 +140,27 @@ What it misses: PWA / service-worker sessions, unique people, most referrers.
 /**
  * @param {string[]} argv
  */
+/** Flags that take a value: the option they set and how to read it. */
+const VALUE_FLAGS = {
+  '--days': { key: 'days', read: Number },
+  '--buckets': { key: 'buckets', read: Number },
+  '--project': { key: 'project', read: String },
+  '--host': { key: 'host', read: String },
+  '--cache': { key: 'cache', read: String }
+}
+
+/** Flags that turn an option on. */
+const SWITCHES = {
+  '--pages': 'pages',
+  '--cache-only': 'cache_only',
+  '--refresh': 'refresh',
+  '--include-bots': 'include_bots',
+  '--all-paths': 'all_paths',
+  '--by-day': 'by_day'
+}
+
+const DEFAULT_SAMPLE = 5
+
 export const parse_args = (argv = process.argv.slice(2)) => {
   if (argv.includes('--help') || argv.includes('-h')) {
     console.info(help_text)
@@ -144,20 +186,12 @@ export const parse_args = (argv = process.argv.slice(2)) => {
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
     const next = argv[i + 1]
-    if (arg === '--days' && next) opts.days = Number(argv[++i])
-    else if (arg === '--buckets' && next) opts.buckets = Number(argv[++i])
-    else if (arg === '--pages') opts.pages = true
-    else if (arg === '--project' && next) opts.project = argv[++i]
-    else if (arg === '--host' && next) opts.host = argv[++i]
-    else if (arg === '--cache' && next) opts.cache = argv[++i]
-    else if (arg === '--cache-only') opts.cache_only = true
-    else if (arg === '--refresh') opts.refresh = true
-    else if (arg === '--include-bots') opts.include_bots = true
-    else if (arg === '--all-paths') opts.all_paths = true
-    else if (arg === '--by-day') opts.by_day = true
+    const value = VALUE_FLAGS[arg]
+    if (SWITCHES[arg]) opts[SWITCHES[arg]] = true
+    else if (value && next) opts[value.key] = value.read(argv[++i])
     else if (arg === '--sample')
-      if (next && !next.startsWith('--')) opts.sample = Number(argv[++i])
-      else opts.sample = 5
+      opts.sample =
+        next && !next.startsWith('--') ? Number(argv[++i]) : DEFAULT_SAMPLE
     else throw new Error(`Unknown argument: ${arg}`)
   }
 
@@ -215,7 +249,7 @@ export const path_from_url = request_url => {
       pathname = pathname.slice(0, -1)
     return pathname || '/'
   } catch {
-    const cleaned = request_url.split('?')[0].split('#')[0]
+    const [cleaned] = request_url.split(/[?#]/)
     if (!cleaned.startsWith('/')) return ''
     if (cleaned.length > 1 && cleaned.endsWith('/')) return cleaned.slice(0, -1)
     return cleaned || '/'
@@ -237,7 +271,11 @@ export const is_document_hit = (http_request, { host, all_paths }) => {
   if (http_request.requestMethod !== 'GET') return false
 
   const status = Number(http_request.status)
-  if (Number.isFinite(status) && (status < 200 || status >= 400)) return false
+  if (
+    Number.isFinite(status) &&
+    (status < HTTP.OK || status >= HTTP.BAD_REQUEST)
+  )
+    return false
 
   const request_url = String(http_request.requestUrl ?? '')
   if (host && request_url && !request_url.includes(host)) return false
@@ -292,8 +330,11 @@ export const referer_host = referer => {
  */
 export const visitor_key = http_request => {
   const ip = String(http_request.remoteIp ?? '')
-  const ua = String(http_request.userAgent ?? '').slice(0, 120)
-  return create_hash('sha256').update(`${ip}|${ua}`).digest('hex').slice(0, 12)
+  const ua = String(http_request.userAgent ?? '').slice(0, UA_LENGTH)
+  return create_hash('sha256')
+    .update(`${ip}|${ua}`)
+    .digest('hex')
+    .slice(0, VISITOR_ID_LENGTH)
 }
 
 /**
@@ -307,7 +348,7 @@ export const entry_timestamp = entry => {
   if (ts && typeof ts === 'object') {
     const { seconds } = /** @type {{ seconds?: unknown }} */ (ts)
     if (typeof seconds === 'number' || typeof seconds === 'string') {
-      const ms = Number(seconds) * 1000
+      const ms = Number(seconds) * MS_PER_SECOND
       if (Number.isFinite(ms)) return new Date(ms).toISOString()
     }
   }
@@ -331,7 +372,7 @@ export const entry_id = entry => {
   return create_hash('sha256')
     .update(`${ts}|${url}|${ip}|${ua}`)
     .digest('hex')
-    .slice(0, 24)
+    .slice(0, EVENT_ID_LENGTH)
 }
 
 /**
@@ -469,7 +510,7 @@ export const aggregate_entries = (
   const top_referers = [...referers.entries()]
     .map(([host_name, count]) => ({ host: host_name, count }))
     .sort((a, b) => b.count - a.count || a.host.localeCompare(b.host))
-    .slice(0, 15)
+    .slice(0, TOP_REFERERS)
 
   const approx_visitors = new Set()
   for (const row of by_path.values())
@@ -626,7 +667,7 @@ export const aggregate_window = (
  * @param {number} buckets
  */
 export const bucket_windows = (now, days, buckets) => {
-  const span = days * 24 * 60 * 60 * 1000
+  const span = days * MS_PER_DAY
   const end = new Date(now).getTime()
   const out = []
   for (let i = buckets - 1; i >= 0; i--)
@@ -722,7 +763,7 @@ export const format_insight = (trend, { days, color = false }) => {
     )
 
   const count = value => bold(green(String(value), color), color)
-  const ratio = Math.round((current.deeper / current.landed) * 100)
+  const ratio = Math.round((current.deeper / current.landed) * PERCENT)
   lines.push(
     `  ${count(current.landed)} people visited the homepage${dim(
       `  (${days}d, distinct visitors)`,
@@ -760,8 +801,8 @@ export const by_day_paths = ['/', '/about', '/pricing']
  * @returns {string | null} UTC calendar day YYYY-MM-DD
  */
 export const utc_day = timestamp => {
-  if (typeof timestamp !== 'string' || timestamp.length < 10) return null
-  const day = timestamp.slice(0, 10)
+  if (typeof timestamp !== 'string' || timestamp.length < ISO_DATE) return null
+  const day = timestamp.slice(0, ISO_DATE)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null
   return day
 }
@@ -783,7 +824,7 @@ export const each_utc_day = (
   const cursor = new Date(`${start}T00:00:00.000Z`)
   const last = new Date(`${end}T00:00:00.000Z`)
   while (cursor <= last) {
-    out.push(cursor.toISOString().slice(0, 10))
+    out.push(cursor.toISOString().slice(0, ISO_DATE))
     cursor.setUTCDate(cursor.getUTCDate() + 1)
   }
   return out
@@ -867,7 +908,7 @@ export const format_by_day = (
   const header = `Day         ${paths
     .map(doc_path => {
       const label = short[doc_path] ?? doc_path
-      return `${label.padStart(5)} ${'≈'.padStart(4)}`
+      return `${label.padStart(5)} ${'≈'.padStart(VISITOR_WIDTH)}`
     })
     .join('  ')}`
   lines.push(bold(header, color))
@@ -875,7 +916,7 @@ export const format_by_day = (
   for (const row of rows) {
     const cells = paths.map(doc_path => {
       const col = row.paths[doc_path]
-      return `${String(col.humans).padStart(5)} ${String(col.approx_visitors).padStart(4)}`
+      return `${String(col.humans).padStart(5)} ${String(col.approx_visitors).padStart(VISITOR_WIDTH)}`
     })
     lines.push(`${row.day}  ${cells.join('  ')}`)
   }
@@ -901,13 +942,16 @@ export const format_report = (report, meta = {}) => {
     return lines.join('\n')
   }
 
-  const path_width = Math.max(12, ...report.paths.map(row => row.path.length))
+  const path_width = Math.max(
+    PATH_MIN_WIDTH,
+    ...report.paths.map(row => row.path.length)
+  )
   const header = [
     'Path'.padEnd(path_width),
-    'Hits'.padStart(6),
-    'Bots'.padStart(6),
-    'Human'.padStart(6),
-    '≈IPs'.padStart(6)
+    'Hits'.padStart(COUNT_WIDTH),
+    'Bots'.padStart(COUNT_WIDTH),
+    'Human'.padStart(COUNT_WIDTH),
+    '≈IPs'.padStart(COUNT_WIDTH)
   ].join('  ')
   lines.push(bold(header, color))
   lines.push(dim('-'.repeat(header.length), color))
@@ -915,10 +959,10 @@ export const format_report = (report, meta = {}) => {
     lines.push(
       [
         row.path.padEnd(path_width),
-        String(row.hits).padStart(6),
-        String(row.bots).padStart(6),
-        String(row.humans).padStart(6),
-        String(row.approx_visitors).padStart(6)
+        String(row.hits).padStart(COUNT_WIDTH),
+        String(row.bots).padStart(COUNT_WIDTH),
+        String(row.humans).padStart(COUNT_WIDTH),
+        String(row.approx_visitors).padStart(COUNT_WIDTH)
       ].join('  ')
     )
 
@@ -988,7 +1032,7 @@ const gcloud_logging_read = ({ project, filter, limit }) => {
       '--format=json',
       '--order=desc'
     ],
-    { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }
+    { encoding: 'utf8', maxBuffer: LOG_BUFFER_MIB * MIB }
   )
 
   if (result.error) {
@@ -1066,9 +1110,7 @@ export const fetch_log_range = options => {
  * }} options
  */
 export const sync_traffic_cache = options => {
-  const since = new Date(
-    Date.now() - options.days * 24 * 60 * 60 * 1000
-  ).toISOString()
+  const since = new Date(Date.now() - options.days * MS_PER_DAY).toISOString()
   const existing = options.refresh ? [] : read_jsonl_cache(options.cache_path)
   const by_id = new Map(existing.map(row => [entry_id(row), row]))
   const bounds = cache_bounds(existing)
@@ -1165,7 +1207,7 @@ export const simplify_entry = entry => {
   }
 }
 
-const main = async () => {
+const main = () => {
   const args = parse_args()
   const project = args.project ?? default_project_id()
   const cache_path =
@@ -1195,7 +1237,7 @@ const main = async () => {
 
   const span =
     synced.bounds.oldest && synced.bounds.newest
-      ? `${synced.bounds.oldest.slice(0, 10)} → ${synced.bounds.newest.slice(0, 10)}`
+      ? `${synced.bounds.oldest.slice(0, ISO_DATE)} → ${synced.bounds.newest.slice(0, ISO_DATE)}`
       : 'empty'
   const age = exists_sync(cache_path)
     ? `synced ${format_age(Date.now() - stat_sync(cache_path).mtimeMs)} ago`
@@ -1210,7 +1252,7 @@ const main = async () => {
 
   if (args.sample !== null) {
     const sample = synced.entries.slice(0, args.sample).map(simplify_entry)
-    console.log(JSON.stringify(sample, null, 2))
+    console.info(JSON.stringify(sample, null, 2))
     return
   }
 
@@ -1226,13 +1268,16 @@ const main = async () => {
     oldest: synced.bounds.oldest
   })
 
-  console.log('')
-  console.log(
+  console.info('')
+  console.info(
     bold(`  ${args.host}`, color) +
-      dim(`   ${args.days}d ending ${now.toISOString().slice(0, 10)}`, color)
+      dim(
+        `   ${args.days}d ending ${now.toISOString().slice(0, ISO_DATE)}`,
+        color
+      )
   )
-  console.log('')
-  console.log(format_insight(trend, { days: args.days, color }))
+  console.info('')
+  console.info(format_insight(trend, { days: args.days, color }))
 
   if (args.pages) {
     const current_since = trend[trend.length - 1].start
@@ -1247,8 +1292,8 @@ const main = async () => {
         all_paths: args.all_paths
       }
     )
-    console.log('')
-    console.log(format_report(report, { color }))
+    console.info('')
+    console.info(format_report(report, { color }))
   }
 
   if (args.by_day) {
@@ -1258,8 +1303,8 @@ const main = async () => {
       all_paths: args.all_paths,
       since: synced.since
     })
-    console.log('')
-    console.log(format_by_day(by_day_rows, undefined, { color }))
+    console.info('')
+    console.info(format_by_day(by_day_rows, undefined, { color }))
   }
 }
 

@@ -28,12 +28,12 @@ A voice skill applied wholesale produces a house style, and a house style is a f
 
 ## Reviewing voice-composed text
 
-| Finding class | Handling under a declared voice |
-|---|---|
+| Finding class                                                                                                                                                                | Handling under a declared voice                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Over-correction advisories on axes the voice deliberately pushes (a minimalism method driving interior access, sensory density, or thematic explicitness to the low extreme) | Expected: report them as the voice's known cost, and do not prescribe fixes against the user's chosen aesthetic. Escalate only if the user hasn't been told the trade-off |
-| Uniformity findings: the same sentence recipe in every paragraph, the key line always closing the paragraph, a complete setup-payoff ledger, a formula ending | Hard findings at full strength — a voice does not excuse a metronome |
-| Style-pass vocabulary and syntax hits | Unchanged — style-pass's own clustering thresholds and whitelists stay in force; a declared voice neither excuses nor hardens them |
-| Specificity and fact guardrails | Unchanged: never invent, voice or no voice |
+| Uniformity findings: the same sentence recipe in every paragraph, the key line always closing the paragraph, a complete setup-payoff ledger, a formula ending                | Hard findings at full strength — a voice does not excuse a metronome                                                                                                      |
+| Style-pass vocabulary and syntax hits                                                                                                                                        | Unchanged — style-pass's own clustering thresholds and whitelists stay in force; a declared voice neither excuses nor hardens them                                        |
+| Specificity and fact guardrails                                                                                                                                              | Unchanged: never invent, voice or no voice                                                                                                                                |
 
 ## Worked example (single run, not measured evidence)
 

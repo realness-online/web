@@ -48,7 +48,7 @@ beforeEach(() => {
   process.env.PRINTS_AUTHOR = AUTHOR
 })
 
-describe('#handlers/http/prints-checkout', () => {
+describe('#handlers/http/prints-checkout requests', () => {
   it('rejects methods other than GET and POST', async () => {
     const res = fake_res()
     await prints_checkout_handler({ method: 'DELETE' }, res)
@@ -101,7 +101,9 @@ describe('#handlers/http/prints-checkout', () => {
     expect(res.json).toHaveBeenCalledWith({ error: 'Invalid print price' })
     expect(mock_create).not.toHaveBeenCalled()
   })
+})
 
+describe('#handlers/http/prints-checkout editions', () => {
   it('refuses only an already paid scarce edition', async () => {
     mock_amounts.mockResolvedValue([500])
     const res = fake_res()

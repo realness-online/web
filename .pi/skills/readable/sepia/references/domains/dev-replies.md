@@ -8,16 +8,16 @@ Direct, specific, proportional. Maintainers answer the point in the first senten
 
 ## AI tells in this domain
 
-| Tell | Fix |
-|---|---|
-| Praise/thanks opener by default: "Great catch!", "Thanks for the detailed report!" | Open with the answer. Thank people when it's genuinely warranted (first contribution, unusual effort) — not as a reflex |
-| Restating the question/issue back before answering | Delete; the thread already contains it |
-| A wall of bullets for a one-sentence answer | One sentence. Length proportional to stakes |
-| Hedged non-answers: "There could be several factors…", both-sides mush | Commit: the most likely cause, the check to confirm it, or an honest "I don't know" |
-| Boilerplate empathy on bug reports: "I understand how frustrating this must be" | Ask for the repro detail you actually need |
-| Sign-offs: "Hope this helps!", "Let me know if you have any questions!" | End at the content |
-| Promising work in the reply instead of doing it ("I'll look into this") when the fix is at hand | Do it, then link the commit |
-| Perfectly uniform comment structure across a review (every comment: praise + issue + suggestion) | Vary; some comments are one word ("nit: typo"), some are paragraphs |
+| Tell                                                                                             | Fix                                                                                                                     |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Praise/thanks opener by default: "Great catch!", "Thanks for the detailed report!"               | Open with the answer. Thank people when it's genuinely warranted (first contribution, unusual effort) — not as a reflex |
+| Restating the question/issue back before answering                                               | Delete; the thread already contains it                                                                                  |
+| A wall of bullets for a one-sentence answer                                                      | One sentence. Length proportional to stakes                                                                             |
+| Hedged non-answers: "There could be several factors…", both-sides mush                           | Commit: the most likely cause, the check to confirm it, or an honest "I don't know"                                     |
+| Boilerplate empathy on bug reports: "I understand how frustrating this must be"                  | Ask for the repro detail you actually need                                                                              |
+| Sign-offs: "Hope this helps!", "Let me know if you have any questions!"                          | End at the content                                                                                                      |
+| Promising work in the reply instead of doing it ("I'll look into this") when the fix is at hand  | Do it, then link the commit                                                                                             |
+| Perfectly uniform comment structure across a review (every comment: praise + issue + suggestion) | Vary; some comments are one word ("nit: typo"), some are paragraphs                                                     |
 
 ## Rules
 

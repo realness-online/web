@@ -1,6 +1,6 @@
 ---
 description: Start an app from the microdata example and add a type
-argument-hint: "[folder] [type]"
+argument-hint: '[folder] [type]'
 ---
 
 From the harness root, start an app in `${1:-apps/app}` from the app example,

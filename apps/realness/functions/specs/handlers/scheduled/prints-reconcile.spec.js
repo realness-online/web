@@ -20,9 +20,8 @@ vi.mock('#utils/log.js', () => ({
   log_error: mock_log_error
 }))
 
-const { prints_reconcile_handler } = await import(
-  '#handlers/scheduled/prints-reconcile.js'
-)
+const { prints_reconcile_handler } =
+  await import('#handlers/scheduled/prints-reconcile.js')
 
 const AUTHOR = '/+14155550142'
 const sale = (created, session_id = `cs_${created}`) => ({
@@ -56,7 +55,7 @@ describe('#handlers/scheduled/prints-reconcile', () => {
     })
   })
 
-  it('skips sessions for posters that are not the prints author\'s', async () => {
+  it("skips sessions for posters that are not the prints author's", async () => {
     mock_paid.mockResolvedValue([
       { ...sale(1), poster_id: '/+15551234567/posters/1' }
     ])

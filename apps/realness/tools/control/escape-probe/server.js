@@ -19,8 +19,21 @@ const ownAddress = () => {
   return found.address
 }
 
+/** Ports the probe tries; exec is the actor agent socket. */
+const PORT = {
+  ssh: 22,
+  exec: 52,
+  dns: 53,
+  http: 80,
+  https: 443,
+  app: 8080,
+  side: 8081
+}
+const CONNECT_MS = 1500
+const SIBLING_APPS = 8
+
 /** Refused when the TCP connect fails; a timeout (dropped) counts as refused. */
-const tryConnect = (host, port, ms = 1500) =>
+const tryConnect = (host, port, ms = CONNECT_MS) =>
   new Promise(done => {
     const socket = connect({ host, port })
     const finish = (refused, detail) => {
@@ -66,22 +79,24 @@ const probes = async () => {
     )
   )
   results['sibling apps'] = await reach(
-    [...Array(8).keys()]
+    [...Array(SIBLING_APPS).keys()]
       .map(i => `172.17.${i + 1}.2`)
       .filter(a => a !== me)
-      .map(a => [a, 8080])
+      .map(a => [a, PORT.app])
   )
   results['actors'] = await reach(
     [0, 1, 2, 3].flatMap(i =>
-      [1, 2].flatMap(h => [22, 52, 8080].map(p => [`172.16.${i}.${h}`, p]))
+      [1, 2].flatMap(h =>
+        [PORT.ssh, PORT.exec, PORT.app].map(p => [`172.16.${i}.${h}`, p])
+      )
     )
   )
-  results['metadata'] = await reach([['169.254.169.254', 80]])
+  results['metadata'] = await reach([['169.254.169.254', PORT.http]])
   results['internet'] = await reach([
-    ['1.1.1.1', 443],
-    ['1.1.1.1', 80],
-    ['8.8.8.8', 53],
-    ...(TARGETS.internet ?? []).map(a => [a, 443])
+    ['1.1.1.1', PORT.https],
+    ['1.1.1.1', PORT.http],
+    ['8.8.8.8', PORT.dns],
+    ...(TARGETS.internet ?? []).map(a => [a, PORT.https])
   ])
   try {
     await lookup('example.com')
@@ -122,4 +137,4 @@ export default {
   }
 }
 
-create_server(socket => socket.end('side door\n')).listen(8081)
+create_server(socket => socket.end('side door\n')).listen(PORT.side)

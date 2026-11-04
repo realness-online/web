@@ -1,52 +1,15 @@
 #!/usr/bin/env node
 // A line carrying `soundness-allow: <reason>` (older `useless-allow` still works) excuses the hit on it, or the hit on
 
-import {
-  existsSync as exists_sync,
-  readFileSync as read_file_sync,
-  readdirSync as readdir_sync,
-  statSync as stat_sync
-} from 'node:fs'
+import { existsSync as exists_sync, readFileSync as read_file_sync } from 'node:fs'
 import { dirname, join, parse, relative, resolve } from 'node:path'
+import { inside, is_minified, source_files } from '../lib/source-files.js'
 import { check_site } from './site-check.js'
 
 const root = process.cwd()
 
-const SKIP = new Set([
-  'node_modules',
-  '.git',
-  'artifacts',
-  'vault',
-  'dist',
-  'coverage',
-  '.obsidian',
-  'sessions',
-  '.agents',
-  '.pi',
-  '.claude',
-  '.cursor',
-  '.nuxt',
-  '.output',
-  '.next',
-  '.svelte-kit',
-  '.astro',
-  '.vercel',
-  '.netlify',
-  'out',
-  'wasm',
-  '.cache',
-  '.venv',
-  'site-packages',
-  '__pycache__',
-  '.pytest_cache',
-  '.mypy_cache',
-  '.turbo',
-  '.vite',
-  'tests',
-  'specs',
-  '__tests__'
-])
-
+/** Folders this check leaves out: specs and generated output. */
+const LEFT_OUT = new Set(['specs', 'tests', '__tests__', 'wasm', 'out', '.nuxt', '.output', '.next'])
 const SOURCE = /\.(js|ts|vue|css|html|jsx|tsx)$/
 const CODE = /\.(js|ts|jsx|tsx|vue)$/
 const VUE = /\.vue$/
@@ -255,29 +218,6 @@ export const check_text = (file, text) => {
   return out
 }
 
-const walk = (target, files) => {
-  if (!exists_sync(target)) return
-  const info = stat_sync(target)
-  if (info.isDirectory()) {
-    if (SKIP.has(parse(target).base)) return
-    for (const entry of readdir_sync(target, { withFileTypes: true }))
-      if (!entry.isDirectory() || !SKIP.has(entry.name)) walk(join(target, entry.name), files)
-  } else if (SOURCE.test(target) && !/\.test\.(js|ts)$/.test(target)) {
-    files.push(target)
-  }
-}
-
-const is_minified = text => {
-  let start = 0
-  let line = text.indexOf('\n', start)
-  while (line !== -1) {
-    if (line - start > 1000) return true
-    start = line + 1
-    line = text.indexOf('\n', start)
-  }
-  return text.length - start > 1000
-}
-
 export const main = (argv = process.argv.slice(2)) => {
   if (argv.includes('--site')) {
     const index = argv.indexOf('--site')
@@ -302,8 +242,9 @@ export const main = (argv = process.argv.slice(2)) => {
   const targets = argv.filter(arg => !arg.startsWith('--'))
   if (targets.length === 0) targets.push(root)
 
-  const files = []
-  for (const target of targets) walk(target, files)
+  const files = targets.flatMap(target =>
+    source_files(target, name => SOURCE.test(name) && !/\.test\.(js|ts)$/.test(name) && !inside(name, LEFT_OUT))
+  )
 
   const violations = []
   for (const file of files) {

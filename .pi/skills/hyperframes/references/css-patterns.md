@@ -47,7 +47,7 @@ Yellow marker sweep behind text. The most common mode.
 
 ```js
 // Sweep in from left
-tl.to("#hl-1", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 0.6);
+tl.to('#hl-1', { scaleX: 1, duration: 0.5, ease: 'power2.out' }, 0.6)
 
 // Optional: skew for hand-drawn feel
 // gsap.set("#hl-1", { skewX: -2 });
@@ -59,15 +59,15 @@ Stagger bars across multiple lines:
 
 ```js
 tl.to(
-  ".mh-highlight-bar",
+  '.mh-highlight-bar',
   {
     scaleX: 1,
     duration: 0.5,
-    ease: "power2.out",
-    stagger: 0.3,
+    ease: 'power2.out',
+    stagger: 0.3
   },
-  0.6,
-);
+  0.6
+)
 ```
 
 ## 2. Circle Mode
@@ -107,16 +107,16 @@ Hand-drawn circle around text. Use `border-radius: 50%` with a slight rotation f
 ```js
 // Circle scales in with a wobble
 tl.to(
-  "#circle-1",
+  '#circle-1',
   {
     scale: 1,
     rotation: -3,
     duration: 0.6,
-    ease: "back.out(1.7)",
-    transformOrigin: "center center",
+    ease: 'back.out(1.7)',
+    transformOrigin: 'center center'
   },
-  0.7,
-);
+  0.7
+)
 ```
 
 ### Variations
@@ -201,11 +201,11 @@ Radiating lines from text center. Each line is a positioned div rotated to its a
 ```js
 // All lines burst outward simultaneously with slight stagger
 tl.fromTo(
-  "#burst-1 .mh-burst-line",
+  '#burst-1 .mh-burst-line',
   { scaleY: 0, opacity: 0 },
-  { scaleY: 1, opacity: 1, duration: 0.4, ease: "power2.out", stagger: 0.03 },
-  0.7,
-);
+  { scaleY: 1, opacity: 1, duration: 0.4, ease: 'power2.out', stagger: 0.03 },
+  0.7
+)
 ```
 
 **Vary line lengths** (40-80px range) for an organic, hand-drawn feel. Equal lengths look mechanical.
@@ -251,20 +251,20 @@ Wavy SVG underlines and strikethroughs that draw themselves via `stroke-dashoffs
 
 ```js
 // Measure path length and set initial dash state
-var path = document.querySelector("#scribble-1");
-var len = path.getTotalLength();
-gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
+var path = document.querySelector('#scribble-1')
+var len = path.getTotalLength()
+gsap.set(path, { strokeDasharray: len, strokeDashoffset: len })
 
 // Draw the line
 tl.to(
-  "#scribble-1",
+  '#scribble-1',
   {
     strokeDashoffset: 0,
     duration: 0.8,
-    ease: "power1.inOut",
+    ease: 'power1.inOut'
   },
-  0.7,
-);
+  0.7
+)
 ```
 
 ### Strikethrough Variant
@@ -333,25 +333,25 @@ Cross-hatch lines over de-emphasized text. Multiple angled lines create a "cross
 ```js
 // Forward slash draws first
 tl.to(
-  "#sketchout-1 .mh-sketchout-fwd",
+  '#sketchout-1 .mh-sketchout-fwd',
   {
     scaleX: 1,
     duration: 0.3,
-    ease: "power2.out",
+    ease: 'power2.out'
   },
-  1.0,
-);
+  1.0
+)
 
 // Backward slash follows
 tl.to(
-  "#sketchout-1 .mh-sketchout-bwd",
+  '#sketchout-1 .mh-sketchout-bwd',
   {
     scaleX: 1,
     duration: 0.3,
-    ease: "power2.out",
+    ease: 'power2.out'
   },
-  1.15,
-);
+  1.15
+)
 ```
 
 ## Combining Modes in Captions
@@ -359,15 +359,15 @@ tl.to(
 Use mode cycling for visual variety across caption groups:
 
 ```js
-var MODES = ["highlight", "circle", "burst", "scribble"];
+var MODES = ['highlight', 'circle', 'burst', 'scribble']
 
 GROUPS.forEach(function (group, gi) {
-  var mode = MODES[gi % MODES.length];
+  var mode = MODES[gi % MODES.length]
   // Apply the mode's CSS pattern to emphasis words in this group
   group.emphasisWords.forEach(function (word) {
-    applyMode(word.el, mode, tl, word.start);
-  });
-});
+    applyMode(word.el, mode, tl, word.start)
+  })
+})
 ```
 
 Cycle every 2-3 groups for high energy, every 3-4 for medium, every 4-5 for low.

@@ -105,8 +105,7 @@ const check = async (name, text) => {
     if (rendered) {
       const { art } = await render_mermaid(g.body)
       if (!art) bad('render', `fence at line ${g.line}: the mermaid engine could not parse it`)
-      else if (art.warnings.length)
-        bad('render', `fence at line ${g.line}: ${art.warnings.join('; ').slice(0, 80)}`)
+      else if (art.warnings.length) bad('render', `fence at line ${g.line}: ${art.warnings.join('; ').slice(0, 80)}`)
     }
   }
 

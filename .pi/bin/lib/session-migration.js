@@ -21,7 +21,7 @@ import {
   sessionHtmlToEntries as session_html_to_entries
 } from '../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-html.js'
 
-import { prepare_session_state, rewrite_session_state } from './session-state.js'
+import { prepare_session_state, repoint_parents, rewrite_session_state } from './session-state.js'
 
 const stringify_entry = entry =>
   JSON.stringify(entry, (_, value) => (Object.is(value, -0) ? JSON.rawJSON('-0') : value))
@@ -53,12 +53,6 @@ const closed = paths => {
     assert_session_closed(path)
   }
 }
-const point_headers = (entries, mapping) =>
-  entries.map(entry =>
-    entry.type === 'session' && mapping.has(entry.parentSession)
-      ? { ...entry, parentSession: mapping.get(entry.parentSession) }
-      : entry
-  )
 
 /** Trial-only conversion. Originals are archived before a verified compressed file replaces them. */
 export const convert_history = ({ root: given_root, backup: given_backup, state, deferred }) => {
@@ -77,7 +71,7 @@ export const convert_history = ({ root: given_root, backup: given_backup, state,
     const original = json_entries(bytes)
     if (original[0]?.type !== 'session' || typeof original[0].id !== 'string')
       throw new Error(`Session lacks a valid header: ${source}`)
-    const entries = point_headers(original, mapping)
+    const entries = repoint_parents(original, mapping)
     const html = entries.map(entry => entry_to_html_line(entry, original[0].id)).join('\n') + '\n'
     const packed = compress_session_chunk(html)
     assert.deepEqual(session_html_to_entries(read_session_gzip(packed).text), entries)
@@ -145,7 +139,7 @@ export const rollback_history = manifest_path => {
     const packed = read_file_sync(target)
     const decoded = read_session_gzip(packed)
     if (decoded.incomplete_bytes) throw new Error(`Rollback requires a complete tail: ${target}`)
-    const entries = point_headers(session_html_to_entries(decoded.text), mapping)
+    const entries = repoint_parents(session_html_to_entries(decoded.text), mapping)
     if (entries[0]?.type !== 'session' || typeof entries[0].id !== 'string')
       throw new Error(`Session lacks a valid header: ${target}`)
     const original = originals.get(source)

@@ -2,14 +2,8 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-. "$REPO/lib/output.sh"
-RUN="${RUNS_DIR:-$OUT}/app-escape-check-$(date -u +%Y%m%dT%H%M%SZ)"
-mkdir -p "$RUN"
-
-PASS=0
-FAIL=0
-ok()  { printf '  ok   %s\n' "$*"; PASS=$((PASS + 1)); }
-bad() { printf '  FAIL %s\n' "$*" >&2; FAIL=$((FAIL + 1)); }
+. "$REPO/lib/check.sh"
+check_start app-escape-check
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 iptables -S INPUT | grep -q -- "-i fc-app+ -j REALNESS-APP-IN" \
@@ -91,5 +85,4 @@ dropped="$(iptables -nvxL REALNESS-APP-OUT | awk '$3 == "DROP" {print $1}')"
 [ "${dropped:-0}" -gt 0 ] && ok "REALNESS-APP-OUT dropped $dropped packets" || bad "REALNESS-APP-OUT dropped nothing"
 
 echo
-echo "$PASS passed, $FAIL failed  (run: $RUN)"
-[ "$FAIL" = 0 ]
+check_end

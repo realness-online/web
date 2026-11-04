@@ -27,8 +27,7 @@ export const create_templates = (site, poster_sizes, watch = false) => {
    * @param {string | null} [href]
    * @param {object} [options]
    */
-  const render_poster = (data, title, heading, href, options) =>
-    poster(settings, poster_sizes, data, title, heading, href, options)
+  const render_poster = poster(settings, poster_sizes)
   return {
     /**
      * @param {string} title
@@ -55,7 +54,7 @@ export const create_templates = (site, poster_sizes, watch = false) => {
      * @param {string} [related]
      */
     article_body(data, title, html, notes, related) {
-      return article_body(render_poster, data, title, html, notes, related)
+      return article_body(render_poster)(data, title, html, notes, related)
     },
     /** @param {import('./types.js').Article[]} articles */
     index_body(articles) {

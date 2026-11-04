@@ -9,12 +9,14 @@ Use when the entire skill fits in under ~200 lines with no external resources ne
 **Examples:** `brand-guidelines`, `commit`, `pr-writer`
 
 **Structure:**
+
 ```
 brand-guidelines/
 └── SKILL.md
 ```
 
 **Pattern highlights:**
+
 - Frontmatter with `name` and `description` only (no model override, no allowed-tools)
 - Body organized with `##` sections for different aspects of the domain
 - Heavy use of tables for decision logic and examples
@@ -29,6 +31,7 @@ Use when the skill automates a multi-step workflow with structured data processi
 **Examples:** `iterate-pr`
 
 **Structure:**
+
 ```
 iterate-pr/
 ├── SKILL.md
@@ -38,6 +41,7 @@ iterate-pr/
 ```
 
 **Pattern highlights:**
+
 - SKILL.md documents each script's interface (arguments, output JSON schema)
 - Scripts use PEP 723 inline metadata for dependencies:
   ```python
@@ -62,6 +66,7 @@ Use when the skill covers a broad domain with conditional knowledge loading.
 **Examples:** `security-review`
 
 **Structure:**
+
 ```
 security-review/
 ├── SKILL.md
@@ -80,13 +85,14 @@ security-review/
 ```
 
 **Pattern highlights:**
+
 - SKILL.md contains the core workflow and quick-reference tables
 - Reference files are loaded **conditionally** based on detected context:
   ```markdown
-  | Code Type | Load These References |
-  |-----------|----------------------|
+  | Code Type     | Load These References              |
+  | ------------- | ---------------------------------- |
   | API endpoints | `authorization.md`, `injection.md` |
-  | Frontend | `xss.md`, `csrf.md` |
+  | Frontend      | `xss.md`, `csrf.md`                |
   ```
 - Each reference file is self-contained and focused on one topic
 - SKILL.md includes a file index so the agent knows what's available
@@ -101,14 +107,14 @@ security-review/
 Use when the skill takes user input as parameters.
 
 **Structure:**
+
 ```yaml
 ---
 name: fix-issue
 description: Fix a GitHub issue by number. Use when asked to fix, resolve, or address a GitHub issue.
 disable-model-invocation: true
-argument-hint: "[issue-number]"
+argument-hint: '[issue-number]'
 ---
-
 Fix GitHub issue $ARGUMENTS following our coding standards.
 
 1. Read the issue description
@@ -118,6 +124,7 @@ Fix GitHub issue $ARGUMENTS following our coding standards.
 ```
 
 **Pattern highlights:**
+
 - `$ARGUMENTS` is replaced with whatever follows `/fix-issue` (e.g., `/fix-issue 123`)
 - `$ARGUMENTS[N]` or `$N` accesses individual arguments by position
 - `argument-hint` provides autocomplete guidance
@@ -142,9 +149,9 @@ Fix GitHub issue $ARGUMENTS following our coding standards.
 
 ### Trigger Info in Body Instead of Description
 
-**Problem:** The body includes a "When to Use This Skill" section, but the description is vague. The body is only loaded *after* triggering, so this information never helps with skill selection.
+**Problem:** The body includes a "When to Use This Skill" section, but the description is vague. The body is only loaded _after_ triggering, so this information never helps with skill selection.
 
-**Fix:** Move all "when to use" information into the `description` field. The body should contain *how* to execute, not *when* to activate.
+**Fix:** Move all "when to use" information into the `description` field. The body should contain _how_ to execute, not _when_ to activate.
 
 ### Duplicating CLAUDE.md
 
@@ -157,11 +164,12 @@ Fix GitHub issue $ARGUMENTS following our coding standards.
 **Problem:** SKILL.md says "Read all reference files before starting" - loads 20+ files into context regardless of the task.
 
 **Fix:** Use a decision table to load only relevant references:
+
 ```markdown
-| Detected Language | Read |
-|------------------|------|
-| Python           | `references/python.md` |
-| JavaScript       | `references/javascript.md` |
+| Detected Language | Read                       |
+| ----------------- | -------------------------- |
+| Python            | `references/python.md`     |
+| JavaScript        | `references/javascript.md` |
 ```
 
 ### Large References Without Navigation
@@ -181,16 +189,23 @@ Fix GitHub issue $ARGUMENTS following our coding standards.
 **Problem:** SKILL.md says `uv run <skill-dir>/scripts/tool.py` but doesn't document what arguments it takes or what it outputs.
 
 **Fix:** Document every script's interface in SKILL.md:
-```markdown
+
+````markdown
 ### `scripts/tool.py`
+
 Fetches X and returns structured data.
+
 ```bash
 uv run <skill-dir>/scripts/tool.py --flag VALUE
 ```
+````
+
 Returns JSON:
+
 ```json
 {"key": "value", "items": [...]}
 ```
+
 ```
 
 ### Hardcoded Paths
@@ -210,3 +225,4 @@ Returns JSON:
 **Problem:** SKILL.md includes "If before August 2025, use the old API" which will become wrong.
 
 **Fix:** Use a "Legacy patterns" section with the deprecated date noted, or remove time-sensitive content entirely.
+```

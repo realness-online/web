@@ -88,15 +88,31 @@ const controls = [
   [
     'canonical',
     root =>
-      write_file(join(root, 'index.html'), page.replace('</head>', '<link rel="canonical" href="https://x.example/gone"></head>'))
+      write_file(
+        join(root, 'index.html'),
+        page.replace('</head>', '<link rel="canonical" href="https://x.example/gone"></head>')
+      )
   ],
   [
     'canonical',
     root => write_file(join(root, 'sitemap.xml'), '<urlset><url><loc>https://x.example/gone</loc></url></urlset>')
   ],
-  ['pwa-manifest', root => write_file(join(root, 'manifest.webmanifest'), JSON.stringify({ ...manifest, theme_color: undefined }))],
-  ['pwa-icons', root => write_file(join(root, 'manifest.webmanifest'), JSON.stringify({ ...manifest, icons: manifest.icons.map(({ purpose, ...icon }) => icon) }))],
-  ['pwa-update', root => write_file(join(root, 'register.js'), "navigator.serviceWorker.register('/service.worker.js')\n")],
+  [
+    'pwa-manifest',
+    root => write_file(join(root, 'manifest.webmanifest'), JSON.stringify({ ...manifest, theme_color: undefined }))
+  ],
+  [
+    'pwa-icons',
+    root =>
+      write_file(
+        join(root, 'manifest.webmanifest'),
+        JSON.stringify({ ...manifest, icons: manifest.icons.map(({ purpose, ...icon }) => icon) })
+      )
+  ],
+  [
+    'pwa-update',
+    root => write_file(join(root, 'register.js'), "navigator.serviceWorker.register('/service.worker.js')\n")
+  ],
   ['pwa-prompt', root => write_file(join(root, 'service.worker.js'), worker.replace(/SKIP_WAITING/, 'OTHER'))],
   ['pwa-prompt', root => write_file(join(root, 'service.worker.js'), `self.skipWaiting()\n${worker}`)],
   ['pwa-claim', root => write_file(join(root, 'service.worker.js'), worker.replace('clientsClaim()', ''))],

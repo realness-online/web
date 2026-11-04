@@ -10,7 +10,7 @@ description: |
 license: MIT
 metadata:
   check: 'bash scripts/wrap.sh 2>&1 | grep -q usage'
-  version: "2.9.1"
+  version: '2.9.1'
 ---
 
 # Readable: Remove AI Writing Patterns

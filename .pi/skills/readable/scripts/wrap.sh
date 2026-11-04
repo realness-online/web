@@ -6,8 +6,7 @@ mode=${1:-}
 shift || true
 
 case "$mode" in
-  writer) args=(--prose-wrap never) ;;
-  nvim) args=(--prose-wrap always --print-width 80) ;;
+  writer | nvim) ;;
   *)
     echo "usage: wrap.sh writer|nvim <file.md>..." >&2
     exit 1
@@ -19,4 +18,7 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-"$(dirname "$0")/../../../node_modules/.bin/prettier" "${args[@]}" --ignore-path /dev/null --write "$@"
+here="$(cd "$(dirname "$0")" && pwd)"
+files=()
+for file in "$@"; do files+=("$(cd "$(dirname "$file")" && pwd)/$(basename "$file")"); done
+"$here/../../../../apps/realness/node_modules/.bin/oxfmt" -c "$here/wrap-$mode.json" --ignore-path /dev/null --write "${files[@]}"

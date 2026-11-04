@@ -44,16 +44,16 @@ for (var f = 0; f < AUDIO_DATA.totalFrames; f++) {
   tl.call(
     (function (frame) {
       return function () {
-        draw(frame);
-      };
+        draw(frame)
+      }
     })(AUDIO_DATA.frames[f]),
     [],
-    f / AUDIO_DATA.fps,
-  );
+    f / AUDIO_DATA.fps
+  )
 }
 
 // ❌ Wrong - single tween, doesn't react to audio
-gsap.to(".el", { scale: 1.2, duration: totalDuration });
+gsap.to('.el', { scale: 1.2, duration: totalDuration })
 ```
 
 Without per-frame sampling, the composition doesn't actually react to audio.

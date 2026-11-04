@@ -12,9 +12,9 @@ Touching palette code? Read [the color system](color-system.md) first - it cover
 
 A standard setup is usually three tabs in a terminal running the following scripts
 
-- `npm run dev` runs the client code on `http://localhost:8080`
-- `npm run dev:workers` keeps the workers current
-- `nmp run pre-commit` runs All our checks
+- `npm run dev:frontend` runs the client code on `http://localhost:8080`
+- `npm run dev:frontend:workers` keeps the workers current
+- From the repo root, `npm run check` and `npm test` run every check; the commit hook runs both.
 - `nmp run tests:coverage` is of note
 
 ### Config

@@ -7,12 +7,14 @@ Principles for writing effective agent skills. A skill is a set of instructions 
 The context window is shared between the skill instructions and the agent's working memory. Only include what the agent doesn't already know.
 
 **Include:**
+
 - Domain knowledge specific to this task
 - Decision logic the agent can't infer
 - Output format requirements
 - Concrete examples of correct behavior
 
 **Omit:**
+
 - General programming knowledge
 - How to use standard tools (Read, Grep, Bash)
 - Obvious instructions ("be thorough", "check for errors")
@@ -24,11 +26,11 @@ The context window is shared between the skill instructions and the agent's work
 
 Match the specificity of your instructions to the fragility of the task.
 
-| Fragility | Instruction Style | Example |
-|-----------|------------------|---------|
-| **High** - wrong output is costly | Prescriptive steps, exact formats | Commit message format, API output schema |
-| **Medium** - multiple valid approaches | Guidelines with examples | Code review priorities, refactoring strategy |
-| **Low** - many correct answers | Goals and constraints only | "Explain this code", "Summarize these changes" |
+| Fragility                              | Instruction Style                 | Example                                        |
+| -------------------------------------- | --------------------------------- | ---------------------------------------------- |
+| **High** - wrong output is costly      | Prescriptive steps, exact formats | Commit message format, API output schema       |
+| **Medium** - multiple valid approaches | Guidelines with examples          | Code review priorities, refactoring strategy   |
+| **Low** - many correct answers         | Goals and constraints only        | "Explain this code", "Summarize these changes" |
 
 Over-constraining low-fragility tasks wastes context and limits the agent. Under-constraining high-fragility tasks leads to inconsistent results.
 
@@ -49,10 +51,10 @@ whole description when in doubt.
 ```markdown
 ## Step 3: Load Language Guide
 
-| File Extension | Read This Reference |
-|---------------|-------------------|
-| `.py`         | `references/python.md` |
-| `.js`, `.ts`  | `references/javascript.md` |
+| File Extension | Read This Reference        |
+| -------------- | -------------------------- |
+| `.py`          | `references/python.md`     |
+| `.js`, `.ts`   | `references/javascript.md` |
 ```
 
 This keeps the base context small while making deep knowledge available when needed.
@@ -62,6 +64,7 @@ This keeps the base context small while making deep knowledge available when nee
 The `description` field determines when agents activate the skill. It must contain the phrases users actually say.
 
 **Write in third person** - the description is injected into the system prompt, and inconsistent point-of-view causes discovery problems:
+
 ```yaml
 # Good - third person
 description: Processes Excel files and generates reports. Use when working with spreadsheets.
@@ -76,6 +79,7 @@ description: You can use this to process Excel files.
 **Include all "when to use" information in the description**, not in the body. The body is only loaded after triggering, so "When to Use This Skill" sections in the body are not helpful.
 
 **Effective descriptions:**
+
 ```yaml
 # Good - includes natural trigger phrases
 description: Create commit messages following Sentry conventions. Use when committing code changes, writing commit messages, or formatting git history.
@@ -85,6 +89,7 @@ description: Security code review for vulnerabilities. Use when asked to "securi
 ```
 
 **Ineffective descriptions:**
+
 ```yaml
 # Bad - too vague, no trigger phrases
 description: A helpful skill for code quality.
@@ -102,12 +107,12 @@ description: Code review.
 
 Skills are instructions to an agent, not documentation for humans. Write in imperative voice throughout.
 
-| Imperative (correct) | Descriptive (avoid) |
-|---------------------|-------------------|
-| Read the diff and identify changes | This skill reads the diff and identifies changes |
-| Report findings in the table format below | Findings should be reported in the table format below |
+| Imperative (correct)                           | Descriptive (avoid)                                                  |
+| ---------------------------------------------- | -------------------------------------------------------------------- |
+| Read the diff and identify changes             | This skill reads the diff and identifies changes                     |
+| Report findings in the table format below      | Findings should be reported in the table format below                |
 | Ask the user before making destructive changes | The agent may want to ask the user before making destructive changes |
-| Skip test files unless explicitly requested | Test files are generally skipped unless explicitly requested |
+| Skip test files unless explicitly requested    | Test files are generally skipped unless explicitly requested         |
 
 The agent interprets imperative instructions as direct commands. Descriptive language introduces ambiguity about whether an action is required or optional.
 
@@ -115,11 +120,11 @@ The agent interprets imperative instructions as direct commands. Descriptive lan
 
 Pick one term for each concept and use it throughout the skill. Inconsistent terminology confuses agents and leads to inconsistent behavior.
 
-| Do (pick one) | Don't (mix these) |
-|---------------|-------------------|
+| Do (pick one)             | Don't (mix these)                          |
+| ------------------------- | ------------------------------------------ |
 | "API endpoint" everywhere | "API endpoint", "URL", "API route", "path" |
-| "field" everywhere | "field", "box", "element", "control" |
-| "extract" everywhere | "extract", "pull", "get", "retrieve" |
+| "field" everywhere        | "field", "box", "element", "control"       |
+| "extract" everywhere      | "extract", "pull", "get", "retrieve"       |
 
 ## Avoid Duplication
 
@@ -133,13 +138,17 @@ Don't include information that will become outdated:
 
 ```markdown
 # Bad - will become wrong
+
 If you're doing this before August 2025, use the old API.
 
 # Good - use "old patterns" section
+
 ## Current method
+
 Use the v2 API endpoint.
 
 ## Legacy patterns (deprecated)
+
 The v1 API is no longer supported.
 ```
 
@@ -149,10 +158,12 @@ Do not bake host-specific filesystem paths into skills. These make generated ski
 
 ```markdown
 # Bad
+
 Read `<absolute-path>/README.md`.
 Run `python <absolute-path>/tool.py`.
 
 # Good
+
 Read `<repo-root>/README.md`.
 Run `uv run <skill-dir>/scripts/tool.py`.
 ```
@@ -165,12 +176,14 @@ For reference files longer than 100 lines, include a table of contents at the to
 # API Reference
 
 ## Contents
+
 - Authentication and setup
 - Core methods (create, read, update, delete)
 - Advanced features (batch operations, webhooks)
 - Error handling patterns
 
 ## Authentication and setup
+
 ...
 ```
 
@@ -178,6 +191,7 @@ For very large reference files (>10k words), include grep search patterns in SKI
 
 ```markdown
 Find specific metrics using grep:
+
 - Revenue data: `grep -i "revenue" references/finance.md`
 - Pipeline data: `grep -i "pipeline" references/sales.md`
 ```

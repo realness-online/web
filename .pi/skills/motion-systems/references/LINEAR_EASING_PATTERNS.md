@@ -23,7 +23,14 @@ Use CSS `linear()` when you need explicit control over velocity progression acro
   --ease-linear-soft: linear(0, 0.06 12%, 0.3 34%, 0.72 63%, 0.92 84%, 1);
   --ease-linear-emphasis: linear(0, 0.3 18%, 0.86 62%, 1);
   --ease-linear-exit-crisp: linear(0, 0.32 20%, 0.74 60%, 0.92 82%, 1);
-  --ease-linear-settle-gentle: linear(0, 0.05 10%, 0.28 30%, 0.67 60%, 0.9 82%, 1);
+  --ease-linear-settle-gentle: linear(
+    0,
+    0.05 10%,
+    0.28 30%,
+    0.67 60%,
+    0.9 82%,
+    1
+  );
   --ease-linear-snap-pop: linear(0, 0.42 22%, 0.9 66%, 1);
 }
 ```
@@ -34,11 +41,12 @@ Use CSS `linear()` when you need explicit control over velocity progression acro
 
 ```css
 .card {
-  transition: opacity 200ms var(--ease-linear-soft),
+  transition:
+    opacity 200ms var(--ease-linear-soft),
     translate 200ms var(--ease-linear-soft);
 }
 
-.card[data-state="from-below"] {
+.card[data-state='from-below'] {
   opacity: 0;
   translate: 0 10px;
 }
@@ -48,11 +56,12 @@ Use CSS `linear()` when you need explicit control over velocity progression acro
 
 ```css
 .popover {
-  transition: opacity 150ms var(--ease-linear-exit-crisp),
+  transition:
+    opacity 150ms var(--ease-linear-exit-crisp),
     transform 150ms var(--ease-linear-exit-crisp);
 }
 
-.popover[data-state="closed"] {
+.popover[data-state='closed'] {
   opacity: 0;
   transform: translateY(-4px) scale(0.985);
 }
@@ -82,7 +91,7 @@ Use CSS `linear()` when you need explicit control over velocity progression acro
   }
 }
 
-.cta[data-emphasis="true"] {
+.cta[data-emphasis='true'] {
   animation: cta-pulse 220ms var(--ease-linear-snap-pop) 1;
 }
 ```
@@ -116,19 +125,35 @@ Use classic `linear` (keyword) when you need constant speed with no easing curva
 
 ```css
 :root {
-  --ease-linear-enter-soft: linear(0, 0.08 12%, 0.34 36%, 0.74 66%, 0.93 84%, 1);
+  --ease-linear-enter-soft: linear(
+    0,
+    0.08 12%,
+    0.34 36%,
+    0.74 66%,
+    0.93 84%,
+    1
+  );
   --ease-linear-exit-crisp: linear(0, 0.3 18%, 0.72 58%, 0.9 78%, 1);
-  --ease-linear-settle-gentle: linear(0, 0.06 10%, 0.31 32%, 0.72 62%, 0.92 82%, 1);
+  --ease-linear-settle-gentle: linear(
+    0,
+    0.06 10%,
+    0.31 32%,
+    0.72 62%,
+    0.92 82%,
+    1
+  );
   --ease-linear-emphasis-pop: linear(0, 0.38 20%, 0.88 62%, 1);
 }
 
 .chip-enter {
-  transition: opacity 180ms var(--ease-linear-enter-soft),
+  transition:
+    opacity 180ms var(--ease-linear-enter-soft),
     translate 180ms var(--ease-linear-enter-soft);
 }
 
 .panel-exit {
-  transition: opacity 150ms var(--ease-linear-exit-crisp),
+  transition:
+    opacity 150ms var(--ease-linear-exit-crisp),
     transform 150ms var(--ease-linear-exit-crisp);
 }
 

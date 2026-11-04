@@ -50,16 +50,16 @@ Sub-composition structure:
   <div data-composition-id="my-comp" data-width="1920" data-height="1080">
     <!-- content -->
     <style>
-      [data-composition-id="my-comp"] {
+      [data-composition-id='my-comp'] {
         /* scoped styles */
       }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <script>
-      window.__timelines = window.__timelines || {};
-      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {}
+      const tl = gsap.timeline({ paused: true })
       // tweens...
-      window.__timelines["my-comp"] = tl;
+      window.__timelines['my-comp'] = tl
     </script>
   </div>
 </template>
@@ -82,7 +82,7 @@ prices, captions - without editing the source HTML.
    `window.__hyperframes.getVariables()`. Returns the merged result of
    declared defaults + per-instance overrides + CLI overrides.
 3. **Override** at render time with `npx hyperframes render --variables
-   '{...}'` (top-level) or with `data-variable-values='{...}'` on the host
+'{...}'` (top-level) or with `data-variable-values='{...}'` on the host
    element (per-instance for sub-comps).
 
 ```html
@@ -100,9 +100,9 @@ prices, captions - without editing the source HTML.
     <div data-composition-id="root" data-width="1920" data-height="1080">
       <h1 id="hero" class="clip" data-start="0" data-duration="3"></h1>
       <script>
-        const { title, theme } = window.__hyperframes.getVariables();
-        document.getElementById("hero").textContent = title;
-        document.body.dataset.theme = theme;
+        const { title, theme } = window.__hyperframes.getVariables()
+        document.getElementById('hero').textContent = title
+        document.body.dataset.theme = theme
       </script>
     </div>
   </body>
@@ -191,11 +191,15 @@ Then animate INTO the CSS positions (entrances), and OUT of them only on
 the final scene:
 
 ```js
-tl.from(".title", { y: 60, opacity: 0, duration: 0.6, ease: "power3.out" }, 0);
-tl.from(".subtitle", { y: 40, opacity: 0, duration: 0.5, ease: "power3.out" }, 0.2);
+tl.from('.title', { y: 60, opacity: 0, duration: 0.6, ease: 'power3.out' }, 0)
+tl.from(
+  '.subtitle',
+  { y: 40, opacity: 0, duration: 0.5, ease: 'power3.out' },
+  0.2
+)
 
 // Final scene only:
-tl.to(".title", { y: -40, opacity: 0, duration: 0.4, ease: "power2.in" }, 3);
+tl.to('.title', { y: -40, opacity: 0, duration: 0.4, ease: 'power2.in' }, 3)
 ```
 
 ## Video and audio

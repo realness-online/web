@@ -19,13 +19,10 @@ const sha256_file = file_path => {
 
 const git_commit = () => {
   try {
-    return exec_sync(
-      `${path.join(project_root, 'scripts/git.sh')} rev-parse HEAD`,
-      {
-        cwd: project_root,
-        encoding: 'utf8'
-      }
-    ).trim()
+    return exec_sync('git rev-parse HEAD', {
+      cwd: project_root,
+      encoding: 'utf8'
+    }).trim()
   } catch {
     return null
   }

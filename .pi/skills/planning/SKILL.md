@@ -9,7 +9,7 @@ description: >-
   the Building an Advanced Agentic Harness article's Planner role, inverted so
   the harness plans and the human decides.
 metadata:
-  check: "node ../../bin/checks/check-skills.js planning"
+  check: 'node ../../bin/checks/check-skills.js planning'
   category: Workflow
   tags:
     - planning
@@ -22,6 +22,9 @@ metadata:
 # Planning
 
 If a plan is named, load it before asking questions.
+
+Do not ask what the project can answer; read it first. Ask at most three
+questions at a time, each with a recommended answer and a one-line reason.
 
 Plan work as a directed acyclic graph before doing it. The agent proposes, you
 approve, then execution runs. This skill never runs a crew solo.
@@ -152,7 +155,7 @@ Prose around a graphic:
 
 ASCII only for a throwaway sketch that will never persist.
 
-`.pi/bin/plans/plan-shape.js` checks these rules and runs in `npm test`.
+`.pi/bin/plans/plan-shape.js` checks these rules and runs in `npm run check`.
 
 ### Plan file shape
 
@@ -260,10 +263,21 @@ Topological order, dependencies first, parallel where independent.
 Plain execution is the default. A node that iterates toward a measurable target
 runs as an autoresearch loop; there are no subagents.
 
+After each node, read the `critic` skill and verify before marking it done.
+
 ### 6. Critic - verify
 
 Apply the `critic` skill after each node or merge point. If a node changes the
 shape of later work, stop and check in before the next gate.
+
+Finishing the work is the goal. Verification serves it.
+
+- One cheap check per node is enough. Do not stack reviews.
+- A pass means move on. Do not look for more to check.
+- Fix small faults in place. Do not add nodes for them.
+- Do not add gates, sign-offs, or follow-up plans near the end.
+- Ask "what is left to finish?" before "what is left to check?"
+- Report only failures that block done. Note the rest in one line.
 
 ### 7. Promoter - when it earns it
 

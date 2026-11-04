@@ -281,7 +281,7 @@ const start_shell = socket => {
 }
 
 /** Bytes a holder keeps for its shell before the bridge connects; past this, the oldest go. */
-const HELD_BYTES = 64 * 1024
+const HELD_BYTES = 65_536
 
 /**
  * The way into a holder's shell. The holder listens before socat's bridge
@@ -295,9 +295,9 @@ export const shell_input = () => {
   let held = []
   let size = 0
   return {
-    /** @param {Buffer | string} data */
-    write(data) {
-      if (typeof data === 'string') data = Buffer.from(data)
+    /** @param {Buffer | string} input */
+    write(input) {
+      const data = typeof input === 'string' ? Buffer.from(input) : input
       if (socket) return socket.write(data)
       held.push(data)
       size += data.length

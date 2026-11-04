@@ -1,4 +1,3 @@
-
 # Contribute to HyperFrames Registry
 
 Guide the user from idea to merged PR for a new registry block or component.

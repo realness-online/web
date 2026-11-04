@@ -68,4 +68,4 @@ npm run realness -- files cat <can://~/file>
 
 This is a local development entry point, not a global install or an actor-image change.
 
-Run root `npm run check:cli` for scoped checks and tests, or root `npm test` for the whole product. Tests invoke `realness` by name against the real local sync service, disk storage, and signed test credentials. Scratch files and derived sync records stay under `artifacts/realness/cli-tests/`. No cloud credentials or deployment are needed.
+Root `npm test` runs these tests with the rest. Tests invoke `realness` by name against the real local sync service, disk storage, and signed test credentials. Scratch files and derived sync records stay under `artifacts/realness/cli-tests/`. No cloud credentials or deployment are needed.

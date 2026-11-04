@@ -26,6 +26,10 @@ import {
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
+import { MIB } from '#root/lib/units.js'
+
+const LIST_BUFFER_MIB = 64
+
 const default_project = 'realness-online'
 const default_locale = 'en'
 /** Matches `prepare_upload_html` in the web app. Both files are read through it. */
@@ -124,7 +128,7 @@ export const e64_from_prefix = name => {
 const gcloud = args => {
   const result = spawn_sync('gcloud', args, {
     encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024
+    maxBuffer: LIST_BUFFER_MIB * MIB
   })
   if (result.error) {
     if (/** @type {NodeJS.ErrnoException} */ (result.error).code === 'ENOENT')
@@ -189,7 +193,7 @@ const upload = (bucket, object_path, html, locale) => {
     `gs://${bucket}/${object_path}`,
     '--format=value(metadata.hash)'
   ])
-  const written = landed[0]
+  const [written] = landed
   if (written !== meta_hash)
     throw new Error(
       `${object_path} wrote but reads back with hash ${written || '(none)'}, expected ${meta_hash}`
@@ -230,7 +234,7 @@ export const parse_args = args => {
 const main = () => {
   const args = process.argv.slice(2)
   if (args.includes('--help') || args.includes('-h')) {
-    console.log(usage)
+    console.info(usage)
     return
   }
   const { write, project, only } = parse_args(args)
@@ -247,7 +251,7 @@ const main = () => {
     ...list(bucket, 'people/*/statements/index.html')
   ]
 
-  console.log(
+  console.info(
     `${people.length} people in gs://${bucket}/people/${write ? '' : ' (dry run)'}`
   )
 
@@ -263,7 +267,7 @@ const main = () => {
     ]
       .filter(Boolean)
       .join(' + ')
-    console.log(`  ${e64}  missing ${wants}`)
+    console.info(`  ${e64}  missing ${wants}`)
 
     if (!write) continue
     const { profile, statements } = paths_for(e64)
@@ -273,10 +277,10 @@ const main = () => {
       upload(bucket, statements, statements_html(e64), default_locale)
   }
 
-  if (!repaired) console.log('  nothing to repair')
+  if (!repaired) console.info('  nothing to repair')
   else if (!write)
-    console.log(`\n${repaired} to repair. Re-run with --write to create them.`)
-  else console.log(`\nrepaired ${repaired}`)
+    console.info(`\n${repaired} to repair. Re-run with --write to create them.`)
+  else console.info(`\nrepaired ${repaired}`)
 }
 
 if (process.argv[1] && process.argv[1].endsWith('repair-people.js')) main()

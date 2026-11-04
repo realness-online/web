@@ -3,12 +3,12 @@
 The Skills CLI (`npx skills`) is the package manager for the open agent
 skills ecosystem. Browse: https://skills.sh/ (leaderboard ranks by installs).
 
-| Command | Does |
-| --- | --- |
-| `npx skills find [query]` | search by keyword |
+| Command                                   | Does                         |
+| ----------------------------------------- | ---------------------------- |
+| `npx skills find [query]`                 | search by keyword            |
 | `npx skills add <owner/repo@skill> -g -y` | install (global, no prompts) |
-| `npx skills check` / `npx skills update` | check / apply updates |
-| `npx skills init <name>` | scaffold a new skill |
+| `npx skills check` / `npx skills update`  | check / apply updates        |
+| `npx skills init <name>`                  | scaffold a new skill         |
 
 ## Workflow
 

@@ -1,6 +1,6 @@
 ---
 description: Start or resume autoresearch in a Realness VM
-argument-hint: "<goal and project details>"
+argument-hint: '<goal and project details>'
 ---
 
 Use the autoresearch-create skill.

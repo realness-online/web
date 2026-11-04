@@ -32,7 +32,7 @@ Realness is a client-first PWA that turns photos into layered SVG posters and pr
 
 4. **Build and deploy**
    - Install the Firebase CLI: `npm install -g firebase-tools && firebase login`
-   - Build the tracer (needs Rust + wasm-pack), workers, and app: `npm run deploy`
+   - Build the tracer (needs Rust + wasm-pack), workers, and app: `npm run realness -- frontend deploy --env production`
    - This deploys hosting and storage to Firebase
 
 5. **Done**

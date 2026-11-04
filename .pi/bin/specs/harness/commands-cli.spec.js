@@ -28,12 +28,12 @@ it('comment-check fails on a plain comment and passes JSDoc and directives', t =
     join(dir, 'kept.js'),
     '/** Why this exists. */\nexport const a = 1\n/* eslint-disable no-console */\n'
   )
-  const clean = run('checks/comment-check.js', [dir])
+  const clean = run('checks/comment-check.js', [join(dir, 'kept.js')])
   assert.equal(clean.status, 0, clean.stdout)
   assert.match(clean.stdout, /comments: 0 hit/)
 
   write_file_sync(join(dir, 'chatty.js'), 'export const b = 2 // explains the obvious\n')
-  const dirty = run('checks/comment-check.js', [dir])
+  const dirty = run('checks/comment-check.js', [join(dir, 'kept.js'), join(dir, 'chatty.js')])
   assert.equal(dirty.status, 1)
   assert.match(dirty.stdout, /chatty\.js:1 {2}comment {2}\/\/ explains the obvious/)
   assert.match(dirty.stdout, /comments: 1 hit/)

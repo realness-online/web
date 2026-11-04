@@ -16,13 +16,16 @@ ALWAYS use this exact template:
 # [Analysis Title]
 
 ## Executive summary
+
 [One-paragraph overview of key findings]
 
 ## Key findings
+
 - Finding 1 with supporting data
 - Finding 2 with supporting data
 
 ## Recommendations
+
 1. Specific actionable recommendation
 2. Specific actionable recommendation
 ```
@@ -37,12 +40,15 @@ Use this as a sensible default, but adapt based on context:
 # [Analysis Title]
 
 ## Executive summary
+
 [Overview]
 
 ## Key findings
+
 [Adapt sections based on what you discover]
 
 ## Recommendations
+
 [Tailor to the specific context]
 ```
 
@@ -58,6 +64,7 @@ Generate commit messages following these examples:
 **Example 1:**
 Input: Added user authentication with JWT tokens
 Output:
+
 ```
 feat(auth): implement JWT-based authentication
 
@@ -67,6 +74,7 @@ Add login endpoint and token validation middleware
 **Example 2:**
 Input: Fixed bug where dates displayed incorrectly
 Output:
+
 ```
 fix(reports): correct date formatting in timezone conversion
 
@@ -85,11 +93,11 @@ Use tables when the output format depends on input characteristics:
 ```markdown
 ## Output format selection
 
-| Input Type | Output Format | Example |
-|-----------|--------------|---------|
-| Single file | Inline summary | "Found 3 issues in auth.py: ..." |
-| Multiple files | Grouped report | Markdown report with per-file sections |
-| Full repository | Executive summary + details | Summary table + expandable sections |
+| Input Type      | Output Format               | Example                                |
+| --------------- | --------------------------- | -------------------------------------- |
+| Single file     | Inline summary              | "Found 3 issues in auth.py: ..."       |
+| Multiple files  | Grouped report              | Markdown report with per-file sections |
+| Full repository | Executive summary + details | Summary table + expandable sections    |
 ```
 
 ## Structured Data Pattern

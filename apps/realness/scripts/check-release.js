@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import { frontend_out } from '#root/src/settings/output.js'
 import {
   bare_version,
+  commits_since_tag,
   extract_changelog_section,
   package_version,
   read_changelog,
@@ -19,10 +20,13 @@ export const main = (args = process.argv.slice(2)) => {
 
   if (unreleased_only) {
     const { body } = read_unreleased(changelog)
-    if (!body.trim())
+    if (!body.trim()) {
+      const { tag, subjects } = commits_since_tag()
+      const listed = subjects.map(subject => `\n- ${subject}`).join('')
       throw new Error(
-        '## Unreleased is empty. Add notes under ## Unreleased, then run npm version.'
+        `## Unreleased is empty. Add notes under ## Unreleased, then run npm version.\nCommits since ${tag}:${listed || ' none'}`
       )
+    }
     console.info('## Unreleased has notes — ok to version')
     return
   }

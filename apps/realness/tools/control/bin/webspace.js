@@ -14,7 +14,7 @@
  *   realness local build                      stage the harness, build the template
  *   realness local name [--no-cert]           lc3: point <host>.realness.online here; renew its certificate
  *
- *   realness <env> halo up [<name>] [--smoke]     make a halo, put the code on it, serve
+ *   realness <env> halo up [<name>]             make a halo, put the code on it, serve
  *   realness <env> halo restart <name>            push the code and re-serve
  *   realness <env> halo down <name> [--delete] [--no-drain] [--vm]
  *   realness <env> halo drain <name> [--delete]   export every actor to the bucket
@@ -93,8 +93,14 @@ import {
 } from '#root/src/settings/environments.js'
 import { sync_records } from '#root/src/gate/sync-records.js'
 import { out_path, sync_dir } from '#root/src/settings/output.js'
+import { ISO_DATE, KIB } from '#root/lib/units.js'
 
 let json_output = false
+
+const PULL_REPORT_EVERY = 500
+const COST_DAYS = 7
+/** Extra seconds the halo call waits beyond the command's own timeout. */
+const EXEC_GRACE_S = 10
 
 const USAGE = `usage: realness <local|development|production> <command> [options]
 
@@ -105,7 +111,8 @@ const USAGE = `usage: realness <local|development|production> <command> [options
   pull [<prefix> ...] [--from=production]  local only: copy people/, usage/, billing/ into sync-data; one way
   pull posters [--dry-run]     local only: production's posters overwrite local ones
 
-  halo up [<name>] [--smoke] [--expire=2h]  make a halo, put the code on it, serve (~3 min in GCP)
+  halo up [<name>] [--expire=2h]  make a halo, put the code on it, serve (~3 min in GCP)
+  halo up --fresh              local only: wipe actor storage first
   halo restart <name>          push the code and re-serve
   halo down <name> [--delete] [--vm]  park it; --vm also stops the local Lima VM
   halo recover <name> [--yes]  recreate a failed halo's actors elsewhere (hs-f3)
@@ -146,7 +153,7 @@ const USAGE = `usage: realness <local|development|production> <command> [options
   probe [<type>:<zone> ...]    development only: which zones can make a halo right now
 
   local: halo up                       lima start, guest-setup, dev-stack
-  development: halo up realness-2 --smoke    disk, instance, volume, bootstrap, smoke, serve
+  development: halo up realness-2            disk, instance, volume, bootstrap, serve
 `
 
 /** Flags come after the subcommand; only a few are booleans. */
@@ -204,12 +211,12 @@ const sample_actor = async (cloud, config, halo, actor, api) => {
   )
     throw new Error('invalid guest memory sample')
   return {
-    halo_mib: Math.round(Number(pss[1]) / 1024),
-    guest_used_mib: Math.round((Number(total) - Number(available)) / 1024),
+    halo_mib: Math.round(Number(pss[1]) / KIB),
+    guest_used_mib: Math.round((Number(total) - Number(available)) / KIB),
     top: top.map(line =>
       line
         .trim()
-        .replace(/^(\d+)/, (_, kb) => `${Math.round(Number(kb) / 1024)}M`)
+        .replace(/^(\d+)/, (_, kb) => `${Math.round(Number(kb) / KIB)}M`)
     )
   }
 }
@@ -312,12 +319,285 @@ const fleet_reader = envName => async () => {
 }
 
 const requireName = (rest, usage) => {
-  const name = rest[0]
+  const [name] = rest
   if (!name) throw new Error(usage)
   return name
 }
 
-const main = async argv => {
+/** One handler per main command; each takes what it reads from the context. */
+const commands = {
+  setup: async ({ local, halos }) => {
+    if (!local)
+      throw new Error(
+        'setup makes the local Lima VM; there is nothing to set up in prod'
+      )
+    return finish(await dev.setup(halos.target))
+  },
+  build: async ({ local, halos }) => {
+    if (!local)
+      throw new Error(
+        'build makes the local template; cloud halos boot the fleet image'
+      )
+    return finish(await dev.build(halos.target))
+  },
+  name: async ({ local, flags }) => {
+    if (!local)
+      throw new Error(
+        "name keeps this computer's address; run it as realness local name"
+      )
+    const { keep_host_name } = await import('#root/src/control/host-name.js')
+    const kept = await keep_host_name({
+      cert: !flags['no-cert'],
+      log: line => process.stderr.write(`${line}\n`)
+    })
+    const lines = [
+      ...Object.entries(kept.records).map(
+        ([name, change]) => `${name} -> ${kept.address}: ${change}`
+      ),
+      ...(kept.certificate
+        ? [
+            `certificate ${kept.wildcard}: ${kept.certificate.renewed ? 'renewed' : 'current'}, ${kept.certificate.days_left} days left`
+          ]
+        : []),
+      `app: https://${kept.app}`
+    ]
+    result(kept, lines.join('\n'))
+    return 0
+  },
+  code: async ({ local }) => {
+    if (!local)
+      throw new Error(
+        'code reads the local sign-in log; run it as realness local code'
+      )
+    const log = await read_file(out_path('local', 'sign-in.log'), 'utf8')
+    const line = log
+      .split('\n')
+      .findLast(text => text.startsWith('sign-in code for '))
+    if (!line)
+      throw new Error('no sign-in code yet; ask for one in the browser')
+    const [, phone, code] = line.match(/for (\S+): (\d+)/) ?? []
+    result({ phone, code }, `${code}  (${phone})`)
+    return 0
+  },
+  pull: async ({ local, args, flags }) => {
+    if (!local)
+      throw new Error(
+        'pull copies into the local sync-data; run it as realness local pull'
+      )
+    const from = typeof flags.from === 'string' ? flags.from : 'production'
+    const { pull, pull_text, PULL_PREFIXES, is_poster } =
+      await import('../../../src/control/pull.js')
+    /** `pull posters`: production's posters only, and they win over local. */
+    const posters = args[0] === 'posters'
+    const wanted = posters ? ['people'] : args
+    const report = await pull({
+      only: posters ? is_poster : undefined,
+      overwrite: posters,
+      dry_run: Boolean(flags['dry-run']),
+      from: create_gcs({
+        bucket: deployment_settings(from, process.env).bucket,
+        token: gcloud_token()
+      }),
+      /** gz1: local files land as `name.gz`, as sync serves them. */
+      to: store_of(
+        disk(typeof flags.dir === 'string' ? flags.dir : sync_dir())
+      ),
+      prefixes: wanted.length
+        ? wanted.map(prefix => prefix.replace(/\/?$/, '/'))
+        : PULL_PREFIXES,
+      on_file: (key, done, total) => {
+        if (done % PULL_REPORT_EVERY === 0 || done === total)
+          process.stderr.write(`pull ${done}/${total}\n`)
+      }
+    })
+    result(report, pull_text(report))
+    return report.failed.length ? 1 : 0
+  },
+  halo: async ({ envName, config, halos, args, flags }) =>
+    finish(await halo_command(halos, config, args, flags, envName)),
+  admin: async ({ envName, args }) => {
+    if (args.length !== 1)
+      throw new Error('usage: realness <env> admin login|logout|whoami')
+    if (args[0] === 'login') return finish(await admin_login(envName))
+    if (args[0] === 'logout') return finish(await admin_logout(envName))
+    if (args[0] === 'whoami') return finish(await admin_identity(envName))
+    throw new Error('usage: realness <env> admin login|logout|whoami')
+  },
+  admins: async ({ envName, local, args, flags }) => {
+    const [verb = 'list', phone, ...name] = args
+    const usage =
+      'usage: realness <env> admins list | init | add <phone> [name] | remove <phone> [--yes]'
+    const bare = verb === 'list' || verb === 'init'
+    if (
+      !['list', 'init', 'add', 'remove'].includes(verb) ||
+      (bare ? args.length > 1 : !phone)
+    )
+      throw new Error(usage)
+    const storage = local
+      ? store_of(disk(typeof flags.dir === 'string' ? flags.dir : sync_dir()))
+      : create_gcs({
+          bucket: deployment_settings(envName, process.env).bucket,
+          token: gcloud_token()
+        })
+    const harness =
+      typeof flags.harness === 'string'
+        ? flags.harness
+        : join(project_root, '../..')
+    const done =
+      verb === 'init'
+        ? await ensure_admins(storage, [local_person(harness)], {
+            create_only: true
+          })
+        : await manage_admins(storage, {
+            verb,
+            phone,
+            name: name.join(' '),
+            yes: flags.yes === true
+          })
+    return finish({ records: done, text: admins_text(done, { verb }) })
+  },
+  actor: async ({ envName, args, command }) => {
+    const [verb, id] = args
+    const writes = command === 'actor' ? ['idle', 'stop'] : ['stop']
+    const usage = `usage: realness <env> ${command} list | ${command} show|${writes.join('|')} <id>`
+    if (
+      args.length > 2 ||
+      !(verb === 'list'
+        ? !id
+        : id && (verb === 'show' || writes.includes(verb)))
+    )
+      throw new Error(usage)
+    const sync = await reads.reader(envName)
+    if (writes.includes(verb)) {
+      const done =
+        command === 'actor'
+          ? await reads.request_actor(sync, id, verb)
+          : await reads.request_loop_stop(sync, id)
+      return finish(done)
+    }
+    const rows =
+      command === 'actor'
+        ? await reads.actors(sync, id)
+        : await reads.loops(sync, id)
+    return finish({ records: rows, text: reads.text[`${command}s`](rows) })
+  },
+  loop: (...given) => commands.actor(...given),
+  person: async ({ envName, args, flags }) => {
+    const found = await reads.person(await reads.reader(envName), args[0], {
+      day: flags.day
+    })
+    return finish({ records: found, text: reads.text.person(found) })
+  },
+  limit: async ({ envName, args }) => {
+    const found = await reads.limit(await reads.reader(envName), args[0])
+    return finish({ records: found, text: reads.text.limit(found) })
+  },
+  plan: async ({ envName, args, flags }) => {
+    const [verb, phone] = args
+    if (verb !== 'grant' || args.length !== 2)
+      throw new Error(
+        'usage: realness <env> plan grant <phone> --credit=<dollars> --days=<n>'
+      )
+    const billing = billing_store(
+      create_gcs({
+        bucket: deployment_settings(envName, process.env).bucket,
+        token: gcloud_token()
+      })
+    )
+    const plan = await grant_plan(billing, phone, {
+      credit: Number(flags.credit),
+      days: Number(flags.days)
+    })
+    return finish({
+      records: plan,
+      text: `${plan.phone}: $${plan.credit.toFixed(2)} house credit until ${plan.end.slice(0, ISO_DATE)}`
+    })
+  },
+  usage: async ({ envName, args, flags }) => {
+    const found = await reads.usage(
+      await reads.reader(envName),
+      args[0],
+      flags.day
+    )
+    return finish({ records: found, text: reads.text.usage(found) })
+  },
+  report: async ({ envName, flags }) => {
+    const found = await reads.report(await reads.reader(envName), {
+      day: flags.day,
+      days: flags.days
+    })
+    return finish({ records: found, text: reads.text.report(found) })
+  },
+  status: async ({ envName, config, local, args }) => {
+    if (args.length) throw new Error('usage: realness <env> status [--json]')
+    const now = Date.now()
+    const sync = await reads.reader(envName)
+    const view = await gather(
+      { sync, config, now },
+      local ? LOCAL_SOURCES : undefined
+    )
+    const lines = attention(view, config.attention, now)
+    result({ ...view, attention: lines }, overview_text(view, lines))
+    return lines.length ? 2 : 0
+  },
+  service: async ({ config, args }) => {
+    if (args.length !== 1 || args[0] !== 'list')
+      throw new Error('usage: realness <env> service list')
+    const rows = await cloud.services(config.cloud)
+    return finish({ records: rows, text: cloud.cloud_text.services(rows) })
+  },
+  logs: async ({ config, args, flags }) => {
+    if (args.length !== 1)
+      throw new Error(
+        'usage: realness <env> logs <service> [--since=1h] [--errors] [--limit=50]'
+      )
+    const rows = await cloud.logs(config.cloud, args[0], {
+      since: flags.since ?? '1h',
+      errors: flags.errors === true,
+      limit: flags.limit ?? 50
+    })
+    return finish({ records: rows, text: cloud.cloud_text.logs(rows) })
+  },
+  cost: async ({ config, flags }) => {
+    const projects = [
+      ...new Set([config.cloud.project, config.project].filter(Boolean))
+    ]
+    const found = await cloud.cost(config.cloud, projects, {
+      days: flags.days ?? COST_DAYS
+    })
+    return finish({ records: found, text: cloud.cloud_text.cost(found) })
+  },
+  reconcile: async ({ envName, config, args }) => {
+    if (args.length) throw new Error('usage: realness <env> reconcile')
+    const [models, gcp] = await Promise.allSettled([
+      reconcile_models(await reads.reader(envName), config),
+      reconcile_cloud(config)
+    ])
+    const settled = result =>
+      result.status === 'fulfilled'
+        ? result.value
+        : { error: result.reason?.message ?? String(result.reason) }
+    const found = { models: settled(models), gcp: settled(gcp) }
+    const part = (r, text) => (r.error ? `  not checked: ${r.error}` : text(r))
+    result(
+      found,
+      [part(found.models, reconcile_text), part(found.gcp, bill_text)].join(
+        '\n'
+      )
+    )
+    if (found.models.gaps?.length || found.gcp.gaps?.length) return 2
+    return models.status === 'rejected' || gcp.status === 'rejected' ? 1 : 0
+  },
+  probe: async ({ config, local, args }) => {
+    if (local)
+      throw new Error(
+        'probe asks GCP which zones have capacity; dev has one local halo'
+      )
+    return finish(await probe(config, args))
+  }
+}
+
+const main = argv => {
   json_output = argv.includes('--json')
   set_json_output(json_output)
   const [envName, ...tail] = argv.filter(arg => arg !== '--json')
@@ -357,300 +637,19 @@ const main = async argv => {
         }
       }
 
-  switch (command) {
-    case 'setup':
-      if (!local)
-        throw new Error(
-          'setup makes the local Lima VM; there is nothing to set up in prod'
-        )
-      return finish(await dev.setup(halos.target))
-
-    case 'build':
-      if (!local)
-        throw new Error(
-          'build makes the local template; cloud halos boot the fleet image'
-        )
-      return finish(await dev.build(halos.target))
-
-    case 'name': {
-      if (!local)
-        throw new Error(
-          "name keeps this computer's address; run it as realness local name"
-        )
-      const { keep_host_name } = await import('#root/src/control/host-name.js')
-      const kept = await keep_host_name({
-        cert: !flags['no-cert'],
-        log: line => process.stderr.write(`${line}\n`)
-      })
-      const lines = [
-        ...Object.entries(kept.records).map(
-          ([name, change]) => `${name} -> ${kept.address}: ${change}`
-        ),
-        ...(kept.certificate
-          ? [
-              `certificate ${kept.wildcard}: ${kept.certificate.renewed ? 'renewed' : 'current'}, ${kept.certificate.days_left} days left`
-            ]
-          : []),
-        `app: https://${kept.app}`
-      ]
-      result(kept, lines.join('\n'))
-      return 0
-    }
-
-    case 'code': {
-      if (!local)
-        throw new Error(
-          'code reads the local sign-in log; run it as realness local code'
-        )
-      const log = await read_file(out_path('local', 'sign-in.log'), 'utf8')
-      const line = log
-        .split('\n')
-        .findLast(text => text.startsWith('sign-in code for '))
-      if (!line)
-        throw new Error('no sign-in code yet; ask for one in the browser')
-      const [, phone, code] = line.match(/for (\S+): (\d+)/) ?? []
-      result({ phone, code }, `${code}  (${phone})`)
-      return 0
-    }
-
-    case 'pull': {
-      if (!local)
-        throw new Error(
-          'pull copies into the local sync-data; run it as realness local pull'
-        )
-      const from = typeof flags.from === 'string' ? flags.from : 'production'
-      const { pull, pull_text, PULL_PREFIXES, is_poster } =
-        await import('../../../src/control/pull.js')
-      /** `pull posters`: production's posters only, and they win over local. */
-      const posters = args[0] === 'posters'
-      const wanted = posters ? ['people'] : args
-      const report = await pull({
-        only: posters ? is_poster : undefined,
-        overwrite: posters,
-        dry_run: Boolean(flags['dry-run']),
-        from: create_gcs({
-          bucket: deployment_settings(from, process.env).bucket,
-          token: gcloud_token()
-        }),
-        /** gz1: local files land as `name.gz`, as sync serves them. */
-        to: store_of(
-          disk(typeof flags.dir === 'string' ? flags.dir : sync_dir())
-        ),
-        prefixes: wanted.length
-          ? wanted.map(prefix => prefix.replace(/\/?$/, '/'))
-          : PULL_PREFIXES,
-        on_file: (key, done, total) => {
-          if (done % 500 === 0 || done === total)
-            process.stderr.write(`pull ${done}/${total}\n`)
-        }
-      })
-      result(report, pull_text(report))
-      return report.failed.length ? 1 : 0
-    }
-
-    case 'halo':
-      return finish(await halo_command(halos, config, args, flags, envName))
-
-    case 'admin': {
-      if (args.length !== 1)
-        throw new Error('usage: realness <env> admin login|logout|whoami')
-      if (args[0] === 'login') return finish(await admin_login(envName))
-      if (args[0] === 'logout') return finish(await admin_logout(envName))
-      if (args[0] === 'whoami') return finish(await admin_identity(envName))
-      throw new Error('usage: realness <env> admin login|logout|whoami')
-    }
-
-    case 'admins': {
-      const [verb = 'list', phone, ...name] = args
-      const usage =
-        'usage: realness <env> admins list | init | add <phone> [name] | remove <phone> [--yes]'
-      const bare = verb === 'list' || verb === 'init'
-      if (
-        !['list', 'init', 'add', 'remove'].includes(verb) ||
-        (bare ? args.length > 1 : !phone)
-      )
-        throw new Error(usage)
-      const storage = local
-        ? store_of(disk(typeof flags.dir === 'string' ? flags.dir : sync_dir()))
-        : create_gcs({
-            bucket: deployment_settings(envName, process.env).bucket,
-            token: gcloud_token()
-          })
-      const harness =
-        typeof flags.harness === 'string'
-          ? flags.harness
-          : join(project_root, '../..')
-      const done =
-        verb === 'init'
-          ? await ensure_admins(storage, [local_person(harness)], {
-              create_only: true
-            })
-          : await manage_admins(storage, {
-              verb,
-              phone,
-              name: name.join(' '),
-              yes: flags.yes === true
-            })
-      return finish({ records: done, text: admins_text(done, { verb }) })
-    }
-
-    case 'actor':
-    case 'loop': {
-      const [verb, id] = args
-      const writes = command === 'actor' ? ['idle', 'stop'] : ['stop']
-      const usage = `usage: realness <env> ${command} list | ${command} show|${writes.join('|')} <id>`
-      if (
-        args.length > 2 ||
-        !(verb === 'list'
-          ? !id
-          : id && (verb === 'show' || writes.includes(verb)))
-      )
-        throw new Error(usage)
-      const sync = await reads.reader(envName)
-      if (writes.includes(verb)) {
-        const done =
-          command === 'actor'
-            ? await reads.request_actor(sync, id, verb)
-            : await reads.request_loop_stop(sync, id)
-        return finish(done)
-      }
-      const rows =
-        command === 'actor'
-          ? await reads.actors(sync, id)
-          : await reads.loops(sync, id)
-      return finish({ records: rows, text: reads.text[`${command}s`](rows) })
-    }
-
-    case 'person': {
-      const found = await reads.person(await reads.reader(envName), args[0], {
-        day: flags.day
-      })
-      return finish({ records: found, text: reads.text.person(found) })
-    }
-
-    case 'limit': {
-      const found = await reads.limit(await reads.reader(envName), args[0])
-      return finish({ records: found, text: reads.text.limit(found) })
-    }
-
-    case 'plan': {
-      const [verb, phone] = args
-      if (verb !== 'grant' || args.length !== 2)
-        throw new Error(
-          'usage: realness <env> plan grant <phone> --credit=<dollars> --days=<n>'
-        )
-      const billing = billing_store(
-        create_gcs({
-          bucket: deployment_settings(envName, process.env).bucket,
-          token: gcloud_token()
-        })
-      )
-      const plan = await grant_plan(billing, phone, {
-        credit: Number(flags.credit),
-        days: Number(flags.days)
-      })
-      return finish({
-        records: plan,
-        text: `${plan.phone}: $${plan.credit.toFixed(2)} house credit until ${plan.end.slice(0, 10)}`
-      })
-    }
-
-    case 'usage': {
-      const found = await reads.usage(
-        await reads.reader(envName),
-        args[0],
-        flags.day
-      )
-      return finish({ records: found, text: reads.text.usage(found) })
-    }
-
-    case 'report': {
-      const found = await reads.report(await reads.reader(envName), {
-        day: flags.day,
-        days: flags.days
-      })
-      return finish({ records: found, text: reads.text.report(found) })
-    }
-
-    case 'status': {
-      if (args.length) throw new Error('usage: realness <env> status [--json]')
-      const now = Date.now()
-      const sync = await reads.reader(envName)
-      const view = await gather(
-        { sync, config, now },
-        local ? LOCAL_SOURCES : undefined
-      )
-      const lines = attention(view, config.attention, now)
-      result({ ...view, attention: lines }, overview_text(view, lines))
-      return lines.length ? 2 : 0
-    }
-
-    case 'service': {
-      if (args.length !== 1 || args[0] !== 'list')
-        throw new Error('usage: realness <env> service list')
-      const rows = await cloud.services(config.cloud)
-      return finish({ records: rows, text: cloud.cloud_text.services(rows) })
-    }
-
-    case 'logs': {
-      if (args.length !== 1)
-        throw new Error(
-          'usage: realness <env> logs <service> [--since=1h] [--errors] [--limit=50]'
-        )
-      const rows = await cloud.logs(config.cloud, args[0], {
-        since: flags.since ?? '1h',
-        errors: flags.errors === true,
-        limit: flags.limit ?? 50
-      })
-      return finish({ records: rows, text: cloud.cloud_text.logs(rows) })
-    }
-
-    case 'cost': {
-      const projects = [
-        ...new Set([config.cloud.project, config.project].filter(Boolean))
-      ]
-      const found = await cloud.cost(config.cloud, projects, {
-        days: flags.days ?? 7
-      })
-      return finish({ records: found, text: cloud.cloud_text.cost(found) })
-    }
-
-    case 'reconcile': {
-      if (args.length) throw new Error('usage: realness <env> reconcile')
-      const [models, gcp] = await Promise.allSettled([
-        reconcile_models(await reads.reader(envName), config),
-        reconcile_cloud(config)
-      ])
-      const settled = result =>
-        result.status === 'fulfilled'
-          ? result.value
-          : { error: result.reason?.message ?? String(result.reason) }
-      const found = { models: settled(models), gcp: settled(gcp) }
-      const part = (r, text) =>
-        r.error ? `  not checked: ${r.error}` : text(r)
-      result(
-        found,
-        [part(found.models, reconcile_text), part(found.gcp, bill_text)].join(
-          '\n'
-        )
-      )
-      return found.models.gaps?.length || found.gcp.gaps?.length
-        ? 2
-        : models.status === 'rejected' || gcp.status === 'rejected'
-          ? 1
-          : 0
-    }
-
-    case 'probe':
-      if (local)
-        throw new Error(
-          'probe asks GCP which zones have capacity; dev has one local halo'
-        )
-      return finish(await probe(config, args))
-
-    default:
-      throw new Error(`unknown command "${command ?? ''}"\n\n${USAGE}`)
-  }
+  const handler = Object.hasOwn(commands, command) ? commands[command] : null
+  if (handler)
+    return handler({
+      envName,
+      named,
+      config,
+      local,
+      halos,
+      args,
+      flags,
+      command
+    })
+  throw new Error(`unknown command "${command ?? ''}"\n\n${USAGE}`)
 }
 
 /**
@@ -701,7 +700,327 @@ const CHANGES = [
   'migrate'
 ]
 
-const halo_command = async (halos, config, args, flags, envName) => {
+/** One handler per halo_command command; each takes what it reads from the context. */
+const halo_commands = {
+  up: ({ config, flags, envName, rest, target, mod }) =>
+    with_intent(envName, config, rest[0], () =>
+      mod.up(target, config, rest[0], {
+        fresh: Boolean(flags.fresh),
+        ...(typeof flags.expire === 'string' && { expire: flags.expire }),
+        ...(typeof flags['image-family'] === 'string' && {
+          imageFamily: flags['image-family']
+        }),
+        ...(typeof flags['image-project'] === 'string' && {
+          imageProject: flags['image-project']
+        })
+      })
+    ),
+  memory: async ({ config, flags, rest, target }) => {
+    const actor = requireName(
+      rest,
+      'usage: realness <env> halo memory <actor> [halo] --stages=<file>'
+    )
+    const halo_name = rest[1] ?? config.haloName ?? 'realness-1'
+    const { measure } = await import('../../../src/control/memory.js')
+    const { remoteApi } = await import('../../../src/control/api.js')
+    if (is_local(config)) throw new Error('memory measures a cloud halo')
+    const api = remoteApi(halo_name, { zone: config.zone })
+    if (typeof flags.stages !== 'string')
+      throw new Error(
+        'memory needs --stages=<JSON file with named workload argv>'
+      )
+    const source = JSON.parse(await read_file(flags.stages, 'utf8'))
+    const definitions = source?.workloads ?? source
+    if (
+      !Array.isArray(definitions) ||
+      !definitions.length ||
+      definitions.some(stage => !Array.isArray(stage.argv))
+    )
+      throw new Error(
+        'memory stages must be a nonempty array with explicit argv'
+      )
+    const stages = await prepare_workloads(definitions, flags.stages)
+    return measure({
+      actor,
+      stages,
+      ...(flags['sample-ms'] !== undefined && {
+        sample_ms: Number(flags['sample-ms'])
+      }),
+      run: async (argv, stage) => {
+        const timeout_s = workload_timeout(stage)
+        const result = JSON.parse(
+          await api.call(`/v1/actors/${actor}/exec`, {
+            method: 'POST',
+            body: {
+              argv,
+              timeout: timeout_s,
+              ...(stage.cwd ? { cwd: stage.cwd } : {}),
+              ...(stage.stdin_b64 ? { stdin_b64: stage.stdin_b64 } : {})
+            },
+            timeout: timeout_s + EXEC_GRACE_S
+          })
+        )
+        if (result.exit_code !== 0) throw new Error('memory workload failed')
+      },
+      /** The halo's cost is the Firecracker process; the guest's own use comes from its MemAvailable, so nothing new is reported at rest. */
+      sample: async () =>
+        await sample_actor(target, config, halo_name, actor, api)
+    })
+  },
+  scale: async ({ config, flags }) => {
+    const { scale_choice, scale_text } =
+      await import('../../../src/control/scale.js')
+    const report = typeof flags.report === 'string' ? flags.report : null
+    if (!report)
+      throw new Error(
+        'usage: realness <env> halo scale --report=<capacity report json> [--demand=N] [--monthly-hours=N]'
+      )
+    const measured = JSON.parse(await read_file(report, 'utf8'))
+    const choice = scale_choice({
+      actors_per_halo: Number(
+        measured.actors_per_halo ?? measured.actors_per_host ?? 0
+      ),
+      hourly_cost: Number(
+        flags['hourly-cost'] ?? measured.hourly_cost ?? config.hourly_cost ?? 0
+      ),
+      ...(flags.demand && { demand: Number(flags.demand) }),
+      ...((flags['monthly-hours'] ?? measured.monthly_hours) !== undefined && {
+        monthly_hours: Number(flags['monthly-hours'] ?? measured.monthly_hours)
+      })
+    })
+    return { ...choice, text: scale_text(choice) }
+  },
+  hot: async ({ halos, flags, envName }) => {
+    const { hot_halos, hot_text, relieve } =
+      await import('../../../src/control/hot.js')
+    const sync = await reads.reader(envName)
+    const fleet = await reads.halos(sync)
+    const rows = fleet.map(row => ({
+      name: row.halo.name,
+      cpu_fraction: fraction(row.halo.cpu_fraction),
+      /** The record carries bytes, not a fraction: mem_free of mem_total. */
+      mem_used_fraction: used_fraction(row.halo),
+      actors: row.actors.length
+    }))
+    const hot = hot_halos(rows, HOT_LIMITS)
+    if (!flags.owner)
+      return finish({
+        halos: hot,
+        text: hot.length ? hot_text(hot) : 'no halo is over its limits'
+      })
+    const crowded = fleet.find(row => row.halo.name === hot[0]?.halo)
+    if (!crowded) throw new Error('no crowded halo to relieve')
+    const plan = relieve(
+      rows,
+      HOT_LIMITS,
+      { halo: crowded.halo.name, actors: crowded.actors },
+      String(flags.owner)
+    )
+    return finish({
+      ...plan,
+      text: `${hot_text([plan])}\n\nrun: realness ${envName} halo move ${plan.owner} ${plan.to}`
+    })
+  },
+  recover: async ({ halos, config, flags, envName, rest, target }) => {
+    const name = requireName(
+      rest,
+      'usage: realness <env> halo recover <name> [--yes]'
+    )
+    if (!flags.yes)
+      throw new Error(
+        `recover tears down ${name}'s authority and recreates its actors;` +
+          ' rerun with --yes'
+      )
+    const { remoteApi } = await import('../../../src/control/api.js')
+    const { recover } = await import('../../../src/control/recover.js')
+    const { revoke } = await import('../../../src/control/halo-gcp.js')
+    const { reassign } = await import('../../../src/gate/placement.js')
+    const sync = await reads.reader(envName)
+    const fleet = await reads.halos(sync)
+    const failed = fleet.find(row => row.halo.name === name)
+    if (!failed) throw new Error(`no halo record for ${name}`)
+    const alive = fleet
+      .filter(row => row.halo.name !== name)
+      .map(row => row.halo.name)
+    const survivors = alive.map(halo => ({
+      name: halo,
+      actors: fleet.find(row => row.halo.name === halo)?.actors?.length ?? 0
+    }))
+    const gcs = placement_store(envName)
+    const by_halo = new Map(survivors.map(halo => [halo.name, halo.actors]))
+    return finish(
+      await recover(name, {
+        reason: `last reported ${failed.age_s}s ago`,
+        actors: failed.actors,
+        halos: alive,
+        api: halo => remoteApi(halo, { zone: config.zone }),
+        revoke: halo => revoke(config, halo),
+        bundle: async id => {
+          const object = `gs://${config.bucket}/actors/${id}/bundle.tar.gz`
+          const found = await attempt('gcloud', [
+            'storage',
+            'objects',
+            'describe',
+            object,
+            '--format=value(name)'
+          ])
+          return found.ok && found.out.trim() ? { bundle: object } : null
+        },
+        /** Drain removed the export folder from the halo it came from, so the bundle is put back before restore reads it. */
+        restore: async (report_halo, id, owner, bundle) => {
+          const { remoteApi: api_for } =
+            await import('../../../src/control/api.js')
+          const { place_bundle } =
+            await import('../../../src/control/bundle.js')
+          await place_bundle(target, config, report_halo, id, {
+            object: bundle
+          })
+          return JSON.parse(
+            await api_for(report_halo, { zone: config.zone }).call(
+              '/v1/actors',
+              {
+                method: 'POST',
+                body: { owner, restore_from: id }
+              }
+            )
+          )
+        },
+        place: (who, halo) =>
+          reassign(who, halo, { read: gcs.read, write: gcs.write }),
+        load: halo => Promise.resolve(by_halo.get(halo) ?? 0)
+      })
+    )
+  },
+  move: async ({ config, envName, rest }) => {
+    const [phone, target_host] = rest
+    if (!phone || !target_host)
+      throw new Error('usage: realness <env> halo move <phone> <halo>')
+    const { remoteApi } = await import('../../../src/control/api.js')
+    const { move } = await import('../../../src/control/move.js')
+    const { reassign } = await import('../../../src/gate/placement.js')
+    const gcs = placement_store(envName)
+    const where = await placement_of(phone, gcs)
+    const actor = await running_actor(envName, phone)
+    return finish(
+      await move(actor.id, phone, {
+        from: remoteApi(where, { zone: config.zone }),
+        to: remoteApi(target_host, { zone: config.zone }),
+        bundle: async id => {
+          const object = `gs://${config.bucket}/actors/${id}/bundle.tar.gz`
+          return {
+            object,
+            ...(await ship_bundle(where, config, id, object))
+          }
+        },
+        place: (who, halo) =>
+          reassign(who, halo, { read: gcs.read, write: gcs.write }),
+        halo: target_host,
+        release: true
+      })
+    )
+  },
+  retire: async ({ config, flags, envName, rest, target, mod }) => {
+    const name = requireName(
+      rest,
+      'usage: realness <env> halo retire <name> [--delete]'
+    )
+    const { remoteApi } = await import('../../../src/control/api.js')
+    const { retire } = await import('../../../src/control/retire.js')
+    const { release_placements } =
+      await import('../../../src/gate/placement.js')
+    const store = placement_store(envName)
+    return finish(
+      await retire(
+        remoteApi(name, { zone: config.zone }),
+        {
+          release: halo =>
+            release_placements(halo, {
+              list: () => store.list(),
+              read: key => store.get(key),
+              remove: key => store.delete(key)
+            })
+        },
+        {
+          stop: () => target.call(['instances', 'stop', name, '--quiet']),
+          drop: () => mod.down(target, config, name, { mode: 'delete' })
+        },
+        name,
+        { delete: Boolean(flags.delete) }
+      )
+    )
+  },
+  lockdown: async ({ config, flags }) => {
+    if (is_local(config)) throw new Error('lockdown is for cloud projects')
+    const { attempt } = await import('../../../src/control/exec.js')
+    const { lockdown } = await import('../../../src/control/lockdown.js')
+    return lockdown(config, {
+      apply: Boolean(flags.apply),
+      run: argv => attempt('gcloud', argv)
+    })
+  },
+  revoke: ({ halos, config, rest, mod }) => {
+    const name = requireName(rest, `usage: realness <env> halo revoke <name>`)
+    if (is_local(config)) throw new Error('revoke is for cloud halos')
+    return mod.revoke(config, name)
+  },
+  down: async ({ config, flags, envName, rest, target, mod }) => {
+    const name = is_local(config)
+      ? (rest[0] ?? config.vm)
+      : requireName(
+          rest,
+          `usage: realness <env> halo down <name> [--delete] [--vm]`
+        )
+    if (flags.delete && !flags['no-drain'] && !is_local(config))
+      return drain.drain(target, config, name, {
+        delete: true,
+        fleet: fleet_reader(envName)
+      })
+
+    if (flags.delete) return mod.down(target, config, name, { mode: 'delete' })
+    const intent = async state => {
+      try {
+        const target = await intent_target(envName, config, name)
+        await reads.record_intent(target.sync, target.name, state)
+      } catch (error) {
+        process.stderr.write(`halo record skipped: ${error.message}\n`)
+      }
+    }
+    await intent('stopping')
+    const done = await mod.down(target, config, name, {
+      mode: 'stop',
+      stop_vm: flags.vm === true
+    })
+    await intent('parked')
+    return done
+  },
+  restart: ({ config, envName, rest, target, mod }) => {
+    const name = requireName(rest, 'usage: realness <env> halo restart <name>')
+    return with_intent(envName, config, name, () =>
+      mod.restart(target, config, name)
+    )
+  },
+  drain: ({ config, flags, rest, target }) => {
+    if (is_local(config))
+      throw new Error(
+        "there is nothing to drain in dev: the halo is this Mac's VM"
+      )
+
+    const name = requireName(
+      rest,
+      'usage: realness development halo drain <name> [--delete]'
+    )
+    return drain.drain(target, config, name, {
+      delete: Boolean(flags.delete)
+    })
+  },
+  list: ({ halos, config, target }) => listHalos(target, config, halos.kind),
+  status: async ({ envName, rest }) => {
+    const records = await halo_status(envName, rest[0])
+    return { records, text: format_status(records) }
+  }
+}
+
+const halo_command = (halos, config, args, flags, envName) => {
   const [action, ...rest] = args
   const changes =
     CHANGES.includes(action) && !(action === 'lockdown' && !flags.apply)
@@ -711,352 +1030,23 @@ const halo_command = async (halos, config, args, flags, envName) => {
     )
   const { target, mod } = halos
 
-  switch (action) {
-    case 'up':
-      return with_intent(envName, config, rest[0], () =>
-        mod.up(target, config, rest[0], {
-          smoke: Boolean(flags.smoke),
-          fresh: Boolean(flags.fresh),
-          ...(typeof flags.expire === 'string' && { expire: flags.expire }),
-          ...(typeof flags['image-family'] === 'string' && {
-            imageFamily: flags['image-family']
-          }),
-          ...(typeof flags['image-project'] === 'string' && {
-            imageProject: flags['image-project']
-          })
-        })
-      )
-
-    case 'memory': {
-      const actor = requireName(
-        rest,
-        'usage: realness <env> halo memory <actor> [halo] --stages=<file>'
-      )
-      const halo_name = rest[1] ?? config.haloName ?? 'realness-1'
-      const { measure } = await import('../../../src/control/memory.js')
-      const { remoteApi } = await import('../../../src/control/api.js')
-      if (is_local(config)) throw new Error('memory measures a cloud halo')
-      const api = remoteApi(halo_name, { zone: config.zone })
-      if (typeof flags.stages !== 'string')
-        throw new Error(
-          'memory needs --stages=<JSON file with named workload argv>'
-        )
-      const source = JSON.parse(await read_file(flags.stages, 'utf8'))
-      const definitions = source?.workloads ?? source
-      if (
-        !Array.isArray(definitions) ||
-        !definitions.length ||
-        definitions.some(stage => !Array.isArray(stage.argv))
-      )
-        throw new Error(
-          'memory stages must be a nonempty array with explicit argv'
-        )
-      const stages = await prepare_workloads(definitions, flags.stages)
-      return measure({
-        actor,
-        stages,
-        ...(flags['sample-ms'] !== undefined && {
-          sample_ms: Number(flags['sample-ms'])
-        }),
-        run: async (argv, stage) => {
-          const timeout_s = workload_timeout(stage)
-          const result = JSON.parse(
-            await api.call(`/v1/actors/${actor}/exec`, {
-              method: 'POST',
-              body: {
-                argv,
-                timeout: timeout_s,
-                ...(stage.cwd ? { cwd: stage.cwd } : {}),
-                ...(stage.stdin_b64 ? { stdin_b64: stage.stdin_b64 } : {})
-              },
-              timeout: timeout_s + 10
-            })
-          )
-          if (result.exit_code !== 0) throw new Error('memory workload failed')
-        },
-        /** The halo's cost is the Firecracker process; the guest's own use comes from its MemAvailable, so nothing new is reported at rest. */
-        sample: async () =>
-          await sample_actor(target, config, halo_name, actor, api)
-      })
-    }
-
-    case 'scale': {
-      const { scale_choice, scale_text } =
-        await import('../../../src/control/scale.js')
-      const report = typeof flags.report === 'string' ? flags.report : null
-      if (!report)
-        throw new Error(
-          'usage: realness <env> halo scale --report=<capacity report json> [--demand=N] [--monthly-hours=N]'
-        )
-      const measured = JSON.parse(await read_file(report, 'utf8'))
-      const choice = scale_choice({
-        actors_per_halo: Number(
-          measured.actors_per_halo ?? measured.actors_per_host ?? 0
-        ),
-        hourly_cost: Number(
-          flags['hourly-cost'] ??
-            measured.hourly_cost ??
-            config.hourly_cost ??
-            0
-        ),
-        ...(flags.demand && { demand: Number(flags.demand) }),
-        ...((flags['monthly-hours'] ?? measured.monthly_hours) !==
-          undefined && {
-          monthly_hours: Number(
-            flags['monthly-hours'] ?? measured.monthly_hours
-          )
-        })
-      })
-      return { ...choice, text: scale_text(choice) }
-    }
-
-    case 'hot': {
-      const { hot_halos, hot_text, relieve } =
-        await import('../../../src/control/hot.js')
-      const sync = await reads.reader(envName)
-      const fleet = await reads.halos(sync)
-      const rows = fleet.map(row => ({
-        name: row.halo.name,
-        cpu_fraction: fraction(row.halo.cpu_fraction),
-        /** The record carries bytes, not a fraction: mem_free of mem_total. */
-        mem_used_fraction: used_fraction(row.halo),
-        actors: row.actors.length
-      }))
-      const hot = hot_halos(rows, HOT_LIMITS)
-      if (!flags.owner)
-        return finish({
-          halos: hot,
-          text: hot.length ? hot_text(hot) : 'no halo is over its limits'
-        })
-      const crowded = fleet.find(row => row.halo.name === hot[0]?.halo)
-      if (!crowded) throw new Error('no crowded halo to relieve')
-      const plan = relieve(
-        rows,
-        HOT_LIMITS,
-        { halo: crowded.halo.name, actors: crowded.actors },
-        String(flags.owner)
-      )
-      return finish({
-        ...plan,
-        text: `${hot_text([plan])}\n\nrun: realness ${envName} halo move ${plan.owner} ${plan.to}`
-      })
-    }
-
-    case 'recover': {
-      const name = requireName(
-        rest,
-        'usage: realness <env> halo recover <name> [--yes]'
-      )
-      if (!flags.yes)
-        throw new Error(
-          `recover tears down ${name}'s authority and recreates its actors;` +
-            ' rerun with --yes'
-        )
-      const { remoteApi } = await import('../../../src/control/api.js')
-      const { recover } = await import('../../../src/control/recover.js')
-      const { revoke } = await import('../../../src/control/halo-gcp.js')
-      const { reassign } = await import('../../../src/gate/placement.js')
-      const sync = await reads.reader(envName)
-      const fleet = await reads.halos(sync)
-      const failed = fleet.find(row => row.halo.name === name)
-      if (!failed) throw new Error(`no halo record for ${name}`)
-      const alive = fleet
-        .filter(row => row.halo.name !== name)
-        .map(row => row.halo.name)
-      const survivors = alive.map(halo => ({
-        name: halo,
-        actors: fleet.find(row => row.halo.name === halo)?.actors?.length ?? 0
-      }))
-      const gcs = placement_store(envName)
-      const by_halo = new Map(survivors.map(halo => [halo.name, halo.actors]))
-      return finish(
-        await recover(name, {
-          reason: `last reported ${failed.age_s}s ago`,
-          actors: failed.actors,
-          halos: alive,
-          api: halo => remoteApi(halo, { zone: config.zone }),
-          revoke: halo => revoke(config, halo),
-          bundle: async id => {
-            const object = `gs://${config.bucket}/actors/${id}/bundle.tar.gz`
-            const found = await attempt('gcloud', [
-              'storage',
-              'objects',
-              'describe',
-              object,
-              '--format=value(name)'
-            ])
-            return found.ok && found.out.trim() ? { bundle: object } : null
-          },
-          /** Drain removed the export folder from the halo it came from, so the bundle is put back before restore reads it. */
-          restore: async (report_halo, id, owner, bundle) => {
-            const { remoteApi: api_for } =
-              await import('../../../src/control/api.js')
-            const { place_bundle } =
-              await import('../../../src/control/bundle.js')
-            await place_bundle(target, config, report_halo, id, {
-              object: bundle
-            })
-            return JSON.parse(
-              await api_for(report_halo, { zone: config.zone }).call(
-                '/v1/actors',
-                {
-                  method: 'POST',
-                  body: { owner, restore_from: id }
-                }
-              )
-            )
-          },
-          place: (who, halo) =>
-            reassign(who, halo, { read: gcs.read, write: gcs.write }),
-          load: async halo => by_halo.get(halo) ?? 0
-        })
-      )
-    }
-
-    case 'move': {
-      const [phone, target_host] = rest
-      if (!phone || !target_host)
-        throw new Error('usage: realness <env> halo move <phone> <halo>')
-      const { remoteApi } = await import('../../../src/control/api.js')
-      const { move } = await import('../../../src/control/move.js')
-      const { reassign } = await import('../../../src/gate/placement.js')
-      const gcs = placement_store(envName)
-      const where = await placement_of(phone, gcs)
-      const actor = await running_actor(envName, phone)
-      return finish(
-        await move(actor.id, phone, {
-          from: remoteApi(where, { zone: config.zone }),
-          to: remoteApi(target_host, { zone: config.zone }),
-          bundle: async id => {
-            const object = `gs://${config.bucket}/actors/${id}/bundle.tar.gz`
-            return {
-              object,
-              ...(await ship_bundle(where, config, id, object))
-            }
-          },
-          place: (who, halo) =>
-            reassign(who, halo, { read: gcs.read, write: gcs.write }),
-          halo: target_host,
-          release: true
-        })
-      )
-    }
-
-    case 'retire': {
-      const name = requireName(
-        rest,
-        'usage: realness <env> halo retire <name> [--delete]'
-      )
-      const { remoteApi } = await import('../../../src/control/api.js')
-      const { retire } = await import('../../../src/control/retire.js')
-      const { release_placements } =
-        await import('../../../src/gate/placement.js')
-      const store = placement_store(envName)
-      return finish(
-        await retire(
-          remoteApi(name, { zone: config.zone }),
-          {
-            release: halo =>
-              release_placements(halo, {
-                list: () => store.list(),
-                read: key => store.get(key),
-                remove: key => store.delete(key)
-              })
-          },
-          {
-            stop: () => target.call(['instances', 'stop', name, '--quiet']),
-            drop: () => mod.down(target, config, name, { mode: 'delete' })
-          },
-          name,
-          { delete: Boolean(flags.delete) }
-        )
-      )
-    }
-
-    case 'lockdown': {
-      if (is_local(config)) throw new Error('lockdown is for cloud projects')
-      const { attempt } = await import('../../../src/control/exec.js')
-      const { lockdown } = await import('../../../src/control/lockdown.js')
-      return lockdown(config, {
-        apply: Boolean(flags.apply),
-        run: argv => attempt('gcloud', argv)
-      })
-    }
-
-    case 'revoke': {
-      const name = requireName(rest, `usage: realness <env> halo revoke <name>`)
-      if (is_local(config)) throw new Error('revoke is for cloud halos')
-      return mod.revoke(config, name)
-    }
-
-    case 'down': {
-      const name = is_local(config)
-        ? (rest[0] ?? config.vm)
-        : requireName(
-            rest,
-            `usage: realness <env> halo down <name> [--delete] [--vm]`
-          )
-      if (flags.delete && !flags['no-drain'] && !is_local(config))
-        return drain.drain(target, config, name, {
-          delete: true,
-          fleet: fleet_reader(envName)
-        })
-
-      if (flags.delete)
-        return mod.down(target, config, name, { mode: 'delete' })
-      const intent = async state => {
-        try {
-          const target = await intent_target(envName, config, name)
-          await reads.record_intent(target.sync, target.name, state)
-        } catch (error) {
-          process.stderr.write(`halo record skipped: ${error.message}\n`)
-        }
-      }
-      await intent('stopping')
-      const done = await mod.down(target, config, name, {
-        mode: 'stop',
-        stop_vm: flags.vm === true
-      })
-      await intent('parked')
-      return done
-    }
-
-    case 'restart': {
-      const name = requireName(
-        rest,
-        'usage: realness <env> halo restart <name>'
-      )
-      return with_intent(envName, config, name, () =>
-        mod.restart(target, config, name)
-      )
-    }
-
-    case 'drain': {
-      if (is_local(config))
-        throw new Error(
-          "there is nothing to drain in dev: the halo is this Mac's VM"
-        )
-
-      const name = requireName(
-        rest,
-        'usage: realness development halo drain <name> [--delete]'
-      )
-      return drain.drain(target, config, name, {
-        delete: Boolean(flags.delete)
-      })
-    }
-
-    case 'list':
-      return listHalos(target, config, halos.kind)
-
-    case 'status': {
-      const records = await halo_status(envName, rest[0])
-      return { records, text: format_status(records) }
-    }
-
-    default:
-      throw new Error(`unknown halo command "${action ?? ''}"\n\n${USAGE}`)
-  }
+  const handler = Object.hasOwn(halo_commands, action)
+    ? halo_commands[action]
+    : null
+  if (handler)
+    return handler({
+      halos,
+      config,
+      args,
+      flags,
+      envName,
+      action,
+      rest,
+      target,
+      mod,
+      changes
+    })
+  throw new Error(`unknown halo command "${action ?? ''}"\n\n${USAGE}`)
 }
 
 const listHalos = async (target, config, kind) => {
@@ -1106,7 +1096,8 @@ const format = value => {
   return String(value)
 }
 
-main(process.argv.slice(2))
+Promise.resolve()
+  .then(() => main(process.argv.slice(2)))
   .then(code => process.exit(code ?? 0))
   .catch(error => {
     if (json_output) result({ error: error.message, code: error.code ?? 1 }, '')

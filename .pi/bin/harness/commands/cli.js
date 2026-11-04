@@ -215,7 +215,13 @@ export const cli_families = [
         '--limit <n>; --json',
         "Actor; harness pass; reads the owner's vault through sync."
       ],
-      ['vault note <path>', 'Sign-in and files', 'Read one vault note from an actor.', '--json', "Actor; harness pass; read-only."],
+      [
+        'vault note <path>',
+        'Sign-in and files',
+        'Read one vault note from an actor.',
+        '--json',
+        'Actor; harness pass; read-only.'
+      ],
       ['example static <destination>', 'Tools', 'Create a static-site starter.', '', 'Writes a new folder.'],
       ['example app <destination>', 'Tools', 'Create a Vue app starter.', '', 'Writes a new folder.'],
       [

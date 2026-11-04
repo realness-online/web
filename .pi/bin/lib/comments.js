@@ -153,18 +153,35 @@ const js_ranges = (text, lang, base = 0) => {
   })
 }
 
+/**
+ * Index just past the string that opens at `at`, skipping escaped quotes.
+ * @param {string} text
+ * @param {number} at
+ */
+const skip_quoted = (text, at) => {
+  const quote = text[at]
+  let i = at + 1
+  while (i < text.length && text[i] !== quote) i += text[i] === '\\' ? 2 : 1
+  return i + 1
+}
+
+/**
+ * Index of the newline that ends the line holding `at`, or the text length.
+ * @param {string} text
+ * @param {number} at
+ */
+const line_end = (text, at) => {
+  const nl = text.indexOf('\n', at)
+  return nl === -1 ? text.length : nl
+}
+
 const css_ranges = (text, lang, base = 0) => {
   const ranges = []
   const line_ok = lang === 'styl' || lang === 'scss'
   for (let i = 0; i < text.length; i++) {
     const c = text[i]
     if (c === '"' || c === "'") {
-      const quote = c
-      i++
-      while (i < text.length && text[i] !== quote) {
-        if (text[i] === '\\') i++
-        i++
-      }
+      i = skip_quoted(text, i) - 1
       continue
     }
     if (c === '/' && text[i + 1] === '*') {
@@ -175,8 +192,7 @@ const css_ranges = (text, lang, base = 0) => {
       continue
     }
     if (line_ok && c === '/' && text[i + 1] === '/') {
-      const end = text.indexOf('\n', i)
-      const stop = end === -1 ? text.length : end
+      const stop = line_end(text, i)
       ranges.push({ start: base + i, end: base + stop, keep: keep_comment(text.slice(i, stop), 'css') })
       i = stop - 1
     }
@@ -228,12 +244,7 @@ const sh_ranges = (text, base = 0) => {
       continue
     }
     if (c === '"') {
-      i++
-      while (i < text.length && text[i] !== '"') {
-        if (text[i] === '\\') i++
-        i++
-      }
-      i++
+      i = skip_quoted(text, i)
       continue
     }
     if (c === '<' && text[i + 1] === '<' && text[i + 2] !== '<') {
@@ -255,15 +266,13 @@ const sh_ranges = (text, base = 0) => {
       }
     }
     if (c === '#' && i === 0 && text[1] === '!') {
-      const eol = text.indexOf('\n', i)
-      const stop = eol === -1 ? text.length : eol
+      const stop = line_end(text, i)
       ranges.push({ start: base + i, end: base + stop, keep: true })
       i = stop
       continue
     }
     if (c === '#' && (i === 0 || /[\s;&|()]/.test(text[i - 1]))) {
-      const eol = text.indexOf('\n', i)
-      const stop = eol === -1 ? text.length : eol
+      const stop = line_end(text, i)
       ranges.push({
         start: base + i,
         end: base + stop,
@@ -289,18 +298,11 @@ const line_ranges = (text, lang, marker, base = 0) => {
       continue
     }
     if (c === '"' || c === "'") {
-      const quote = c
-      i++
-      while (i < text.length && text[i] !== quote) {
-        if (text[i] === '\\') i++
-        i++
-      }
-      i++
+      i = skip_quoted(text, i)
       continue
     }
     if (c === marker) {
-      const nl = text.indexOf('\n', i)
-      const stop = nl === -1 ? text.length : nl
+      const stop = line_end(text, i)
       const shebang = marker === '#' && i === 0 && text[1] === '!'
       ranges.push({ start: base + i, end: base + stop, keep: shebang || keep_comment(text.slice(i, stop), lang) })
       i = stop
@@ -326,13 +328,7 @@ const lua_ranges = (text, base = 0) => {
   while (i < text.length) {
     const c = text[i]
     if (c === '"' || c === "'") {
-      const quote = c
-      i++
-      while (i < text.length && text[i] !== quote) {
-        if (text[i] === '\\') i++
-        i++
-      }
-      i++
+      i = skip_quoted(text, i)
       continue
     }
     const lb = c === '[' ? long_bracket(i) : null
@@ -348,8 +344,7 @@ const lua_ranges = (text, base = 0) => {
         i = stop
         continue
       }
-      const nl = text.indexOf('\n', i)
-      const stop = nl === -1 ? text.length : nl
+      const stop = line_end(text, i)
       ranges.push({ start: base + i, end: base + stop, keep: keep_comment(text.slice(i, stop), 'lua') })
       i = stop
       continue
@@ -372,12 +367,7 @@ const clike_ranges = (text, lang, base = 0) => {
       continue
     }
     if (c === '"') {
-      i++
-      while (i < text.length && text[i] !== '"') {
-        if (text[i] === '\\') i++
-        i++
-      }
-      i++
+      i = skip_quoted(text, i)
       continue
     }
     if (lang === 'rust' && c === "'" && /^(?:'\\.'|'.')/.test(text.slice(i))) {
@@ -385,8 +375,7 @@ const clike_ranges = (text, lang, base = 0) => {
       continue
     }
     if (c === '/' && text[i + 1] === '/') {
-      const nl = text.indexOf('\n', i)
-      const stop = nl === -1 ? text.length : nl
+      const stop = line_end(text, i)
       ranges.push({ start: base + i, end: base + stop, keep: keep_comment(text.slice(i, stop), lang) })
       i = stop
       continue

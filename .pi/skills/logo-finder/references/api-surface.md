@@ -27,9 +27,9 @@ export interface SVG {
 
 All logos. Optional query params:
 
-| Param | Example | Behavior |
-|-------|---------|----------|
-| `limit` | `?limit=10` | Cap result count |
+| Param    | Example         | Behavior             |
+| -------- | --------------- | -------------------- |
+| `limit`  | `?limit=10`     | Cap result count     |
 | `search` | `?search=figma` | Title search (array) |
 
 ### `GET /category/{slug}`
@@ -44,16 +44,16 @@ List of `{ category, total }`.
 
 Returns raw SVG markup. Filename from `route` path (e.g. `figma.svg`, `illustrator.svg`).
 
-| Param | Behavior |
-|-------|----------|
+| Param         | Behavior       |
+| ------------- | -------------- |
 | `no-optimize` | Skip SVGO pass |
 
 ## Route URL shapes
 
-| Shape | Example | Fetch |
-|-------|---------|-------|
-| string | `https://svgl.app/library/figma.svg` | `/svg/figma.svg` |
-| ThemeOptions | `{ light, dark }` | `/svg/{light-or-dark-filename}` |
+| Shape        | Example                              | Fetch                           |
+| ------------ | ------------------------------------ | ------------------------------- |
+| string       | `https://svgl.app/library/figma.svg` | `/svg/figma.svg`                |
+| ThemeOptions | `{ light, dark }`                    | `/svg/{light-or-dark-filename}` |
 
 `wordmark` is optional; use only when the UI needs the full wordmark, not the icon mark.
 

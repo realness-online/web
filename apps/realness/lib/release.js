@@ -10,6 +10,7 @@ import {
   readdirSync as readdir_sync
 } from 'node:fs'
 import { join, relative, sep } from 'node:path'
+import { HTTP } from './http.js'
 
 export const RELEASE_FILE = 'release.json'
 const RELEASE_PATH = '/v1/release'
@@ -62,7 +63,7 @@ export const answer_release = (request, response) => {
   const path = new URL(request.url ?? '/', 'http://service').pathname
   if (request.method !== 'GET' || path !== RELEASE_PATH) return false
   const body = served_stamp()
-  response.writeHead(body ? 200 : 404, {
+  response.writeHead(body ? HTTP.OK : HTTP.NOT_FOUND, {
     'content-type': 'application/json',
     'cache-control': 'no-store'
   })

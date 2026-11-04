@@ -170,7 +170,8 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
     const falls_back = navigation_offline(text)
     for (const page of pages) {
       const path = relative(root, page.file)
-      if (!falls_back && !cached.has(path)) report(page.file, 'pwa-precache', 'page is not precached and no navigation route answers offline')
+      if (!falls_back && !cached.has(path))
+        report(page.file, 'pwa-precache', 'page is not precached and no navigation route answers offline')
       for (const href of page.assets) {
         const file = local_file_or_null(href, page.file)
         if (file && !cached.has(relative(root, file)))

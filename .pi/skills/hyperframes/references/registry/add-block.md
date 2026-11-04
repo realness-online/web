@@ -15,7 +15,13 @@ hyperframes add data-chart
 ### 2. Wire into index.html
 
 ```html
-<div id="stage" data-composition-id="main" data-width="1920" data-height="1080" data-duration="30">
+<div
+  id="stage"
+  data-composition-id="main"
+  data-width="1920"
+  data-height="1080"
+  data-duration="30"
+>
   <video
     id="speaker"
     src="speaker.mp4"

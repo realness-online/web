@@ -6,16 +6,16 @@ metadata:
   check: 'node ../../bin/checks/check-skills.js typography'
   category: Design & Creative
   pairs-with:
-  - skill: soundness
-    reason: Settled type decisions for realness projects; proven patterns to draw from for client work. Semantic elements carry typographic meaning before CSS touches them
-  - skill: user-interface
-    reason: Readability and clarity decisions
+    - skill: soundness
+      reason: Settled type decisions for realness projects; proven patterns to draw from for client work. Semantic elements carry typographic meaning before CSS touches them
+    - skill: user-interface
+      reason: Readability and clarity decisions
   tags:
-  - typography
-  - fonts
-  - type-scale
-  - fluid-type
-  - client-work
+    - typography
+    - fonts
+    - type-scale
+    - fluid-type
+    - client-work
 ---
 
 # Typography
@@ -43,13 +43,13 @@ Everything derives from one unit (mechanics: soundness, Spacing). Pick the value
 
 ## Modular scale
 
-| Ratio | Name | Character |
-|-------|------|-----------|
-| 1.125 | Major Second | Quiet, functional, dense UI |
-| 1.200 | Minor Third | Balanced, versatile, most web content |
-| 1.250 | Major Third | Clear hierarchy, marketing |
-| 1.333 | Perfect Fourth | Strong, editorial |
-| 1.414 | Augmented Fourth | Dramatic, expressive |
+| Ratio | Name             | Character                             |
+| ----- | ---------------- | ------------------------------------- |
+| 1.125 | Major Second     | Quiet, functional, dense UI           |
+| 1.200 | Minor Third      | Balanced, versatile, most web content |
+| 1.250 | Major Third      | Clear hierarchy, marketing            |
+| 1.333 | Perfect Fourth   | Strong, editorial                     |
+| 1.414 | Augmented Fourth | Dramatic, expressive                  |
 
 A **fluid range** scales the ratio itself with the viewport (realness: 1.25 -> 1.414) - quiet hierarchy on mobile, dramatic on wide screens, no breakpoints. Pick a range for the client's voice: a law firm might stay fixed at 1.2; a creative studio might range 1.333 -> 1.618.
 
@@ -89,18 +89,26 @@ Realness uses Lato (Humanist Sans) - warm, readable at weight 300, distinct at w
 
 ## Performance
 
-| Tier | Total font budget | Files |
-|------|-------------------|-------|
-| Fast (Core Web Vitals) | < 100KB | 2-3 woff2 |
-| Balanced | 100-200KB | 4-5 woff2 |
-| Rich | 200-400KB | 6-8 woff2 |
+| Tier                   | Total font budget | Files     |
+| ---------------------- | ----------------- | --------- |
+| Fast (Core Web Vitals) | < 100KB           | 2-3 woff2 |
+| Balanced               | 100-200KB         | 4-5 woff2 |
+| Rich                   | 200-400KB         | 6-8 woff2 |
 
 Preload the primary weight:
+
 ```html
-<link rel="preload" as="font" type="font/woff2" href="/fonts/primary.woff2" crossorigin>
+<link
+  rel="preload"
+  as="font"
+  type="font/woff2"
+  href="/fonts/primary.woff2"
+  crossorigin
+/>
 ```
 
 Match fallback x-height to prevent CLS on swap:
+
 ```css
 @font-face {
   font-family: 'ClientFont';

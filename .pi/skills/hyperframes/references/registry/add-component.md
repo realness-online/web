@@ -21,7 +21,10 @@ Open `compositions/components/shimmer-sweep.html` and read the comment header.
 **HTML** - wrap target elements:
 
 ```html
-<div class="shimmer-sweep-target" style="--shimmer-color: rgba(255, 255, 255, 0.5)">
+<div
+  class="shimmer-sweep-target"
+  style="--shimmer-color: rgba(255, 255, 255, 0.5)"
+>
   <h1 class="title">AI-Powered Video</h1>
 </div>
 ```
@@ -31,31 +34,31 @@ Open `compositions/components/shimmer-sweep.html` and read the comment header.
 **JS** - paste the auto-injection script (before timeline code):
 
 ```js
-document.querySelectorAll(".shimmer-sweep-target").forEach((el) => {
-  if (!el.querySelector(".shimmer-mask")) {
-    const mask = document.createElement("div");
-    mask.className = "shimmer-mask";
-    el.appendChild(mask);
+document.querySelectorAll('.shimmer-sweep-target').forEach(el => {
+  if (!el.querySelector('.shimmer-mask')) {
+    const mask = document.createElement('div')
+    mask.className = 'shimmer-mask'
+    el.appendChild(mask)
   }
-});
+})
 ```
 
 **Timeline** - add the sweep:
 
 ```js
 tl.fromTo(
-  ".shimmer-sweep-target",
+  '.shimmer-sweep-target',
   {
-    "--shimmer-pos": "-20%",
+    '--shimmer-pos': '-20%'
   },
   {
-    "--shimmer-pos": "120%",
+    '--shimmer-pos': '120%',
     duration: 1.2,
-    ease: "power2.inOut",
-    stagger: 0.15,
+    ease: 'power2.inOut',
+    stagger: 0.15
   },
-  1.5,
-);
+  1.5
+)
 ```
 
 ### 4. Lint and preview

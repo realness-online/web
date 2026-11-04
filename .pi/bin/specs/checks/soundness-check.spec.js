@@ -72,11 +72,14 @@ it('a Deno project still cannot load a remote script tag', () => {
   assert.equal(found.length, 1)
 })
 
-it('generated output folders are skipped', t => {
+it('generated output and specs are skipped; git-ignored files are not seen', t => {
   const dir = mkdtempSync(join(tmpdir(), 'soundness-'))
   t.after(() => rmSync(dir, { recursive: true, force: true }))
-  mkdirSync(join(dir, '.nuxt'))
-  writeFileSync(join(dir, '.nuxt', 'app.vue'), '<style scoped>x {}</style>')
+  spawnSync('git', ['init', '-q', dir])
+  for (const folder of ['.nuxt', 'specs', 'built']) mkdirSync(join(dir, folder))
+  writeFileSync(join(dir, '.gitignore'), 'built/\n')
+  for (const folder of ['.nuxt', 'specs', 'built'])
+    writeFileSync(join(dir, folder, 'app.vue'), '<style scoped>x {}</style>')
   writeFileSync(join(dir, 'app.vue'), '<template><p>hi</p></template>')
   const result = run(dir)
   assert.equal(result.status, 0, result.stdout)

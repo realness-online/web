@@ -8,15 +8,15 @@ Blameless toward people, merciless toward mechanisms. The real document has abso
 
 ## AI tells in this domain
 
-| Tell | Fix |
-|---|---|
-| Agentless fog: "mistakes were made", "the change was deployed" with no actor anywhere | Blameless ≠ agentless. Name systems and roles: "the deploy pipeline promoted the config before validation ran" |
-| Generic lessons: "we will improve monitoring and communication" | An action item is a change with an owner and a date: "add alert on queue depth > 10k (owner: infra, due 09-15)" |
-| Every template section filled to similar length for completeness | Sections earn their length; "What went well: N/A-grade prose" → one honest line or delete |
-| Self-praise adverbs: "the team swiftly identified…" | Timestamps carry the speed judgment; let them |
-| Hedged root cause: "a combination of factors may have contributed" | Commit to the causal chain you believe, and mark the genuinely unknown part as unknown |
-| Moralizing conclusion about reliability culture | End at the action items |
-| Round, sourceless numbers | Real duration, real blast radius, real user/request counts — from the actual incident data, never estimated to sound complete |
+| Tell                                                                                  | Fix                                                                                                                           |
+| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Agentless fog: "mistakes were made", "the change was deployed" with no actor anywhere | Blameless ≠ agentless. Name systems and roles: "the deploy pipeline promoted the config before validation ran"                |
+| Generic lessons: "we will improve monitoring and communication"                       | An action item is a change with an owner and a date: "add alert on queue depth > 10k (owner: infra, due 09-15)"               |
+| Every template section filled to similar length for completeness                      | Sections earn their length; "What went well: N/A-grade prose" → one honest line or delete                                     |
+| Self-praise adverbs: "the team swiftly identified…"                                   | Timestamps carry the speed judgment; let them                                                                                 |
+| Hedged root cause: "a combination of factors may have contributed"                    | Commit to the causal chain you believe, and mark the genuinely unknown part as unknown                                        |
+| Moralizing conclusion about reliability culture                                       | End at the action items                                                                                                       |
+| Round, sourceless numbers                                                             | Real duration, real blast radius, real user/request counts — from the actual incident data, never estimated to sound complete |
 
 ## Rules
 

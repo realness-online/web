@@ -79,6 +79,60 @@ const child = (binary, argv) => {
   return pending
 }
 
+/** Open the actor page in the leased browser and read its title back. */
+const visit = async (server, session, marker) => {
+  const address = Object.values(network_interfaces())
+    .flat()
+    .find(item => item?.family === 'IPv4' && !item.internal)?.address
+  if (!address) throw new Error('no actor IPv4 address')
+  const listening = server.address()
+  if (!listening || typeof listening === 'string')
+    throw new Error('actor page server has no TCP address')
+  const { port } = listening
+  await child('/usr/local/bin/agent-browser', [
+    '--session',
+    session,
+    'open',
+    `http://${address}:${port}/`
+  ])
+  const page = await child('/usr/local/bin/agent-browser', [
+    '--session',
+    session,
+    'eval',
+    'document.title'
+  ])
+  if (JSON.parse(page.stdout.trim()) !== marker)
+    throw new Error('leased browser did not open the actor page')
+}
+
+/** Close the browser session, then return the lease; every failure is kept. */
+const release = async session => {
+  const cleanup = /** @type {const} */ ({
+    timeout: cleanup_ms,
+    killSignal: 'SIGKILL'
+  })
+  const closed = await execute(
+    '/usr/local/bin/agent-browser',
+    ['--session', session, 'close'],
+    cleanup
+  ).then(
+    () => null,
+    error => error
+  )
+  const returned = await execute(
+    '/usr/local/bin/realness',
+    ['chrome', 'return'],
+    cleanup
+  ).then(
+    result =>
+      result.stdout.trim() === 'returned'
+        ? null
+        : new Error('browser lease return was not confirmed'),
+    error => error
+  )
+  return [closed, returned].filter(Boolean)
+}
+
 const browser = async () => {
   const marker = `capacity-${random_uuid()}`
   const session = marker
@@ -92,57 +146,18 @@ const browser = async () => {
     server.once('error', reject)
     server.listen(0, '0.0.0.0', () => resolve(undefined))
   })
-  try {
-    const address = Object.values(network_interfaces())
-      .flat()
-      .find(item => item?.family === 'IPv4' && !item.internal)?.address
-    if (!address) throw new Error('no actor IPv4 address')
-    const listening = server.address()
-    if (!listening || typeof listening === 'string')
-      throw new Error('actor page server has no TCP address')
-    const { port } = listening
-    await child('/usr/local/bin/agent-browser', [
-      '--session',
-      session,
-      'open',
-      `http://${address}:${port}/`
-    ])
-    const page = await child('/usr/local/bin/agent-browser', [
-      '--session',
-      session,
-      'eval',
-      'document.title'
-    ])
-    if (JSON.parse(page.stdout.trim()) !== marker)
-      throw new Error('leased browser did not open the actor page')
-  } finally {
-    const failures = []
-    for (const { binary, argv } of [
-      {
-        binary: '/usr/local/bin/agent-browser',
-        argv: ['--session', session, 'close']
-      },
-      { binary: '/usr/local/bin/realness', argv: ['chrome', 'return'] }
-    ])
-      try {
-        const result = await execute(binary, argv, {
-          timeout: cleanup_ms,
-          killSignal: 'SIGKILL'
-        })
-        if (
-          binary === '/usr/local/bin/realness' &&
-          result.stdout.trim() !== 'returned'
-        )
-          throw new Error('browser lease return was not confirmed')
-      } catch (error) {
-        failures.push(error)
-      }
-
-    server.closeAllConnections()
-    await new Promise(resolve => server.close(resolve))
-    if (failures.length)
-      throw new AggregateError(failures, 'browser cleanup failed')
-  }
+  const visited = await visit(server, session, marker).then(
+    () => null,
+    error => error
+  )
+  const failures = await release(session)
+  server.closeAllConnections()
+  await new Promise(resolve => {
+    server.close(resolve)
+  })
+  if (visited) throw visited
+  if (failures.length)
+    throw new AggregateError(failures, 'browser cleanup failed')
   return { browser_verified: true, browser_released: true }
 }
 

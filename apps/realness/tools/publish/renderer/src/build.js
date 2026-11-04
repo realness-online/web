@@ -14,13 +14,15 @@ import { create_pages } from './pages.js'
 import { escape_html } from './text.js'
 
 const markdown_files = async directory => {
-  const files = []
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const path = join(directory, entry.name)
-    if (entry.isDirectory()) files.push(...(await markdown_files(path)))
-    else if (entry.name.endsWith('.md')) files.push(path)
-  }
-  return files
+  const entries = await readdir(directory, { withFileTypes: true })
+  const found = await Promise.all(
+    entries.map(entry => {
+      const path = join(directory, entry.name)
+      if (entry.isDirectory()) return markdown_files(path)
+      return entry.name.endsWith('.md') ? [path] : []
+    })
+  )
+  return found.flat()
 }
 
 /** Renderer files a page links only in plans mode. */
@@ -56,7 +58,9 @@ export const build_site = async (
   const output = 'dist'
   await rm(output, { recursive: true, force: true })
   await mkdir(output, { recursive: true })
-  for (const root of resolve(engine) === resolve('.') ? ['.'] : [engine, '.']) {
+  for await (const root of resolve(engine) === resolve('.')
+    ? ['.']
+    : [engine, '.']) {
     const static_directory = join(root, 'static')
     const partials = join(root, 'partials')
     const filter =
@@ -79,11 +83,14 @@ export const build_site = async (
     join(output, 'scripts/template-for-polyfill.js')
   )
   if (site.pwa)
-    for (const name of ['register.js', 'profiles.js', 'watch-for-updates.js'])
-      await cp(
-        new URL(`../../../../packages/pwa/src/${name}`, import.meta.url),
-        join(output, `scripts/${name}`)
+    await Promise.all(
+      ['register.js', 'profiles.js', 'watch-for-updates.js'].map(name =>
+        cp(
+          new URL(`../../../../packages/pwa/src/${name}`, import.meta.url),
+          join(output, `scripts/${name}`)
+        )
       )
+    )
   const images = create_images(site.poster)
   await images.load_poster_sizes()
   const templates = create_templates(site, images.poster_sizes, watch)
@@ -116,5 +123,5 @@ export const build_site = async (
   }
   if (watch)
     await write_file(join(output, 'build-stamp.txt'), String(Date.now()))
-  console.log(`built ${articles.length} articles`)
+  console.info(`built ${articles.length} articles`)
 }

@@ -49,7 +49,10 @@ test('m0: rows round-trip, sorted by id, text escaped', () => {
   const { gzipSync } = process.getBuiltinModule('node:zlib')
   const back = read_month(gzipSync(html))
   assert.equal(back.sessions, 1)
-  assert.deepEqual(back.rows.map(row => row.turn_id), ['a', 'b'])
+  assert.deepEqual(
+    back.rows.map(row => row.turn_id),
+    ['a', 'b']
+  )
   assert.equal(back.rows[1].text, 'two\n<b>"&')
 })
 
@@ -74,7 +77,11 @@ test('m0: a past month seals; a new device recalls it with no sessions', async (
   assert.equal(hits[0].session_file, join(fresh, 'sessions', '2026-09-02T00-00-00-000Z_old.jsonl'))
   assert.equal(stats(join(fresh, 'memory.db')).sessions, 1)
   await indexSessions({ root: join(fresh, 'sessions'), path: join(fresh, 'memory.db'), now })
-  assert.deepEqual(readFileSync(join(fresh, 'memory', 'turns', '2026-09.turns.html.gz')), first, 'fewer sessions never reseal')
+  assert.deepEqual(
+    readFileSync(join(fresh, 'memory', 'turns', '2026-09.turns.html.gz')),
+    first,
+    'fewer sessions never reseal'
+  )
   rmSync(root, { recursive: true, force: true })
 })
 
@@ -87,6 +94,9 @@ test('m0: a late session reseals its month', async () => {
   await indexSessions({ root: sessions, path: join(root, 'memory.db'), now })
   const { sessions: count, rows } = read_month(readFileSync(join(root, 'memory', 'turns', '2026-09.turns.html.gz')))
   assert.equal(count, 2)
-  assert.deepEqual(rows.map(row => row.turn_id), ['a-u', 'b-u'])
+  assert.deepEqual(
+    rows.map(row => row.turn_id),
+    ['a-u', 'b-u']
+  )
   rmSync(root, { recursive: true, force: true })
 })

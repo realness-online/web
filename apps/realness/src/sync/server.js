@@ -43,7 +43,6 @@ import {
   verify_harness_pass,
   verify_recovery_pass
 } from '#root/src/sign-on/node/recovery-pass.js'
-import { rights_key } from './rights.js'
 import { skipped } from '#root/src/files/skip.js'
 import { org_route, RouteStatus } from './org-routes.js'
 import { members_key, orgs_of, read_org, read_org_along } from './orgs.js'
@@ -810,7 +809,7 @@ const org_of = (storage, path, owner) => {
 /**
  * Read, list, write, or delete one stored file, after can() allows it. An
  * anonymous read gets a cache header the CDN may keep.
- * @param {{ storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }>, forget: (owner: string) => void }, admins: { has: (phone: string) => Promise<boolean> }, keep: ReturnType<typeof keeper> }} sync
+ * @param {{ storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, admins: { has: (phone: string) => Promise<boolean> }, keep: ReturnType<typeof keeper> }} sync
  * @param {import('node:http').IncomingMessage} request
  * @param {import('node:http').ServerResponse} response
  * @param {{ path: string, action: string, caller: Caller | null }} call caller is null when anonymous
@@ -855,7 +854,6 @@ const answer_record = async (
     who,
     keep
   })
-  if (owner && path === rights_key(owner)) rights.forget(owner)
   response.end()
 }
 
@@ -877,7 +875,7 @@ const answer_record = async (
  * The sync service.
  * @param {object} options
  * @param {SyncStorage} options.storage
- * @param {{ grants: (owner: string) => Promise<{ grants: object[] }>, forget: (owner: string) => void }} options.rights
+ * @param {{ grants: (owner: string) => Promise<{ grants: object[] }> }} options.rights
  * @param {string} options.project
  * @param {() => Promise<Record<string, string>>} options.certs
  * @param {string} [options.issuer] the token issuer; Firebase's by default

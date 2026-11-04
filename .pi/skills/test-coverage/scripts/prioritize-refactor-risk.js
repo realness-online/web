@@ -13,22 +13,18 @@
 
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { load_coverage_by_src } from './lib/coverage-metrics.js'
+import { coverage_args, load_coverage_by_src } from './lib/coverage-metrics.js'
+import { actionable_target, product_priority, risk_score } from './lib/risk.js'
 
-const args = process.argv.slice(2)
-const get_arg = (flag, fallback) => {
-  const i = args.indexOf(flag)
-  if (i === -1) return fallback
-  return args[i + 1] ?? fallback
-}
+const args = coverage_args(25)
 
-const project_root = get_arg('--root', process.cwd())
-const threshold = Number(get_arg('--threshold', '80'))
-const top_n = Number(get_arg('--top', '25'))
-const coverage_only = args.includes('--coverage-only')
+const project_root = args.root
+const threshold = args.threshold
+const top_n = args.top
+const coverage_only = args['coverage-only']
 
-const fallow_path = get_arg('--fallow', join(project_root, 'fallow-report.json'))
-const coverage = load_coverage_by_src(project_root, get_arg('--coverage', undefined))
+const fallow_path = args.fallow ?? join(project_root, 'fallow-report.json')
+const coverage = load_coverage_by_src(project_root, args.coverage)
 
 if (!coverage?.size) {
   console.error(`Missing coverage/coverage-final.json under ${project_root}`)
@@ -65,7 +61,7 @@ for (const row of fallow?.health?.hotspots ?? []) {
 /** @type {Map<string, object>} */
 const targets = new Map()
 for (const row of fallow?.health?.targets ?? []) {
-  if (!row.path.startsWith('src/')) continue
+  if (!actionable_target(row)) continue
   targets.set(row.path.replace(/\\/g, '/'), row)
 }
 
@@ -80,28 +76,6 @@ for (const row of fallow?.health?.findings ?? []) {
   complexity_by_file.set(path, prev)
 }
 
-/** P0/P1 paths from web-realness reference */
-const priority_prefixes = [
-  ['P0', 'src/utils/itemid'],
-  ['P0', 'src/utils/itemid-parse'],
-  ['P0', 'src/utils/serverless'],
-  ['P0', 'src/persistence/'],
-  ['P0', 'src/use/sponsor'],
-  ['P0', 'src/use/sync'],
-  ['P1', 'src/use/poster'],
-  ['P1', 'src/potrace/'],
-  ['P1', 'src/3d/'],
-  ['P1', 'src/utils/export-poster'],
-  ['P1', 'src/views/']
-]
-
-const product_priority = path => {
-  for (const [label, prefix] of priority_prefixes) {
-    if (path.replace(/^src\/app\//, 'src/').startsWith(prefix)) return label
-  }
-  return 'P2'
-}
-
 const spec_paths = src_path => {
   const stem = src_path
     .replace(/^src\/(?:app\/)?/, '')
@@ -114,47 +88,21 @@ const spec_paths = src_path => {
 
 const has_spec = src_path => spec_paths(src_path).some(p => existsSync(join(project_root, p)))
 
-/**
- * @param {string} path
- * @param {{ pct: number }} cov
- */
-const risk_score = (path, cov) => {
-  if (unused_files.has(path)) return -1
-
-  const scores = file_scores.get(path)
-  const hotspot = hotspots.get(path)
-  const target = targets.get(path)
-  const complexity = complexity_by_file.get(path)
-
-  const coverage_gap = Math.max(0, threshold - cov.pct)
-  const crap = scores?.crap_max ?? 0
-  const crap_untested = scores?.crap_above_threshold ?? 0
-  const fan_in = scores?.fan_in ?? 0
-  const hotspot_score = hotspot?.score ?? 0
-  const target_priority = target?.priority ?? 0
-  const complex_fns = complexity?.count ?? 0
-
-  let score =
-    coverage_gap * 1.2 +
-    Math.min(crap, 120) * 0.35 +
-    crap_untested * 8 +
-    fan_in * 1.5 +
-    hotspot_score * 0.4 +
-    target_priority * 0.25 +
-    complex_fns * 2
-
-  if (product_priority(path) === 'P0') score += 15
-  if (product_priority(path) === 'P1') score += 8
-  if (!has_spec(path)) score += 10
-
-  return score
-}
-
 /** @type {Array<object>} */
 const ranked = []
 
 for (const [path, cov] of coverage.entries()) {
-  const score = risk_score(path, cov)
+  const score = risk_score({
+    path,
+    pct: cov.pct,
+    threshold,
+    unused: unused_files.has(path),
+    has_spec: has_spec(path),
+    scores: file_scores.get(path),
+    hotspot: hotspots.get(path),
+    target: targets.get(path),
+    complexity: complexity_by_file.get(path)
+  })
   const scores = file_scores.get(path)
   const target = targets.get(path)
   const unused = unused_files.has(path)

@@ -13,8 +13,6 @@ export const types = [
   'boulders'
 ]
 
-/** @typedef {typeof types[number]} Type */
-
 /** @type {readonly ['posters']} */
 export const has_archive = /** @type {readonly ['posters']} */ (
   /** @type {unknown} */ (types.slice(0, 1))

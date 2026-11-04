@@ -19,14 +19,14 @@ Two jobs:
 
 ## Stack
 
-| Piece | What we use |
-| --- | --- |
-| Runner | Vite Plus - `vp test`, `import ... from 'vite-plus/test'` |
-| Engine | Vitest (`vite-plus-test` alias) |
-| DOM | `happy-dom` |
-| Vue | `@vue/test-utils` - prefer `shallowMount` |
-| Language | JavaScript + JSDoc |
-| Coverage | V8, 80% global, `all: true` |
+| Piece    | What we use                                               |
+| -------- | --------------------------------------------------------- |
+| Runner   | Vite Plus - `vp test`, `import ... from 'vite-plus/test'` |
+| Engine   | Vitest (`vite-plus-test` alias)                           |
+| DOM      | `happy-dom`                                               |
+| Vue      | `@vue/test-utils` - prefer `shallowMount`                 |
+| Language | JavaScript + JSDoc                                        |
+| Coverage | V8, 80% global, `all: true`                               |
 
 ## Commands
 
@@ -70,14 +70,14 @@ Test behavior, not internals (JS style: AGENTS.md).
 
 ### Key patterns
 
-| Pattern | Approach | Reference spec |
-| --- | --- | --- |
-| Pure utils | Input/output, nested `describe` | `specs/app/utils/itemid.spec.js` |
-| Module mocks | Top-level `vi.mock()`; `vi.clearAllMocks()` in `beforeEach` | `specs/app/utils/itemid.spec.js` |
-| Vue components | `shallowMount`, stubs, semantic queries | `specs/app/components/account/as-notifications.spec.js` |
-| Composable mocks | `vi.hoisted()` refs for `vi.mock` closures | `specs/app/views/Account.spec.js` |
-| Composables | `with_setup()` + `mount(defineComponent(...))` | `specs/app/use/poster.spec.js` |
-| Async errors | `await expect(...).rejects.toThrow()` | `specs/app/utils/itemid.spec.js` |
+| Pattern          | Approach                                                    | Reference spec                                          |
+| ---------------- | ----------------------------------------------------------- | ------------------------------------------------------- |
+| Pure utils       | Input/output, nested `describe`                             | `specs/app/utils/itemid.spec.js`                        |
+| Module mocks     | Top-level `vi.mock()`; `vi.clearAllMocks()` in `beforeEach` | `specs/app/utils/itemid.spec.js`                        |
+| Vue components   | `shallowMount`, stubs, semantic queries                     | `specs/app/components/account/as-notifications.spec.js` |
+| Composable mocks | `vi.hoisted()` refs for `vi.mock` closures                  | `specs/app/views/Account.spec.js`                       |
+| Composables      | `with_setup()` + `mount(defineComponent(...))`              | `specs/app/use/poster.spec.js`                          |
+| Async errors     | `await expect(...).rejects.toThrow()`                       | `specs/app/utils/itemid.spec.js`                        |
 
 **Hoisted mocks** (reset `.value` in `beforeEach`):
 
@@ -101,14 +101,14 @@ Global mocks: `specs/app/mocks/default.js`, `specs/app/mocks/browser/*`. Per-spe
 
 ### What we do not do
 
-| Avoid | Use instead |
-| --- | --- |
-| Jest / React Testing Library | `vite-plus/test` + `@vue/test-utils` |
-| TypeScript test files | `.spec.js` + JSDoc |
-| `@faker-js/faker` | Domain fixtures (item IDs, directories) |
-| supertest / live DB | Mock `idb-keyval`, `serverless` |
-| `data-testid` | Semantic DOM queries |
-| 100% coverage | 80% gate + risk report |
+| Avoid                        | Use instead                             |
+| ---------------------------- | --------------------------------------- |
+| Jest / React Testing Library | `vite-plus/test` + `@vue/test-utils`    |
+| TypeScript test files        | `.spec.js` + JSDoc                      |
+| `@faker-js/faker`            | Domain fixtures (item IDs, directories) |
+| supertest / live DB          | Mock `idb-keyval`, `serverless`         |
+| `data-testid`                | Semantic DOM queries                    |
+| 100% coverage                | 80% gate + risk report                  |
 
 Full patterns, templates, file map: [references/web-realness.md](references/web-realness.md)
 
@@ -149,12 +149,12 @@ npx fallow --format json
 
 ### 5. Classify each item
 
-| Verdict | Meaning |
-| --- | --- |
-| **test-first** | Add/extend specs before refactor |
+| Verdict                 | Meaning                                         |
+| ----------------------- | ----------------------------------------------- |
+| **test-first**          | Add/extend specs before refactor                |
 | **refactor-with-tests** | Some coverage; shore up hot paths then refactor |
-| **delete-or-wire** | Fallow unused file - entry point or delete |
-| **defer** | Low product risk |
+| **delete-or-wire**      | Fallow unused file - entry point or delete      |
+| **defer**               | Low product risk                                |
 
 Priority: **P0** IDs/auth/sync/payments, **P1** posters/potrace/3D, **P2** rest.
 
@@ -172,9 +172,11 @@ When behavior changes, update `.fallowrc.json`, [references/fallow-integration.m
 # Refactor risk (coverage + fallow)
 
 ## Delete or wire
+
 - ...
 
 ## Test before refactor
+
 | file | pri | cov% | risk | ... |
 
 ## Workflow
@@ -191,11 +193,11 @@ When behavior changes, update `.fallowrc.json`, [references/fallow-integration.m
 
 ## Scripts
 
-| Script | Purpose |
-| --- | --- |
-| `scripts/summarize-coverage.js` | Coverage table |
+| Script                                | Purpose                 |
+| ------------------------------------- | ----------------------- |
+| `scripts/summarize-coverage.js`       | Coverage table          |
 | `scripts/prioritize-refactor-risk.js` | Coverage + fallow merge |
-| `scripts/lib/coverage-metrics.js` | Shared Istanbul parsing |
+| `scripts/lib/coverage-metrics.js`     | Shared Istanbul parsing |
 
 ## References
 

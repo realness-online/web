@@ -4,7 +4,10 @@ import { join } from 'node:path'
 import { describe, it, expect } from 'vitest'
 
 describe('poster with sale record round-trips through happy-dom', () => {
-  const file = join(import.meta.dirname, '../../../specs/app/mocks/html/poster.html')
+  const file = join(
+    import.meta.dirname,
+    '../../../specs/app/mocks/html/poster.html'
+  )
   it('parses, accepts metadata, serializes', () => {
     const html = readFileSync(file, 'utf8')
     const win = new Window({ url: 'https://realness.online' })
@@ -13,7 +16,10 @@ describe('poster with sale record round-trips through happy-dom', () => {
     const root = container.firstElementChild
     expect(root?.getAttribute('itemid')).toContain('/posters/')
 
-    const md = win.document.createElementNS('http://www.w3.org/2000/svg', 'metadata')
+    const md = win.document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'metadata'
+    )
     md.setAttribute('itemprop', 'sale')
     md.setAttribute('itemscope', '')
     const price = win.document.createElement('data')

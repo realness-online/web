@@ -24,7 +24,10 @@ import {
 } from '../../../tools/ops/hosting-traffic.js'
 
 /** Minimal hosting log row for the window/trend specs. */
-const hit = (path, { ip = '1.1.1.1', ua = 'Mozilla/5.0', referer = '', at } = {}) => ({
+const hit = (
+  path,
+  { ip = '1.1.1.1', ua = 'Mozilla/5.0', referer = '', at } = {}
+) => ({
   timestamp: at,
   httpRequest: {
     requestMethod: 'GET',
@@ -177,9 +180,9 @@ describe('entry identity', () => {
   })
 
   it('reads protobuf-ish timestamps', () => {
-    expect(
-      entry_timestamp({ timestamp: { seconds: 1_720_000_000 } })
-    ).toMatch(/^\d{4}-\d{2}-\d{2}T/)
+    expect(entry_timestamp({ timestamp: { seconds: 1_720_000_000 } })).toMatch(
+      /^\d{4}-\d{2}-\d{2}T/
+    )
   })
 })
 
@@ -281,7 +284,10 @@ describe('aggregate_window', () => {
         hit('/', { referer: 'https://www.google.com/' }),
         hit('/', { ip: '2.2.2.2' }),
         hit('/about', { ip: '2.2.2.2', referer: 'https://realness.online/' }),
-        hit('/docs', { ip: '2.2.2.2', referer: 'https://realness.online/about' }),
+        hit('/docs', {
+          ip: '2.2.2.2',
+          referer: 'https://realness.online/about'
+        }),
         hit('/about', { ip: '9.9.9.9', ua: 'Twitterbot/1.0' })
       ],
       window_opts
@@ -320,7 +326,8 @@ describe('aggregate_window', () => {
     const result = aggregate_window(
       [
         hit('/', {
-          referer: '() { ignored; }; echo Content-Type: text/html; /bin/cat /etc/passwd'
+          referer:
+            '() { ignored; }; echo Content-Type: text/html; /bin/cat /etc/passwd'
         })
       ],
       window_opts
@@ -389,7 +396,15 @@ describe('burst_ips', () => {
   it('needs both volume and share to flag', () => {
     expect(flagged([['a', 4]], 10)).toEqual([])
     expect(flagged([['a', 30]], 1000)).toEqual([])
-    expect(flagged([['a', 40], ['b', 10]], 50)).toEqual(['a'])
+    expect(
+      flagged(
+        [
+          ['a', 40],
+          ['b', 10]
+        ],
+        50
+      )
+    ).toEqual(['a'])
   })
 
   it('flags nothing in an empty period', () => {

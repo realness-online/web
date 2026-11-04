@@ -7,14 +7,14 @@ definitely holds a value and the component renders correctly.
 
 **Cause:** Vue auto-unwraps top-level refs in the `setupState` proxy so templates can
 write `{{ some_ref }}` instead of `{{ some_ref.value }}`. The unwrapping happens for
-*any* binding returned directly from `<script setup>` or `setup()`'s return object -
+_any_ binding returned directly from `<script setup>` or `setup()`'s return object -
 not just the ones the template happens to use.
 
 **Fix:** Read the property directly, no `.value`:
 
 ```js
-setup.icon_index          // 0  - correct
-setup.icon_index?.value   // undefined - wrong, this is what bit us
+setup.icon_index // 0  - correct
+setup.icon_index?.value // undefined - wrong, this is what bit us
 ```
 
 Check `typeof setup.some_binding` first if you're not sure whether something is a
@@ -33,8 +33,8 @@ component.
 **Fix:** Don't assume a pattern; check the actual shape:
 
 ```js
-typeof setup.state          // 'object'
-typeof setup.state.count    // 'object' means it's still a ref - use .value
+typeof setup.state // 'object'
+typeof setup.state.count // 'object' means it's still a ref - use .value
 ```
 
 ## 3. `find()` returns the first match only - repeated components (`v-for`) get lost
@@ -59,7 +59,7 @@ children get attributed to the parent instead.
 
 **Fix:** There's no instance to inspect for a functional component itself - walk past
 it to its rendered children by inspecting the vnode's own `.children` instead of
-expecting a `.component`. Usually not worth chasing; check if the *parent's*
+expecting a `.component`. Usually not worth chasing; check if the _parent's_
 `setupState` already has what you need.
 
 ## 5. `Teleport` content isn't where you'd expect in the tree
@@ -73,7 +73,7 @@ checking `vnode.type === Teleport` and reading `vnode.children` directly rather 
 assuming normal parent/child component nesting.
 
 **Fix:** If a component is missing from the walk, check whether it or an ancestor
-uses `<Teleport>`. Search from the root with a *wider* depth cap, or find it by
+uses `<Teleport>`. Search from the root with a _wider_ depth cap, or find it by
 walking `document.body`'s DOM directly and reading `el.__vueParentComponent` (see
 issue 8) instead of the vnode tree.
 
@@ -117,7 +117,7 @@ the actual mount point, or might be only one of several.
 **Fix:** Search more broadly for the mount root:
 
 ```js
-[...document.querySelectorAll('*')].find(el => el.__vue_app__)
+;[...document.querySelectorAll('*')].find(el => el.__vue_app__)
 ```
 
 or check the specific container you expect (`document.querySelector('[data-app-root]')`,
@@ -132,13 +132,13 @@ nothing here returns useful data.
 instance shape by default (Vue 2.7 added `setup()` support but the underlying
 instance still isn't `ComponentInternalInstance`-shaped). Vue 2 uses:
 
-| Vue 3 (this skill) | Vue 2 equivalent |
-|---|---|
-| `el.__vue_app__` | `el.__vue__` (points directly at the component instance, not an app wrapper) |
-| `instance.setupState` | `instance._data` (Options API `data()`), `instance._computedWatchers` |
-| `instance.subTree` | no direct equivalent; use `instance.$children` |
-| `instance.type.name`/`__name` | `instance.$options.name` |
-| `instance.props` | `instance.$props` |
+| Vue 3 (this skill)            | Vue 2 equivalent                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `el.__vue_app__`              | `el.__vue__` (points directly at the component instance, not an app wrapper) |
+| `instance.setupState`         | `instance._data` (Options API `data()`), `instance._computedWatchers`        |
+| `instance.subTree`            | no direct equivalent; use `instance.$children`                               |
+| `instance.type.name`/`__name` | `instance.$options.name`                                                     |
+| `instance.props`              | `instance.$props`                                                            |
 
 **Fix:** Confirm the version first (`el.__vue__ ? '2.x' : (el.__vue_app__ ? '3.x' : 'not vue')`)
 before applying any snippet from this skill. Don't port the tree walker as-is - Vue 2

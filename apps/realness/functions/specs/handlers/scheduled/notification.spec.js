@@ -12,9 +12,8 @@ vi.mock('#utils/push.js', () => ({
 
 vi.mock('#utils/log.js', () => ({ log_info: mock_log_info }))
 
-const { notification_handler } = await import(
-  '#handlers/scheduled/notification.js'
-)
+const { notification_handler } =
+  await import('#handlers/scheduled/notification.js')
 
 describe('#handlers/scheduled/notification', () => {
   beforeEach(() => {

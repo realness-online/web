@@ -10,19 +10,14 @@
 
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { load_coverage_by_src } from './lib/coverage-metrics.js'
+import { coverage_args, load_coverage_by_src } from './lib/coverage-metrics.js'
 
-const args = process.argv.slice(2)
-const get_arg = (flag, fallback) => {
-  const i = args.indexOf(flag)
-  if (i === -1) return fallback
-  return args[i + 1] ?? fallback
-}
+const args = coverage_args(30)
 
-const project_root = get_arg('--root', process.cwd())
-const threshold = Number(get_arg('--threshold', '80'))
-const top_n = Number(get_arg('--top', '30'))
-const coverage_file = get_arg('--coverage', join(project_root, 'coverage', 'coverage-final.json'))
+const project_root = args.root
+const threshold = args.threshold
+const top_n = args.top
+const coverage_file = args.coverage ?? join(project_root, 'coverage', 'coverage-final.json')
 const coverage_dir = join(coverage_file, '..')
 
 const by_src = load_coverage_by_src(project_root, coverage_file)

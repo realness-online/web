@@ -150,7 +150,7 @@ chroot "$TREE" /usr/local/bin/node --version
 
 runtime="$TREE/usr/local/lib/realness"
 mkdir -p "$runtime"
-bash "$REPO/tools/control/scripts/stage-runtime.sh" "$runtime"
+node "$REPO/tools/control/scripts/stage.js" runtime "$runtime"
 
 [ -f "$HARNESS_TAR" ] || { echo "run tools/control/scripts/harness-stage.sh <env> on the Mac first" >&2; exit 1; }
 PI_VERSION="$(tar xOzf "$HARNESS_TAR" ./.pi-version)"

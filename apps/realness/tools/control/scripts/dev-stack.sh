@@ -9,57 +9,64 @@ unset local_values
 VOL="${VOL:-/opt/fc/actors}"
 IMAGE="$VOL/xfs.img"
 MOUNT="$VOL/mnt"
-SIZE="${SIZE:-10G}"
+SIZE="${SIZE:-8G}"
 PORT="${PORT:-$halo_port}"
 RUNTIME="${RUNTIME:-box}"
 BOX_VOL="${BOX_VOL:-/opt/fc/boxes}"
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 
-if [ "${FRESH:-0}" = 1 ]; then
-  echo "FRESH=1: wiping $IMAGE"
-  if mountpoint -q "$MOUNT"; then umount "$MOUNT"; fi
-  rm -rf "$VOL"
+if [ "$RUNTIME" = box ]; then
+  if [ "${FRESH:-0}" = 1 ]; then
+    echo "FRESH=1: wiping $BOX_VOL"
+    rm -rf "$BOX_VOL"
+  fi
+else
+  if [ "${FRESH:-0}" = 1 ]; then
+    echo "FRESH=1: wiping $IMAGE"
+    if mountpoint -q "$MOUNT"; then umount "$MOUNT"; fi
+    rm -rf "$VOL"
+  fi
+
+  mkdir -p "$VOL" "$MOUNT"
+
+  size_bytes="$(numfmt --from=iec "$SIZE")"
+  host_free="$(df --output=avail -B1 "$VOL" | tail -1)"
+  already=0
+  if [ -e "$IMAGE" ]; then already="$(du -B1 "$IMAGE" | cut -f1)"; fi
+  want=$((size_bytes - already))
+  if [ "$want" -gt "$host_free" ]; then
+    printf 'actors volume wants %s but %s MiB is free on the halo disk\n' \
+      "$SIZE" "$((host_free / 1024 / 1024))" >&2
+    printf 'lower SIZE, or free space - finished work dirs live in /opt/fc\n' >&2
+    exit 1
+  fi
+
+  if [ ! -e "$IMAGE" ]; then
+    echo "new actors volume: $IMAGE ($SIZE, sparse)"
+    truncate -s "$SIZE" "$IMAGE"
+    mkfs.xfs -q -f "$IMAGE"
+  elif [ "$(stat -c %s "$IMAGE")" -lt "$size_bytes" ]; then
+    echo "growing actors volume to $SIZE"
+    truncate -s "$SIZE" "$IMAGE"
+    grow=1
+  fi
+
+  if ! mountpoint -q "$MOUNT"; then
+    echo "mounting $IMAGE at $MOUNT"
+    mount -o loop "$IMAGE" "$MOUNT"
+  fi
+
+  if [ "${grow:-0}" = 1 ]; then
+    losetup -c "$(findmnt -no SOURCE "$MOUNT")"
+    xfs_growfs -d "$MOUNT" > /dev/null
+  fi
+
+  fstrim "$MOUNT" || true
+  ( while sleep 300 && kill -0 $$ 2> /dev/null; do fstrim "$MOUNT" 2> /dev/null || true; done ) &
+
+  echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail -1) free"
 fi
-
-mkdir -p "$VOL" "$MOUNT"
-
-size_bytes="$(numfmt --from=iec "$SIZE")"
-host_free="$(df --output=avail -B1 "$VOL" | tail -1)"
-already=0
-if [ -e "$IMAGE" ]; then already="$(du -B1 "$IMAGE" | cut -f1)"; fi
-want=$((size_bytes - already))
-if [ "$want" -gt "$host_free" ]; then
-  printf 'actors volume wants %s but %s MiB is free on the halo disk\n' \
-    "$SIZE" "$((host_free / 1024 / 1024))" >&2
-  printf 'lower SIZE, or free space - finished work dirs live in /opt/fc\n' >&2
-  exit 1
-fi
-
-if [ ! -e "$IMAGE" ]; then
-  echo "new actors volume: $IMAGE ($SIZE, sparse)"
-  truncate -s "$SIZE" "$IMAGE"
-  mkfs.xfs -q -f "$IMAGE"
-elif [ "$(stat -c %s "$IMAGE")" -lt "$size_bytes" ]; then
-  echo "growing actors volume to $SIZE"
-  truncate -s "$SIZE" "$IMAGE"
-  grow=1
-fi
-
-if ! mountpoint -q "$MOUNT"; then
-  echo "mounting $IMAGE at $MOUNT"
-  mount -o loop "$IMAGE" "$MOUNT"
-fi
-
-if [ "${grow:-0}" = 1 ]; then
-  losetup -c "$(findmnt -no SOURCE "$MOUNT")"
-  xfs_growfs -d "$MOUNT" > /dev/null
-fi
-
-fstrim "$MOUNT" || true
-( while sleep 300 && kill -0 $$ 2> /dev/null; do fstrim "$MOUNT" 2> /dev/null || true; done ) &
-
-echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail -1) free"
 
 ACTOR_HOST_PORTS="18095 $site_port $actor_proxy_port $actor_sync_port" bash "$DIR/server/halo/scripts/net-up.sh"
 

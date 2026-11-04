@@ -10,7 +10,6 @@
  * so a disk-tier box loses only process state, like a Firecracker cold boot.
  */
 import {
-  appendFileSync as append_file_sync,
   existsSync as exists_sync,
   mkdirSync as mkdir_sync,
   readFileSync as read_file_sync,
@@ -46,6 +45,8 @@ import { wait_for_door } from './door.js'
 import { next_step } from './lifecycle.js'
 import { sessions_busy } from './sessions-busy.js'
 import { logger } from './log.js'
+import { Store, now_iso } from './store.js'
+import { alive } from './firecracker.js'
 import { create_startup_trace } from '#root/src/harness/startup.js'
 import { issue_recovery_pass } from '#root/src/sign-on/node/recovery-pass.js'
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
@@ -93,7 +94,6 @@ const NON_ACTOR_DIRS = new Set([
 const run = promisify(exec_file)
 const sh = (argv, options = {}) =>
   spawn_sync(argv[0], argv.slice(1), { encoding: 'utf8', ...options })
-const now_iso = () => new Date().toISOString().replace(/\.\d+Z$/, '+00:00')
 const BOOT_TIMEOUT_S = 60
 const API_TIMEOUT_S = 30
 /** Boxes take 172.16.<n>.0/30 for n in 1..254, as Firecracker TAPs do. */
@@ -166,20 +166,6 @@ const sys_mount = userns =>
         source: 'sysfs',
         options: ['nosuid', 'noexec', 'nodev', 'ro']
       }
-
-/** A process that still runs and is not a zombie. */
-const alive = pid => {
-  if (!pid) return false
-  try {
-    const stat = read_file_sync(`/proc/${pid}/stat`, 'utf8')
-    if (stat.slice(stat.lastIndexOf(') ') + 2).split(' ')[0] === 'Z')
-      return false
-    process.kill(pid, 0)
-    return true
-  } catch {
-    return false
-  }
-}
 
 const sha256_file = path =>
   create_hash('sha256').update(read_file_sync(path)).digest('hex')
@@ -310,7 +296,7 @@ const CAPS = [
  * @property {number} [pids] process limit
  */
 
-export class BoxStore {
+export class BoxStore extends Store {
   runtime = 'box'
   /**
    * Publishes sites through sync; main.js sets it when sync is configured.
@@ -320,6 +306,7 @@ export class BoxStore {
 
   /** @param {BoxStoreOptions} options */
   constructor(options) {
+    super()
     this.volume = options.volume
     this.template = options.template
     this.runc_bin = options.runc ?? 'runc'
@@ -338,8 +325,6 @@ export class BoxStore {
     this.exports_dir = join(this.volume, EXPORTS)
     this.lock = new Mutex()
     this.publishing = new Mutex()
-    this.busy = new Map()
-    this.turned = new Set()
     /** Ids whose create is still running; create does not hold the lock. */
     this.creating = new Set()
     this.closed = false
@@ -1098,33 +1083,6 @@ export class BoxStore {
     await Promise.all(this.live_actors().map(record => this.#flush(record)))
   }
 
-  begin_work(id, key = 'work') {
-    const held = this.busy.get(id) ?? new Set()
-    held.add(key)
-    this.busy.set(id, held)
-  }
-
-  end_work(id, key = 'work') {
-    const held = this.busy.get(id)
-    if (!held?.delete(key)) return
-    if (!held.size) this.busy.delete(id)
-    this.touch(id).catch(() => {})
-  }
-
-  is_busy(id) {
-    return this.busy.has(id)
-  }
-
-  activity() {
-    const kinds = {}
-    for (const held of this.busy.values())
-      for (const key of held) {
-        const [kind] = key.split(':')
-        kinds[kind] = (kinds[kind] ?? 0) + 1
-      }
-    return { actors: this.busy.size, kinds }
-  }
-
   touch(id) {
     return this.lock.run(() => {
       const record = this.get(id)
@@ -1339,42 +1297,6 @@ export class BoxStore {
     return this.list().filter(record => record.state === 'running')
   }
 
-  #trace_path(id) {
-    return join(this.traces_dir, `${id}.jsonl`)
-  }
-
-  trace(id, event, fields = {}) {
-    const line = Object.fromEntries(
-      Object.entries({ ts: now_iso(), event, ...fields }).sort(([a], [b]) =>
-        a < b ? -1 : 1
-      )
-    )
-    try {
-      mkdir_sync(this.traces_dir, { recursive: true })
-      append_file_sync(this.#trace_path(id), `${JSON.stringify(line)}\n`)
-    } catch {}
-  }
-
-  trace_of(id, limit) {
-    const path = this.#trace_path(id)
-    if (!exists_sync(path)) return []
-    const events = read_file_sync(path, 'utf8')
-      .split('\n')
-      .filter(line => line.trim())
-      .map(line => JSON.parse(line))
-    return limit ? events.slice(-limit) : events
-  }
-
-  first_turn(id, now = Date.now()) {
-    if (this.turned.has(id)) return null
-    this.turned.add(id)
-    if (this.trace_of(id).some(row => row.event === 'first-turn')) return null
-    const created = Date.parse(this.get(id).created)
-    const ms = Number.isFinite(created) ? now - created : null
-    this.trace(id, 'first-turn', ms === null ? {} : { ms })
-    return ms
-  }
-
   async receive_log(id, log) {
     await this.ensure_running(id)
     const bytes = Buffer.from(JSON.stringify(log), 'utf8')
@@ -1485,7 +1407,7 @@ export class BoxStore {
     mkdir_sync(staging, { recursive: true })
     const artifacts = join(staging, 'artifacts.tar.gz')
     await run('tar', ['-czf', artifacts, '-C', record.dir, ...ARTIFACT_PATHS])
-    const trace_path = this.#trace_path(id)
+    const trace_path = this.trace_path(id)
     const trace_text = exists_sync(trace_path)
       ? read_file_sync(trace_path, 'utf8')
       : ''
@@ -1537,7 +1459,7 @@ export class BoxStore {
         await run('tar', ['-xzf', artifacts, '-C', old, '--no-same-owner'])
         const exported_trace = join(export_dir, 'trace.jsonl')
         if (exists_sync(exported_trace)) {
-          const trace_path = this.#trace_path(record.id)
+          const trace_path = this.trace_path(record.id)
           const current = exists_sync(trace_path)
             ? read_file_sync(trace_path, 'utf8')
             : ''

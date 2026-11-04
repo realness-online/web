@@ -19,9 +19,13 @@ it('a locally staged halo loads its real entry and can stage an actor without in
   mkdir_sync(artifacts, { recursive: true })
   const scratch = mkdtemp_sync(join(artifacts, 'halo with spaces-'))
   t.after(() => rm_sync(scratch, { recursive: true, force: true }))
-  exec_file_sync('bash', ['tools/control/scripts/stage-halo.sh', scratch], {
-    cwd: project_root
-  })
+  exec_file_sync(
+    process.execPath,
+    ['tools/control/scripts/stage.js', 'halo', scratch],
+    {
+      cwd: project_root
+    }
+  )
   assert.equal(exists_sync(join(scratch, 'node_modules')), false)
   const result = spawn_sync(
     process.execPath,
@@ -32,9 +36,13 @@ it('a locally staged halo loads its real entry and can stage an actor without in
   assert.match(result.stderr, /ERR_PARSE_ARGS_UNKNOWN_OPTION/)
   assert.doesNotMatch(result.stderr, /ERR_MODULE_NOT_FOUND/)
   const runtime = join(scratch, 'actor runtime')
-  exec_file_sync('bash', ['tools/control/scripts/stage-runtime.sh', runtime], {
-    cwd: scratch
-  })
+  exec_file_sync(
+    process.execPath,
+    ['tools/control/scripts/stage.js', 'runtime', runtime],
+    {
+      cwd: scratch
+    }
+  )
   const help = exec_file_sync(
     process.execPath,
     ['tools/cli/bin/realness.js', '--help'],

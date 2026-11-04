@@ -92,6 +92,103 @@ const write_site_json = async (path, body) => {
   }
 }
 
+/** `app` actions; each gets the harness root, the words, and the flags. */
+const app_actions = {
+  add: async ({ root, words, values, many }) => {
+    const [name] = words
+    if (
+      !/^[a-z0-9-]+$/.test(name ?? '') ||
+      !['blog', 'plans'].includes(values.type)
+    )
+      throw new Error('app add <name> --type blog|plans')
+    const directory = join(root, 'apps', name)
+    if (exists_sync(join(directory, 'app.json')))
+      throw new Error(`app already exists: ${name}`)
+    const sources = (many.source ?? []).map(pair => {
+      const at = pair.lastIndexOf('=')
+      if (at < 1) throw new Error(`--source wants <id>=<slug>: ${pair}`)
+      return { id: pair.slice(0, at), slug: pair.slice(at + 1) }
+    })
+    const vault = vault_of(root)
+    const { items } = await scan_vault(vault)
+    for (const source of sources)
+      if (!items.has(source.id)) throw new Error(`unknown item: ${source.id}`)
+    await write_app(directory, {
+      id: new_app_id(),
+      type: values.type,
+      vault: values.vault ?? vault_in_app(directory, vault),
+      sources,
+      assets: []
+    })
+    await write_site_json(
+      join(directory, 'site.json'),
+      `${JSON.stringify({ name, tagline: '', url: '', description: '', poster: 'example.svg' }, null, 2)}\n`
+    )
+    console.info(`${name}: ${join(directory, 'app.json')}`)
+  },
+  build: async ({ root, words, values, args }) => {
+    const [name] = words
+    const built = await build_app(root, name, {
+      drafts: 'drafts' in values || args.includes('--drafts')
+    })
+    console.info(`built ${built.type} app ${name}: ${built.dist}`)
+    for (const source of built.sources)
+      console.info(`  ${source.route}  ${source.id}`)
+  },
+  publish: given =>
+    given.values.github ? publish_github_app(given) : publish_sync_app(given),
+  unpublish: async ({ root, words, values }) => {
+    if (!/^[a-z0-9-]+$/.test(words[0] ?? ''))
+      throw new Error('invalid app name')
+    const app = await read_app(join(root, 'apps', words[0]))
+    await unpublish_app(app.id, { url: values.url ?? SYNC_URL })
+    console.info(`unpublished ${words[0]}`)
+  },
+  list: async ({ root }) => {
+    const apps = join(root, 'apps')
+    const names = (exists_sync(apps) ? await readdir(apps) : []).filter(name =>
+      exists_sync(join(apps, name, 'app.json'))
+    )
+    const found = await Promise.all(
+      names.map(name => app_sources(join(apps, name)))
+    )
+    names.forEach((name, index) => {
+      const { app, sources } = found[index]
+      console.info(
+        `${name}  ${app.type}  ${app.id}  ${sources.length} source(s)`
+      )
+    })
+  }
+}
+
+const publish_github_app = async ({ root, words, values }) => {
+  const [name] = words
+  const built = await build_app(root, name)
+  const push = !values['dry-run']
+  const result = await publish_github({
+    dist: built.dist,
+    work: join(root, 'artifacts/apps-github', name),
+    repository: values.github,
+    branch: values.branch,
+    message: `Publish ${name} from Realness`,
+    push
+  })
+  console.info(
+    `${name} -> ${values.github} ${values.branch ?? 'gh-pages'}: ${result.summary}${result.changed && !push ? ' (dry run, not pushed)' : ''}`
+  )
+}
+
+const publish_sync_app = async ({ root, words, values }) => {
+  if (values.drafts) console.error('drafts included: local preview only')
+  const result = await publish_app(root, words[0], {
+    url: values.url ?? SYNC_URL,
+    site_url: values['site-url'] ?? values.url ?? SYNC_URL,
+    drafts: Boolean(values.drafts)
+  })
+  console.info(result.url)
+  for (const source of result.sources) console.info(`  ${source.url}`)
+}
+
 const commands = {
   async items() {
     const [action, ...args] = rest
@@ -100,10 +197,11 @@ const commands = {
     const { values, words } = options(args)
     if (action === 'list') {
       const { items, copies } = await scan_vault(vault)
-      for (const [id, path] of items) console.log(`${id}  ${path}`)
-      for (const copy of copies) console.log(`copy of ${copy.id}  ${copy.path}`)
+      for (const [id, path] of items) console.info(`${id}  ${path}`)
+      for (const copy of copies)
+        console.info(`copy of ${copy.id}  ${copy.path}`)
     } else if (action === 'mint')
-      console.log(
+      console.info(
         await mint_item(vault, words[0], {
           author: person(root),
           type: values.type
@@ -111,96 +209,18 @@ const commands = {
       )
     else if (action === 'settle') {
       const scan = await scan_vault(vault)
-      for (const copy of scan.copies)
-        console.log(
+      for await (const copy of scan.copies)
+        console.info(
           `${await mint_item(vault, copy.path, { author: person(root), scan })}  ${copy.path}`
         )
     } else throw new Error('items list|mint|settle')
   },
 
-  async app() {
+  app() {
     const [action, ...args] = rest
-    const root = root_here()
-    const { values, words, many } = options(args)
-    if (action === 'add') {
-      const [name] = words
-      if (
-        !/^[a-z0-9-]+$/.test(name ?? '') ||
-        !['blog', 'plans'].includes(values.type)
-      )
-        throw new Error('app add <name> --type blog|plans')
-      const directory = join(root, 'apps', name)
-      if (exists_sync(join(directory, 'app.json')))
-        throw new Error(`app already exists: ${name}`)
-      const sources = (many.source ?? []).map(pair => {
-        const at = pair.lastIndexOf('=')
-        if (at < 1) throw new Error(`--source wants <id>=<slug>: ${pair}`)
-        return { id: pair.slice(0, at), slug: pair.slice(at + 1) }
-      })
-      const vault = vault_of(root)
-      const { items } = await scan_vault(vault)
-      for (const source of sources)
-        if (!items.has(source.id)) throw new Error(`unknown item: ${source.id}`)
-      await write_app(directory, {
-        id: new_app_id(),
-        type: values.type,
-        vault: values.vault ?? vault_in_app(directory, vault),
-        sources,
-        assets: []
-      })
-      await write_site_json(
-        join(directory, 'site.json'),
-        `${JSON.stringify({ name, tagline: '', url: '', description: '', poster: 'example.svg' }, null, 2)}\n`
-      )
-      console.log(`${name}: ${join(directory, 'app.json')}`)
-    } else if (action === 'build') {
-      const [name] = words
-      const built = await build_app(root, name, {
-        drafts: 'drafts' in values || args.includes('--drafts')
-      })
-      console.log(`built ${built.type} app ${name}: ${built.dist}`)
-      for (const source of built.sources)
-        console.log(`  ${source.route}  ${source.id}`)
-    } else if (action === 'publish' && values.github) {
-      const [name] = words
-      const built = await build_app(root, name)
-      const push = !values['dry-run']
-      const result = await publish_github({
-        dist: built.dist,
-        work: join(root, 'artifacts/apps-github', name),
-        repository: values.github,
-        branch: values.branch,
-        message: `Publish ${name} from Realness`,
-        push
-      })
-      console.log(
-        `${name} -> ${values.github} ${values.branch ?? 'gh-pages'}: ${result.summary}${result.changed && !push ? ' (dry run, not pushed)' : ''}`
-      )
-    } else if (action === 'publish') {
-      if (values.drafts) console.error('drafts included: local preview only')
-      const result = await publish_app(root, words[0], {
-        url: values.url ?? SYNC_URL,
-        site_url: values['site-url'] ?? values.url ?? SYNC_URL,
-        drafts: Boolean(values.drafts)
-      })
-      console.log(result.url)
-      for (const source of result.sources) console.log(`  ${source.url}`)
-    } else if (action === 'unpublish') {
-      if (!/^[a-z0-9-]+$/.test(words[0] ?? ''))
-        throw new Error('invalid app name')
-      const app = await read_app(join(root, 'apps', words[0]))
-      await unpublish_app(app.id, { url: values.url ?? SYNC_URL })
-      console.log(`unpublished ${words[0]}`)
-    } else if (action === 'list') {
-      const apps = join(root, 'apps')
-      for (const name of exists_sync(apps) ? await readdir(apps) : []) {
-        if (!exists_sync(join(apps, name, 'app.json'))) continue
-        const { app, sources } = await app_sources(join(apps, name))
-        console.log(
-          `${name}  ${app.type}  ${app.id}  ${sources.length} source(s)`
-        )
-      }
-    } else throw new Error('app add|build|list|publish|unpublish')
+    const run = Object.hasOwn(app_actions, action) ? app_actions[action] : null
+    if (!run) throw new Error('app add|build|list|publish|unpublish')
+    return run({ root: root_here(), args, ...options(args) })
   }
 }
 

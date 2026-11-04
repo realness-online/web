@@ -25,9 +25,9 @@ const unparagraph_card = html => html.replace(card_paragraph, '$1')
  * A mermaid fence stays text for scripts/diagrams.js to draw in the browser.
  * Cards are replaced before highlighting, so they never reach shiki.
  */
-export const highlight = async html => {
-  html = unparagraph_card(
-    html.replace(card_block, (block, code) => cardlink(code) ?? block)
+export const highlight = async source => {
+  const html = unparagraph_card(
+    source.replace(card_block, (block, code) => cardlink(code) ?? block)
   )
   const blocks = [...html.matchAll(code_block)]
   if (!blocks.length) return html

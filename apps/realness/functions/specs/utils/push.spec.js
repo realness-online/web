@@ -47,7 +47,7 @@ const fake_file = (
     : vi.fn().mockResolvedValue(undefined)
 })
 
-describe('#utils/push', () => {
+describe('#utils/push sends and prunes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mock_send_notification.mockResolvedValue(undefined)
@@ -183,6 +183,13 @@ describe('#utils/push', () => {
 
     expect(result).toEqual({ sent: 1, removed: 1, failed: 1 })
     console_error.mockRestore()
+  })
+})
+
+describe('#utils/push reads subscriptions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mock_send_notification.mockResolvedValue(undefined)
   })
 
   /** First getFiles call lists Firebase's `subscriptions/`, the second sync's copies. */

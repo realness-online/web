@@ -7,8 +7,20 @@ Blocks are standalone compositions with their own `data-composition-id`, dimensi
 After `hyperframes add data-chart`, wire it into your `index.html`:
 
 ```html
-<div id="stage" data-composition-id="main" data-width="1920" data-height="1080" data-duration="20">
-  <video id="a-roll" src="video.mp4" data-start="0" data-duration="20" data-track-index="0"></video>
+<div
+  id="stage"
+  data-composition-id="main"
+  data-width="1920"
+  data-height="1080"
+  data-duration="20"
+>
+  <video
+    id="a-roll"
+    src="video.mp4"
+    data-start="0"
+    data-duration="20"
+    data-track-index="0"
+  ></video>
 
   <!-- Block: appears at 2s, plays for 15s, on layer 1 -->
   <div

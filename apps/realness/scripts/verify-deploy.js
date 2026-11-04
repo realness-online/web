@@ -314,9 +314,10 @@ export const verify_services = async ({
   const want = Object.fromEntries(
     services.map(service => {
       const stage = execFileSync(
-        'bash',
+        process.execPath,
         [
-          path.join(root, 'server/scripts/stage-service.sh'),
+          path.join(root, 'tools/control/scripts/stage.js'),
+          'service',
           service,
           out,
           ...(STAGED_WITH_ENVIRONMENT.includes(service) ? [environment] : [])

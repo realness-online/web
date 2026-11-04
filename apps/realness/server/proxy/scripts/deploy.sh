@@ -4,7 +4,7 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
 . "$root/server/scripts/service-env.sh"
 account="${SERVICE_ACCOUNT:-realness-proxy@$project.iam.gserviceaccount.com}"
-stage="$(bash "$root/server/scripts/stage-service.sh" proxy)"
+stage="$(node "$root/tools/control/scripts/stage.js" service proxy)"
 
 secrets="MODEL_PASS_SECRET=MODEL_PASS_SECRET:latest,OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest"
 if gcloud secrets describe STRIPE_SECRET_KEY --project "$project" > /dev/null 2>&1 &&

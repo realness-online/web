@@ -110,7 +110,7 @@ Source `Clippings/example.md`:
 
 ```markdown
 ---
-itemid: "/+16282281824/sources/1791571682897"
+itemid: '/+16282281824/sources/1791571682897'
 created: 2026-10-09T11:48:02-07:00
 ---
 

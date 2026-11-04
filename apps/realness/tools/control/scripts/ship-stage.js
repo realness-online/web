@@ -23,6 +23,7 @@ import {
   product_paths
 } from '#root/src/settings/layout.js'
 
+const PERMISSION_BITS = 0o777
 const STATIC_RENDERER = product_paths().renderer
 export const ROOT = join(project, '..', '..')
 export const STAGE = out_path('ship')
@@ -140,7 +141,7 @@ const copy = (from, to, root) => {
   }
   mkdir_sync(dirname(to), { recursive: true })
   write_file_sync(to, read_file_sync(from))
-  chmod_sync(to, info.mode & 0o777)
+  chmod_sync(to, info.mode & PERMISSION_BITS)
 }
 
 const edit_json = (path, change) => {
@@ -337,12 +338,12 @@ if (process.argv[1] === file_url_to_path(import.meta.url))
     const stage = ship_stage({ proxy_url: proxy_for(env) })
     const starter = JSON.parse(read_file_sync(join(stage, STARTER), 'utf8'))
     const paths = Object.keys(starter.files)
-    console.log(`ship tree: ${stage}`)
-    console.log(
+    console.info(`ship tree: ${stage}`)
+    console.info(
       `starter: ${starter.version} (pi ${starter.pi}, ${paths.length} files)`
     )
     if (process.argv.includes('--list'))
-      for (const path of paths) console.log(`  ${path}`)
+      for (const path of paths) console.info(`  ${path}`)
   } catch (error) {
     console.error(error.message)
     process.exit(1)

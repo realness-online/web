@@ -213,42 +213,42 @@ How to run and fix each check:
 
 **Always read for any new composition:**
 
-| File | Covers |
-| --- | --- |
-| [references/authoring.md](references/authoring.md) | data attributes, template structure, variables, video/audio, fonts/assets |
-| [references/video-composition.md](references/video-composition.md) | video-medium rules - these override web instincts |
-| [references/typography.md](references/typography.md) | font pairing, OpenType, dark-background adjustments |
-| [references/motion-principles.md](references/motion-principles.md) | motion design, image motion, load-bearing GSAP rules |
+| File                                                               | Covers                                                                    |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| [references/authoring.md](references/authoring.md)                 | data attributes, template structure, variables, video/audio, fonts/assets |
+| [references/video-composition.md](references/video-composition.md) | video-medium rules - these override web instincts                         |
+| [references/typography.md](references/typography.md)               | font pairing, OpenType, dark-background adjustments                       |
+| [references/motion-principles.md](references/motion-principles.md) | motion design, image motion, load-bearing GSAP rules                      |
 
 **Also always read for multi-scene compositions:**
 
-| File | Covers |
-| --- | --- |
-| [references/beat-direction.md](references/beat-direction.md) | rhythm templates, choreography verbs, depth layers |
-| [references/transitions.md](references/transitions.md) | transition selection; [catalog](references/transitions/catalog.md) routes to implementations; shader transitions live in the `@hyperframes/shader-transitions` npm package (read its source in `node_modules`) |
+| File                                                         | Covers                                                                                                                                                                                                         |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [references/beat-direction.md](references/beat-direction.md) | rhythm templates, choreography verbs, depth layers                                                                                                                                                             |
+| [references/transitions.md](references/transitions.md)       | transition selection; [catalog](references/transitions/catalog.md) routes to implementations; shader transitions live in the `@hyperframes/shader-transitions` npm package (read its source in `node_modules`) |
 
 **Read when the task calls for it:**
 
-| File | Read when |
-| --- | --- |
-| [references/quality-checks.md](references/quality-checks.md) | running inspect/contrast/design/animation-map checks |
-| [references/cli.md](references/cli.md) | any CLI command; build/render troubleshooting |
-| [references/captions.md](references/captions.md) | any text synced to audio timing |
-| [references/transcript-guide.md](references/transcript-guide.md) | caption-side transcript handling (CLI invocation lives in media.md) |
-| [references/dynamic-techniques.md](references/dynamic-techniques.md) | dynamic caption animation (karaoke, slam, scatter) |
-| [references/audio-reactive.md](references/audio-reactive.md) | visuals responding to music/voice |
-| [references/css-patterns.md](references/css-patterns.md) | marker highlighting (highlight, circle, burst, scribble) |
-| [references/techniques.md](references/techniques.md) | planning techniques per beat (11 patterns with code) |
-| [references/narration.md](references/narration.md) | voiceover/TTS pacing and script structure |
-| [references/media.md](references/media.md) | TTS (Kokoro), transcription (Whisper), background removal |
-| [references/prompt-expansion.md](references/prompt-expansion.md) | Step 2 of the approach |
-| [references/design-picker.md](references/design-picker.md) | creating a design.md visually |
-| [references/from-website.md](references/from-website.md) | turning a website into a video |
-| [references/registry.md](references/registry.md) | installing/contributing registry blocks (`hyperframes add`) |
-| [visual-styles.md](./visual-styles.md) | user names a style; generating design.md |
-| [house-style.md](./house-style.md) | aesthetic defaults when no design.md |
-| [patterns.md](./patterns.md) | PiP, title cards, slide shows |
-| [data-in-motion.md](./data-in-motion.md) | data, stats, infographics |
+| File                                                                 | Read when                                                           |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [references/quality-checks.md](references/quality-checks.md)         | running inspect/contrast/design/animation-map checks                |
+| [references/cli.md](references/cli.md)                               | any CLI command; build/render troubleshooting                       |
+| [references/captions.md](references/captions.md)                     | any text synced to audio timing                                     |
+| [references/transcript-guide.md](references/transcript-guide.md)     | caption-side transcript handling (CLI invocation lives in media.md) |
+| [references/dynamic-techniques.md](references/dynamic-techniques.md) | dynamic caption animation (karaoke, slam, scatter)                  |
+| [references/audio-reactive.md](references/audio-reactive.md)         | visuals responding to music/voice                                   |
+| [references/css-patterns.md](references/css-patterns.md)             | marker highlighting (highlight, circle, burst, scribble)            |
+| [references/techniques.md](references/techniques.md)                 | planning techniques per beat (11 patterns with code)                |
+| [references/narration.md](references/narration.md)                   | voiceover/TTS pacing and script structure                           |
+| [references/media.md](references/media.md)                           | TTS (Kokoro), transcription (Whisper), background removal           |
+| [references/prompt-expansion.md](references/prompt-expansion.md)     | Step 2 of the approach                                              |
+| [references/design-picker.md](references/design-picker.md)           | creating a design.md visually                                       |
+| [references/from-website.md](references/from-website.md)             | turning a website into a video                                      |
+| [references/registry.md](references/registry.md)                     | installing/contributing registry blocks (`hyperframes add`)         |
+| [visual-styles.md](./visual-styles.md)                               | user names a style; generating design.md                            |
+| [house-style.md](./house-style.md)                                   | aesthetic defaults when no design.md                                |
+| [patterns.md](./patterns.md)                                         | PiP, title cards, slide shows                                       |
+| [data-in-motion.md](./data-in-motion.md)                             | data, stats, infographics                                           |
 
 **Runtime adapters** (read when the composition uses that runtime instead
 of GSAP): [waapi](references/adapters/waapi.md),

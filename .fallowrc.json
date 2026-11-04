@@ -4,7 +4,10 @@
     ".pi/bin/*.js",
     ".pi/bin/harness/commands/*.js",
     ".pi/extensions/*/index.js",
-    ".pi/skills/**/scripts/*.js"
+    ".pi/skills/**/scripts/*.js",
+    ".pi/bin/specs/**/*.spec.js",
+    ".pi/extensions/**/*.test.js",
+    ".pi/skills/**/*.test.js"
   ],
   "ignorePatterns": [
     "apps/**",
@@ -23,11 +26,9 @@
   ],
   "ignoreDependencies": [
     "@babel/parser",
-    "@earendil-works/pi-ai",
-    "@earendil-works/pi-coding-agent",
     "@vue/compiler-sfc",
+    "google-auth-library",
     "istanbul-lib-coverage",
-    "typebox",
     "yaml"
   ],
   "ignoreExports": [

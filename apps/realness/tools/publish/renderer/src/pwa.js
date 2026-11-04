@@ -5,7 +5,9 @@ import { join, resolve } from 'node:path'
 import { resolveConfig as resolve_config } from 'vite'
 import { realness_pwa } from '#root/packages/pwa/src/vite.js'
 
-const ICON_SIZES = [192, 512]
+const ICON_SIZE = { small: 192, large: 512 }
+
+const ICON_SIZES = [ICON_SIZE.small, ICON_SIZE.large]
 
 /**
  * The manifest names a 192 and a 512 icon; make whichever is missing from
@@ -48,8 +50,11 @@ export const build_pwa = async site => {
   const plugin = plugins.find(plugin => plugin.name === 'vite-plugin-pwa')
   if (!plugin) throw new Error('the PWA plugin did not load')
   const bundle = plugin.api.generateBundle({})
-  for (const asset of Object.values(bundle))
-    await write_file(join('dist', asset.fileName), asset.source)
+  await Promise.all(
+    Object.values(bundle).map(asset =>
+      write_file(join('dist', asset.fileName), asset.source)
+    )
+  )
   await fill_icons()
   await plugin.api.generateSW()
 }
