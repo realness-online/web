@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-y - 2026-11-04
+
 - **The header stays still between views** - Every header bar has one
   height, so the page no longer jumps when you move between Thoughts, chat,
   and the other views.
@@ -12,6 +14,10 @@
   toolbar collapses, chat spaces its input evenly, and the About page shows
   at once.
 - **/pay opens without signing on first**
+- **Your notes have their own page** - /vault reads your notes through
+  sync, and links each published note to its page on your site.
+- **Published sites list their pages in one index** - A note finds its
+  published page by its itemid.
 
 ## v3.0.0-x - 2026-10-31
 
