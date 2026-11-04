@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path'
 import { it } from 'node:test'
 
 const root = resolve(import.meta.dirname, '../../../..')
-const names = ['agents-local', 'artifacts-prune', 'edit-log', 'memory', 'prewalk', 'project-tooling']
+const names = ['agents-local', 'artifacts-prune', 'edit-log', 'files', 'memory', 'prewalk', 'project-tooling', 'review']
 
 it('installed Pi loads the JavaScript extensions and their registrations', async context => {
   const parent = join(root, 'artifacts/realness/extension-load')
@@ -33,8 +33,10 @@ it('installed Pi loads the JavaScript extensions and their registrations', async
   const commands = loaded.extensions.flatMap(extension => [...extension.commands.keys()])
   assert.ok(tools.includes('remember'))
   assert.ok(tools.includes('project_tooling'))
-  for (const name of ['remember', 'ptooling', 'prewalk', 'insert']) assert.ok(commands.includes(name), name)
-  for (const extension of loaded.extensions) assert.ok(extension.handlers.size || extension.tools.size)
+  for (const name of ['remember', 'ptooling', 'prewalk', 'insert', 'files', 'review', 'end-review'])
+    assert.ok(commands.includes(name), name)
+  for (const extension of loaded.extensions)
+    assert.ok(extension.handlers.size || extension.tools.size || extension.commands.size)
   const tooling = loaded.extensions
     .flatMap(extension => [...extension.tools.values()])
     .find(tool => tool.definition.name === 'project_tooling')
