@@ -172,8 +172,16 @@ export const main = () => {
     read_file_sync('package.json', 'utf8')
   )
   if (resume && !tagged(current)) {
-    err(`--resume needs HEAD tagged v${current}`)
-    return 1
+    if (released(current)) {
+      err(`--resume needs HEAD tagged v${current}; that release is published`)
+      return 1
+    }
+    if (!dry_run) {
+      out(`moving the unreleased tag v${current} to HEAD`)
+      run('git', ['tag', '-f', `v${current}`, 'HEAD'])
+      run('git', ['push', 'origin', 'HEAD'])
+      run('git', ['push', '-f', 'origin', `v${current}`])
+    }
   }
   const next = resume ? current : next_version(current)
   const previous = git([

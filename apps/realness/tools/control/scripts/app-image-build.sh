@@ -149,5 +149,5 @@ fi
 cleanup_mounts
 log "done"
 du -sh "$TREE" | sed 's/^/  tree: /'
-ls -lh "$IMG" 2> /dev/null | awk '{print "  image: " $5 " " $9}'
+[ -e "$IMG" ] && ls -lh "$IMG" | awk '{print "  image: " $5 " " $9}' || true
 echo "  log $RUN/build.log"
