@@ -55,3 +55,12 @@ it('Fallow treats every harness spec glob as an entry', () => {
   const entry = read_json('.fallowrc.json').entry
   for (const glob of harness_specs) assert.ok(entry.includes(glob), `${glob} missing from .fallowrc.json entry`)
 })
+
+it('a live step that talks to the halo says so, and the halo address follows API', async () => {
+  const { halo_api, listening } = await import('../../harness/run-steps.js')
+  assert.equal(steps.live.find(step => step.name === 'halo').needs, 'halo')
+  assert.equal(steps.live.find(step => step.name === 'browser').needs, undefined)
+  assert.equal(halo_api({}).host, '127.0.0.1:18080')
+  assert.equal(halo_api({ API: 'http://10.0.0.2:9000' }).host, '10.0.0.2:9000')
+  assert.equal(await listening(new URL('http://127.0.0.1:1'), 500), false)
+})

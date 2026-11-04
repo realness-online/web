@@ -1,7 +1,7 @@
 /**
  * The only list of what `npm run check`, `npm test`, and `npm run live` run.
  * Each step runs from the repo root.
- * @typedef {{ name: string, area: 'harness' | 'realness' | 'repo', run: string, note?: string }} Step
+ * @typedef {{ name: string, area: 'harness' | 'realness' | 'repo', run: string, note?: string, needs?: 'halo' }} Step
  */
 
 export const harness_specs = ['.pi/bin/specs/**/*.spec.js', '.pi/extensions/**/*.test.js', '.pi/skills/**/*.test.js']
@@ -36,23 +36,30 @@ export const steps = {
   ],
   test: [{ name: 'coverage', area: 'repo', run: 'node .pi/bin/checks/coverage.js' }],
   live: [
-    { name: 'halo', area: 'realness', run: 'npm --prefix apps/realness run check:halo' },
+    { name: 'halo', area: 'realness', run: 'npm --prefix apps/realness run check:halo', needs: 'halo' },
     {
       name: 'boundary',
       area: 'realness',
       run: 'npm --prefix apps/realness run check:boundary',
+      needs: 'halo',
       note: 'spends model tokens'
     },
-    { name: 'fresh-actor', area: 'realness', run: 'npm --prefix apps/realness run check:fresh-actor' },
-    { name: 'actor-request', area: 'realness', run: 'npm --prefix apps/realness run check:actor-request' },
-    { name: 'chat', area: 'realness', run: 'npm --prefix apps/realness run check:chat' },
-    { name: 'chat-limit', area: 'realness', run: 'npm --prefix apps/realness run check:chat-limit' },
-    { name: 'publish', area: 'realness', run: 'npm --prefix apps/realness run check:publish' },
-    { name: 'site', area: 'realness', run: 'npm --prefix apps/realness run check:site' },
+    { name: 'fresh-actor', area: 'realness', run: 'npm --prefix apps/realness run check:fresh-actor', needs: 'halo' },
+    {
+      name: 'actor-request',
+      area: 'realness',
+      run: 'npm --prefix apps/realness run check:actor-request',
+      needs: 'halo'
+    },
+    { name: 'chat', area: 'realness', run: 'npm --prefix apps/realness run check:chat', needs: 'halo' },
+    { name: 'chat-limit', area: 'realness', run: 'npm --prefix apps/realness run check:chat-limit', needs: 'halo' },
+    { name: 'publish', area: 'realness', run: 'npm --prefix apps/realness run check:publish', needs: 'halo' },
+    { name: 'site', area: 'realness', run: 'npm --prefix apps/realness run check:site', needs: 'halo' },
     {
       name: 'pi-exit',
       area: 'realness',
       run: 'npm --prefix apps/realness run check:pi-exit',
+      needs: 'halo',
       note: 'spends model tokens'
     },
     { name: 'local', area: 'realness', run: 'npm --prefix apps/realness run check:local' },
@@ -61,6 +68,6 @@ export const steps = {
     { name: 'rules', area: 'realness', run: 'npm --prefix apps/realness run test:rules' },
     { name: 'pwa-offline', area: 'realness', run: 'npm --prefix apps/realness run check:pwa-offline' },
     { name: 'google', area: 'realness', run: 'npm --prefix apps/realness run check:google' },
-    { name: 'capacity', area: 'realness', run: 'npm --prefix apps/realness run check:capacity' }
+    { name: 'capacity', area: 'realness', run: 'npm --prefix apps/realness run check:capacity', needs: 'halo' }
   ]
 }
