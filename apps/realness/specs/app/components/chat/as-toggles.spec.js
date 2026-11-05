@@ -76,6 +76,27 @@ describe('chat toggles', () => {
     inside.unmount()
   })
 
+  it('the swing waits for the panel slide and holds its start angle', async () => {
+    const options = []
+    const animate = vi
+      .spyOn(Element.prototype, 'animate')
+      .mockImplementation(function (_keyframes, timing) {
+        if (document.body.contains(this)) options.push(timing)
+      })
+    const outside = mount(AsChatToggle, { attachTo: document.body })
+    const inside = mount(AsChatToggle, {
+      props: { inside: true },
+      attachTo: document.body
+    })
+    await outside.trigger('click')
+    await flush_promises()
+    expect(options[0].delay).toBeGreaterThan(0)
+    expect(options[0].fill).toBe('backwards')
+    animate.mockRestore()
+    outside.unmount()
+    inside.unmount()
+  })
+
   it('beside the TUI, the chevron keeps the TUI', async () => {
     home_view.value = 'chat-tui'
     await mount(AsChatToggle, { props: { inside: true } }).trigger('click')

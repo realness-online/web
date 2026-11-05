@@ -25,6 +25,7 @@
   }
   const MS_PER_SECOND = 1000
   const FALLBACK_MS = 1310
+  const FALLBACK_SLIDE_MS = 440
 
   const swing = () => {
     const svg = button.value?.querySelector('svg')
@@ -33,10 +34,13 @@
     const style = getComputedStyle(svg)
     const name = props.inside ? 'opening' : 'returning'
     const seconds = parseFloat(style.getPropertyValue('--duration-swing'))
+    const slide = parseFloat(style.getPropertyValue('--duration-subject'))
     svg.animate(
       SWINGS[name].map(angle => ({ rotate: `y ${angle}` })),
       {
         duration: seconds * MS_PER_SECOND || FALLBACK_MS,
+        delay: slide * MS_PER_SECOND || FALLBACK_SLIDE_MS,
+        fill: 'backwards',
         easing: style.getPropertyValue('--ease-swing').trim() || 'ease-out'
       }
     )
