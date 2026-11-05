@@ -58,7 +58,9 @@
     "palette": "node ./.pi/bin/graphics/themes.js && node ./.pi/bin/graphics/palette-sync.js",
     "web-md:report": "node ./.pi/bin/web/web-md-report.js",
     "web-md:times": "node ./.pi/bin/web/web-md-report.js --times",
-    "web-md:prune": "node ./.pi/bin/web/web-md-report.js --prune"
+    "web-md:prune": "node ./.pi/bin/web/web-md-report.js --prune",
+    "eval:text": "node .pi/bin/prompt-eval/text.js",
+    "eval:agent": "node .pi/bin/prompt-eval/agent.js"
   },
   "license": "GPL-2.0",
   "type": "module",

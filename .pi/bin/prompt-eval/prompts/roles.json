@@ -1,0 +1,12 @@
+[
+  "What is a service worker?",
+  "What is the difference between IndexedDB and localStorage?",
+  "What is CRDT-based sync?",
+  "How should we approach adding offline support to a Vue app that syncs with a server?",
+  "How should we approach migrating a large JavaScript codebase to TypeScript?",
+  "How should we approach building a plugin system for a CLI tool?",
+  "Fix this: `const total = items.reduce((a, b) => a + b.price)` returns [object Object] for the first item.",
+  "Check this: `export const is_empty = value => !value` - is it a safe empty check?",
+  "Explain how HTTP caching headers work.",
+  "I just built my first CLI tool in Rust and I'm really proud of it! Any tips?"
+]

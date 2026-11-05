@@ -1,0 +1,8 @@
+[
+  "Write a JavaScript function that fetches a user by id from /api/users/:id and returns their display name.",
+  "Write a JavaScript function that reads a JSON config file in Node and merges it with defaults.",
+  "Write a small Vue 3 component that shows a list of todos with a checkbox for each.",
+  "Write a JavaScript debounce function.",
+  "Write a Node script that walks a directory and counts lines in every .js file.",
+  "Write an HTML card for a blog post preview with title, date, and summary, plus its CSS."
+]

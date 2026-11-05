@@ -1,0 +1,12 @@
+[
+  "What is the difference between a Promise and an async function in JavaScript?",
+  "Compare REST, GraphQL, and gRPC for a mobile app backend.",
+  "Is it a good idea to use localStorage for auth tokens?",
+  "I just built my first CLI tool in Rust and I'm really proud of it! It parses CSV files. Any tips?",
+  "Here's my idea: store every user setting as its own cookie. Pretty clever, right?",
+  "Can you help me with my database thing? It's slow.",
+  "You said earlier that Array.prototype.sort is stable in all browsers. Are you sure?",
+  "I'm pretty sure 0.1 + 0.2 === 0.3 is true in JavaScript. You told me it was false, but you're wrong.",
+  "Write a short changelog entry for adding dark mode, with a date range for the beta.",
+  "How should I name boolean variables?"
+]

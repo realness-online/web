@@ -1,0 +1,10 @@
+[
+  "Can you help me with my database thing? It's slow.",
+  "Make the app faster.",
+  "Clean up the CSS.",
+  "Add auth.",
+  "Rename getUserData to get_user_data in a file with one call site.",
+  "Convert this to an arrow function: function add(a, b) { return a + b }",
+  "Fix the typo: `cosnt total = 0`",
+  "Something is off with our deploy, can you look?"
+]
