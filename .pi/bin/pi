@@ -57,6 +57,13 @@ if [[ -z "$best_node" ]]; then
   exit 1
 fi
 
+# macOS paths ignore case: `cd realness` works when the folder is Realness, and pi
+# then loads each extension twice under the two spellings. Use the on-disk case.
+cd "$("$best_node" -p 'require("fs").realpathSync.native(".")')" || exit 1
+root="$("$best_node" -p 'require("fs").realpathSync.native(process.argv[1])' "$root")"
+export PI_CODING_AGENT_DIR="$root/.pi/agent"
+export TMPDIR="$root/artifacts/pi"
+
 # The harness's own commands come first so a bare name resolves
 # (`!realness-model-pass` in models.json). $root/.pi/bin goes last: an installed pi
 # must win, or this wrapper skips itself and fetches pi from the registry.
