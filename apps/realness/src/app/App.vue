@@ -220,6 +220,16 @@
     )
   }
 
+  const dialogs =
+    typeof MutationObserver === 'undefined'
+      ? { observe() {}, disconnect() {} }
+      : new MutationObserver(() =>
+          document.body.toggleAttribute(
+            'data-dialog-open',
+            Boolean(document.querySelector('dialog[open]'))
+          )
+        )
+
   mounted(() => {
     if (window.matchMedia('(display-mode: standalone)').matches)
       sessionStorage.about = true
@@ -230,6 +240,11 @@
       drama_front.value = true
     }
 
+    dialogs.observe(document.body, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['open']
+    })
     track_visible()
     globalThis.visualViewport?.addEventListener('resize', track_visible)
     globalThis.visualViewport?.addEventListener('scroll', track_visible)
@@ -241,6 +256,7 @@
     window.addEventListener('drop', drop_image)
   })
   unmounted(() => {
+    dialogs.disconnect()
     globalThis.visualViewport?.removeEventListener('resize', track_visible)
     globalThis.visualViewport?.removeEventListener('scroll', track_visible)
     window.removeEventListener('online', online)

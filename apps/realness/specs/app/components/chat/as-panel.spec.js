@@ -221,6 +221,22 @@ describe('@/components/chat/as-panel', () => {
     expect(panel.get('ol').text()).toContain('Hello')
   })
 
+  it('marks the page root while chat is open, beside the page or alone', async () => {
+    const root = document.documentElement
+    use_home_view().wide.value = true
+    home_view.value = 'chat-thoughts'
+    const panel = open_panel({ actor: null })
+    await flush_promises()
+    expect(root.hasAttribute('data-chat-open')).toBe(true)
+    expect(root.hasAttribute('data-chat-beside')).toBe(true)
+    home_view.value = 'chat'
+    await flush_promises()
+    expect(root.hasAttribute('data-chat-beside')).toBe(false)
+    panel.unmount()
+    expect(root.hasAttribute('data-chat-open')).toBe(false)
+    use_home_view().wide.value = false
+  })
+
   it('titles the chat page', async () => {
     home_view.value = 'chat'
     const panel = open_panel({ actor: null })

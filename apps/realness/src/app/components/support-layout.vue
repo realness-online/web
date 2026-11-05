@@ -3,8 +3,19 @@
   import AsWorkspace from '@/components/chat/as-workspace.vue'
   import { use_home_view } from '@/use/home-view'
   import { useRoute as use_route } from 'vue-router'
+  import { onMounted as mounted, onUnmounted as unmounted, watch } from 'vue'
   const route = use_route()
   const { shows } = use_home_view()
+  const mark_hidden = () =>
+    document.documentElement.toggleAttribute(
+      'data-thoughts-hidden',
+      !shows.value.thoughts
+    )
+  mounted(mark_hidden)
+  watch(() => shows.value.thoughts, mark_hidden)
+  unmounted(() =>
+    document.documentElement.removeAttribute('data-thoughts-hidden')
+  )
 </script>
 
 <template>
@@ -31,7 +42,7 @@
       }
     }
   }
-  :root:has(section[aria-label='Current page'][inert]) {
+  :root[data-thoughts-hidden] {
     overflow: hidden;
     & footer[data-footer-visible] {
       visibility: hidden;

@@ -117,7 +117,21 @@
   )
 
   const retry = () => chat.retry()
-  on_before_unmount(() => chat.stop())
+  const mark_chat = () => {
+    const root = document.documentElement
+    root.toggleAttribute('data-chat-open', shows.value.chat)
+    root.toggleAttribute(
+      'data-chat-beside',
+      shows.value.chat && view.value !== 'chat'
+    )
+  }
+  on_mounted(mark_chat)
+  watch(() => [shows.value.chat, view.value], mark_chat)
+  on_before_unmount(() => {
+    chat.stop()
+    document.documentElement.removeAttribute('data-chat-open')
+    document.documentElement.removeAttribute('data-chat-beside')
+  })
 </script>
 
 <template>
@@ -277,8 +291,8 @@
     }
   }
   @media (max-width: (display-begins / 2)) {
-    html:has(aside#chat-panel[data-open]),
-    html:has(aside#chat-panel[data-open]) body {
+    html[data-chat-open],
+    html[data-chat-open] body {
       overflow: hidden;
       overscroll-behavior: none;
     }
@@ -303,7 +317,7 @@
     }
   }
   @media (min-width: display-begins) {
-    :root:has(aside#chat-panel[data-open]:not([data-alone])) footer[data-footer-visible] {
+    :root[data-chat-beside] footer[data-footer-visible] {
       left: 'calc(50% + %s)' % (page-width / 2);
     }
   }
