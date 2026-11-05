@@ -37,6 +37,19 @@ test('stale_plans finds plans newer than their page', () => {
   assert.deepEqual(stale_plans(folder, dist), [])
 })
 
+test('stale_plans finds a folder plan by its index.md', () => {
+  const dir = scratch()
+  const folder = join(dir, 'plans')
+  const dist = join(dir, 'dist')
+  mkdirSync(join(folder, 'Scouts/Leads'), { recursive: true })
+  writeFileSync(join(folder, 'Scouts/index.md'), '---\nitemid: "/+1/plans/3"\n---\n')
+  writeFileSync(join(folder, 'Scouts/notes.md'), '---\nitemid: "/+1/plans/4"\n---\n')
+  assert.deepEqual(
+    stale_plans(folder, dist).map(p => p.name),
+    ['Scouts/index.md']
+  )
+})
+
 test('served reports a matching, differing, and missing server', async () => {
   const dir = scratch()
   const page = join(dir, 'index.html')

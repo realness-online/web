@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
-import { existsSync as exists_sync, readFileSync as read_file_sync, readdirSync as readdir_sync } from 'node:fs'
-import { join, dirname, basename } from 'node:path'
+import { existsSync as exists_sync, readFileSync as read_file_sync } from 'node:fs'
+import { join, dirname } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { plans_path, plans_ignore } from '../lib/harness-settings.js'
 import { legend } from '../lib/palette.js'
+import { plan_files } from '../lib/plan-files.js'
 import { render_mermaid } from '../lib/mermaid-render.js'
 
 const ROOT = join(dirname(file_url_to_path(import.meta.url)), '../../..')
 const plans_at = process.argv.indexOf('--plans')
 const PLANS = plans_at > 0 ? process.argv[plans_at + 1] : join(ROOT, plans_path(ROOT))
-const IGNORED = new Set(plans_ignore(ROOT))
 
 const LEGEND = new Set(legend(ROOT))
 const rendered = await render_mermaid('flowchart LR\n  a[a]')
@@ -117,16 +117,14 @@ if (!exists_sync(PLANS)) {
   process.exit(0)
 }
 
-const files = readdir_sync(PLANS)
-  .filter(f => f.endsWith('.md') && !IGNORED.has(f))
-  .sort()
+const files = plan_files(PLANS, plans_ignore(ROOT)).map(({ file }) => file)
 let failed = 0
 for (const file of files) {
   const problems = await check(file, read_file_sync(join(PLANS, file), 'utf8'))
   const errors = problems.filter(p => !p.rule.includes('warn'))
   if (!problems.length) continue
   if (errors.length) failed++
-  console.log(`${errors.length ? 'FAIL' : 'WARN'} ${basename(file)}`)
+  console.log(`${errors.length ? 'FAIL' : 'WARN'} ${file}`)
   for (const p of problems) console.log(`      ${p.rule}: ${p.detail}`)
 }
 

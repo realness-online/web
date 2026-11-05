@@ -29,6 +29,7 @@ it('the plan checker reads either configured folder', async () => {
   )
   await copyFile(new URL('../../lib/product.js', import.meta.url), `${fixture}/.pi/bin/lib/product.js`)
   await copyFile(new URL('../../lib/palette.js', import.meta.url), `${fixture}/.pi/bin/lib/palette.js`)
+  await copyFile(new URL('../../lib/plan-files.js', import.meta.url), `${fixture}/.pi/bin/lib/plan-files.js`)
   await copyFile(new URL('../../lib/mermaid-render.js', import.meta.url), `${fixture}/.pi/bin/lib/mermaid-render.js`)
   await mkdir(`${fixture}/apps`, { recursive: true })
   await symlink(new URL('../../../../apps/realness', import.meta.url), `${fixture}/apps/realness`)
@@ -39,8 +40,14 @@ it('the plan checker reads either configured folder', async () => {
       `${fixture}/${plans}/p.md`,
       '# P\n\n```mermaid\nflowchart TD\n a["a test"]\n```\n\n## Nodes\n\n## Notes\n'
     )
-    const { stdout } = await promisify(execFile)(process.execPath, [`${fixture}/.pi/bin/plans/plan-shape.js`])
-    assert.match(stdout, /1 plans, 0 failed/)
+    await mkdir(`${fixture}/${plans}/Folder`, { recursive: true })
+    await writeFile(`${fixture}/${plans}/Folder/index.md`, '# F\n\n## Nodes\n\n## Notes\n')
+    await writeFile(`${fixture}/${plans}/Folder/note.md`, 'not a plan\n')
+    const { stdout } = await promisify(execFile)(process.execPath, [`${fixture}/.pi/bin/plans/plan-shape.js`]).catch(
+      error => error
+    )
+    assert.match(stdout, /FAIL Folder\/index.md/)
+    assert.match(stdout, /2 plans, 1 failed/)
   }
 })
 

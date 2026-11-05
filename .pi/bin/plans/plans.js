@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { readdir } from 'node:fs/promises'
-import { basename, dirname, join, relative, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { person, plans_ignore, plans_path } from '../lib/harness-settings.js'
+import { plan_files } from '../lib/plan-files.js'
 import { product_import } from '../lib/product.js'
 import { update_commands } from '../harness/commands.js'
 
@@ -20,14 +20,13 @@ export const select_plans = async root => {
   const folder = join(root, plans_path(root))
   const inside = relative(vault, folder)
   if (inside.startsWith('..')) throw new Error(`plans folder is outside the vault: ${folder}`)
-  const ignored = new Set(plans_ignore(root))
   const slugs = new Map(app.sources.map(({ id, slug }) => [id, slug]))
   const sources = []
   const scan = await scan_vault(vault)
-  for (const file of (await readdir(folder)).filter(name => name.endsWith('.md') && !ignored.has(name)).sort()) {
+  for (const { file, name } of plan_files(folder, plans_ignore(root))) {
     const path = inside ? `${inside}/${file}` : file
     const id = await mint_item(vault, path, { author: person(root), type: 'plans', scan })
-    sources.push({ id, slug: as_slug(slugs.get(id) ?? basename(file, '.md')) })
+    sources.push({ id, slug: as_slug(slugs.get(id) ?? name) })
   }
   await write_app(app_dir, { ...app, sources })
   return sources

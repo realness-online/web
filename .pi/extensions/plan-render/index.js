@@ -7,10 +7,11 @@
  * stale or unserved plan is reported in the same turn it was edited.
  */
 import { execFile } from 'node:child_process'
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 import { plans_path } from '../../bin/lib/harness-settings.js'
+import { plan_files } from '../../bin/lib/plan-files.js'
 
 const run = promisify(execFile)
 const ROOT = join(import.meta.dirname, '../../..')
@@ -30,9 +31,8 @@ export const itemid_of = text => text.match(/^itemid:\s*"?([^"\n]+)"?\s*$/m)?.[1
  */
 export const stale_plans = (folder, dist) => {
   if (!existsSync(folder)) return []
-  return readdirSync(folder)
-    .filter(name => name.endsWith('.md'))
-    .map(name => {
+  return plan_files(folder)
+    .map(({ file: name }) => {
       const file = join(folder, name)
       const itemid = itemid_of(readFileSync(file, 'utf8'))
       if (!itemid) return null
