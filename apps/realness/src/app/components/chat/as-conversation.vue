@@ -171,12 +171,7 @@
       <section itemprop="text" v-html="message_html(message.text)" />
     </li>
   </ol>
-  <section v-if="chat.taken?.value" data-taken aria-label="Chat in another tab">
-    <p>Another tab is using this chat.</p>
-    <button type="button" @click="chat.take_back()">Use here</button>
-  </section>
   <form
-    v-else
     data-chat
     :aria-busy="chat.working.value ? 'true' : null"
     @submit.prevent="send">
@@ -204,7 +199,7 @@
       name="message"
       rows="1"
       aria-label="Message"
-      placeholder="Message"
+      :disabled="chat.taken?.value || undefined"
       required
       @focusout="on_leave"
       @keydown="on_key" />
@@ -334,6 +329,9 @@
         offset-path: inset(0 round base-line);
         offset-rotate: 0deg;
         transform: none;
+        animation: none;
+      }
+      &[data-active] > div {
         animation: chat-edge-travel 2.5s linear infinite;
         @media (prefers-reduced-motion: reduce) {
           animation: none;
@@ -406,16 +404,6 @@
     & > p {
       margin: 0;
       white-space: pre-wrap;
-    }
-  }
-  section[data-taken] {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: base-line;
-    padding: base-line;
-    & > p {
-      margin: 0;
     }
   }
 </style>

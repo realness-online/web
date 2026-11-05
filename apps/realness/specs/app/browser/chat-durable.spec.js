@@ -65,7 +65,7 @@ const completion = delta => {
     id: 'completion-1',
     object: 'chat.completion.chunk',
     created: 1,
-    model: 'inkling',
+    model: 'standard',
     choices: [
       { index: 0, delta: { role: 'assistant', ...delta }, finish_reason: null }
     ]
@@ -321,7 +321,7 @@ describe('chat with the real Durable browser bundle', () => {
     await wait_for(() =>
       expect(terminal.props('problem')).toContain('Warm-up unavailable')
     )
-    expect(page.find('#chat-panel [role="status"]').exists()).toBe(false)
+    expect(page.get('#chat-panel [role="status"]').text()).toBe('')
     expect(page.find('#chat-panel [role="alert"]').exists()).toBe(false)
     replies.push({ content: 'We can still talk.' })
     await page.get('textarea[name="message"]').setValue('Can we still talk?')
@@ -484,6 +484,25 @@ describe('chat with the real Durable browser bundle', () => {
     ).toBe(true)
   })
 
+  it('answers in a log made with a model id that no longer exists', async () => {
+    const pi = await import(/* @vite-ignore */ '/pi-durable.browser.js')
+    const storage = await pi.BrowserHtmlStorage.open(DATABASE, DATABASE)
+    const harness = await pi.Harness.open(
+      storage,
+      { models: pi.createModels(), registry: pi.createRegistry() },
+      pi.BACKGROUND_CONTEXT
+    )
+    await harness.root(pi.BACKGROUND_CONTEXT, {
+      agent: { model: { provider: 'realness-proxy', modelId: 'retired' } }
+    })
+    await harness.close(pi.BACKGROUND_CONTEXT)
+    await storage.close(pi.BACKGROUND_CONTEXT)
+    const value = chat()
+    replies.push({ content: 'Still answering.' })
+    await send(value, 'Hello.')
+    expect(value.messages.value.at(-1).text).toBe('Still answering.')
+  })
+
   it('runs bash through the relay and reopens the same browser transcript', async () => {
     const value = chat()
     replies.push({ content: 'I remember cedar.' })
@@ -568,25 +587,52 @@ describe('chat with the real Durable browser bundle', () => {
       'First tab.'
     )
 
-    await other.close()
     await value.take_back()
     expect(value.taken.value).toBe(false)
     replies.push({ content: 'Back.' })
     await send(value, 'Again.')
     expect(value.messages.value.at(-1).text).toBe('Back.')
+    const pi = await import(/* @vite-ignore */ '/pi-durable.browser.js')
+    await expect(
+      other.commit(
+        [{ type: 'conversation', value: { id: 99 } }],
+        pi.BACKGROUND_CONTEXT
+      )
+    ).rejects.toMatchObject({ name: 'OwnershipLostError' })
   })
 
-  it('another tab cannot open the log while this one writes, so a silent takeover cannot happen', async () => {
+  it('drops a torn tail on open without repeating the log', async () => {
+    const pi = await import(/* @vite-ignore */ '/pi-durable.browser.js')
+    const first = await open_log()
+    await first.commit(
+      [{ type: 'conversation', value: { id: 7 } }],
+      pi.BACKGROUND_CONTEXT
+    )
+    await first.close()
+    const root = await navigator.storage.getDirectory()
+    const file = await root.getFileHandle(DATABASE)
+    const whole = (await file.getFile()).size
+    const writable = await file.createWritable({ keepExistingData: true })
+    await writable.seek(whole)
+    await writable.write(new Uint8Array([0x1f, 0x8b, 8, 0, 0]))
+    await writable.close()
+    await open_log()
+    expect((await file.getFile()).size).toBe(whole)
+  })
+
+  it('another tab takes the log without this one letting go, and this one stops writing', async () => {
     const value = chat()
     replies.push({ content: 'First tab.' })
     await send(value, 'Hello.')
-    await expect(open_log()).rejects.toMatchObject({
-      name: 'OwnershipLostError'
-    })
-    replies.push({ content: 'Still mine.' })
-    await send(value, 'Still here?')
-    expect(value.taken.value).toBe(false)
-    expect(value.messages.value.at(-1).text).toBe('Still mine.')
+    await open_log()
+    replies.push({ content: 'Never written.' })
+    value.draft.value = 'Still here?'
+    await value.send()
+    await wait_for(() => expect(value.taken.value).toBe(true))
+    expect(value.draft.value).toBe('Still here?')
+    expect(value.messages.value.map(message => message.text)).not.toContain(
+      'Never written.'
+    )
   })
 
   it('says a turn committed, and a read-only tab rereads the log itself', async () => {

@@ -141,5 +141,48 @@ export const reviewed = {
     'Rebuilds the pinned terminal wasm by hand when a pin moves.'
   ],
   'apps/realness/tools/control/scripts/chrome-pool-check.js': ['Keep', 'Chrome VM pool gate; exercises ChromePool.'],
-  'apps/realness/tools/control/scripts/chrome-render-pages.js': ['Keep', 'Chrome VM render gate; records per-page CPU.']
+  'apps/realness/tools/control/scripts/chrome-render-pages.js': [
+    'Keep',
+    'Chrome VM render gate; records per-page CPU.'
+  ],
+
+  'package.json#scripts.prepare': ['Keep', 'npm runs it on install; points git at .pi/bin/hooks.'],
+  'package.json#scripts.postinstall': ['Keep', 'npm runs it on install; installs .pi and the Pi runtime.'],
+  'apps/realness/package.json#scripts.test:functions:watch': ['Keep', 'Reruns the functions specs while you edit.'],
+  'apps/realness/package.json#scripts.deploy:storage': ['Keep', 'Deploys the Storage rules; ship does not.'],
+  'apps/realness/package.json#scripts.gz3': ['Remove', 'One-time copy of records to the new layout.'],
+  'apps/realness/package.json#scripts.check:crawl': ['Keep', 'Built-site crawl check; not yet in npm run check.'],
+  'apps/realness/package.json#scripts.check:color-flip': [
+    'Keep',
+    'Light and dark color check; not yet in npm run live.'
+  ],
+  'apps/realness/package.json#scripts.check:pwa-build': ['Keep', 'Built-app PWA check; not yet in npm run check.'],
+  'apps/realness/package.json#scripts.build:ghostty': ['Keep', 'Rebuilds the pinned terminal wasm when a pin moves.'],
+  'apps/realness/package.json#scripts.eval:chat-parts': ['Keep', 'Scores the chat-parts skill; spends model tokens.'],
+  'apps/realness/package.json#scripts.dev:gate': ['Keep', 'Runs the gate locally against development.'],
+  '.pi/bin/harness/session-relocate.js#migrate': ['Remove', 'Migration ran.'],
+  '.pi/bin/harness/session-relocate.js#rollback': ['Keep', 'Undo for the migration while the backups remain.'],
+  '.pi/bin/harness/session-relocate.js#trial-migrate <harness>': ['Remove', 'Trial for a migration that ran.'],
+  '.pi/bin/harness/session-relocate.js#trial-rollback <harness>': ['Remove', 'Trial for a migration that ran.'],
+  '.pi/bin/harness/session-relocate.js#trial-copy <harness> <source> <target>': [
+    'Remove',
+    'Trial for a migration that ran.'
+  ],
+  '.pi/bin/harness/session-relocate.js#trial-restore <manifest>': ['Remove', 'Trial for a migration that ran.'],
+  'apps/realness/server/halo/guest/realness-loop.js#"<goal>"': ['Keep', 'Starts a loop inside an actor.'],
+  'apps/realness/tools/cli/bin/realness.js#watch': ['Keep', 'Live health, billing, and model spend.'],
+  'apps/realness/tools/cli/bin/realness.js#production --help': ['Keep', 'Lists the operator commands.'],
+  'apps/realness/checks/control/chrome-lease.check.js': ['Keep', 'Halo Chrome lease check; not yet in npm run live.'],
+  'apps/realness/checks/control/h3-baseline.check.js': ['Remove', 'One-time h3 measurement.'],
+  'apps/realness/checks/control/web-engine.check.js': ['Keep', 'Halo web engine check; not yet in npm run live.'],
+  'apps/realness/checks/control/web-times.check.js': ['Keep', 'Halo web timing check; not yet in npm run live.'],
+  'apps/realness/checks/halo/s9.check.js': ['Remove', 'One-time s9 check against production.'],
+  'apps/realness/server/sync/bin/adopt-versions.js': ['Remove', 'One-time record migration.'],
+  'apps/realness/server/sync/bin/remove-plain.js': ['Remove', 'One-time record cleanup.'],
+  'apps/realness/tools/control/scripts/chrome-snapshot-check.js': ['Keep', 'Chrome VM snapshot gate.'],
+  'apps/realness/tools/control/scripts/service-accounts.sh': [
+    'Keep',
+    'Creates the accounts and secrets the deploys need.'
+  ],
+  '.pi/skills/hyperframes/scripts/contrast-report.js': ['Keep', 'Hyperframes skill tool.']
 }

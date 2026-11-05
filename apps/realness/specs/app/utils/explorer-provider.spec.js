@@ -38,7 +38,7 @@ describe('Explorer provider', () => {
     expect(provider.api).toBe(api)
     expect(provider.baseUrl).toBe('https://proxy.example')
     expect(provider.models[0]).toMatchObject({
-      id: 'inkling',
+      id: 'standard',
       api: 'openai-completions',
       provider: provider.id,
       baseUrl: provider.baseUrl

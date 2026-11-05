@@ -120,7 +120,7 @@ export const default_keymap = [
       'pref::Toggle_View_3d': '3D viewer',
       'pref::Toggle_Morph': 'Lava lamp layer flow',
       'pref::Toggle_Color_Cycle': 'Cycle logo colors (no default key)',
-      'pref::Toggle_Only_Mine': 'Show only my posters (no default key)',
+      'pref::Toggle_Only_Mine': 'Just my thoughts (no default key)',
       'pref::Toggle_Background': 'Background fill on posters',
       'pref::Toggle_Drama': 'Dynamic lighting on posters',
       'pref::Cycle_Drama': 'Cycle through individual drama light settings',
@@ -429,7 +429,6 @@ const preference_hint = {
   grid: 'Composition grid',
   info: 'FPS overlay',
   storytelling: 'View each poster in a fullscreen side scroll',
-  only_mine: 'Unshortened view of your posters and statements',
   menu: 'Show app island',
   footer_visible: 'Page footer'
 }

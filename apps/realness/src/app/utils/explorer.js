@@ -24,7 +24,7 @@ const WRITER =
 
 const EXPLORER_MODEL = {
   provider: 'realness-proxy',
-  modelId: 'inkling'
+  modelId: 'standard'
 }
 
 /** @typedef {{ pi: any, storage: any, harness: any, root: any, database: string, remote: ReturnType<typeof create_vm_env> }} Explorer */
@@ -280,6 +280,7 @@ const open_explorer = async (token, database, owner) => {
     })
     await root.configure(
       {
+        model: EXPLORER_MODEL,
         instructions:
           "You are Explorer. Use bash for shell requests and read, write, and edit for files. Commands and files are on the person's VM; this browser keeps the conversation."
       },
@@ -499,9 +500,9 @@ const run_command = async ({ name, args, token, user_id }) => {
   }
   if (name === 'upstream') return adopt_upstream(root, pi, context)
   if (name === 'model') {
-    if (args && args !== 'inkling' && args !== 'realness-proxy/inkling')
-      throw new Error('Browser chat currently supports inkling')
-    return { text: 'Model: inkling', models: ['inkling'] }
+    if (args && args !== 'standard' && args !== 'realness-proxy/standard')
+      throw new Error('Browser chat currently supports standard')
+    return { text: 'Model: standard', models: ['standard'] }
   }
   if (name === 'thinking') {
     if (args && args !== 'off')

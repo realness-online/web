@@ -16,7 +16,7 @@ export const explorer_provider = (pi, url, token) =>
     api: pi.openAICompletionsApi(),
     models: [
       {
-        id: 'inkling',
+        id: 'standard',
         name: 'Explorer',
         provider: 'realness-proxy',
         api: 'openai-completions',

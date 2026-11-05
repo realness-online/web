@@ -93,6 +93,7 @@ import {
 } from '#root/src/settings/environments.js'
 import { sync_records } from '#root/src/gate/sync-records.js'
 import { out_path, sync_dir } from '#root/src/settings/output.js'
+import { secret_path } from '#root/src/settings/secrets.js'
 import { ISO_DATE, KIB } from '#root/lib/units.js'
 
 let json_output = false
@@ -660,7 +661,9 @@ const main = argv => {
 const intent_target = async (envName, config, name) => {
   if (!is_local(config)) return { sync: await reads.reader(envName), name }
   const halo = `lima-${config.vm}`
-  const secret = (await read_file(out_path('halo-pass-secret'), 'utf8')).trim()
+  const secret = (
+    await read_file(secret_path('halo-pass-secret'), 'utf8')
+  ).trim()
   const records = sync_records({
     url: local_settings.cloud.services.sync_url,
     secret,

@@ -23,9 +23,14 @@ it('the proxy chooses the model and keeps the other request fields', async () =>
   assert.equal(sent.options.headers['HTTP-Referer'], 'https://pi.dev')
   assert.equal(sent.options.headers['X-OpenRouter-Title'], 'pi')
   assert.deepEqual(JSON.parse(sent.options.body), {
-    model: 'thinkingmachines/inkling:free',
+    model: 'deepseek/deepseek-v4-flash',
     stream: true,
     messages: [{ role: 'user', content: 'hi' }],
+    provider: {
+      max_price: { prompt: 0.3, completion: 1.2 },
+      sort: 'price',
+      quantizations: ['fp8', 'unknown']
+    },
     usage: { include: true }
   })
 })

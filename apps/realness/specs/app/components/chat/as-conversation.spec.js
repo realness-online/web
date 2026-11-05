@@ -19,7 +19,7 @@ describe('conversation input', () => {
     const chat = fake_chat()
     const wrapper = mount(AsConversation, { props: { chat } })
     expect(wrapper.find('menu').exists()).toBe(false)
-    expect(wrapper.get('textarea').attributes('placeholder')).toBe('Message')
+    expect(wrapper.get('textarea').attributes('placeholder')).toBeUndefined()
     chat.draft.value = '/th'
     await wrapper.vm.$nextTick()
     const buttons = wrapper.findAll('menu button')
@@ -31,20 +31,14 @@ describe('conversation input', () => {
     wrapper.unmount()
   })
 
-  it('swaps the input for a take-back button while another tab has the chat', async () => {
+  it('disables the input while another tab has the chat', async () => {
     const taken = ref(true)
     const chat = fake_chat({ taken, take_back: vi.fn() })
     const wrapper = mount(AsConversation, { props: { chat } })
-    expect(wrapper.find('textarea').exists()).toBe(false)
-    expect(wrapper.get('section[data-taken] p').text()).toBe(
-      'Another tab is using this chat.'
-    )
-    await wrapper.get('section[data-taken] button').trigger('click')
-    expect(chat.take_back).toHaveBeenCalledOnce()
+    expect(wrapper.get('textarea').attributes('disabled')).toBeDefined()
     taken.value = false
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('textarea').exists()).toBe(true)
-    expect(wrapper.find('section[data-taken]').exists()).toBe(false)
+    expect(wrapper.get('textarea').attributes('disabled')).toBeUndefined()
     wrapper.unmount()
   })
 

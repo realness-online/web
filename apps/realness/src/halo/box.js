@@ -125,6 +125,7 @@ const GUEST_COPIES = [
   'realness-loop.js',
   'realness-loop-run.js',
   'realness-model-pass.js',
+  'realness-models.js',
   'realness-publish.js',
   'realness-pty.js',
   'realness-read.js',

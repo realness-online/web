@@ -70,7 +70,8 @@ const MEM = 'mem'
 const ACTOR_INIT = '/usr/local/bin/realness-actor-init'
 export const PTY_PORT = 53
 const PI_OPENER = Buffer.from('realness\r')
-const PI_PROMPT = 'inkling'
+/** @param {string} text */
+export const pi_ready = text => /\d\.\d%\/\d/.test(text)
 const PI_WARM_SECONDS = 300
 const FINGERPRINT_SCHEMA = 1
 const CHEAP_FIELDS = [
@@ -326,7 +327,7 @@ const warm_pi = async (uds, seconds = PI_WARM_SECONDS) => {
           }
         } else if (!prompt) {
           seen += chunk
-          prompt = seen.includes(PI_PROMPT)
+          prompt = pi_ready(seen)
         } else if (
           last_key &&
           chunk.includes('q') &&

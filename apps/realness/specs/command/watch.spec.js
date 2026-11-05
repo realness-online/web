@@ -1091,7 +1091,7 @@ it('free-model calls show as model use, though they spend no allowance', async (
   const keys = {
     [path]: ['index.html'],
     [`${path}index.html`]: usage_row({
-      model: 'thinkingmachines/inkling:free',
+      model: 'example/model:free',
       payer: phone,
       plan: 'free',
       status: 200,

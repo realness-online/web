@@ -550,17 +550,9 @@ it('free models never spend free tokens, read back or counted live', async () =>
     usage: { prompt_tokens: tokens, completion_tokens: 0, cost: 0 }
   })
   const now = new Date('2026-10-02T12:00:00Z')
-  await ledger.record(
-    '+14155550123',
-    row('thinkingmachines/inkling:free', 900),
-    now
-  )
+  await ledger.record('+14155550123', row('example/model:free', 900), now)
   await ledger.record('+14155550123', row('priced/model', 30), now)
   assert.equal((await ledger.spent('+14155550123', now)).day.tokens, 30)
-  await ledger.record(
-    '+14155550123',
-    row('thinkingmachines/inkling:free', 900),
-    now
-  )
+  await ledger.record('+14155550123', row('example/model:free', 900), now)
   assert.equal((await ledger.spent('+14155550123', now)).day.tokens, 30)
 })

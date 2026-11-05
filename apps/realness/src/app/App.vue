@@ -23,7 +23,6 @@
     watchEffect as watch_effect
   } from 'vue'
   import {
-    useFps as use_fps,
     useFullscreen as use_fullscreen,
     useActiveElement as use_active_element
   } from '@vueuse/core'
@@ -49,9 +48,6 @@
   const status = ref(null)
   const router = use_router()
   const route = use_route()
-
-  const fps = use_fps()
-  provide('fps', fps)
 
   const working_count = ref(0)
   /** @param {boolean} active */

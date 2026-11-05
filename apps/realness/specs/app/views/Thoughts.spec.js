@@ -4,7 +4,7 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import Thoughts from '@/views/Thoughts.vue'
 import { del } from 'idb-keyval'
 import { posting, scroll_position } from '@/use/posting'
-import { storytelling, only_mine } from '@/utils/preference'
+import { storytelling, only_mine, home_view } from '@/utils/preference'
 
 const poster_id = '/+14151234356/posters/1000'
 const person_id = '/+14151234356'
@@ -294,6 +294,24 @@ describe('Thoughts', () => {
     only_mine.value = false
     window.localStorage.me = person_id
     window.history.replaceState({}, '', '/')
+  })
+
+  it('marks the page root while thoughts are hidden, with no :has() rule', async () => {
+    home_view.value = 'chat'
+    const hidden = await settled(mount())
+    expect(document.documentElement.hasAttribute('data-thoughts-hidden')).toBe(
+      true
+    )
+    hidden.unmount()
+    expect(document.documentElement.hasAttribute('data-thoughts-hidden')).toBe(
+      false
+    )
+    home_view.value = 'thoughts'
+    const shown = await settled(mount())
+    expect(document.documentElement.hasAttribute('data-thoughts-hidden')).toBe(
+      false
+    )
+    shown.unmount()
   })
 
   it('leaves Account to the site nav', async () => {

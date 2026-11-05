@@ -2,9 +2,9 @@ import { MIB } from '#root/lib/units.js'
 
 const LIMIT_MIB = 10
 const UPSTREAM = 'https://openrouter.ai/api/v1/chat/completions'
-export const MODEL = 'thinkingmachines/inkling:free'
 export const HOUSE_MODEL =
   process.env.HOUSE_MODEL ?? 'deepseek/deepseek-v4-flash'
+export const MODEL = HOUSE_MODEL
 /** Never pay above $0.30/$1.20 per 1M tokens, cheapest first, no fp4. */
 const ROUTING = {
   max_price: { prompt: 0.3, completion: 1.2 },

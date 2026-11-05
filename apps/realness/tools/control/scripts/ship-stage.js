@@ -189,12 +189,12 @@ const realness_provider = proxy_url => ({
   compat: { supportsDeveloperRole: false, supportsReasoningEffort: false },
   models: [
     {
-      id: 'inkling',
-      name: 'Inkling (realness proxy)',
+      id: 'standard',
+      name: 'DeepSeek (realness proxy)',
       input: ['text'],
       contextWindow: 1048576,
       maxTokens: 32768,
-      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }
+      cost: { input: 0.042, output: 0.084, cacheRead: 0.0084, cacheWrite: 0 }
     },
     {
       id: 'house',
@@ -303,7 +303,7 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
 
   edit_json(join(stage, '.pi/agent/settings.json'), settings => {
     settings.defaultProvider = 'realness'
-    settings.defaultModel = 'inkling'
+    settings.defaultModel = 'standard'
     delete settings.enabledModels
     settings.packages = settings.packages.filter(
       p => !UNSHIPPED_PACKAGES.includes(p.replace(/^npm:/, ''))

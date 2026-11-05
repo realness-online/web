@@ -14,6 +14,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, renameSync, copyFileSync, rmSync } from 'node:fs'
 import { spawnSync as spawn_sync } from 'node:child_process'
+import { gzipSync } from 'node:zlib'
 import { sessionJsonlToHtml } from '../../runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-html.js'
 import { compress_session_chunk } from '../../runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-gzip.js'
 import { join, resolve } from 'node:path'
@@ -174,6 +175,11 @@ test('readSession pairs a question with its answer as one row', async () => {
   assert.match(pair.text, /as-figure\.vue/, 'the answer is in the same row')
   assert.equal(pair.project, '/home/person/realness/work/realness')
   assert.equal(pair.ts, '2026-09-18T00:00:01.000Z')
+})
+test('readSession reads an empty session file as no turns', async () => {
+  const file = join(tempRoot(), 'empty.html.gz')
+  writeFileSync(file, gzipSync(Buffer.alloc(0)))
+  assert.deepEqual(await readSession(file), [])
 })
 test('HTML sessions preserve turns and recall after replacing JSONL', async () => {
   const root = tempRoot()

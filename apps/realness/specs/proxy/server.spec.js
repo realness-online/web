@@ -344,7 +344,7 @@ it('health answers without a token, for readiness', async () => {
 it('b1d: the house model is asked for by name', () => {
   assert.equal(wants_house({ model: 'house' }), true)
   assert.equal(wants_house({ model: 'realness/deepseek' }), true)
-  assert.equal(wants_house({ model: 'inkling' }), false)
+  assert.equal(wants_house({ model: 'standard' }), false)
   assert.equal(wants_house({}), false)
 })
 
@@ -353,7 +353,7 @@ it('b1d: free people get the free model; the house model needs a plan', async ()
   const free = await fetch(`${s.at}/chat/completions`, {
     method: 'POST',
     headers: s.auth,
-    body: JSON.stringify({ model: 'inkling' })
+    body: JSON.stringify({ model: 'standard' })
   })
   assert.equal(free.status, 200)
   const house = await fetch(`${s.at}/chat/completions`, {

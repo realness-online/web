@@ -6,6 +6,7 @@
     inject,
     provide,
     onMounted as mounted,
+    onUnmounted as unmounted,
     watch,
     nextTick as tick
   } from 'vue'
@@ -439,6 +440,16 @@
   }
 
   const { view: home_view, shows } = use_home_view()
+  const mark_hidden = () =>
+    document.documentElement.toggleAttribute(
+      'data-thoughts-hidden',
+      !shows.value.thoughts
+    )
+  mounted(mark_hidden)
+  watch(() => shows.value.thoughts, mark_hidden)
+  unmounted(() =>
+    document.documentElement.removeAttribute('data-thoughts-hidden')
+  )
 
   const { register } = use_keymap('Thoughts')
   register('poster::Create_New', () => select_photo?.())
@@ -597,7 +608,7 @@
 </template>
 
 <style lang="stylus">
-  :root:has(section#thoughts[inert]) {
+  :root[data-thoughts-hidden] {
     overflow: hidden;
     & footer[data-footer-visible] {
       visibility: hidden;

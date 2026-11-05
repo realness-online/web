@@ -39,6 +39,14 @@ describe('chat toggles', () => {
     expect(home_view.value).toBe('thoughts')
   })
 
+  it('the inside chevron leaves a placeholder, so the chat title stays put', async () => {
+    const inside = mount(AsChatToggle, { props: { inside: true } })
+    expect(inside.find('button').exists()).toBe(false)
+    expect(inside.find('span[data-chat-placeholder]').exists()).toBe(true)
+    const outside = mount(AsChatToggle)
+    expect(outside.find('span[data-chat-placeholder]').exists()).toBe(false)
+  })
+
   it('only the chevron that remains swings: inside on open, outside on close', async () => {
     const swings = []
     const animate = vi

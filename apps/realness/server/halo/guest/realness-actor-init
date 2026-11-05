@@ -36,7 +36,10 @@ pi_starting() {
     pgrep -f '(/usr/local/bin/realness|/realness/bin/pi)( |$)' > /dev/null
 }
 if [ "${1:-}" = start-pi ]; then
-  pi_starting || type_opener
+  pi_starting || {
+    "${REALNESS_MODELS:-/usr/local/bin/realness-models}" || echo "realness-models failed; Pi keeps its models" >&2
+    type_opener
+  }
   exit 0
 fi
 

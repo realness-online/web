@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "1.2.0",
   "defaultProvider": "realness",
-  "defaultModel": "inkling",
+  "defaultModel": "standard",
   "defaultThinkingLevel": "off",
   "packages": [
     "npm:pi-mono-btw",

@@ -44,6 +44,11 @@ interfaces where detailed explanation is the product.
 5. **Hierarchy over whitespace.** Strong grouping, one obvious primary
    action, visible priority. Dense is fine if it stays scannable. Don't
    name every section - that's the AI verbosity bias.
+6. **A shape can say "on purpose".** When a layout limit leaves empty
+   space, fill it with an existing surface (the status box, a panel) so it
+   reads as designed. Never add words to explain the gap. Prefer CSS that
+   follows the limit - flex growth, `:has()`, container size - over script
+   that measures it.
 
 ## Template tells
 

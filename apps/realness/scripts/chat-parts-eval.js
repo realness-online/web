@@ -13,7 +13,7 @@ import { is_entry } from './lib/entry.js'
 const here = path.dirname(file_url_to_path(import.meta.url))
 const harness = path.resolve(here, '../../..')
 const chat_prompt = path.resolve(here, '../server/halo/guest/realness-chat.md')
-const PRODUCER = 'realness/inkling'
+const PRODUCER = 'realness/standard'
 const JUDGE = 'openai-codex/gpt-6-sol'
 const PARALLEL = 4
 const MIN_FORM = 0.9

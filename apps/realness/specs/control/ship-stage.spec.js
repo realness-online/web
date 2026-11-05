@@ -104,7 +104,7 @@ it('the ship tree carries the harness, prompts, and starting examples', () => {
   )
   assert.equal(
     `${settings.defaultProvider}/${settings.defaultModel}`,
-    'realness/inkling'
+    'realness/standard'
   )
   for (const scheme of ['light', 'dark']) {
     const theme = JSON.parse(
@@ -131,7 +131,7 @@ it('the ship tree carries the harness, prompts, and starting examples', () => {
   const models = JSON.parse(readFileSync(join(ship, '.pi/agent/models.json')))
   assert.deepEqual(Object.keys(models.providers), ['realness'])
   assert.ok(
-    models.providers.realness.models.some(model => model.id === 'inkling')
+    models.providers.realness.models.some(model => model.id === 'standard')
   )
   assert.ok(
     models.providers.realness.models.some(model => model.id === 'house')

@@ -58,10 +58,13 @@
     @click="toggle_chat">
     <icon name="chevron" />
   </button>
+  <span v-else-if="inside" data-chat-placeholder aria-hidden="true">
+    <icon name="nothing" />
+  </span>
 </template>
 
 <style lang="stylus">
-  button[data-chat-toggle] {
+  button[data-chat-toggle], span[data-chat-placeholder] {
     padding: 0;
     border: 0;
     background: none;

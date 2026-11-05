@@ -53,6 +53,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { load as load_months, month_of, seal as seal_months, sealed_months } from './months.js'
 import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
+import { gunzipSync } from 'node:zlib'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
@@ -69,12 +70,17 @@ const read_session_text = async file => {
   if (file.endsWith('.jsonl')) return readFile(file, 'utf8')
   const reader = process.env.PI_SESSION_READER
   if (!reader) throw new Error('PI_SESSION_READER is required for HTML session recall; launch through .pi/bin/pi')
-  const { stdout } = await decode_session(process.execPath, [reader, file], {
-    encoding: 'utf8',
-    timeout: 30_000,
-    maxBuffer: 64 * 1024 * 1024
-  })
-  return stdout
+  try {
+    const { stdout } = await decode_session(process.execPath, [reader, file], {
+      encoding: 'utf8',
+      timeout: 30_000,
+      maxBuffer: 64 * 1024 * 1024
+    })
+    return stdout
+  } catch (error) {
+    if (gunzipSync(await readFile(file)).length === 0) return ''
+    throw error
+  }
 }
 
 /**

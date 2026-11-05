@@ -466,14 +466,14 @@ describe('terminal', () => {
   test("a new actor's terminal opens in Pi, as the page attaches", async () => {
     const actor = await create()
     const opener = Buffer.from('realness\r').toString('base64')
-    const text = await terminal(actor.id, /inkling/, {
+    const text = await terminal(actor.id, /\d\.\d%\/\d/, {
       ms: 120000,
       send: [
         { op: 'resize', cols: 80, rows: 24 },
         { op: 'data', data_b64: opener }
       ]
     })
-    assert.match(text, /inkling/)
+    assert.match(text, /\d\.\d%\/\d/)
     await destroy(actor.id)
   })
 

@@ -29,7 +29,7 @@ vi.mock('@/utils/serverless', async () => {
 })
 
 import AsPanel from '@/components/chat/as-panel.vue'
-import { ask } from '@/utils/explorer'
+import { ask, history, take_back, watch_owner } from '@/utils/explorer'
 import { home_view, info } from '@/utils/preference'
 import { use_home_view } from '@/use/home-view'
 
@@ -203,7 +203,7 @@ describe('@/components/chat/as-panel', () => {
     expect(panel.find('section[aria-label="Connection status"]').exists()).toBe(
       false
     )
-    expect(panel.find('[role="status"]').exists()).toBe(false)
+    expect(panel.get('[role="status"]').text()).toBe('')
     expect(calls).toHaveLength(0)
   })
 
@@ -228,19 +228,62 @@ describe('@/components/chat/as-panel', () => {
     expect(panel.get('aside#chat-panel > header > h1').text()).toBe('Chat')
   })
 
-  it('shows the status box only when it has something to say', async () => {
+  it('keeps the status box empty until it has something to say', async () => {
     home_view.value = 'chat'
     const panel = open_panel({ actor: null })
     await flush_promises()
     expect(
-      panel.find('aside#chat-panel > aside[aria-label="Status"]').exists()
-    ).toBe(false)
+      panel.get('aside#chat-panel > aside[aria-label="Status"]').text()
+    ).toBe('')
     ask.mockRejectedValueOnce(new Error('Model connection failed'))
     await panel.get('textarea').setValue('Hi')
     await panel.get('form').trigger('submit')
     await flush_promises()
     const box = panel.get('aside#chat-panel > aside')
     expect(box.get('p[role="status"]').text()).toBe('Model connection failed')
+  })
+
+  it('starts chat after the slide and the chevron swing, not after endless motion', async () => {
+    let finish
+    const swing = {
+      finished: new Promise(resolve => (finish = resolve)),
+      effect: { getComputedTiming: () => ({ endTime: 1310 }) }
+    }
+    const working = {
+      finished: new Promise(() => {}),
+      effect: { getComputedTiming: () => ({ endTime: Infinity }) }
+    }
+    const original = Element.prototype.getAnimations
+    Element.prototype.getAnimations = function () {
+      return this.id === 'chat-panel' ? [swing, working] : []
+    }
+    history.mockClear()
+    home_view.value = 'chat'
+    open_panel()
+    await new Promise(resolve => setTimeout(resolve, 50))
+    await flush_promises()
+    expect(history).not.toHaveBeenCalled()
+    finish()
+    await flush_promises()
+    expect(history).toHaveBeenCalledOnce()
+    Element.prototype.getAnimations = original
+  })
+
+  it('says in the status box when another tab has the chat', async () => {
+    home_view.value = 'chat'
+    watch_owner.mockImplementationOnce(watcher => {
+      watcher(true)
+      return () => {}
+    })
+    const panel = open_panel({ actor: null })
+    await flush_promises()
+    const box = panel.get('aside#chat-panel > aside[aria-label="Status"]')
+    expect(box.get('section[data-taken] p').text()).toBe(
+      'Another tab is using this chat.'
+    )
+    expect(panel.get('textarea').attributes('disabled')).toBeDefined()
+    await box.get('section[data-taken] button').trigger('click')
+    expect(take_back).toHaveBeenCalledOnce()
   })
 
   it('follows the visible viewport for a keyboard, not for browser chrome', async () => {

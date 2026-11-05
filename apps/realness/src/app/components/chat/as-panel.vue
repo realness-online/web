@@ -68,13 +68,24 @@
   })
   let started = false
 
+  const after_slide = async () => {
+    await new Promise(resolve => {
+      requestAnimationFrame(resolve)
+    })
+    const moving = (panel.value?.getAnimations({ subtree: true }) ?? []).filter(
+      animation =>
+        Number.isFinite(animation.effect?.getComputedTiming().endTime)
+    )
+    await Promise.allSettled(moving.map(animation => animation.finished))
+  }
+
   watch(
     () => [shows.value.chat, props.actor, chat.starting.value],
     async ([open]) => {
       if (!open) return
       if (!started) {
         started = true
-        chat.watch()
+        after_slide().then(() => chat.watch())
       }
       await next_tick()
       talk.value?.focus()
@@ -104,9 +115,6 @@
   const status_line = computed(() =>
     failed.value || chat.status.value === 'Starting...' ? '' : chat.status.value
   )
-  const has_status = computed(() =>
-    Boolean(failed.value || status_line.value || fps_mounted.value)
-  )
 
   const retry = () => chat.retry()
   on_before_unmount(() => chat.stop())
@@ -128,7 +136,14 @@
       <slot />
     </header>
     <as-conversation ref="talk" :chat="chat" />
-    <aside v-if="has_status" aria-label="Status">
+    <aside aria-label="Status">
+      <section
+        v-if="chat.taken.value"
+        data-taken
+        aria-label="Chat in another tab">
+        <p>Another tab is using this chat.</p>
+        <button type="button" @click="chat.take_back()">Use here</button>
+      </section>
       <as-connection-feedback
         v-if="failed"
         :problem="chat.connection_problem.value"
@@ -159,7 +174,7 @@
     visibility: hidden;
     transition-property: translate, visibility, inline-size, padding-inline;
     transition-duration: var(--duration-subject, 0.3s);
-    transition-timing-function: var(--ease-reveal, ease-out);
+    transition-timing-function: var(--ease-settle, ease-in-out);
     &[data-open] {
       translate: 0 0;
       visibility: visible;
@@ -196,12 +211,27 @@
     & > aside {
       display: block;
       container: chat-buffer / size;
+      contain: strict;
       flex: 1 1 0;
       min-block-size: base-line * 4.5;
       margin: 0 base-line base-line;
       border-radius: base-line;
       background: var(--code-surface);
       overflow: auto;
+      &:not(:has(> section, > p:not(:empty), > #fps)) {
+        min-block-size: 0;
+        padding-block: 0;
+      }
+      & > section[data-taken] {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: base-line;
+        padding: (base-line / 2) base-line;
+        & > p {
+          margin: 0;
+        }
+      }
       & > section[aria-label='Connection status'] {
         flex-direction: row;
         flex-wrap: wrap;
@@ -224,9 +254,15 @@
     aside#chat-panel > aside {
       box-sizing: border-box;
       padding-block: base-line * 0.5;
+      & > aside#fps {
+        margin-block: base-line * 0.75;
+      }
     }
   }
   @media (orientation: landscape), (max-width: (display-begins / 2)) {
+    aside#chat-panel > aside:not(:has(> section, > p:not(:empty), > #fps)) {
+      display: none;
+    }
     aside#chat-panel > aside {
       display: flex;
       flex-direction: column;

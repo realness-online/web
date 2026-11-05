@@ -79,6 +79,7 @@ install -m 0755 "$GUEST_SRC/realness-loop-run.js" "$TREE/usr/local/bin/realness-
 install -m 0755 "$GUEST_SRC/realness-loop.js" "$TREE/usr/local/bin/realness-loop"
 install -m 0755 "$GUEST_SRC/realness-recover" "$TREE/usr/local/bin/realness-recover"
 install -m 0755 "$GUEST_SRC/realness-model-pass.js" "$TREE/usr/local/bin/realness-model-pass"
+install -m 0755 "$GUEST_SRC/realness-models.js" "$TREE/usr/local/bin/realness-models"
 install -m 0755 "$GUEST_SRC/realness-door.js" "$TREE/usr/local/bin/realness-door.js"
 install -m 0644 "$GUEST_SRC/realness-net.service" "$TREE/etc/systemd/system/realness-net.service"
 install -m 0644 "$GUEST_SRC/realness-vsock.service" "$TREE/etc/systemd/system/realness-vsock.service"
