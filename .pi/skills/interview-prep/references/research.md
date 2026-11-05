@@ -29,4 +29,4 @@ Work through these using WebSearch/WebFetch. Skip rows the user already has answ
 
 ## Output
 
-Write findings into the company's vault note (`Areas/Job Hunt/Companies/<slug>.md`) under `## Research`, using the template in `assets/company-note-template.md` if the note doesn't exist yet. Keep it scannable -- bullets, not paragraphs.
+Write findings into the company's vault note (`Projects/Scouts/Realness/Companies/<slug>.md`) under `## Research`, using the template in `assets/company-note-template.md` if the note doesn't exist yet. Keep it scannable -- bullets, not paragraphs.

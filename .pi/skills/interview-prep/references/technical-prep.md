@@ -36,7 +36,7 @@ Use this for warm-up reps before a technical round, not as the only prep -- pair
 
 ## Study notes per topic
 
-Keep one note per DSA topic in `Areas/Job Hunt/Study/<topic>.md` in the vault (e.g. `RingBuffer.md`, `Trees.md`). Each note holds:
+Keep one note per DSA topic in `Resources/Interview Prep/Study/<topic>.md` in the vault (e.g. `RingBuffer.md`, `Trees.md`). Each note holds:
 
 - Link to the kata-machine source: `work/kata-machine/src/<topic>.js` and `outlines/<topic>.js`
 - External resources (YouTube videos, articles, papers) the user collects for that topic

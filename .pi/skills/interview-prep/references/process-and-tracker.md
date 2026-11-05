@@ -11,19 +11,19 @@
 
 ## Vault layout
 
-All job-hunt material lives under `Areas/Job Hunt/` in the vault (`vault/Areas/Job Hunt/`):
+Company and tracker notes live under `Projects/Scouts/Realness/` in the vault (`vault/Projects/Scouts/Realness/`):
 
 ```
-Areas/Job Hunt/
+Projects/Scouts/Realness/
   :feed.md              -- dataview feed, follow existing vault convention
   tracker.md            -- master table, one row per company
   Story Bank.md         -- reusable STAR stories (see fit-and-story-bank.md)
   Cover Notes.md        -- reusable cover-note slots (see fit-and-story-bank.md)
   Companies/
     <company-slug>.md   -- one note per company (assets/company-note-template.md)
-  Study/
-    <topic>.md           -- one note per DSA/technical topic (see technical-prep.md)
 ```
+
+Study notes live in `Resources/Interview Prep/Study/<topic>.md` (see technical-prep.md).
 
 Create the folder and `:feed.md` the first time this skill touches the vault, matching the dataview pattern used elsewhere (see other `:feed.md` files for the exact query shape).
 

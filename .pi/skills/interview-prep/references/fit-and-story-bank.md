@@ -31,7 +31,7 @@ Skip generic questions ("what's the culture like?"). Write 2-3 tailored to what 
 ## Cover note bank
 
 Cover notes are assembled, not written from scratch. Keep the reusable slots in
-`Areas/Job Hunt/Cover Notes.md` and fill them per company: who I build for,
+`Projects/Scouts/Realness/Cover Notes.md` and fill them per company: who I build for,
 the stance, one proof paragraph, the hook. That file holds the trim rules, the
 role-shape table for choosing which product leads, and the worked example from
 the Thinking Machines Lab note.
@@ -43,7 +43,7 @@ that later gets deleted.
 
 ## STAR story bank
 
-Keep a reusable story bank in `Areas/Job Hunt/Story Bank.md` (not per-company -- these get reused across companies). Structure each story as Situation / Task / Action / Result, 4-6 sentences, with the result quantified where possible.
+Keep a reusable story bank in `Projects/Scouts/Realness/Story Bank.md` (not per-company -- these get reused across companies). Structure each story as Situation / Task / Action / Result, 4-6 sentences, with the result quantified where possible.
 
 Cover at least one story per category:
 

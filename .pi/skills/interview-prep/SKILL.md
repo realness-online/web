@@ -7,11 +7,11 @@ metadata:
 
 # Interview Prep
 
-Prepares a target company/role end-to-end: research, fit, behavioral prep, technical prep, and process tracking. All notes live in the vault under `Areas/Job Hunt/` (`vault/Areas/Job Hunt/`) -- see `references/process-and-tracker.md` for the exact layout.
+Prepares a target company/role end-to-end: research, fit, behavioral prep, technical prep, and process tracking. All notes live in the vault under `Projects/Scouts/Realness/` (`vault/Projects/Scouts/Realness/`) -- see `references/process-and-tracker.md` for the exact layout.
 
 ## Workflow
 
-1. **Capture the target.** Get company name, role, and how it came up (referral, job post, cold interest). Create `Areas/Job Hunt/Companies/<company-slug>.md` from `assets/company-note-template.md` if it doesn't exist. Add a row to `Areas/Job Hunt/tracker.md`.
+1. **Capture the target.** Get company name, role, and how it came up (referral, job post, cold interest). Create `Projects/Scouts/Realness/Companies/<company-slug>.md` from `assets/company-note-template.md` if it doesn't exist. Add a row to `Projects/Scouts/Realness/tracker.md`.
 
 2. **Research the company.** Read `references/research.md`. Use WebSearch/WebFetch to fill in product, stage, recent news, tech stack, competitors, culture signals. Write findings into the company note.
 
@@ -46,4 +46,4 @@ just doesn't count if nobody is standing on the same ground.
 
 - Don't fabricate company facts (funding numbers, headcount, exec names) when research doesn't turn up a confident source -- state what's unknown instead.
 - Keep the STAR story bank and DSA study notes reusable across companies; keep research and process notes per-company.
-- If the user drops an external resource (a video, article) for a DSA topic, file it into that topic's vault study note (`Areas/Job Hunt/Study/<topic>.md` - see `references/technical-prep.md`) rather than losing it in conversation.
+- If the user drops an external resource (a video, article) for a DSA topic, file it into that topic's vault study note (`Resources/Interview Prep/Study/<topic>.md` - see `references/technical-prep.md`) rather than losing it in conversation.
