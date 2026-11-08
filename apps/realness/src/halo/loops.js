@@ -13,7 +13,8 @@ import { escape, item_html } from '#root/lib/items.js'
 const MAX_RUNS = 20
 
 const GOAL_LIMIT = 4000
-export const launch_argv = goal => [
+/** @param {string} goal @param {boolean} [once] one plain prompt, then exit */
+export const launch_argv = (goal, once = false) => [
   'systemd-run',
   '--unit=realness-loop',
   '--uid=realness',
@@ -21,6 +22,7 @@ export const launch_argv = goal => [
   '--collect',
   '/usr/local/bin/node',
   '/usr/local/bin/realness-loop-run',
+  ...(once ? ['--once'] : []),
   goal
 ]
 const LIVE = new Set(['starting', 'running'])
@@ -64,7 +66,8 @@ export const stop_reason = (
   if (probe.state === 'exited') return 'exited'
   if (probe.quota) return 'quota'
   if (probe.runs >= max_runs) return 'runs'
-  if (now - Date.parse(loop.started) >= deadline_ms) return 'deadline'
+  if (now - Date.parse(loop.started) >= (loop.deadline_ms ?? deadline_ms))
+    return 'deadline'
   return null
 }
 
@@ -76,6 +79,8 @@ export const stop_reason = (
  * @property {string} [goal] absent on the record `report` returns
  * @property {string} status
  * @property {string} started
+ * @property {boolean} [once]
+ * @property {number} [deadline_ms] overrides the halo's deadline
  * @property {string} [reason]
  * @property {number} [runs]
  * @property {number} [tokens]
@@ -156,14 +161,24 @@ export class Loops {
     )
   }
 
-  /** One start at a time, so two requests cannot both pass the limits. */
-  start(parent_id, goal) {
-    const result = this.tail.then(() => this.#start(parent_id, goal))
+  /**
+   * One start at a time, so two requests cannot both pass the limits.
+   * @param {string} parent_id
+   * @param {string} goal
+   * @param {{ once?: boolean, deadline_ms?: number }} [options]
+   */
+  start(parent_id, goal, options = {}) {
+    const result = this.tail.then(() => this.#start(parent_id, goal, options))
     this.tail = result.catch(() => {})
     return result
   }
 
-  async #start(parent_id, goal) {
+  /**
+   * @param {string} parent_id
+   * @param {string} goal
+   * @param {{ once?: boolean, deadline_ms?: number }} [options]
+   */
+  async #start(parent_id, goal, { once = false, deadline_ms } = {}) {
     const parent = this.store.get(parent_id)
     if (!parent?.owner) throw new BadRequest('loop needs an owned actor')
     if (typeof goal !== 'string' || !goal.trim() || goal.length > GOAL_LIMIT)
@@ -179,14 +194,16 @@ export class Loops {
       depth,
       goal,
       status: 'starting',
-      started: new Date().toISOString()
+      started: new Date().toISOString(),
+      ...(once ? { once } : {}),
+      ...(deadline_ms ? { deadline_ms } : {})
     }
     this.#save()
     const loop = this.loops[record.id]
     try {
       const { exit_code, stderr_b64 } = await this.store.exec(
         record.id,
-        launch_argv(goal),
+        launch_argv(goal, once),
         { cwd: '/' }
       )
       if (exit_code !== 0)

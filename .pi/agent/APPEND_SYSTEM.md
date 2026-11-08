@@ -20,6 +20,29 @@ Layout and dependencies: `README.md`.
   `memory` skill); past-session transcripts via the `previous-work` skill.
 - "Update pi" means update and activate our fork. Follow `work/pi/FORK.md`.
 
+## Vault
+
+The vault is the person's catalog and the system's state. Learn it before
+you design storage, add a data file, or link to a note.
+
+- Sync stores it at `people/+A/harness/vault/`. Organizations live beside
+  people at `orgs/+name/`, not inside a vault. `can` (`src/can/`) reads
+  `orgs/+name/members.html` and `people/+A/rights.html` and decides access.
+- Every file carries its own `itemid`: a frontmatter line in a note, the root
+  attribute in HTML or SVG. A move or rename keeps the identity. See
+  `apps/realness/src/publish/sources.js`.
+- An app (`apps/<name>/app.json`) selects items by `itemid` and renders them.
+  An item's URL is its `itemid`, as in `/+A/plans/<created>/`. A note that a
+  plan links to renders as HTML at that link, under the plan's URL.
+- A person writes prose in markdown: plans, notes, profiles. Machine state is
+  HTML with Schema.org microdata, one item per `<article>`, as in
+  `vault/Sessions/*.html`. Write with `item_html` and read with `read_items`
+  (`apps/realness/lib/items.js`). Never JSON or JSONL.
+- State lives in pages. A program reads pages, acts, and writes pages; it
+  keeps no state of its own. `artifacts/` holds scratch, never state.
+- A plan is a folder or a file in `vault/Projects/`. A folder plan can hold
+  plans: `<Plan>/<Inner>/index.md`.
+
 ## Voice
 
 - Do not compliment or encourage the user.

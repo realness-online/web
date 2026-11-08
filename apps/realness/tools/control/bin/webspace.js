@@ -347,8 +347,10 @@ const commands = {
         "name keeps this computer's address; run it as realness local name"
       )
     const { keep_host_name } = await import('#root/src/control/host-name.js')
+    const { default: acme } = await import('acme-client')
     const kept = await keep_host_name({
       cert: !flags['no-cert'],
+      acme,
       log: line => process.stderr.write(`${line}\n`)
     })
     const lines = [

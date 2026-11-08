@@ -31,6 +31,19 @@ describe('conversation input', () => {
     wrapper.unmount()
   })
 
+  it('keeps the draft when focus leaves, and sends only on Enter', async () => {
+    const chat = fake_chat()
+    const wrapper = mount(AsConversation, { props: { chat } })
+    const field = wrapper.get('textarea')
+    chat.draft.value = 'o'
+    await field.trigger('focusout', { relatedTarget: null })
+    expect(chat.send).not.toHaveBeenCalled()
+    expect(chat.draft.value).toBe('o')
+    await field.trigger('keydown', { key: 'Enter' })
+    expect(chat.send).toHaveBeenCalledOnce()
+    wrapper.unmount()
+  })
+
   it('disables the input while another tab has the chat', async () => {
     const taken = ref(true)
     const chat = fake_chat({ taken, take_back: vi.fn() })
@@ -112,17 +125,6 @@ describe('conversation input', () => {
     await second.trigger('toggle')
     expect(first.element.open).toBe(false)
     wrapper.unmount()
-  })
-
-  it('sends when the field loses focus, as a thought saves', async () => {
-    const send = vi.fn()
-    const chat = fake_chat({ send, draft: ref('hi') })
-    const wrapper = mount(AsConversation, { props: { chat } })
-    await wrapper.find('textarea').trigger('focusout')
-    expect(send).toHaveBeenCalledTimes(1)
-    chat.draft.value = '  '
-    await wrapper.find('textarea').trigger('focusout')
-    expect(send).toHaveBeenCalledTimes(1)
   })
 
   it('keeps the field focused when a command is picked', async () => {

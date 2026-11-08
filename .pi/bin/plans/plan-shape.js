@@ -6,6 +6,7 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 import { plans_path, plans_ignore } from '../lib/harness-settings.js'
 import { legend } from '../lib/palette.js'
 import { plan_files } from '../lib/plan-files.js'
+import { gate_lines } from '../lib/plan-gates.js'
 import { render_mermaid } from '../lib/mermaid-render.js'
 
 const ROOT = join(dirname(file_url_to_path(import.meta.url)), '../../..')
@@ -19,6 +20,10 @@ const find = (text, re) => {
   const at = text.search(re)
   return at < 0 ? null : text.slice(0, at).split('\n').length
 }
+
+const STATE_CLASS = /class\s+[a-zA-Z0-9_,]+\s+(?:active|blocked|done)\b/
+const STATE_SYMBOL = /[\u2713\u25d0\u2715\u25c6]/
+const LEGEND_LINE = /^\*\*Legend:\*\*/m
 
 /** Every mermaid fence, in order, as {line, body}. */
 const fences = text => {
@@ -71,6 +76,7 @@ const check = async (name, text) => {
   if (!first) bad('title first', `line 1 is "${lines[0].slice(0, 40)}"`)
 
   const graphs = fences(text)
+  let marked = false
   if (!graphs.length) {
     bad('dag present', 'no mermaid fence')
   } else {
@@ -100,13 +106,37 @@ const check = async (name, text) => {
       if (t.startsWith('classDef') && !LEGEND.has(t))
         bad('legend', `line ${g.line}, not a fixed classDef: ${t.slice(0, 50)}`)
     }
-    const stray = g.body.replace(/[✅🔄⛔🚦✓◐✕◆]/g, '')
+    if (STATE_CLASS.test(g.body) || STATE_SYMBOL.test(g.body)) marked = true
+    const emoji = g.body.match(/\p{Emoji_Presentation}/u)
+    if (emoji) bad('symbols', `line ${g.line}: ${emoji[0]} is a color emoji; write ✓ ◐ ✕ ◆`)
+    const stray = g.body.replace(/[✓◐✕◆]/g, '')
     if (/[^\x00-\x7F]/.test(stray)) bad('ascii', `non-ASCII character in the fence at line ${g.line}`)
     if (rendered) {
       const { art } = await render_mermaid(g.body)
       if (!art) bad('render', `fence at line ${g.line}: the mermaid engine could not parse it`)
       else if (art.warnings.length) bad('render', `fence at line ${g.line}: ${art.warnings.join('; ').slice(0, 80)}`)
     }
+  }
+
+  for (const { gate, line, ok } of gate_lines(text))
+    if (!ok)
+      bad(
+        'gate line',
+        `line ${line}: write ${gate === 1 ? '"- Gate 1: approved"' : '"- Gate 2: held" or "- Gate 2: reshaped <ids>"'}`
+      )
+
+  if (marked) {
+    const at = find(text, LEGEND_LINE)
+    const last = lines.findLastIndex(line => line.trim()) + 1
+    const line = at ? lines[at - 1] : ''
+    if (!at) bad('legend line', 'no "**Legend:**" line at the bottom of the plan')
+    else if (at !== last) bad('legend line', `line ${at}; it goes last in the plan`)
+    else if (/pruned/i.test(line)) bad('legend line', `line ${at} lists pruned items; git holds them`)
+    else if (!['◐', '✕', '◆'].every(symbol => line.includes(symbol)))
+      bad(
+        'legend line',
+        `line ${at} names ${['◐', '✕', '◆'].filter(symbol => !line.includes(symbol)).join(' ')} not at all`
+      )
   }
 
   return problems

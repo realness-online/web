@@ -3,6 +3,8 @@ import { hostname } from 'node:os'
 import { createServer as create_server } from 'node:net'
 import { logger } from './log.js'
 import { Loops } from './loops.js'
+import { active_scouts, run_scout_loop } from '#root/src/scouts/halo.js'
+import { find_scout, scout_pages } from '#root/src/scouts/scout.js'
 import { Lines } from './vsock.js'
 import { tap_guest } from './syscalls.js'
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
@@ -26,6 +28,32 @@ const halo_claim = () => {
 }
 
 const LOG = logger('door')
+/** An ISO date is the first ten characters of the full stamp. */
+const DATE_LENGTH = 10
+
+/** The owner's own halo, which is the only place a scout may run. */
+const owner_vault = (door, owner) => {
+  const vault = door.store.host_vault
+  if (vault?.owner !== owner)
+    throw new Error("scouts run only on the owner's own halo")
+  return vault
+}
+
+/** Start one scout's loop without waiting for it; its log line lands when it ends. */
+const start_scout = (door, id, owner, vault, scout) =>
+  run_scout_loop({
+    loops: loops_of(door),
+    parent: id,
+    scout,
+    vault_dir: vault.path,
+    person: `/${owner}`,
+    date: new Date().toISOString().slice(0, DATE_LENGTH)
+  }).then(
+    ({ fresh, path }) =>
+      LOG.info(`door: scout ${scout} wrote ${fresh.length} new to ${path}`),
+    error => LOG.error(`door: scout ${scout} failed: ${error.message}`)
+  )
+
 const DOOR_PORT = 54
 const LINE_LIMIT = 1 << LINE_LIMIT_BITS
 const RECONCILE_MS = 500
@@ -126,6 +154,26 @@ const OPS = {
       const loop = await loops_of(door).start(id, request.goal)
       LOG.info(`door: ${id} started loop ${loop.id} at depth ${loop.depth}`)
       return { ok: true, ...loop }
+    }
+  },
+  scout: {
+    refused: 'actor cannot start loops',
+    answer: (door, { id, owner, request }) => {
+      const vault = owner_vault(door, owner)
+      const page = find_scout(scout_pages(vault.path), String(request.scout))
+      if (page.status !== 'active')
+        throw new Error(`${page.path} is ${page.status || 'missing a status'}`)
+      start_scout(door, id, owner, vault, page.path)
+      return { ok: true, scout: page.path }
+    }
+  },
+  scouts: {
+    refused: 'actor cannot start loops',
+    answer: (door, { id, owner }) => {
+      const vault = owner_vault(door, owner)
+      const pages = active_scouts(vault.path)
+      for (const page of pages) start_scout(door, id, owner, vault, page.path)
+      return { ok: true, scouts: pages.map(page => page.path) }
     }
   },
   read: {

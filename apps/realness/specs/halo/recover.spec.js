@@ -2,6 +2,7 @@ import { store_of } from '#root/src/can/store.js'
 import assert from 'node:assert/strict'
 import { createHash, randomUUID } from 'node:crypto'
 import {
+  chmod,
   mkdir,
   readFile,
   readdir,
@@ -346,34 +347,47 @@ it('a limited actor pulls only its paths', async () => {
   })
 })
 
-it('recovery removes a starter file deleted from the saved harness', async () => {
+// gz2c: the store carries a person's own files, never the program. A starter
+// file the store lacks was never uploaded, not deleted, so recovery keeps it.
+it('recovery lays shipped code back when the saved harness never carried it', async () => {
   const phone = '+14155550126'
   const root = join(dir, 'starter-deleted')
   const directory = join(dir, 'starter-deleted-distribution')
-  const stock = '# critic\n'
+  const stock = '#!/bin/sh\necho pi\n'
+  const skill = '# critic\n'
   const manifest = {
     version: hash('starter'),
-    files: { 'skills/critic/SKILL.md': hash(stock), 'keep.md': hash('keep\n') }
+    files: {
+      '.pi/bin/pi': hash(stock),
+      'skills/critic/SKILL.md': hash(skill)
+    }
   }
   for (const folder of [directory, root]) {
+    await mkdir(join(folder, '.pi/bin'), { recursive: true })
+    await writeFile(join(folder, '.pi/bin/pi'), stock)
     await mkdir(join(folder, 'skills/critic'), { recursive: true })
-    await writeFile(join(folder, 'skills/critic/SKILL.md'), stock)
-    await writeFile(join(folder, 'keep.md'), 'keep\n')
+    await writeFile(join(folder, 'skills/critic/SKILL.md'), skill)
   }
+  await chmod(join(directory, '.pi/bin/pi'), 0o755)
   await mkdir(join(directory, '.pi'), { recursive: true })
   await writeFile(join(directory, '.pi/starter.json'), JSON.stringify(manifest))
   const put = (path, body) =>
     storage.put(`people/${phone}/harness/${path}`, body)
   await put('.ignore', '')
   await put('.pi/starter.json', JSON.stringify(manifest))
-  await put('keep.md', 'keep\n')
-  await recover(url, () => issue_recovery_pass({ phone, id }, secret), root, {
-    starter: directory
-  })
-  await assert.rejects(readFile(join(root, 'skills/critic/SKILL.md')), {
-    code: 'ENOENT'
-  })
-  assert.equal(await readFile(join(root, 'keep.md'), 'utf8'), 'keep\n')
+  const recovered = await recover(
+    url,
+    () => issue_recovery_pass({ phone, id }, secret),
+    root,
+    { starter: directory }
+  )
+  assert.equal(await readFile(join(root, '.pi/bin/pi'), 'utf8'), stock)
+  assert.equal((await stat(join(root, '.pi/bin/pi'))).mode & 0o777, 0o755)
+  assert.equal(
+    await readFile(join(root, 'skills/critic/SKILL.md'), 'utf8'),
+    skill
+  )
+  assert.ok(recovered.relaid.includes('.pi/bin/pi'))
 })
 
 // gz2c: starter files are baseline and never sync, so only a personal file

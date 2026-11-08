@@ -6,6 +6,7 @@ import {
   readFile,
   writeFile,
   rm,
+  symlink,
   utimes
 } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
@@ -108,6 +109,46 @@ it('plans mode sorts by modification time and copies the installed Mermaid bundl
     assert.deepEqual(
       await readFile(join(f.root, 'dist/scripts/pele.global.js')),
       await readFile(new URL(import.meta.resolve('pele/global')))
+    )
+  } finally {
+    await rm(f.root, { recursive: true, force: true })
+  }
+})
+
+it('a plan renders the notes it links under its itemid, and no note outside its folder', async () => {
+  const f = await fixture('plans')
+  const vault = join(f.root, 'vault')
+  try {
+    await mkdir(join(vault, 'Scouts/Realness/Leads'), { recursive: true })
+    await writeFile(join(vault, 'secret.md'), '# Secret\n')
+    await writeFile(
+      join(vault, 'Scouts/Realness/Leads/2026-11-05.md'),
+      '# Realness leads\n\n- [Antithesis](https://antithesis.com)\n'
+    )
+    await writeFile(
+      join(vault, 'Scouts/index.md'),
+      '---\nitemid: "/+1/plans/3"\n---\n# Scouts\n\n[Leads](Realness/Leads/2026-11-05.md) [Out](../secret.md) [Gone](Realness/none.md)\n'
+    )
+    await symlink(
+      join(vault, 'Scouts/index.md'),
+      join(f.root, 'content/articles/scouts.md')
+    )
+    await f.build()
+    const plan = await readFile(join(f.root, 'dist/blog/scouts.html'), 'utf8')
+    assert.ok(plan.includes('href="/+1/plans/3/Realness/Leads/2026-11-05"'))
+    const page = await readFile(
+      join(f.root, 'dist/+1/plans/3/Realness/Leads/2026-11-05.html'),
+      'utf8'
+    )
+    assert.match(page, /<title>Realness leads/)
+    assert.match(page, /href="https:\/\/antithesis.com"/)
+    assert.equal(
+      existsSync(join(f.root, 'dist/+1/plans/secret.md.html')),
+      false
+    )
+    assert.equal(
+      existsSync(join(f.root, 'dist/+1/plans/3/Realness/none.md.html')),
+      false
     )
   } finally {
     await rm(f.root, { recursive: true, force: true })
@@ -218,6 +259,85 @@ it('the renderer header carries the site name and tagline, escaped', async () =>
     assert.match(header, />A &amp; B</)
     assert.match(header, />Notes</)
     assert.doesNotMatch(header, /Your Name|What you do/)
+  } finally {
+    await rm(f.root, { recursive: true, force: true })
+  }
+})
+
+it('--only rewrites the named plan and leaves the other pages as built', async () => {
+  const f = await fixture('plans')
+  try {
+    for (const [name, itemid] of [
+      ['older', '/+1/plans/1'],
+      ['newer', '/+1/plans/2']
+    ])
+      await writeFile(
+        join(f.root, `content/articles/${name}.md`),
+        `---\nitemid: "${itemid}"\n---\n# ${name}\n\nBody ${name}.\n`
+      )
+    await f.build()
+    const kept = join(f.root, 'dist/blog/newer.html')
+    const before = await readFile(kept, 'utf8')
+    const built = await readFile(
+      join(f.root, 'dist/+1/plans/2/index.html'),
+      'utf8'
+    )
+    await writeFile(
+      join(f.root, 'content/articles/older.md'),
+      '---\nitemid: "/+1/plans/1"\n---\n# Older changed\n\nA new body.\n'
+    )
+    const { stdout } = await execute(
+      process.execPath,
+      [engine, '--only=older'],
+      { cwd: f.root }
+    )
+    assert.match(stdout, /rebuilt 1 of 2 articles/)
+    assert.match(
+      await readFile(join(f.root, 'dist/blog/older.html'), 'utf8'),
+      /Older changed/
+    )
+    assert.equal(await readFile(kept, 'utf8'), before)
+    assert.equal(
+      await readFile(join(f.root, 'dist/+1/plans/2/index.html'), 'utf8'),
+      built
+    )
+    const index = await readFile(join(f.root, 'dist/index.html'), 'utf8')
+    const page = await readFile(join(f.root, 'dist/blog/older.html'), 'utf8')
+    assert.match(index, /href="\/blog\/older">Older changed</)
+    assert.match(index, /<p>Body newer\.<\/p>/)
+    await f.build()
+    assert.equal(
+      await readFile(join(f.root, 'dist/index.html'), 'utf8'),
+      index,
+      'a partial build leaves the same index a full one writes'
+    )
+    assert.equal(
+      await readFile(join(f.root, 'dist/blog/older.html'), 'utf8'),
+      page,
+      'a partial build writes the same page a full one writes'
+    )
+  } finally {
+    await rm(f.root, { recursive: true, force: true })
+  }
+})
+
+it('--only refuses a tree it cannot rebuild into', async () => {
+  const f = await fixture('plans')
+  try {
+    await writeFile(join(f.root, 'content/articles/note.md'), '# Note\n')
+    await assert.rejects(
+      execute(process.execPath, [engine, '--only=note'], { cwd: f.root }),
+      /no dist to rebuild into/
+    )
+    await f.build()
+    await writeFile(
+      join(f.root, 'content/articles/later.md'),
+      '---\nitemid: "/+1/plans/9"\n---\n# Later\n'
+    )
+    await assert.rejects(
+      execute(process.execPath, [engine, '--only=later'], { cwd: f.root }),
+      /no previous page to keep/
+    )
   } finally {
     await rm(f.root, { recursive: true, force: true })
   }

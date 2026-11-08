@@ -991,3 +991,34 @@ it('a path inside another listed path syncs once, through the outer one', () => 
   assert.equal(within(['vault/Sessions'], 'vault/Sessions/2026.html'), true)
   assert.equal(within(['vault/Sessions'], 'vault/Sessions-notes.md'), false)
 })
+
+it('h2: a folder plan syncs the folder its Syncs names', async () => {
+  const harness = await files(join(root, 'folder-plan'), {
+    'package.json': JSON.stringify({ realness: { plans: 'vault/Projects' } }),
+    'vault/Projects/Scouts/index.md':
+      '# Scouts\n\n## Nodes\n\n| a |\n\n## Syncs\n\n- vault/Projects/Scouts\n\n## Notes\n\n- x\n',
+    'vault/Projects/Scouts/Realness/scout.html': '<!doctype html>\n',
+    'vault/Projects/Scouts/Realness/Profile.md': '# profile\n',
+    'vault/Projects/Scouts/Realness/Sources.md': '# sources\n',
+    'vault/Projects/Scouts/Realness/Finds/finds.html': '<!doctype html>\n'
+  })
+  const isolated = client({
+    state: join(root, 'state-folder-plan'),
+    trash: join(root, 'trash-folder-plan'),
+    url: `http://127.0.0.1:${server.address().port}`,
+    token: issuer.token('+15555550142')
+  })
+  const report = await sync_harness({ root: harness, store: isolated })
+  assert.deepEqual(Object.keys(report.synced).sort(), [
+    '.pi/agent/sessions',
+    'vault/Projects/Scouts'
+  ])
+  assert.deepEqual(report.synced['vault/Projects/Scouts'].pushed.sort(), [
+    'Realness/Finds/finds.html',
+    'Realness/Profile.md',
+    'Realness/Sources.md',
+    'Realness/scout.html',
+    'index.md'
+  ])
+  assert.deepEqual(report.refused, {})
+})

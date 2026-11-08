@@ -71,7 +71,10 @@ if (args[0] === '--help') {
 } else {
   await refresh_host_name()
   const plan = local_plan()
-  if (args[0] === '--dry-run') process.stdout.write(`${JSON.stringify(plan, null, 2)}\n`)
+  if (args[0] === '--dry-run')
+    process.stdout.write(
+      `${JSON.stringify(plan, (name, value) => (name === 'OPENROUTER_API_KEY' ? 'set' : value), 2)}\n`
+    )
   else {
     const controller = new AbortController()
     const abort = () => controller.abort()

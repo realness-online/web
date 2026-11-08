@@ -1,132 +1,285 @@
 /**
- * Prewalk: smart model plans + starts, cheap model finishes.
+ * Prewalk: the frontier model shapes and gates a plan, a cheap model works its nodes.
  *
- * Source: Can Bölük, "The Prewalk Technique," stencil.so/blog/prewalk (13 Jul 2026)
- * https://stencil.so/blog/prewalk — via https://news.ycombinator.com/item?id=48916512
+ * Arms on its own once a plan under the plans folder carries `- Gate 1: approved`.
+ * A node marked `active` runs on the cheap model; a failing spec returns that
+ * node to the frontier model. No active node, as at a gate, means the frontier
+ * model, as does an error turn on the cheap model. Each escalation, and each node leaving `active`, is an item in `vault/Prewalk/escalations.html`.
  *
- * The insight: reading is ~91% of an agent's token spend, not thinking or writing.
- * A frontier model that hands off via a written /plan doc makes the cheap model
- * re-read everything from scratch — the read cost is paid twice. Prewalk instead
- * lets the frontier model start real execution (explore, draft a todo list, land
- * one actual code edit) and swaps models mid-context right after that first edit
- * lands, so the cheap model inherits a real exploration trajectory and a
- * partially-checked todo list — not a summary — plus one in-context example of
- * the right approach. The planning-only instruction is dropped from the system
- * prompt on handoff so the cheap model treats exploration as already done.
- *
- * /prewalk                          - arm with current model, default target
- * /prewalk <target>                  - arm with current model, custom target
- * /prewalk <smart> <target>          - arm with custom smart + target, switch to smart
- * /prewalk off                       - disarm
- *
- * Default target: deepseek/deepseek-v4-flash
+ * /prewalk              - status
+ * /prewalk <target>     - cheap model as provider/id
+ * /prewalk off | on     - stop or resume routing this session
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
-const DEFAULT_TARGET = 'deepseek/deepseek-v4-flash'
-const TODO_PATTERN = /(?:^|[\\/])(?:TODO|todo|TASK|task|PLAN|plan|CHECKLIST|checklist)\.(?:md|txt)$/
-export default /** @param {ExtensionAPI} pi */ pi => {
-  let armed = false
-  let handoffDone = false
-  let targetModelId = DEFAULT_TARGET
-  let todoCreated = false
-  let editOrWriteThisTurn = false
-  pi.on('tool_call', event => {
-    if (handoffDone || !armed) return
-    const isTodoWrite = event.toolName === 'write' && event.input.path && TODO_PATTERN.test(String(event.input.path))
-    if (isTodoWrite) {
-      todoCreated = true
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
+import { plans_ignore, plans_path } from '../../bin/lib/harness-settings.js'
+import { approved, nodes_in } from '../../bin/lib/plan-gates.js'
+import { plan_files } from '../../bin/lib/plan-files.js'
+import { product_import } from '../../bin/lib/product.js'
+
+const { item_html } = await product_import('items')
+const root = resolve(import.meta.dirname, '../../..')
+
+export const DEFAULT_TARGET = 'openrouter/deepseek/deepseek-v4.1-flash-1017'
+const RUNNER =
+  /^(npx )?(node( [\w=-]+)* --test\b|node [^ ]+\.(spec|test)\.js\b|vitest\b|vp test\b|npm test\b|npm( --prefix [^ ]+)? run test\b)/
+
+/** @param {string} command */
+export const is_spec_run = command =>
+  command
+    .split(/;|&&|\|\||\|/)
+    .map(part => part.trim())
+    .some(part => RUNNER.test(part))
+
+/**
+ * The model a turn should run on.
+ * @param {{ on: boolean, approved: boolean, active: string[], escalated: Set<string> }} state
+ * @returns {'cheap' | 'frontier'}
+ */
+export const route = ({ on, approved, active, escalated }) =>
+  on && approved && active.length > 0 && !active.some(id => escalated.has(id)) ? 'cheap' : 'frontier'
+
+/**
+ * The plan file a tool path names, or null outside the plans folder.
+ * @param {unknown} path
+ * @param {string} cwd
+ * @param {string} plans
+ */
+export const plan_of = (path, cwd, plans) => {
+  if (typeof path !== 'string') return null
+  const file = isAbsolute(path) ? path : resolve(cwd, path)
+  return file.endsWith('.md') && !relative(plans, file).startsWith('..') ? file : null
+}
+
+/**
+ * The one approved plan with an active node, or null when none or several.
+ * @param {string} plans
+ * @param {Iterable<string>} [ignored]
+ */
+export const working_plan = (plans, ignored = []) => {
+  const found = plan_files(plans, ignored)
+    .map(({ file }) => join(plans, file))
+    .filter(file => {
+      const text = readFileSync(file, 'utf8')
+      return approved(text) && nodes_in(text, 'active').length > 0
+    })
+  return found.length === 1 ? found[0] : null
+}
+
+/** @param {{ provider: string, id: string } | undefined} model */
+const name_of = model => (model ? `${model.provider}/${model.id}` : '')
+
+/**
+ * @param {ExtensionAPI} pi
+ * @param {{ plans?: string, ignored?: Iterable<string>, log?: string }} [where]
+ */
+export default (
+  pi,
+  {
+    plans = join(root, plans_path(root)),
+    ignored = plans_ignore(root),
+    log = join(root, 'vault/Prewalk/escalations.html')
+  } = {}
+) => {
+  let on = true
+  let target = DEFAULT_TARGET
+  /** @type {any} */
+  let frontier = null
+  /** @type {string | null} */
+  let plan = null
+  let state = { approved: false, active: /** @type {string[]} */ ([]) }
+  const escalated = new Set()
+  /** @type {Map<string, string>} */
+  const errors = new Map()
+  const failed = new Set()
+  /** @type {Map<string, Set<string>>} */
+  const models = new Map()
+  const verified = new Set()
+  let nudge = 'none'
+
+  /**
+   * @param {string} node
+   * @param {string} reason
+   * @param {string} model
+   */
+  const record = (node, reason, model) => append('escalation', { node, reason, model })
+
+  /**
+   * @param {'escalation' | 'outcome'} kind
+   * @param {Record<string, string>} fields
+   */
+  const append = (kind, fields) => {
+    const at = new Date().toISOString()
+    mkdirSync(dirname(log), { recursive: true })
+    appendFileSync(
+      log,
+      item_html(`prewalk/${kind}`, { plan: relative(root, plan ?? ''), ...fields, at }).replace(
+        'itemscope',
+        `itemscope itemid="/prewalk/${kind}s/${fields.node}/${at}"`
+      )
+    )
+  }
+
+  /** @param {any} ctx */
+  const read_plan = ctx => {
+    if (!plan || !existsSync(plan)) return
+    const text = readFileSync(plan, 'utf8')
+    const active = nodes_in(text, 'active')
+    const blocked = nodes_in(text, 'blocked')
+    for (const id of state.active.filter(id => !active.includes(id))) {
+      if (!blocked.includes(id) && !verified.has(id)) {
+        record(id, 'finished without a passing spec', name_of(ctx.model))
+        ctx.ui.notify(`Prewalk: ${id} finished without a passing spec`, 'warning')
+      }
+      append('outcome', {
+        node: id,
+        status: blocked.includes(id) ? 'blocked' : 'done',
+        models: [...(models.get(id) ?? [])].join(', '),
+        spec: verified.has(id) ? 'passed' : failed.has(id) ? 'failed' : 'none',
+        escalated: escalated.has(id) ? 'yes' : 'no'
+      })
+      escalated.delete(id)
+      verified.delete(id)
+      failed.delete(id)
+      errors.delete(id)
+      models.delete(id)
+    }
+    if (active.length) nudge = 'none'
+    state = { approved: approved(text), active }
+  }
+
+  pi.on('tool_result', (event, ctx) => {
+    if (!on) return
+    const file = ['read', 'edit', 'write'].includes(event.toolName) && plan_of(event.input?.path, ctx.cwd, plans)
+    if (file) {
+      if (file !== plan) state = { approved: false, active: [] }
+      plan = file
+      read_plan(ctx)
       return
     }
-    if (event.toolName === 'edit' || event.toolName === 'write') {
-      editOrWriteThisTurn = true
+    const working = ['edit', 'write'].includes(event.toolName) && plan && state.approved && !state.active.length
+    if (working && nudge === 'none') nudge = 'due'
+    if (event.toolName !== 'bash') return
+    if (!state.active.length || !is_spec_run(String(event.input?.command ?? ''))) return read_plan(ctx)
+    for (const id of state.active) {
+      if (!event.isError) {
+        verified.add(id)
+        failed.delete(id)
+      } else failed.add(id)
+      if (event.isError && !escalated.has(id)) {
+        verified.delete(id)
+        escalated.add(id)
+        record(id, 'spec failed', name_of(ctx.model))
+      }
     }
   })
-  pi.on('turn_end', async (_event, ctx) => {
-    if (!armed || handoffDone || !todoCreated || !editOrWriteThisTurn) {
-      editOrWriteThisTurn = false
-      return
+
+  pi.on('turn_end', async (event, ctx) => {
+    if (on && !plan) {
+      plan = working_plan(plans, ignored)
+      read_plan(ctx)
     }
-    const [provider, ...rest] = targetModelId.split('/')
-    const modelId = rest.join('/')
-    const targetModel = ctx.modelRegistry.find(provider, modelId)
-    if (!targetModel) {
-      ctx.ui.notify(`Prewalk: model "${targetModelId}" not found`, 'error')
-      armed = false
-      return
+    const current = name_of(ctx.model)
+    for (const id of state.active) models.set(id, (models.get(id) ?? new Set()).add(current))
+    if (on && current === target && event.message?.stopReason === 'error') {
+      const error = event.message.errorMessage || 'unknown error'
+      for (const id of state.active.filter(id => !escalated.has(id))) {
+        escalated.add(id)
+        errors.set(id, error)
+        record(id, `model error: ${error}`, current)
+      }
     }
-    handoffDone = true
-    await pi.setModel(targetModel)
-    ctx.ui.notify(`Prewalk: switched to ${targetModelId}`, 'info')
-  })
-  pi.on('before_agent_start', event => {
-    if (!armed) return
-    if (!handoffDone) {
+    const want = route({ on, ...state, escalated })
+    if (nudge === 'due' && want === 'frontier') {
+      nudge = 'sent'
       return {
-        systemPrompt:
-          event.systemPrompt +
-          '\n\n' +
-          'Start by writing a concrete plan. Create a TODO.md breaking down the ' +
-          'work into small, verifiable items. Then start implementing.'
+        entries: [
+          ...event.entries,
+          {
+            type: 'custom_message',
+            customType: 'prewalk',
+            display: false,
+            content: `Prewalk: you are changing files for ${relative(root, plan ?? '')} with no active node. If this is node work, mark the node \`active\` in the plan now, before the next change.`
+          }
+        ]
       }
     }
-    return {
-      systemPrompt:
-        event.systemPrompt +
-        '\n\n' +
-        'Before finishing, go through the TODO.md and verify every item is complete. ' +
-        'Mark items as done once verified.'
+    if (want === 'cheap' && current !== target) {
+      const [provider, ...rest] = target.split('/')
+      const model = ctx.modelRegistry.find(provider, rest.join('/'))
+      if (!model) {
+        ctx.ui.notify(`Prewalk: model "${target}" not found; routing off`, 'error')
+        on = false
+        return
+      }
+      frontier = ctx.model
+      if (!(await pi.setModel(model))) return
+      ctx.ui.notify(`Prewalk: ${state.active.join(', ')} on ${target}`, 'info')
+      return {
+        entries: [
+          ...event.entries,
+          {
+            type: 'custom_message',
+            customType: 'prewalk',
+            display: false,
+            content:
+              `Prewalk: you now work node ${state.active.join(', ')} of ${relative(root, plan ?? '')} on a cheaper model. ` +
+              "After each change, run the node's own spec. If it fails, stop and report the failure; never loosen the test. " +
+              'Mark the node done only after its spec passes.'
+          }
+        ]
+      }
+    }
+    if (want === 'frontier' && frontier && current === target) {
+      if (!(await pi.setModel(frontier))) return
+      const failed = state.active.filter(id => escalated.has(id))
+      ctx.ui.notify(`Prewalk: back to ${name_of(frontier)}${failed.length ? ` for ${failed.join(', ')}` : ''}`, 'info')
+      if (!failed.length) return
+      const errored = failed.filter(id => errors.has(id))
+      const content = errored.length
+        ? `Prewalk: the cheaper model failed on ${errored.join(', ')}: ${errors.get(errored[0])}. You take this node over from where it stopped.`
+        : `Prewalk: the spec failed on ${failed.join(', ')} under the cheaper model. You take this node over; find the cause before changing the test.`
+      return {
+        entries: [
+          ...event.entries,
+          {
+            type: 'custom_message',
+            customType: 'prewalk',
+            display: false,
+            content
+          }
+        ]
+      }
     }
   })
+
   pi.on('session_start', () => {
-    armed = false
-    handoffDone = false
-    todoCreated = false
-    editOrWriteThisTurn = false
+    on = true
+    frontier = null
+    plan = null
+    state = { approved: false, active: [] }
+    nudge = 'none'
+    escalated.clear()
+    verified.clear()
+    errors.clear()
+    failed.clear()
+    models.clear()
   })
+
   pi.registerCommand('prewalk', {
-    description: 'Smart model plans, cheap model executes. /prewalk [smart] [target] | off',
+    description: 'Cheap model works approved plan nodes. /prewalk [provider/id | off | on]',
     handler: async (args, ctx) => {
-      if (args === 'off') {
-        armed = false
-        handoffDone = false
-        todoCreated = false
-        ctx.ui.notify('Prewalk disarmed', 'info')
-        return
-      }
-      const parts = args ? args.trim().split(/\s+/) : []
-      /** @type {string | null} */
-      let smartModelId = null
-      if (parts.length >= 2) {
-        smartModelId = parts[0]
-        targetModelId = parts[1]
-      } else if (parts.length === 1) {
-        targetModelId = parts[0]
-      }
-      const [tp, ...tr] = targetModelId.split('/')
-      const targetModel = ctx.modelRegistry.find(tp, tr.join('/'))
-      if (!targetModel) {
-        ctx.ui.notify(`Prewalk: target "${targetModelId}" not found in model catalog`, 'error')
-        return
-      }
-      if (smartModelId) {
-        const [sp, ...sr] = smartModelId.split('/')
-        const smartModel = ctx.modelRegistry.find(sp, sr.join('/'))
-        if (!smartModel) {
-          ctx.ui.notify(`Prewalk: smart model "${smartModelId}" not found in model catalog`, 'error')
-          return
-        }
-        const ok = await pi.setModel(smartModel)
-        if (!ok) {
-          ctx.ui.notify(`Prewalk: failed to switch to ${smartModelId}`, 'error')
-          return
-        }
-      }
-      const smart = smartModelId || (ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : 'current')
-      armed = true
-      handoffDone = false
-      todoCreated = false
-      editOrWriteThisTurn = false
-      ctx.ui.notify(`Prewalk armed: ${smart} → ${targetModelId}`, 'info')
+      const arg = args?.trim() ?? ''
+      if (arg === 'off' || arg === 'on') on = arg === 'on'
+      else if (arg) target = arg
+      const where = plan
+        ? `${relative(root, plan)}, ${state.approved ? 'approved' : 'not approved'}`
+        : 'no plan read yet'
+      ctx.ui.notify(
+        `Prewalk ${on ? 'on' : 'off'}: ${target}; ${where}; active ${state.active.join(', ') || 'none'}`,
+        'info'
+      )
     }
   })
 }

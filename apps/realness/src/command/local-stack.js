@@ -87,8 +87,27 @@ const vault_env = () => {
   }
 }
 
-/** Existing commands own each service; the launcher owns only its child process groups. */
-export const local_plan = () => {
+/**
+ * The person's own OpenRouter key, from the shell that starts the stack: the
+ * proxy calls with it, and no free limit applies to their own money. It stays
+ * in the proxy's environment; actors get only a model pass.
+ * @param {NodeJS.ProcessEnv} env
+ */
+export const own_key = env => {
+  const key = env.OPENROUTER_API_KEY?.trim()
+  if (!key) return {}
+  return {
+    OPENROUTER_API_KEY: key,
+    FREE_TOKENS_PER_DAY: 'Infinity',
+    FREE_TOKENS_PER_MONTH: 'Infinity'
+  }
+}
+
+/**
+ * Existing commands own each service; the launcher owns only its child process groups.
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export const local_plan = (env = process.env) => {
   /** lc3: with its certificate, the app is served at the host's own name. */
   const named = host_origin()
   const secure = Boolean(named)
@@ -152,7 +171,8 @@ export const local_plan = () => {
           IDENTITY_PROJECT: identity,
           SIGN_IN_URL: sign_in_url,
           OPENROUTER_API_KEY_FILE: secret_path('openrouter-key'),
-          ORIGINS: origins()
+          ORIGINS: origins(),
+          ...own_key(env)
         }
       },
       { name: 'workers', args: ['run', 'dev:frontend:workers'] },

@@ -3,6 +3,7 @@
  * Run one autoresearch loop headless, as the realness user.
  *
  *     realness-loop-run <goal>
+ *     realness-loop-run --once <goal>   one plain prompt; pi exits once it settles
  *
  * The halo starts this in a loop actor under systemd-run. Pi runs in RPC mode:
  * print mode drops the autoresearch tools (vault/Projects/realness.md). Nobody
@@ -35,9 +36,11 @@ const status = fields => {
   rename_sync(tmp, join(LOOP, 'status.json'))
 }
 
-const goal = process.argv.slice(2).join(' ')
+const args = process.argv.slice(2)
+const once = args[0] === '--once'
+const goal = args.slice(once ? 1 : 0).join(' ')
 if (!goal.trim()) {
-  process.stderr.write('usage: realness-loop-run <goal>\n')
+  process.stderr.write('usage: realness-loop-run [--once] <goal>\n')
   process.exit(1)
 }
 mkdir_sync(LOOP, { recursive: true })
@@ -68,7 +71,9 @@ status({ state: 'running', pid: pi.pid, tokens })
 send({
   id: 'loop',
   type: 'prompt',
-  message: `/autoresearch ${goal}\n\nNobody is watching: never ask questions; start the loop now.`
+  message: once
+    ? `${goal}\n\nNobody is watching: never ask questions.`
+    : `/autoresearch ${goal}\n\nNobody is watching: never ask questions; start the loop now.`
 })
 
 const events = create_interface({ input: pi.stdout, crlfDelay: Infinity })
@@ -85,6 +90,7 @@ for await (const line of events) {
     tokens += Number(usage.input ?? 0) + Number(usage.output ?? 0)
     status({ state: 'running', pid: pi.pid, tokens })
   }
+  if (once && event.type === 'agent_settled') pi.stdin.end()
   if (event.type === 'extension_ui_request' && DIALOGS.has(event.method))
     send({ type: 'extension_ui_response', id: event.id, cancelled: true })
 }

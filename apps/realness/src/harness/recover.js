@@ -2,6 +2,8 @@
 import { connect as net_connect } from 'node:net'
 import { existsSync as exists_sync } from 'node:fs'
 import {
+  chmod,
+  copyFile as copy_file,
   mkdir,
   readFile as read_file,
   stat,
@@ -13,6 +15,7 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 import { client } from '#root/src/files/client.js'
 import {
   apply_deferred,
+  is_own,
   is_past_session,
   outermost,
   sync_exclusions_of,
@@ -94,6 +97,33 @@ const renewing_pass = async (issue, fetcher) => {
       })
     }
   }
+}
+
+/**
+ * Lay back the shipped files a pull removed. The store carries a person's own
+ * files; `.pi/bin` and the rest of the program never upload, so a starter file
+ * the store lacks is not a deletion.
+ * @param {string | null} starter the shipped harness, or null
+ * @param {string} root
+ */
+const relayout_code = async (starter, root) => {
+  const MODE_BITS = 0o777
+  if (!starter) return []
+  const manifest = JSON.parse(
+    await read_file(join(starter, STARTER_FILE), 'utf8').catch(() => '{}')
+  )
+  const relaid = []
+  for (const path of Object.keys(manifest.files ?? {})) {
+    if (is_own(path) || !limit_path(path)) continue
+    const target = join(root, path)
+    if (exists_sync(target)) continue
+    const mode = (await stat(join(starter, path))).mode & MODE_BITS
+    await mkdir(dirname(target), { recursive: true })
+    await copy_file(join(starter, path), target)
+    await chmod(target, mode)
+    relaid.push(path)
+  }
+  return relaid
 }
 
 /**
@@ -299,6 +329,7 @@ export const recover = async (
       if (!within(excluded, path)) await pull_path(path)
   }
   await restore_session_times(store, saved, root)
+  const relaid = await relayout_code(starter, root)
   const pending = await optional(`${saved}.pi/agent/deferred.json`)
   const applied = await apply_deferred(
     root,
@@ -309,7 +340,8 @@ export const recover = async (
     )
   )
   return Object.assign(/** @type {[number, string[]]} */ ([count, applied]), {
-    light
+    light,
+    relaid
   })
 }
 

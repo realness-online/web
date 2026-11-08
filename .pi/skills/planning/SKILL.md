@@ -104,24 +104,42 @@ chat until it passes; the plan file keeps its labels.
 
 The `classDef` lines are fixed: these four, plus `focus`, `next`, and `place` for graphics. `.pi/bin/lib/palette.js` derives them from the Realness palette. Do not invent fills.
 
-**Status is color plus a text symbol**, so it reads in any renderer and in plain text. Symbols are plain text, not color emoji, so they take the text color and dim with finished work:
+**Status is color plus a text symbol**, so it reads in any renderer and in plain
+text. Four symbols, all plain text: `✓` U+2713, `◐` U+25D0, `✕` U+2715, `◆`
+U+25C6. They take the text color and dim with finished work.
 
 | Status      | Symbol | classDef                |
 | ----------- | ------ | ----------------------- |
 | done        | ✓      | `done` (dimmed, dashed) |
-| in progress | ◐      | `active` (blue)         |
+| in progress | ◐      | `active` (teal)         |
 | blocked     | ✕      | `blocked` (red)         |
 | not started | none   | default                 |
 | gate        | ◆      | `gate` (amber)          |
 
-The symbol leads the label (`"✓ a1 research angle"`) and matches the node's
-`class` line. Update both as work moves. Finished work dims so the eye lands on
-what is left.
+Plain characters only. No color emoji: the plan checker rejects them.
 
-**The node list dims too.** A finished row's id is struck through,
-`| ~~a1~~ ✓ |`. Markdown renders that as `<del>`, so any viewer dims the
-whole row with `tr:has(del) { opacity: 0.45 }` and GitHub shows it crossed
-out. One line above the table names the legend.
+Every plan that marks state carries a legend line, the last line of the plan,
+starting `**Legend:**`. It never lists pruned nodes; git holds them.
+
+```
+**Legend:** ◐ active (teal), ✕ blocked (red), ◆ gate.
+**Legend:** ◐ active (teal), ✕ blocked (red), ◆ gate. Done (dimmed): a1, a2.
+```
+
+**The default is to prune.** A finished node comes out of the graph and its row
+leaves the table. The graph stays a picture of what is left.
+
+Keep a finished node in place when its edges still show the shape of the work
+that remains, and when a row above it is struck through: it takes `done` and
+joins the `Done (dimmed):` list. Every table id stays in the DAG, so a kept node
+is the only way a finished row can stay in the table.
+
+No symbol goes in a node label: it costs width and the color already says it.
+Update a node's `class` line as work moves.
+
+**The node table dims too.** A finished row's id is struck through and marked,
+`| ~~a1~~ ✓ |`. Markdown renders that as `<del>`, so any viewer dims the whole
+row with `tr:has(del) { opacity: 0.45 }` and GitHub shows it crossed out.
 
 **Explanatory graphics** show how the parts fit. They sit under the work DAG.
 
@@ -174,6 +192,8 @@ One order, every time. Text above the nodes does not get read.
 
 ### Decisions
 ### Open questions
+
+**Legend:** ...
 ```
 
 - The DAG and the node table come first, directly under the title.
@@ -251,7 +271,8 @@ Trim words on the way out of a session, not later. Say what you cut. See the
 Present the rendered DAG and order. Ask one question: is the shape right? Only
 topology counts - added, removed, or merged nodes, wrong dependencies, wrong
 order. Wait for the go before executing. Revise and re-present if wrong. Record
-the outcome as a Decisions line, not a gate log.
+the outcome as the Decisions line `- Gate 1: approved`, not a gate log. That
+line turns on prewalk: active nodes then run on the cheap model.
 
 ### 5. Worker - execute
 
@@ -259,6 +280,9 @@ Apply `soundness` when writing or changing code; add relevant specialist skills.
 Production quality is part of each node, not a later cleanup phase.
 
 Topological order, dependencies first, parallel where independent.
+
+Before starting a node, mark it `active` in the plan; prewalk routes on it. A
+node that needs a design decision settles it at a gate before it goes active.
 
 Plain execution is the default. A node that iterates toward a measurable target
 runs as an autoresearch loop; there are no subagents.
@@ -288,7 +312,8 @@ approves before it ships. Most nodes skip this.
 
 ### 8. Gate 2
 
-Summarize what ran. Ask whether it meets the plan. Done is your call.
+Summarize what ran. Ask whether it meets the plan. Done is your call. Record
+`- Gate 2: held`, or `- Gate 2: reshaped <ids>` naming the nodes that changed.
 
 ## Human in the loop
 

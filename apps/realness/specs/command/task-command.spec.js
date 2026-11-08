@@ -73,7 +73,7 @@ it('--json reports the plan, its paths, and no actor without --start', async () 
 it('an unknown plan is refused by name', async () => {
   const root = make_root()
   try {
-    await assert.rejects(run_task(['missing'], { root }), /no plan missing\.md/)
+    await assert.rejects(run_task(['missing'], { root }), /no plan missing in/)
   } finally {
     rmSync(root, { recursive: true, force: true })
   }

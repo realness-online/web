@@ -298,3 +298,29 @@ it('no mirror: loops run alone; a broken mirror never stops a loop', async () =>
   assert.equal(loops.loops[id].status, 'running')
   assert.match(loops.loops[id].error, /mirror: gcs down/)
 })
+
+it('a one-shot loop launches with --once and keeps its own deadline', async () => {
+  const store = fake()
+  const loops = new Loops(store, { file: join(root, 'once.json') })
+  const loop = await loops.start('a-000000000001', 'read goal.md', {
+    once: true,
+    deadline_ms: 30 * 60_000
+  })
+  assert.deepEqual(store.execs[0][1].slice(-2), ['--once', 'read goal.md'])
+  const record = loops.loops[loop.id]
+  const running = { state: 'running', runs: 0, quota: false }
+  assert.equal(
+    stop_reason(running, record, {
+      ...limits,
+      now: Date.parse(record.started) + 29 * 60_000
+    }),
+    null
+  )
+  assert.equal(
+    stop_reason(running, record, {
+      ...limits,
+      now: Date.parse(record.started) + 30 * 60_000
+    }),
+    'deadline'
+  )
+})

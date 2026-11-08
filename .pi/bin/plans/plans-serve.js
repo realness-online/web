@@ -1,6 +1,9 @@
 #!/usr/bin/env node
+import { execFile as exec_file } from 'node:child_process'
+import { realpathSync as realpath_sync, watch } from 'node:fs'
 import { createServer as create_server } from 'node:http'
 import { readFile as read_file, stat } from 'node:fs/promises'
+import { promisify } from 'node:util'
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 
@@ -82,9 +85,79 @@ export const serve = (plans, blog) =>
     response.end(await read_file(file))
   })
 
+/** The one line of a failed build worth showing. */
+export const failure_line = error =>
+  (
+    (error.stderr || error.message).split('\n').find(line => /^\w*Error\b/.test(line.trim())) ??
+    error.message.split('\n')[0]
+  ).trim()
+
+/**
+ * Builds after a folder changes: waits until edits pause, runs one build at a
+ * time, and follows a build with one more when files changed during it.
+ * @param {{ folder: string, build: (changed: string[]) => Promise<unknown>, wait?: number, ignore?: (file: string) => boolean, log?: (line: string) => void }} options
+ */
+export const watch_builds = ({ folder, build, wait = 500, ignore = () => false, log = console.log }) => {
+  let timer = null
+  let running = null
+  let again = false
+  const changed = new Set()
+  const start = async () => {
+    if (running) {
+      again = true
+      return
+    }
+    const files = [...changed]
+    changed.clear()
+    const began = Date.now()
+    running = build(files).then(
+      () => log(`built in ${Date.now() - began}ms`),
+      error => log(`build failed: ${failure_line(error)}`)
+    )
+    await running
+    running = null
+    if (again) {
+      again = false
+      await start()
+    }
+  }
+  const watcher = watch(folder, { recursive: true }, (_, file) => {
+    if (!file || ignore(file)) return
+    changed.add(file)
+    clearTimeout(timer)
+    timer = setTimeout(start, wait)
+  })
+  return {
+    start,
+    close: () => {
+      clearTimeout(timer)
+      watcher.close()
+    }
+  }
+}
+
+/** Hidden files, session transcripts, and the commands page the build writes never start a build. */
+export const ignored = file =>
+  file.split(sep).some(part => part.startsWith('.')) ||
+  file.startsWith(`Sessions${sep}`) ||
+  /pages[\\/]commands\.(html|js)$/.test(file)
+
 if (process.argv[1] === file_url_to_path(import.meta.url)) {
-  const apps = resolve(dirname(file_url_to_path(import.meta.url)), '../../../artifacts/apps')
+  const root = resolve(dirname(file_url_to_path(import.meta.url)), '../../..')
+  const apps = join(root, 'artifacts/apps')
   const port = Number(process.env.PORT ?? 4323)
+  const run = promisify(exec_file)
+  const builds = watch_builds({
+    folder: realpath_sync(join(root, 'vault')),
+    ignore: ignored,
+    build: changed =>
+      run(process.execPath, [join(root, '.pi/bin/plans/plans.js'), ...changed.map(file => `--changed=${file}`)], {
+        cwd: root,
+        timeout: 120_000,
+        maxBuffer: 1024 * 1024
+      })
+  })
+  builds.start()
   serve(join(apps, 'plans/dist'), join(apps, 'blog/dist')).listen(port, '127.0.0.1', () =>
     console.log(`vault -> http://127.0.0.1:${port}/  articles -> http://127.0.0.1:${port}/articles/`)
   )

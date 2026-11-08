@@ -65,8 +65,12 @@ it('the dev server resolves the separate Durable bundle before transforming Expl
     } finally { await server.close() }
   `
   const result = JSON.parse(run('--input-type=module', '-e', source))
-  assert.equal(result.id, join(env.DIST_DIR, 'pi-durable.browser.js'))
-  assert.match(result.code, /pi-durable\.browser\.js/)
+  assert.equal(result.id, '/pi-durable.browser.js')
+  assert.match(
+    result.code,
+    /import\(\s*(\/\*.*?\*\/\s*)?['"]\/pi-durable\.browser\.js['"]/
+  )
+  assert.doesNotMatch(result.code, new RegExp(env.DIST_DIR))
 })
 
 it('hosting configuration retains targets, rules and secondary hosting paths', context => {

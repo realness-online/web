@@ -49,6 +49,7 @@
     "feeds": "./.pi/skills/vault/rebuild-feeds.sh",
     "commands": "node ./.pi/bin/harness/commands.js",
     "plans": "node ./.pi/bin/plans/plans.js",
+    "scout": "node ./apps/realness/scripts/scout.js",
     "vault:serve": "node ./.pi/bin/plans/plans-serve.js",
     "plans:serve": "npm run vault:serve",
     "make:animation": "node ./.pi/bin/graphics/make-animation.js",

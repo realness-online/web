@@ -167,3 +167,16 @@ it('an actor runs the installed fork with compressed sessions, like a person', (
     f.cleanup()
   }
 })
+
+it('sessions keep the long prompt cache unless the caller chose one', () => {
+  const f = fixture()
+  try {
+    f.install()
+    write_file_sync(join(f.pinned, 'pi'), '#!/bin/bash\nprintf "%s\\n" "$PI_CACHE_RETENTION"\n', { mode: 0o755 })
+    assert.equal(f.run().stdout, 'long\n')
+    f.env.PI_CACHE_RETENTION = 'short'
+    assert.equal(f.run().stdout, 'short\n')
+  } finally {
+    f.cleanup()
+  }
+})

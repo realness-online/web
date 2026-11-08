@@ -174,11 +174,87 @@ article[itemscope] > figure:not(:has(img)) .back-link {
   right: var(--base-line);
 }
 
-section[itemprop='articleBody'] table {
-  width: min(100vw - var(--base-line) * 2, 80rem);
-  margin-inline: calc(50% - min(50vw - var(--base-line), 40rem));
-}
-
 figure:not(:has(img, pre.mermaid)) {
   height: auto;
+}
+
+section[itemprop='articleBody'] {
+  & table {
+    width: min(100vw - var(--base-line) * 2, 80rem);
+    margin-inline: calc(50% - min(50vw - var(--base-line), 40rem));
+  }
+
+  > details:not(:has(figure)) {
+    grid-column: text;
+
+    > summary {
+      display: flex;
+      gap: var(--base-line);
+      align-items: baseline;
+
+      &::before {
+        content: '▸';
+        transition: rotate 0.15s;
+      }
+
+      & span {
+        margin-left: auto;
+        opacity: 0.6;
+      }
+
+      & time {
+        opacity: 0.6;
+      }
+    }
+
+    &[open] > summary::before {
+      rotate: 90deg;
+    }
+
+    & h4 {
+      display: flex;
+      gap: var(--base-line);
+      align-items: baseline;
+
+      & span {
+        opacity: 0.6;
+      }
+    }
+
+    & table {
+      width: 100%;
+      margin-inline: 0;
+    }
+
+    & tr {
+      display: grid;
+      grid-template-columns: 2ch 1fr;
+      column-gap: var(--base-line);
+      border-bottom: 1px solid
+        color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+
+    & thead {
+      display: none;
+    }
+
+    & th,
+    & td {
+      border: 0;
+    }
+
+    & tr > :last-child {
+      grid-column: 2;
+      padding-top: 0;
+    }
+
+    & td:first-child {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    & tbody + tbody {
+      opacity: 0.5;
+    }
+  }
 }

@@ -5,16 +5,14 @@ import {
 } from '#root/src/control/cloud-reads.js'
 import { ENVIRONMENTS } from '#root/tools/control/webspace.config.js'
 import { attempt } from '#root/src/control/exec.js'
-import { MS_PER_MINUTE } from '#root/lib/units.js'
+import { ISO_DATE, MS_PER_HOUR } from '#root/lib/units.js'
 import {
   default_cache_path,
   default_host,
   default_project_id
 } from '#root/tools/ops/hosting-traffic.js'
 
-const SPEND_EVERY_MINUTES = 15
-const HEALTH_EVERY_MINUTES = 5
-const TRAFFIC_EVERY_MINUTES = 5
+const PAST_DAY = /^can:\/\/usage\/[^/]+\/(\d{4}-\d\d-\d\d)\//
 const SITE_DAYS = 7
 const SITE_WEEKS = 2
 
@@ -39,6 +37,38 @@ export const cached_read = (read, interval_ms, now = Date.now) => {
       pending = Promise.resolve().then(read)
     }
     return pending
+  }
+}
+
+/**
+ * A store whose reads reach the sync service at most once per interval per
+ * path. A past day's usage page is final, so it is read once.
+ * @param {{ ls: (path: string) => Promise<string[]>, cat: (path: string) => Promise<Buffer> }} store
+ * @param {number} [interval_ms]
+ * @param {() => number} [now]
+ */
+export const quiet_store = (
+  store,
+  interval_ms = MS_PER_HOUR,
+  now = Date.now
+) => {
+  /** @type {Map<string, () => Promise<any>>} */
+  const reads = new Map()
+  const read = (kind, path) => {
+    const key = `${kind} ${path}`
+    const known = reads.get(key)
+    if (known) return known()
+    const day = PAST_DAY.exec(path)?.[1]
+    const today = new Date(now()).toISOString().slice(0, ISO_DATE)
+    const every = day && day < today ? Infinity : interval_ms
+    const fresh = cached_read(() => store[kind](path), every, now)
+    reads.set(key, fresh)
+    return fresh()
+  }
+  return {
+    ...store,
+    ls: path => read('ls', path),
+    cat: path => read('cat', path)
   }
 }
 
@@ -125,7 +155,7 @@ export const cloud_sources = ({
         for (const row of bill.rows) if (row.project) projects.add(row.project)
       return { exports }
     },
-    SPEND_EVERY_MINUTES * MS_PER_MINUTE,
+    MS_PER_HOUR,
     now
   )
   return {
@@ -140,7 +170,7 @@ export const cloud_sources = ({
         )
         return { inventories, checked: new Date(now()).toISOString() }
       },
-      MS_PER_MINUTE,
+      MS_PER_HOUR,
       now
     ),
     services: cached_read(
@@ -155,13 +185,13 @@ export const cloud_sources = ({
         )
         return { rows: rows.flat() }
       },
-      HEALTH_EVERY_MINUTES * MS_PER_MINUTE,
+      MS_PER_HOUR,
       now
     ),
     plans: cached_read(
       async () =>
         store ? (await import('./watch-traffic.js')).read_plans(store) : null,
-      HEALTH_EVERY_MINUTES * MS_PER_MINUTE,
+      MS_PER_HOUR,
       now
     ),
     traffic: cached_read(
@@ -179,7 +209,7 @@ export const cloud_sources = ({
         })
         return { ...summary, refresh: refreshed }
       },
-      TRAFFIC_EVERY_MINUTES * MS_PER_MINUTE,
+      MS_PER_HOUR,
       now
     )
   }

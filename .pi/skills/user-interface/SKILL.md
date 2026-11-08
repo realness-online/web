@@ -49,6 +49,31 @@ interfaces where detailed explanation is the product.
    reads as designed. Never add words to explain the gap. Prefer CSS that
    follows the limit - flex growth, `:has()`, container size - over script
    that measures it.
+7. **Name the result.** A control says what happens ("Send invoice",
+   "Delete 3 drafts"), not what it is ("Submit", "OK"). Rename it when the
+   effect changes.
+8. **Undo before confirmation.** A reversible action needs no dialog: do
+   it, then offer undo. Save confirmation for what cannot be undone, and
+   name what it costs.
+9. **An empty page names its action.** Before the first item exists, show
+   the way to make one. Never explain the product in the space the first
+   item will fill.
+10. **Work in flight looks like work.** Pending actions show where the
+    result will appear, and the result replaces that, not a banner far
+    away. A dead control says what unlocks it, in place; hiding the reason
+    reads as a bug.
+11. **Long content is the normal case.** A long name, a long list and a
+    crowded day each get a stated treatment: wrap, truncate with the full
+    value reachable, or scroll a region. Do not let the layout guess.
+12. **One name per thing.** The same object keeps one name across screens,
+    buttons and headings. A second word for it is a second concept to the
+    person reading.
+13. **Say where they are.** A page carries enough location to answer what
+    this is and what it belongs to, and a way back that does not rely on
+    the browser.
+14. **Validate after leaving a field.** Show an error once the field loses
+    focus or the form is sent, and clear it as soon as the input is valid.
+    Never mark a field invalid while it is being typed for the first time.
 
 ## Template tells
 
@@ -63,6 +88,20 @@ asks for it.
 - Content chopped into identical rounded cards with the same shadow.
 - A fade-and-slide-up entrance on every section.
 
+## Accessibility
+
+1. **Measure text against what sits behind it.** 4.5:1 for body text, 3:1
+   for large text and for a border or icon that carries meaning. Measure
+   the rendered pair, tinted surfaces and states included.
+2. **Every target reaches 24 by 24 CSS pixels.** Where the element cannot
+   grow, give its neighbours room instead.
+3. **Focus follows reading order.** Visible focus, keyboard reach for every
+   action, focus entering a dialog and returning on close, and closed
+   navigation out of the tab path.
+4. **Nothing hides behind a limit.** A sticky header must not cover the
+   focused control; content reflows at 320 pixels wide and survives text
+   at 200%.
+
 ## Review
 
 1. Remove the descriptive text - does the interface still work?
@@ -73,6 +112,14 @@ asks for it.
    every input, onboarding tooltips for simple flows, pages that explain
    before allowing interaction.
 6. Does any template tell appear without a reason in the content?
+7. Do control names predict the result, and can the risky one be undone?
+8. Is the empty state an action rather than an explanation?
+9. Does it work by keyboard, at 320 pixels wide, and at 200% text?
+10. Is pending visible where the result will land, and does a dead control
+    say what unlocks it?
+11. Does a long name, a crowded day and a long list each have a stated
+    treatment?
+12. Does one thing keep one name, and does the page say where it sits?
 
 ## Integration
 

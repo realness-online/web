@@ -75,6 +75,11 @@ it("a task's paths are its plan's Syncs, the plans folder, and the basics", asyn
     join(root, 'vault/Projects/bad.md'),
     '# Bad\n\n## Syncs\n\n- ../outside\n- .env\n'
   )
+  await mkdir(join(root, 'vault/Projects/Scouts'), { recursive: true })
+  await writeFile(
+    join(root, 'vault/Projects/Scouts/index.md'),
+    '# Scouts\n\n## Nodes\n\n| a |\n\n## Syncs\n\n- vault/Projects/Scouts\n\n## Notes\n\n- x\n'
+  )
   assert.deepEqual(await task_paths(root, 'realness'), [
     'work/demo',
     'bin',
@@ -87,7 +92,12 @@ it("a task's paths are its plan's Syncs, the plans folder, and the basics", asyn
     /cannot include: \.\.\/outside, \.env/
   )
   await assert.rejects(task_paths(root, '../secrets'), /file name/)
-  await assert.rejects(task_paths(root, 'missing'), /no plan missing\.md/)
+  await assert.rejects(task_paths(root, 'missing'), /no plan missing/)
+  assert.deepEqual(await task_paths(root, 'Scouts'), [
+    'vault/Projects/Scouts',
+    'vault/Projects',
+    ...TASK_BASICS
+  ])
 })
 
 it('a task VM gets only its paths, writes files and folders there, and cannot reach past them', async () => {

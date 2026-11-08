@@ -613,6 +613,24 @@ describe('App.vue', () => {
       mock_menu.value = true
       await wrapper.vm.$nextTick()
     })
+
+    it('marks the footer while a pinch zoom is in effect', async () => {
+      vi.stubGlobal('visualViewport', {
+        scale: 2.5,
+        offsetTop: 120,
+        height: 400,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn()
+      })
+      wrapper.vm.track_visible()
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('footer').attributes('data-pinched')).toBe('true')
+
+      globalThis.visualViewport.scale = 1
+      wrapper.vm.track_visible()
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('footer').attributes('data-pinched')).toBeUndefined()
+    })
   })
 
   describe('Status Classes', () => {

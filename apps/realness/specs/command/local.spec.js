@@ -65,6 +65,7 @@ it('one command works from another directory and leaves npm start as the harness
   )
   assert.equal(result.status, 0, result.stderr)
   const plan = JSON.parse(result.stdout)
+  assert.doesNotMatch(result.stdout, /sk-or-/)
   assert.deepEqual(
     plan.services.map(service => service.name),
     ['sign-in', 'sync', 'halo', 'proxy', 'workers', 'gate', 'frontend']
@@ -93,6 +94,17 @@ it('one command works from another directory and leaves npm start as the harness
     sync_dir()
   )
   assert.match(proxy.env.ORIGINS, /http:\/\/localhost:5173/)
+  assert.equal(
+    local_plan({}).services.find(service => service.name === 'proxy').env
+      .FREE_TOKENS_PER_DAY,
+    undefined
+  )
+  const own = local_plan({ OPENROUTER_API_KEY: ' sk-or-own \n' }).services.find(
+    service => service.name === 'proxy'
+  )
+  assert.equal(own.env.OPENROUTER_API_KEY, 'sk-or-own')
+  assert.equal(own.env.FREE_TOKENS_PER_DAY, 'Infinity')
+  assert.equal(own.env.FREE_TOKENS_PER_MONTH, 'Infinity')
   assert.doesNotMatch(proxy.env.ORIGINS, /realness\.local/)
   const gate = plan.services.find(service => service.name === 'gate')
   assert.deepEqual(gate.args.slice(-2), ['--environment', 'local'])

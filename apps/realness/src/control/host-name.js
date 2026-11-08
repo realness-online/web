@@ -175,11 +175,14 @@ const days_left = async (file, now = Date.now()) => {
 }
 
 /**
- * Get or renew the host's wildcard from Let's Encrypt by DNS-01.
- * @param {{ dns: ReturnType<typeof cloudflare>, host: string, email?: string, staging?: boolean, log?: (line: string) => void }} options
+ * Get or renew the host's wildcard from Let's Encrypt by DNS-01. `acme` is the
+ * `acme-client` module, handed in by a desktop caller: the actor runtime has
+ * no packages of its own.
+ * @param {{ acme: any, dns: ReturnType<typeof cloudflare>, host: string, email?: string, staging?: boolean, log?: (line: string) => void }} options
  * @returns {Promise<{ renewed: boolean, days_left: number }>}
  */
 const ensure_certificate = async ({
+  acme,
   dns,
   host,
   email,
@@ -189,7 +192,6 @@ const ensure_certificate = async ({
   const paths = cert_paths(host)
   const left = await days_left(paths.cert)
   if (left >= RENEW_DAYS) return { renewed: false, days_left: left }
-  const { default: acme } = await import('acme-client')
   mkdir_sync(paths.dir, { recursive: true, mode: 0o700 })
   if (!exists_sync(paths.account))
     write_file_sync(paths.account, await acme.crypto.createPrivateKey(), {
@@ -229,26 +231,30 @@ const ensure_certificate = async ({
 
 /**
  * One pass: records follow the address, then the certificate renews if due.
- * Without a token, says what is missing and changes nothing.
- * @param {{ env?: NodeJS.ProcessEnv, cert?: boolean, log?: (line: string) => void }} [options]
+ * Without a token, says what is missing and changes nothing. A certificate
+ * renews only where `acme` is handed in.
+ * @param {{ env?: NodeJS.ProcessEnv, cert?: boolean, acme?: any, log?: (line: string) => void }} [options]
  */
 export const keep_host_name = async ({
   env = process.env,
   cert = true,
+  acme = null,
   log = () => {}
 } = {}) => {
   const host = host_label(env)
   const address = lan_address()
   const dns = cloudflare(read_token())
   const records = await update_records({ dns, host, address })
-  const certificate = cert
-    ? await ensure_certificate({
-        dns,
-        host,
-        email: env.REALNESS_ACME_EMAIL,
-        staging: env.REALNESS_ACME_STAGING === '1',
-        log
-      })
-    : null
+  const certificate =
+    cert && acme
+      ? await ensure_certificate({
+          acme,
+          dns,
+          host,
+          email: env.REALNESS_ACME_EMAIL,
+          staging: env.REALNESS_ACME_STAGING === '1',
+          log
+        })
+      : null
   return { host, address, records, certificate, ...host_names(host) }
 }

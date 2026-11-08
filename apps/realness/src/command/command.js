@@ -20,7 +20,7 @@ import { fetch_skipped } from '#root/src/harness/light.js'
 import { fold_conflicts } from '#root/src/harness/fold.js'
 import { find_root, use_harness_state } from '#root/src/harness/harness.js'
 import { answer as git_answer } from '#root/src/harness/git-credential.js'
-import { MS_PER_MINUTE, MS_PER_SECOND } from '#root/lib/units.js'
+import { MS_PER_HOUR, MS_PER_SECOND } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- reads one file at a time to bound open files */
 
 const FILES_SYNC_WORDS = 4
@@ -298,26 +298,28 @@ const run_watch_command = async (
       'not_signed_in',
       'not signed in; run realness login'
     )
-  let interval_ms = MS_PER_MINUTE
+  let interval_ms = MS_PER_HOUR
   const named = []
   for (let at = 1; at < args.length; at++)
     if (args[at] === '--interval')
       interval_ms = Math.max(
         MS_PER_SECOND,
-        Number(args[++at]) * MS_PER_SECOND || MS_PER_MINUTE
+        Number(args[++at]) * MS_PER_SECOND || MS_PER_HOUR
       )
     else if (args[at] === '--person') named.push(args[++at])
 
   const { watch } = await import('./watch-loop.js')
   const { ledger } = await import('./watch-ledger.js')
-  const { cloud_sources } = await import('./watch-cloud.js')
+  const { cloud_sources, quiet_store } = await import('./watch-cloud.js')
   const { sync_traffic_cache } =
     await import('#root/tools/ops/hosting-traffic.js')
-  const store = client({
-    url: service_url ?? where.url,
-    phone: phone_of(token),
-    token: renewing_token(where, token)
-  })
+  const store = quiet_store(
+    client({
+      url: service_url ?? where.url,
+      phone: phone_of(token),
+      token: renewing_token(where, token)
+    })
+  )
   const controller = new AbortController()
   process.once('SIGINT', () => controller.abort())
   process.once('SIGTERM', () => controller.abort())

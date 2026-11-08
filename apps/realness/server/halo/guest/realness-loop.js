@@ -4,13 +4,16 @@
  *
  *     realness loop "<goal>"        start a loop; prints its id
  *     realness loop report <id>     its status, runs, stop reason, log tail
+ *     realness loop scout <name>    run a plan's scout once, in a loop actor
+ *     realness loop scouts          run every active scout, each in its own loop
  *
  * Asks the halo through the door. The halo bounds depth, fan-out, runs, and
  * time; see vault/Projects/realness.md.
  */
 import { ask_ok, exit } from './realness-door.js'
 
-const USAGE = 'usage: realness loop "<goal>" | realness loop report <id>'
+const USAGE =
+  'usage: realness loop "<goal>" | realness loop report <id> | realness loop scout <name> | realness loop scouts'
 const args = process.argv.slice(2)
 
 if (args.length === 2 && args[0] === 'report') {
@@ -20,7 +23,30 @@ if (args.length === 2 && args[0] === 'report') {
     { timeout_ms: 30_000 }
   )
   process.stdout.write(`${JSON.stringify(reply.loop, null, 2)}\n`)
-} else if (args.length === 1 && !['-h', '--help', 'report'].includes(args[0])) {
+} else if (args.length === 2 && args[0] === 'scout') {
+  const reply = await ask_ok(
+    'realness loop',
+    { op: 'scout', scout: args[1] },
+    { timeout_ms: 30_000 }
+  )
+  process.stdout.write(
+    `scout ${reply.scout} started; its finds land in Finds/\n`
+  )
+} else if (args.length === 1 && args[0] === 'scouts') {
+  const reply = await ask_ok(
+    'realness loop',
+    { op: 'scouts' },
+    { timeout_ms: 30_000 }
+  )
+  process.stdout.write(
+    reply.scouts.length
+      ? `scouts started: ${reply.scouts.join(', ')}\n`
+      : 'no active scouts\n'
+  )
+} else if (
+  args.length === 1 &&
+  !['-h', '--help', 'report', 'scout', 'scouts'].includes(args[0])
+) {
   const reply = await ask_ok(
     'realness loop',
     { op: 'loop', goal: args[0] },

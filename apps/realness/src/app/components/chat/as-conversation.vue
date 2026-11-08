@@ -136,14 +136,6 @@
     send()
   }
 
-  /** Leaving the field sends what it holds, as a thought saves. */
-  const on_leave = event => {
-    if (event.currentTarget.form?.contains(event.relatedTarget)) return
-    if (!props.chat.draft.value?.trim()) return
-    recalled.value = null
-    send()
-  }
-
   defineExpose({ focus: () => input.value?.focus(), to_end, input })
 </script>
 
@@ -201,7 +193,6 @@
       aria-label="Message"
       :disabled="chat.taken?.value || undefined"
       required
-      @focusout="on_leave"
       @keydown="on_key" />
   </form>
 </template>

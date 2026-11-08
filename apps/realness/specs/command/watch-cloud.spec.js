@@ -3,6 +3,7 @@ import { it } from 'node:test'
 import {
   cached_read,
   cloud_sources,
+  quiet_store,
   sync_traffic
 } from '../../src/command/watch-cloud.js'
 import { month_cost } from '#root/src/control/cloud-reads.js'
@@ -14,6 +15,36 @@ import {
 } from '#root/tools/ops/hosting-traffic.js'
 import { rm } from 'node:fs/promises'
 import { health_snapshot } from '../../src/command/watch-health.js'
+
+it('the watch store reads a path once per interval and a past usage day once', async () => {
+  const calls = []
+  const store = {
+    ls: async path => {
+      calls.push(path)
+      return []
+    },
+    cat: async path => {
+      calls.push(path)
+      return Buffer.from('')
+    }
+  }
+  let time = Date.parse('2026-11-07T12:00:00Z')
+  const quiet = quiet_store(store, 1000, () => time)
+  const past = 'can://usage/+1/2026-11-06/'
+  const today = 'can://usage/+1/2026-11-07/'
+  await quiet.ls(past)
+  await quiet.ls(today)
+  await quiet.cat('can://halos/a/status.html')
+  await quiet.ls(past)
+  await quiet.ls(today)
+  await quiet.cat('can://halos/a/status.html')
+  assert.equal(calls.length, 3)
+  time += 1000
+  await quiet.ls(past)
+  await quiet.ls(today)
+  await quiet.cat('can://halos/a/status.html')
+  assert.deepEqual(calls.slice(3), [today, 'can://halos/a/status.html'])
+})
 
 const billing = 'realness-development.billing.export'
 const cloud = {
@@ -100,7 +131,7 @@ it('cache shares in-flight reads, including failures, until expiry', async () =>
   assert.equal(reads, 2)
 })
 
-it('sources deduplicate exports and query billing more slowly than services', async () => {
+it('sources deduplicate exports and read billing and services once an hour', async () => {
   let time = now.getTime()
   const calls = []
   const sources = cloud_sources({
@@ -119,13 +150,14 @@ it('sources deduplicate exports and query billing more slowly than services', as
   assert.equal((await sources.billing()).exports.length, 1)
   await sources.services()
   await sources.billing()
-  time += 5 * 60_000
+  time += 59 * 60_000
   await sources.services()
   await sources.billing()
-  assert.deepEqual(calls, ['bq', 'gcloud', 'gcloud'])
-  time += 10 * 60_000
+  assert.deepEqual(calls, ['bq', 'gcloud'])
+  time += 60_000
+  await sources.services()
   await sources.billing()
-  assert.equal(calls.filter(command => command === 'bq').length, 2)
+  assert.deepEqual(calls, ['bq', 'gcloud', 'gcloud', 'bq'])
 })
 
 it('inventory reads real machine power state and retained disks across billed projects', async () => {

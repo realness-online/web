@@ -2,6 +2,7 @@
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 export PI_CODING_AGENT_DIR="$root/.pi/agent"
 export TMPDIR="$root/artifacts/pi"
+export PI_CACHE_RETENTION="${PI_CACHE_RETENTION:-long}"
 mkdir -p "$TMPDIR"
 actor=0
 if [[ "${1:-}" == "--actor" ]]; then actor=1; shift; fi

@@ -208,12 +208,19 @@
   const allow_drop = event => event.preventDefault()
 
   /** Track the visual viewport so fixed chrome follows it on touch browsers,
-   * where the layout viewport shifts as the toolbar collapses. */
+   * where the layout viewport shifts as the toolbar collapses. A pinch zoom
+   * shrinks that viewport without moving the layout one, so pinched is kept
+   * apart and the bottom footer steps out of the way. */
+  const PINCHED_SCALE = 1.01
+  const pinched = ref(false)
   const track_visible = () => {
     const visible = globalThis.visualViewport
     if (!visible) return
+    pinched.value = (visible.scale ?? 1) > PINCHED_SCALE
     const root = document.documentElement
-    const gap = root.clientHeight - (visible.offsetTop + visible.height)
+    const gap = pinched.value
+      ? 0
+      : root.clientHeight - (visible.offsetTop + visible.height)
     root.style.setProperty(
       '--visible-bottom',
       `${Math.max(0, Math.round(gap))}px`
@@ -288,6 +295,7 @@
   <footer
     v-if="!route.meta.session && !route.meta.note"
     :data-menu="menu ? 'true' : 'false'"
+    :data-pinched="pinched ? 'true' : undefined"
     :data-footer-visible="footer_visible ? 'true' : 'false'">
     <nav aria-label="App actions">
       <label
@@ -533,6 +541,11 @@
       &[data-footer-visible='false'] > nav {
         transform: translateY(100%);
         opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      &[data-pinched='true'] {
         visibility: hidden;
         pointer-events: none;
       }

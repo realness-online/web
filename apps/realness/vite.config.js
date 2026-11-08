@@ -40,7 +40,7 @@ const durable_bundle = () => ({
   apply: 'serve',
   resolveId(source) {
     if (source === '/pi-durable.browser.js')
-      return frontend_out('pi-durable.browser.js')
+      return { id: source, external: true }
   },
   configureServer(server) {
     server.middlewares.use((request, response, next) => {

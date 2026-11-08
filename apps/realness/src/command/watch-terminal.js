@@ -147,12 +147,22 @@ const age = seconds => {
 
 const usd = value => `$${Number(value).toFixed(2)}`
 
-/** Wrap long paths instead of hiding their ends. */
+/** Wrap long text after a space where one fits, splitting a word otherwise. */
 const wrap = (text, width) => {
-  const rows = []
+  const size = Math.max(1, width)
   const chars = [...String(text)]
-  for (let at = 0; at < chars.length; at += Math.max(1, width))
-    rows.push(chars.slice(at, at + Math.max(1, width)).join(''))
+  const rows = []
+  let at = 0
+  while (at < chars.length) {
+    let cut = Math.min(chars.length, at + size)
+    if (cut < chars.length) {
+      let space = cut
+      while (space > at && chars[space - 1] !== ' ') space--
+      if (space > at) cut = space
+    }
+    rows.push(chars.slice(at, cut).join(''))
+    at = cut
+  }
   return rows.length ? rows : ['']
 }
 
@@ -510,6 +520,10 @@ const detail_rows = (panels, width, on, now) => {
   )
   section('AGENT REPORT HISTORY', error_lines(panels.halos, on).concat(reports))
   section(
+    'LOCAL HALO',
+    error_lines(panels.local, on).concat(local_detail_lines(panels.local, on))
+  )
+  section(
     'MODEL CALLS - today, all people',
     model_lines(panels.model, on, width)
   )
@@ -532,6 +546,18 @@ const detail_rows = (panels, width, on, now) => {
   return rows
 }
 
+/** The local halo's own detail: where it listens, its seed, and its actors. */
+const local_detail_lines = (local, on) => {
+  if (local?.status !== 'ok') return ['not read']
+  return [
+    `${local.url ? new URL(local.url).host : 'not in this checkout'}  ${paint(local.state, local.state, on)}`,
+    local.seed ? `seed ${local.seed}` : 'seed unknown',
+    local.actors
+      ? `${local.actors.running ?? 0} running, ${local.actors.idle ?? 0} idle, ${local.actors.stopped ?? 0} stopped`
+      : 'no actors yet'
+  ]
+}
+
 /** One line per cloud, sync, halo, and cost problem. */
 /** One line per cloud service, naming each one that is not ready. */
 const cloud_service_lines = (panels, on) => {
@@ -551,6 +577,15 @@ const cloud_service_lines = (panels, on) => {
 
 const status_lines = (panels, width, on) => {
   const status = [...cloud_service_lines(panels, on)]
+  const local = local_of(panels)
+  if (local)
+    status.push(
+      paint(
+        `Local halo: ${local.state} at ${new URL(local.url).host}`,
+        local.state,
+        on
+      )
+    )
   if (panels.sync?.status === 'failed')
     status.push(paint('Sync read failed - see details', 'failed', on))
   else
@@ -748,8 +783,8 @@ const usage = (label, free, total, on, bar = true) => {
   return `${label} ${bar ? `${paint(meter(share, HALO_METER), state, on)} ` : ''}${(used / GB).toFixed(used / GB < ONE_DECIMAL_BELOW ? 1 : 0)}/${(total / GB).toFixed(0)}G`
 }
 
-/** Two rows per halo: actors and report age, then memory and disk meters. */
-const halo_panel_lines = (halos, on, width = DEFAULT_WIDTH) => {
+/** Two rows per synced halo record: actors and age, then memory and disk. */
+export const halo_panel_lines = (halos, on, width = DEFAULT_WIDTH) => {
   if (halos?.status === 'failed') return [paint('UNAVAILABLE', 'failed', on)]
   const rows = halos?.rows ?? []
   if (!rows.length) return ['no halo records']
@@ -765,7 +800,7 @@ const halo_panel_lines = (halos, on, width = DEFAULT_WIDTH) => {
         actors
           ? [
               `${name}  ${actors.running} run ${actors.idle} idle ${actors.stopped} stop  ${seen}`,
-              `${name}  ${actors.running}/${actors.idle}/${actors.stopped}  ${seen}`,
+              `${name}  ${actors.running} run ${actors.idle} idle ${actors.stopped} stop`,
               `${name} ${seen}`
             ]
           : [`${name}  ${row.state}  ${seen}`, `${name} ${seen}`],
@@ -782,6 +817,32 @@ const halo_panel_lines = (halos, on, width = DEFAULT_WIDTH) => {
         : paint(row.detail ?? '', 'unknown', on)
     ]
   })
+}
+
+/** The local halo's reading, when the check reached it. */
+const local_of = panels => (panels.local?.status === 'ok' ? panels.local : null)
+
+/**
+ * The local halo's own panel: state and address, then actors and its seed.
+ * @param {any} local
+ * @param {boolean} on
+ * @param {number} [width]
+ */
+export const local_panel_lines = (local, on = true, width = DEFAULT_WIDTH) => {
+  if (!local)
+    return [
+      paint('UNAVAILABLE', 'failed', on),
+      'the local halo did not answer; run npm run local'
+    ]
+  const host = local.url ? new URL(local.url).host : 'not in this checkout'
+  const state = paint(local.state, local.state, on)
+  const actors = local.actors
+    ? `${local.actors.running ?? 0} run ${local.actors.idle ?? 0} idle ${local.actors.stopped ?? 0} stop`
+    : 'no actors yet'
+  return [
+    fit_first([`${state}  ${host}`, `${state}`], width),
+    fit_first([`${actors}  seed ${local.seed ?? 'unknown'}`, actors], width)
+  ]
 }
 
 /** Month-to-date total extended at the daily average to the month's end. */
@@ -802,6 +863,8 @@ const tokens = count => {
 
 const LIGHT = '●'
 const MIN_TILE = 3
+/** The local halo needs two rows; more than four is unused room. */
+const LOCAL_MAX_HEIGHT = 4
 const PERCENT = 100
 const STALE_TRAFFIC_MS = 86_400_000
 const SERVICES = ['sync', 'proxy', 'gate']
@@ -842,8 +905,10 @@ const LIGHT_WORDS = {
 
 /** One colored light per piece; without color each light names its state. */
 export const health_lights = (panels, on = true, width = DEFAULT_WIDTH) => {
+  const local = local_of(panels)
   const lights = [
     ['halo', halo_light(panels.halos)],
+    ...(local ? [['local', local.state]] : []),
     ...SERVICES.map(name => [name, service_light(panels.services, name)])
   ]
   const lit = lights.map(
@@ -1015,6 +1080,7 @@ const right_natural = (panels, on) =>
     ...health_lights(panels, on, Infinity),
     ...machine_panel(panels.resources, on).lines,
     ...halo_panel_lines(panels.halos, on, Infinity),
+    ...local_panel_lines(local_of(panels), on, Infinity),
     model_panel_lines(panels.cost, Infinity, on)[0]
   ]) + BOX_SIDES
 
@@ -1144,9 +1210,20 @@ const dashboard = (panels, width, height, on, now) => {
   ]
   const lights = health_lights(panels, on, right - BOX_SIDES)
   const halo_lines = halo_panel_lines(panels.halos, on, right - BOX_SIDES)
+  const local = local_of(panels)
+  const local_lines = local
+    ? local_panel_lines(local, on, right - BOX_SIDES)
+    : []
   const model_height = model_lines.length + 2
   const health_height = lights.length + 2
-  const fixed = health_height + model_height
+  const local_fits =
+    local_lines.length > 0 &&
+    height - health_height - model_height - MIN_TILE * 2 >=
+      local_lines.length + 2
+  const local_height = local_fits
+    ? Math.min(local_lines.length + 2, LOCAL_MAX_HEIGHT)
+    : 0
+  const fixed = health_height + model_height + local_height
   const machines_rows = Math.min(
     machines_height,
     Math.max(MIN_TILE, height - fixed - MIN_TILE)
@@ -1170,6 +1247,7 @@ const dashboard = (panels, width, height, on, now) => {
       halos_rows,
       on
     ),
+    ...(local_fits ? tile('LOCAL', local_lines, right, local_height, on) : []),
     ...tile('MODEL SPEND', model_lines, right, model_height, on),
     ...(status_rows
       ? tile(

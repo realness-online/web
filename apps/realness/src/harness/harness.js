@@ -7,7 +7,7 @@
  */
 import { execFile as exec_file } from 'node:child_process'
 import { existsSync as exists_sync } from 'node:fs'
-import { mkdir, readFile as read_file, readdir, stat } from 'node:fs/promises'
+import { mkdir, readFile as read_file, stat } from 'node:fs/promises'
 import {
   basename,
   dirname,
@@ -26,7 +26,8 @@ import { ignorer, parse_ignore } from '#root/src/files/ignore.js'
 import { skipped } from '#root/src/files/skip.js'
 import { state_path, harness_root } from './settings.js'
 import { state_dir } from '#root/src/files/client.js'
-import { plans_path, runtime_sessions_path } from './settings.js'
+import { plans_ignore, plans_path, runtime_sessions_path } from './settings.js'
+import { plan_files } from './plan-files.js'
 import { STARTER_DIRECTORY, STARTER_FILE } from '#root/src/files/starter.js'
 import { read_skipped } from './light.js'
 import { describe_repos } from './repos.js'
@@ -226,24 +227,33 @@ export const harness_exclude = async (root, state = state_dir(root)) => {
   }
 }
 
+/** The plan a person named, by folder name or file, or an error. */
+const named_plan = (plans, name, folder) => {
+  const wanted = String(name)
+    .replace(/\/+$/, '')
+    .replace(/\/index\.md$/, '')
+    .replace(/\.md$/, '')
+  const plan = plans.find(
+    found => found.name === wanted || found.file === wanted
+  )
+  if (!plan) throw new Error(`no plan named ${name} in ${folder}`)
+  return plan
+}
+
 /** Every plan's Syncs paths, named plans only when given. */
 export const plan_syncs = async (root, names = []) => {
   const folder = join(root, plans_path(root))
-  const files = names.length
-    ? names.map(name => (name.endsWith('.md') ? name : `${name}.md`))
-    : (
-        await readdir(folder).catch(error => {
-          if (error.code === 'ENOENT') return []
-          throw error
-        })
-      ).filter(name => name.endsWith('.md'))
+  const all = exists_sync(folder) ? plan_files(folder, plans_ignore(root)) : []
+  const plans = names.length
+    ? names.map(name => named_plan(all, name, folder))
+    : all
   const found = new Map()
   const excluded = new Set()
-  for (const file of files) {
-    const text = await read_file(join(folder, file), 'utf8')
+  for (const plan of plans) {
+    const text = await read_file(join(folder, plan.file), 'utf8')
     for (const path of syncs_of(text)) {
       const key = normalize(path).replace(/\/$/, '')
-      if (!found.has(key)) found.set(key, file)
+      if (!found.has(key)) found.set(key, plan.file)
     }
     for (const path of sync_exclusions_of(text)) excluded.add(path)
   }

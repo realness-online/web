@@ -29,12 +29,43 @@ const record = (uid, kind, intersecting, index) => ({
 })
 
 describe('poster-instances election', () => {
-  it('elects nobody when no instance is visible', () => {
+  it('elects nobody when only off-screen posters are mounted', () => {
+    const records = [record(1, 'poster', false, 0)]
+    expect(elect_canonical(records)).toBe(null)
+  })
+
+  it('elects an avatar even while it is off screen', () => {
     const records = [
       record(1, 'poster', false, 0),
       record(2, 'avatar', false, 1)
     ]
-    expect(elect_canonical(records)).toBe(null)
+    expect(elect_canonical(records)?.uid).toBe(2)
+  })
+
+  it('keeps an elected avatar as canonical once it leaves the viewport', () => {
+    const records = [
+      { ...record(1, 'avatar', false, 0), elected: true },
+      record(2, 'avatar', true, 1)
+    ]
+    expect(elect_canonical(records)?.uid).toBe(1)
+    records[1].intersecting = false
+    expect(elect_canonical(records)?.uid).toBe(1)
+  })
+
+  it('does not keep an elected poster off screen', () => {
+    const records = [
+      { ...record(1, 'poster', false, 0), elected: true },
+      record(2, 'avatar', true, 1)
+    ]
+    expect(elect_canonical(records)?.uid).toBe(2)
+  })
+
+  it('lets a visible poster take over from an elected avatar', () => {
+    const records = [
+      { ...record(1, 'avatar', true, 0), elected: true },
+      record(2, 'poster', true, 1)
+    ]
+    expect(elect_canonical(records)?.uid).toBe(2)
   })
 
   it('elects the only visible instance', () => {
@@ -178,6 +209,34 @@ describe('use_poster_instance lifecycle', () => {
     const b = mount_instance({ intersecting: true, kind: 'avatar' })
     expect(a.result.am_canonical.value).toBe(true)
     expect(b.result.am_canonical.value).toBe(false)
+  })
+
+  it('keeps an avatar canonical after it scrolls out of view', async () => {
+    const a = mount_instance({ intersecting: true, kind: 'avatar' })
+    const b = mount_instance({ intersecting: true, kind: 'avatar' })
+    await nextTick()
+    expect(a.result.am_canonical.value).toBe(true)
+
+    a.is_intersecting.value = false
+    await nextTick()
+    expect(a.result.am_canonical.value).toBe(true)
+    expect(b.result.am_canonical.value).toBe(false)
+  })
+
+  it('hands an avatar the canonical back when a poster leaves view', async () => {
+    const avatar = mount_instance({ intersecting: true, kind: 'avatar' })
+    const poster = mount_instance({ intersecting: false, kind: 'poster' })
+    await nextTick()
+    expect(avatar.result.am_canonical.value).toBe(true)
+
+    poster.is_intersecting.value = true
+    await nextTick()
+    expect(poster.result.am_canonical.value).toBe(true)
+    expect(avatar.result.am_canonical.value).toBe(false)
+
+    poster.is_intersecting.value = false
+    await nextTick()
+    expect(avatar.result.am_canonical.value).toBe(true)
   })
 
   it('references immediately when requestAnimationFrame is unavailable', async () => {

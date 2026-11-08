@@ -9,6 +9,8 @@ import {
   read_lifecycle
 } from '#root/src/sync/halo-lifecycle.js'
 import { read_status } from '#root/src/sync/halo-status.js'
+import { HTTP } from '#root/lib/http.js'
+import { local_plan, local_request } from './local-stack.js'
 /* eslint-disable no-await-in-loop -- reads are paced one at a time to keep the sync service quiet */
 
 export { read_status }
@@ -49,75 +51,106 @@ const attempt = async (read, at = () => new Date().toISOString()) => {
   }
 }
 
-/** Halo records: running, sleeping, or quiet, from the stored record's age. */
-const halos_panel = async ({ store, now = Date.now(), quiet_ms }) => {
-  const listed = await store.ls('can://halos/')
-  const names = listed
-    .filter(name => name.endsWith('/'))
-    .map(name => name.slice(0, -1))
-  const rows = []
-  for (const name of names) {
-    const page = await store
-      .cat(`can://halos/${name}/status.html`)
-      .catch(() => null)
-    const values = page ? (read_status(page.toString('utf8')).halo ?? {}) : null
-    const life = await store
-      .cat(`can://halos/${name}/lifecycle.html`)
-      .catch(() => null)
-    const planned = lifecycle_state({
-      lifecycle: life ? read_lifecycle(life.toString('utf8')) : null,
-      checked: values?.checked ?? '',
-      now,
-      quiet_ms
-    })
-    const at = Date.parse(values?.checked ?? '')
-    if (
-      planned === 'parked' ||
-      planned === 'starting' ||
-      planned === 'stopping'
-    ) {
+/** Halo records: running, sleeping, or quiet, from the stored record's age. */ const halos_panel =
+  async ({ store, now = Date.now(), quiet_ms }) => {
+    const listed = await store.ls('can://halos/')
+    const names = listed
+      .filter(name => name.endsWith('/'))
+      .map(name => name.slice(0, -1))
+    const rows = []
+    for (const name of names) {
+      const page = await store
+        .cat(`can://halos/${name}/status.html`)
+        .catch(() => null)
+      const values = page
+        ? (read_status(page.toString('utf8')).halo ?? {})
+        : null
+      const life = await store
+        .cat(`can://halos/${name}/lifecycle.html`)
+        .catch(() => null)
+      const planned = lifecycle_state({
+        lifecycle: life ? read_lifecycle(life.toString('utf8')) : null,
+        checked: values?.checked ?? '',
+        now,
+        quiet_ms
+      })
+      const at = Date.parse(values?.checked ?? '')
+      if (
+        planned === 'parked' ||
+        planned === 'starting' ||
+        planned === 'stopping'
+      ) {
+        rows.push({
+          name,
+          state: planned,
+          age_s: Number.isFinite(at)
+            ? Math.max(0, Math.floor((now - at) / MS_PER_SECOND))
+            : null,
+          detail: null
+        })
+        continue
+      }
+      if (!values || !Number.isFinite(at)) {
+        rows.push({
+          name,
+          state: 'quiet',
+          age_s: null,
+          detail: values ? 'unreadable timestamp' : 'no record'
+        })
+        continue
+      }
+      const age_s = Math.max(0, Math.floor((now - at) / MS_PER_SECOND))
+      const quiet = age_s * MS_PER_SECOND > quiet_ms
+      const running = number(values.actors_running) ?? 0
+      const idle = number(values.actors_idle) ?? 0
+      const stopped = number(values.actors_stopped) ?? 0
+      const state = halo_state({ quiet, running, idle, stopped })
       rows.push({
         name,
-        state: planned,
-        age_s: Number.isFinite(at)
-          ? Math.max(0, Math.floor((now - at) / MS_PER_SECOND))
-          : null,
-        detail: null
+        state,
+        age_s,
+        checked: values.checked,
+        actors: { running, idle, stopped },
+        loops: number(values.loops_running),
+        apps: number(values.apps),
+        mem_free: number(values.mem_available) ?? number(values.mem_free),
+        mem_total: number(values.mem_total),
+        volume_free: number(values.volume_free),
+        volume_size: number(values.volume_size),
+        detail: quiet ? `quiet for ${age_s}s` : null,
+        errors: values.resource_error ? [values.resource_error] : []
       })
-      continue
     }
-    if (!values || !Number.isFinite(at)) {
-      rows.push({
-        name,
-        state: 'quiet',
-        age_s: null,
-        detail: values ? 'unreadable timestamp' : 'no record'
-      })
-      continue
-    }
-    const age_s = Math.max(0, Math.floor((now - at) / MS_PER_SECOND))
-    const quiet = age_s * MS_PER_SECOND > quiet_ms
-    const running = number(values.actors_running) ?? 0
-    const idle = number(values.actors_idle) ?? 0
-    const stopped = number(values.actors_stopped) ?? 0
-    const state = halo_state({ quiet, running, idle, stopped })
-    rows.push({
-      name,
-      state,
-      age_s,
-      checked: values.checked,
-      actors: { running, idle, stopped },
-      loops: number(values.loops_running),
-      apps: number(values.apps),
-      mem_free: number(values.mem_available) ?? number(values.mem_free),
-      mem_total: number(values.mem_total),
-      volume_free: number(values.volume_free),
-      volume_size: number(values.volume_size),
-      detail: quiet ? `quiet for ${age_s}s` : null,
-      errors: values.resource_error ? [values.resource_error] : []
-    })
+    return { rows, names }
   }
-  return { rows, names }
+
+/**
+ * The local halo, asked over HTTP rather than read from a synced report, so a
+ * halo that `npm run local` started shows even when it publishes nothing.
+ * @param {(url: string) => Promise<{ status?: number, body: string } | null>} [request]
+ */
+export const local_halo_panel = async (request = local_request) => {
+  const service = local_plan().services.find(service => service.name === 'halo')
+  const url = service?.url
+  if (!url) return { url: null, state: 'unknown', actors: null }
+  const reply = await request(url).catch(() => null)
+  if (!reply) return { url, state: 'sleeping', actors: null }
+  if (reply.status !== HTTP.OK)
+    throw new Error(`the local halo answered ${reply.status}`)
+  const health = JSON.parse(reply.body)
+  const counts = health.actors ?? {}
+  const state = halo_state({
+    quiet: false,
+    running: counts.running ?? 0,
+    idle: counts.idle ?? 0,
+    stopped: counts.stopped ?? 0
+  })
+  return {
+    url,
+    state: state === 'unknown' ? 'sleeping' : state,
+    actors: counts,
+    seed: health.seed?.built ? 'built' : 'unbuilt'
+  }
 }
 
 /** Model spend: the operator's own ledger, read the way the proxy writes it. */
@@ -245,6 +278,7 @@ const publish_panel = async ({ store, people }) => {
  * @param {number} [options.now]
  * @param {() => string} [options.at]
  * @param {{ billing: () => Promise<object>, services: () => Promise<object>, resources?: () => Promise<object>, traffic?: () => Promise<object>, plans?: () => Promise<object> } | null} [options.cloud]
+ * @param {(url: string) => Promise<{ status?: number, body: string } | null>} [options.request]
  */
 export const health_snapshot = async ({
   store,
@@ -256,12 +290,14 @@ export const health_snapshot = async ({
   quiet_ms = QUIET_AFTER_MS,
   now = Date.now(),
   at = () => new Date(now).toISOString(),
-  cloud = null
+  cloud = null,
+  request = local_request
 }) => {
   const who = who_from(token)
   const people = people_for(who, named)
   const panels = /** @type {Record<string, unknown>} */ ({
     halos: await attempt(() => halos_panel({ store, now, quiet_ms }), at),
+    local: await attempt(() => local_halo_panel(request), at),
     cost: await attempt(() => cost_panel({ store, people, ledger, named }), at),
     sync: await attempt(() => sync_panel({ store, who, records }), at),
     sign_on: await attempt(() => sign_on_panel({ who, service }), at),

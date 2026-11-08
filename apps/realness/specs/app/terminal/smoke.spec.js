@@ -90,41 +90,25 @@ const get = (term, data) => {
 }
 
 const format_plain = term => {
-  const opts_size = layout.types.GhosttyFormatterTerminalOptions.size
-  const opts = ex.ghostty_wasm_alloc(opts_size)
-  bytes().fill(0, opts, opts + opts_size)
-  const opts_view = view(opts, opts_size)
-  set_field(opts_view, 'GhosttyFormatterTerminalOptions', 'size', opts_size)
-  set_field(opts_view, 'GhosttyFormatterTerminalOptions', 'emit', PLAIN)
-  set_field(opts_view, 'GhosttyFormatterTerminalOptions', 'unwrap', 0)
-  set_field(opts_view, 'GhosttyFormatterTerminalOptions', 'trim', 1)
-  const extra = layout.types.GhosttyFormatterTerminalOptions.fields.extra.offset
-  set_field(
-    opts_view,
-    'GhosttyFormatterTerminalExtra',
-    'size',
-    layout.types.GhosttyFormatterTerminalExtra.size
-  )
-  const extra_size = layout.types.GhosttyFormatterTerminalExtra.size
-  const extra_field = layout.types.GhosttyFormatterTerminalExtra.fields.size
-  const screen_field = layout.types.GhosttyFormatterTerminalExtra.fields.screen
-  opts_view.setUint32(extra + extra_field.offset, extra_size, true)
-  opts_view.setUint32(
-    extra +
-      screen_field.offset +
-      layout.types.GhosttyFormatterScreenExtra.fields.size.offset,
-    layout.types.GhosttyFormatterScreenExtra.size,
-    true
-  )
-
   const fmt_slot = ex.ghostty_wasm_alloc_opaque()
   check(
-    ex.ghostty_formatter_terminal_new(0, fmt_slot, term, opts),
+    ex.ghostty_formatter_terminal_new(0, fmt_slot, term),
     'formatter_terminal_new'
   )
-  ex.ghostty_wasm_free(opts, opts_size)
   const fmt = ex.ghostty_wasm_take_opaque(fmt_slot)
   ex.ghostty_wasm_free_opaque(fmt_slot)
+
+  const emit = ex.ghostty_wasm_alloc(4)
+  view(emit, 4).setUint32(0, PLAIN, true)
+  check(
+    ex.ghostty_formatter_set(
+      fmt,
+      layout.types.GhosttyFormatterOption.values.EMIT,
+      emit
+    ),
+    'formatter_set emit'
+  )
+  ex.ghostty_wasm_free(emit, 4)
 
   const out_slot = ex.ghostty_wasm_alloc_opaque()
   const len_ptr = ex.ghostty_wasm_alloc(layout.abi.usize_size)

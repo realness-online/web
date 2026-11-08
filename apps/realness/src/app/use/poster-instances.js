@@ -11,15 +11,15 @@ import { poster_dom_id } from '@/use/poster-dom-reference'
 
 /**
  * Page-wide registry of every live rendering of a poster, keyed by itemid. Lets the N
- * instances of one poster elect a single visible canonical that owns the shared
- * `<defs>`/`<symbol>`s; the rest reference it with `<use href="#…">`. When none are visible
- * there is no canonical and every instance renders normally.
+ * instances of one poster elect a single canonical that owns the shared `<defs>`/`<symbol>`s;
+ * the rest reference it with `<use href="#…">`.
  *
  * @typedef {object} PosterInstanceRecord
  * @property {number} uid
  * @property {'poster' | 'avatar'} kind
  * @property {import('vue').MaybeRefOrGetter<Element | null | undefined>} el
  * @property {boolean} intersecting
+ * @property {boolean} [elected]
  */
 
 /** @type {Map<string, PosterInstanceRecord[]>} */
@@ -44,19 +44,33 @@ const precedes = (a, b) => {
 }
 
 /**
- * Pure election: among visible instances prefer a full poster over an avatar/row, then take
- * the earliest in document order. No visible instance → no canonical.
- * @param {Array<{ uid: number, kind: string, el: Element | null | undefined, intersecting: boolean }>} records
+ * Pure election. A visible full poster wins so the copy on screen owns the animation; an
+ * elected avatar stays elected off screen, so scrolling a feed never demotes the one copy
+ * every other row references (a demotion remounts the row and drops the frame); otherwise
+ * the earliest visible instance, and failing that the earliest mounted avatar.
+ * @param {Array<{ uid: number, kind: string, el: Element | null | undefined, intersecting: boolean, elected?: boolean }>} records
  * @returns {{ uid: number } | null}
  */
 export const elect_canonical = records => {
-  const visible = records.filter(record => record.intersecting)
-  if (visible.length === 0) return null
-  const posters = visible.filter(record => record.kind === 'poster')
-  const pool = posters.length > 0 ? posters : visible
-  return pool.reduce((best, record) =>
-    precedes(record.el, best.el) ? record : best
+  const earliest = pool =>
+    pool.reduce((best, record) =>
+      precedes(record.el, best.el) ? record : best
+    )
+  const posters = records.filter(
+    record => record.kind === 'poster' && record.intersecting
   )
+  if (posters.length > 0) return earliest(posters)
+  const incumbent = records.find(
+    record =>
+      record.elected && (record.intersecting || record.kind === 'avatar')
+  )
+  if (incumbent) return incumbent
+  const visible = records.filter(record => record.intersecting)
+  const pool = visible.length
+    ? visible
+    : records.filter(record => record.kind === 'avatar')
+  if (pool.length === 0) return null
+  return earliest(pool)
 }
 
 /**
@@ -98,7 +112,8 @@ export const use_poster_instance = (itemid, { el, intersecting, kind }) => {
     uid,
     kind,
     el,
-    intersecting: !!to_value(intersecting)
+    intersecting: !!to_value(intersecting),
+    elected: false
   })
   list.push(record)
 
@@ -109,23 +124,33 @@ export const use_poster_instance = (itemid, { el, intersecting, kind }) => {
     }
   )
 
-  const canonical = computed(() =>
-    elect_canonical(
-      list.map(other => ({
-        uid: other.uid,
-        kind: other.kind,
-        el: to_value(other.el),
-        intersecting: other.intersecting
-      }))
-    )
+  const canonical_uid = computed(
+    () =>
+      elect_canonical(
+        list.map(other => ({
+          uid: other.uid,
+          kind: other.kind,
+          el: to_value(other.el),
+          intersecting: other.intersecting,
+          elected: other.elected
+        }))
+      )?.uid ?? null
   )
 
-  const am_canonical = computed(() => canonical.value?.uid === uid)
+  watch(
+    canonical_uid,
+    winner => {
+      for (const other of list) other.elected = other.uid === winner
+    },
+    { immediate: true }
+  )
+
+  const am_canonical = computed(() => canonical_uid.value === uid)
 
   const is_referenced = computed(() => am_canonical.value && list.length > 1)
 
   const want_reference = computed(
-    () => !!canonical.value && canonical.value.uid !== uid
+    () => canonical_uid.value !== null && canonical_uid.value !== uid
   )
   const use_reference = ref(want_reference.value)
   watch(want_reference, want => {

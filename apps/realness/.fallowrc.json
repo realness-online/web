@@ -190,12 +190,15 @@
     }
   ],
   "regression": {
-    "baseline": {
+    "baseline":     {
       "analysisIdentity": {
         "mode": "type-aware",
         "semantic_schema_version": 2,
-        "capabilities": ["symbol-use", "api-surface"],
-        "project_config_hash": "sha256:329afdebfd962d6be91c2544abafcd270a8f83d4c040a9ad0066524e2b911ee3",
+        "capabilities": [
+          "symbol-use",
+          "api-surface"
+        ],
+        "project_config_hash": "sha256:49968f4a47145f8c58ef574b04ea624c3fe5daf9f72b073ed8698784dba1e653",
         "backend_family": "typescript-go",
         "completeness": "partial"
       },
@@ -223,18 +226,21 @@
     }
   },
   "regression": {
-    "baseline": {
+    "baseline":     {
       "analysisIdentity": {
         "mode": "type-aware",
         "semantic_schema_version": 2,
-        "capabilities": ["symbol-use", "api-surface"],
-        "project_config_hash": "sha256:26ea5374ca1f95a50e06ef19889dfc5475008753cf1bbf346fb4ec80d35d7849",
+        "capabilities": [
+          "symbol-use",
+          "api-surface"
+        ],
+        "project_config_hash": "sha256:140d16b0417bbee2c86ffcadc1044a6c6e7ed2aab9f977c0dce4f23f259fde57",
         "backend_family": "typescript-go",
         "completeness": "partial"
       },
-      "totalIssues": 0,
+      "totalIssues": 5,
       "unusedFiles": 0,
-      "unusedExports": 0,
+      "unusedExports": 5,
       "unusedTypes": 0,
       "unusedDependencies": 0,
       "unusedDevDependencies": 0,

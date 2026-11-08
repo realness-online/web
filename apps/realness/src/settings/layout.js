@@ -17,7 +17,8 @@ export const source_folders = {
   proxy: 'src/proxy',
   telemetry: 'src/telemetry',
   gate: 'src/gate',
-  app: 'src/app'
+  app: 'src/app',
+  scouts: 'src/scouts'
 }
 
 /** Absolute paths for checkout tools; runtime modules never need a harness root. */
@@ -60,6 +61,7 @@ export const actor_folders = () => [
   source_folders.proxy,
   'tools/cli/bin',
   source_folders.control,
+  source_folders.scouts,
   'tools/control',
   'tools/ops'
 ]

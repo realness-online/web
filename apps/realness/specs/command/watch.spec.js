@@ -3,6 +3,7 @@ import { it } from 'node:test'
 import { PassThrough as pass_through } from 'node:stream'
 import {
   health_snapshot,
+  local_halo_panel,
   newest_session,
   people_for,
   read_status,
@@ -22,6 +23,9 @@ import {
   cost_bars,
   frame,
   halo_lines,
+  health_lights,
+  local_panel_lines,
+  halo_panel_lines,
   interval_for,
   panel,
   resource_lines,
@@ -746,6 +750,15 @@ it('sync shows a summary and wraps full problem paths', () => {
   assert.equal(lines.slice(1).join(''), `Cannot read: ${folder}`)
 })
 
+it('wraps a path with no spaces to break at, keeping every character', () => {
+  const folder = 'harness/vault/Areas/one-unbroken-name-with-no-spaces/'
+  const lines = sync_lines([{ folder, listing: false }], false, 12)
+  const body = lines.slice(1)
+  assert.ok(body.length > 1)
+  for (const line of body) assert.ok([...line].length <= 12, line)
+  assert.equal(body.join(''), `Cannot read: ${folder}`)
+})
+
 it('scrolling exposes all rows instead of silently hiding sections', () => {
   const snapshot = {
     panels: {
@@ -1112,4 +1125,169 @@ it('free-model calls show as model use, though they spend no allowance', async (
   const text = frame({ snapshot, on: false, width: 100, height: 60 })
   assert.doesNotMatch(text, /no model use/)
   assert.match(text, /month 1 call 44k/)
+})
+
+it('the local halo is asked over HTTP, not read from a synced report', async () => {
+  const asked = []
+  const running = await local_halo_panel(async url => {
+    asked.push(url)
+    return {
+      status: 200,
+      body: JSON.stringify({
+        ok: true,
+        seed: { built: true },
+        actors: { running: 2, idle: 1, stopped: 3 }
+      })
+    }
+  })
+  assert.match(asked[0], /\/v1\/health$/)
+  assert.equal(running.state, 'running')
+  assert.equal(running.seed, 'built')
+  assert.deepEqual(running.actors, { running: 2, idle: 1, stopped: 3 })
+})
+
+it('a local halo that does not answer is asleep, not an error', async () => {
+  const asleep = await local_halo_panel(async () => null)
+  assert.equal(asleep.state, 'sleeping')
+  assert.equal(asleep.actors, null)
+})
+
+it('a port answering something else is an error worth reading', async () => {
+  await assert.rejects(
+    local_halo_panel(async () => ({ status: 404, body: 'nope' })),
+    /the local halo answered 404/
+  )
+})
+
+it('the snapshot carries the local halo beside the synced ones', async () => {
+  const snapshot = await health_snapshot({
+    store: store({}),
+    token: claims(),
+    ledger: ledger({
+      day: { tokens: 0, cost: 0 },
+      month: { tokens: 0, cost: 0 }
+    }),
+    request: async () => ({
+      status: 200,
+      body: JSON.stringify({
+        ok: true,
+        actors: { running: 0, idle: 1, stopped: 0 }
+      })
+    })
+  })
+  assert.equal(snapshot.panels.local.status, 'ok')
+  assert.equal(snapshot.panels.local.state, 'idle')
+})
+
+it('the local halo gets its own light, panel, and status line', () => {
+  const panels = {
+    halos: { status: 'ok', rows: [] },
+    local: {
+      status: 'ok',
+      url: 'http://127.0.0.1:18080/v1/health',
+      state: 'running',
+      seed: 'built',
+      actors: { running: 1, idle: 0, stopped: 2 }
+    },
+    services: { status: 'ok', rows: [] }
+  }
+  const lights = health_lights(panels, false, 200).join(' ')
+  assert.match(lights, /local ok/)
+  const lines = local_panel_lines(panels.local, false, 200)
+  assert.equal(lines.length, 2)
+  assert.match(lines[0], /running {2}127\.0\.0\.1:18080/)
+  assert.match(lines[1], /1 run 0 idle 2 stop {2}seed built/)
+})
+
+it('a narrow halo panel keeps the actor labels and drops the age', () => {
+  const halos = {
+    status: 'ok',
+    rows: [
+      {
+        name: 'realness-1',
+        state: 'ok',
+        age_s: 9,
+        actors: { running: 0, idle: 0, stopped: 1 }
+      }
+    ]
+  }
+  assert.match(
+    halo_panel_lines(halos, false, 200)[0],
+    /0 run 0 idle 1 stop {2}9s ago/
+  )
+  assert.equal(
+    halo_panel_lines(halos, false, 35)[0],
+    'realness-1  0 run 0 idle 1 stop'
+  )
+})
+
+it('a local halo that was not read says how to start one', () => {
+  const lines = local_panel_lines(null, false, 200)
+  assert.match(lines[0], /UNAVAILABLE/)
+  assert.match(lines[1], /run npm run local/)
+})
+
+it('with no local halo reading, nothing local is drawn', () => {
+  const panels = {
+    halos: { status: 'ok', rows: [] },
+    services: { status: 'ok', rows: [] }
+  }
+  assert.doesNotMatch(health_lights(panels, false, 200).join(' '), /local/)
+})
+
+it('a tall dashboard gives the local halo its own tile between halos and spend', () => {
+  const panels = {
+    halos: { status: 'ok', rows: [] },
+    services: { status: 'ok', rows: [] },
+    local: {
+      status: 'ok',
+      url: 'http://127.0.0.1:18080/v1/health',
+      state: 'running',
+      seed: 'built',
+      actors: { running: 1, idle: 0, stopped: 2 }
+    }
+  }
+  const text = frame({
+    snapshot: { panels },
+    width: 120,
+    height: 40,
+    on: false
+  })
+  assert.match(text, /LOCAL/)
+  assert.match(text, /127\.0\.0\.1:18080/)
+  assert.match(text, /Local halo: running at 127\.0\.0\.1:18080/)
+})
+
+it('a short dashboard drops the local tile rather than overflow the window', () => {
+  const panels = {
+    halos: { status: 'ok', rows: [] },
+    services: { status: 'ok', rows: [] },
+    local: {
+      status: 'ok',
+      url: 'http://127.0.0.1:18080/v1/health',
+      state: 'running',
+      seed: null,
+      actors: null
+    }
+  }
+  const text = frame({
+    snapshot: { panels },
+    width: 120,
+    height: 18,
+    on: false
+  })
+  assert.doesNotMatch(text, /LOCAL/)
+  assert.match(local_panel_lines(panels.local, false, 200)[1], /no actors yet/)
+  const no_seed = {
+    status: 'ok',
+    state: 'idle',
+    url: null,
+    seed: null,
+    actors: { running: 0, idle: 1, stopped: 0 }
+  }
+  assert.match(local_panel_lines(no_seed, false, 200)[1], /seed unknown/)
+  assert.match(
+    local_panel_lines(no_seed, false, 200)[0],
+    /not in this checkout/
+  )
 })
