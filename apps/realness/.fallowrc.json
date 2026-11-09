@@ -187,6 +187,38 @@
     {
       "file": "src/control/halo-lima.js",
       "exports": ["up", "down", "restart"]
+    },
+    {
+      "file": "src/scouts/probe.js",
+      "exports": ["PROBE_SITE", "PROBE_URL"]
+    },
+    {
+      "file": "src/halo/loops.js",
+      "exports": ["stop_argv"]
+    },
+    {
+      "file": "src/scouts/halo.js",
+      "exports": ["scout_goal"]
+    },
+    {
+      "file": "src/scouts/mail.js",
+      "exports": ["run_section"]
+    },
+    {
+      "file": "src/scouts/nodes.js",
+      "exports": ["plan_file"]
+    },
+    {
+      "file": "src/scouts/runs.js",
+      "exports": ["runs_page"]
+    },
+    {
+      "file": "src/scouts/scout.js",
+      "exports": ["scout_item"]
+    },
+    {
+      "file": "src/scouts/seen.js",
+      "exports": ["finds_page"]
     }
   ],
   "regression": {
@@ -198,13 +230,13 @@
           "symbol-use",
           "api-surface"
         ],
-        "project_config_hash": "sha256:49968f4a47145f8c58ef574b04ea624c3fe5daf9f72b073ed8698784dba1e653",
+        "project_config_hash": "sha256:140d16b0417bbee2c86ffcadc1044a6c6e7ed2aab9f977c0dce4f23f259fde57",
         "backend_family": "typescript-go",
         "completeness": "partial"
       },
-      "totalIssues": 0,
+      "totalIssues": 5,
       "unusedFiles": 0,
-      "unusedExports": 0,
+      "unusedExports": 5,
       "unusedTypes": 0,
       "unusedDependencies": 0,
       "unusedDevDependencies": 0,
@@ -234,13 +266,13 @@
           "symbol-use",
           "api-surface"
         ],
-        "project_config_hash": "sha256:140d16b0417bbee2c86ffcadc1044a6c6e7ed2aab9f977c0dce4f23f259fde57",
+        "project_config_hash": "sha256:d44fa48159ac4f44b065e99ccf80f616fee2f7151f27e5d05dc8fa0dcab6e1bc",
         "backend_family": "typescript-go",
         "completeness": "partial"
       },
-      "totalIssues": 5,
+      "totalIssues": 0,
       "unusedFiles": 0,
-      "unusedExports": 5,
+      "unusedExports": 0,
       "unusedTypes": 0,
       "unusedDependencies": 0,
       "unusedDevDependencies": 0,

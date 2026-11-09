@@ -143,11 +143,13 @@ rm -f "$IMG.new"
 truncate -s "$SIZE" "$IMG.new"
 mkfs.ext4 -q -F -d "$TREE" "$IMG.new"
 e2fsck -fn "$IMG.new" > /dev/null && mv "$IMG.new" "$IMG"
+cleanup_mounts
+rm -rf "$TREE"
 
 fi
 
 cleanup_mounts
 log "done"
-du -sh "$TREE" | sed 's/^/  tree: /'
+[ -d "$TREE" ] && du -sh "$TREE" | sed 's/^/  tree: /' || true
 [ -e "$IMG" ] && ls -lh "$IMG" | awk '{print "  image: " $5 " " $9}' || true
 echo "  log $RUN/build.log"

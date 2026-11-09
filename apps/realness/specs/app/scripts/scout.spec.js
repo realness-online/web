@@ -1,10 +1,10 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
-import { item_html } from '../../../lib/items.js'
 import { scout_page } from '../../../src/scouts/scout.js'
-import { main, spawn_pi } from '../../../scripts/scout.js'
+import { main } from '../../../scripts/scout.js'
 
 const SCOUTS = 'vault/Projects/Scouts'
 
@@ -91,65 +91,15 @@ describe('scout script', () => {
     await rm(root, { recursive: true })
   })
 
-  it('reports a run that wrote its leads', async () => {
+  it('writes nothing into the vault, even with no --dry-run given', async () => {
     const { root, vault } = await scratch()
     const out = lines()
-    const err = lines()
-    const spawn_stub = async (brief, run_dir) => {
-      await writeFile(
-        join(run_dir, 'finds.html'),
-        item_html(
-          'find',
-          {
-            itemid: '/+1/finds/1',
-            url: 'https://example.com',
-            status: 'passed'
-          },
-          { links: ['url'] }
-        )
-      )
-      return 0
-    }
-    await main({ args: ['Realness'], vault, spawn_pi: spawn_stub, out, err })
-    expect(out.written.join('')).toMatch(/Scouts\/Realness: 0 new, 0 seen/)
-    expect(err.written.length).toBe(0)
-    await rm(root, { recursive: true })
-  })
-
-  it('prints why pi failed, and where its log is', async () => {
-    const { root, vault } = await scratch()
-    const out = lines()
-    const err = lines()
-    await main({
-      args: ['Realness'],
-      vault,
-      spawn_pi: async () => 1,
-      out,
-      err
-    })
-    expect(err.written.join('')).toMatch(/the run failed: pi exited 1; read /)
-    await rm(root, { recursive: true })
-  })
-
-  it('a pi that cannot start says so in the run log', async () => {
-    const { root } = await scratch()
-    const run = join(root, 'run')
-    await mkdir(run, { recursive: true })
-    const code = await spawn_pi('# brief', run, 1, join(root, 'no-pi-here'))
-    expect(code).toBe(127)
-    expect(await readFile(join(run, 'pi.log'), 'utf8')).toMatch(
-      /did not start: spawn /
-    )
-    await rm(root, { recursive: true })
-  })
-
-  it('a pi that exits failing keeps its exit code', async () => {
-    const { root } = await scratch()
-    const run = join(root, 'run')
-    await mkdir(run, { recursive: true })
-    const fake = join(root, 'fake-pi')
-    await writeFile(fake, '#!/bin/sh\nexit 3\n', { mode: 0o755 })
-    expect(await spawn_pi('# brief', run, 1, fake)).toBe(3)
+    await main({ args: ['Realness'], vault, out })
+    expect(out.written.length).toBe(1)
+    const folder = join(root, SCOUTS, 'Realness')
+    expect(existsSync(join(folder, 'Runs'))).toBe(false)
+    expect(existsSync(join(folder, 'Leads'))).toBe(false)
+    expect(existsSync(join(folder, 'Finds'))).toBe(false)
     await rm(root, { recursive: true })
   })
 
@@ -161,17 +111,6 @@ describe('scout script', () => {
     ).rejects.toThrow(
       /two scouts are named Realness: Scouts\/Bedroom\/Realness, Scouts\/Realness/
     )
-    await rm(root, { recursive: true })
-  })
-
-  it('a pi that answers normally keeps its log beside the run', async () => {
-    const { root } = await scratch()
-    const run = join(root, 'run')
-    await mkdir(run, { recursive: true })
-    const fake = join(root, 'fake-pi')
-    await writeFile(fake, '#!/bin/sh\necho answered\n', { mode: 0o755 })
-    expect(await spawn_pi('# brief', run, 1, fake)).toBe(0)
-    expect(await readFile(join(run, 'pi.log'), 'utf8')).toContain('answered')
     await rm(root, { recursive: true })
   })
 })

@@ -49,7 +49,7 @@ export const shell = (site, title, body, meta = {}, watch = false) => {
     <link rel="apple-touch-icon" href="/192.png">${site.pwa ? '\n    <link rel="manifest" href="/manifest.webmanifest">\n    <script type="module" src="/scripts/pwa.js"></script>' : ''}
     <script type="module" src="/scripts/detect.js"></script>
     <script type="module" src="/scripts/reveal.js"></script>
-    ${plans ? '<script type="module" src="/scripts/plan-covers.js"></script>' : ''}
+    ${plans ? '<script type="module" src="/scripts/plan-covers.js"></script>\n    <script type="module" src="/scripts/plan-filter.js"></script>' : ''}
     <link rel="stylesheet" href="/scripts/diagrams.css">
     <script type="module" src="/scripts/diagrams.js"></script>
     ${watch ? '<script type="module" src="/scripts/live-reload.js"></script>' : ''}

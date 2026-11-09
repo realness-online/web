@@ -834,6 +834,7 @@ const route = async (
  * @param {object} [options]
  * @param {(record: import('./actors.js').Actor) => Promise<{ socket: object, lines: object }>} [options.connect_chat]
  * @param {((record: import('./actors.js').Actor) => Promise<object>) | null} [options.limits]
+ * @param {number} [options.idle_ms] how long a quiet chat watch may hold its stream
  */
 export const make_server = (
   store,
@@ -842,10 +843,11 @@ export const make_server = (
   loops = null,
   {
     connect_chat = record => vsock.connect(record.vsock_path, CHAT_PORT),
-    limits = null
+    limits = null,
+    idle_ms = undefined
   } = {}
 ) => {
-  const chat = chat_handlers({ store, connect: connect_chat, limits })
+  const chat = chat_handlers({ store, connect: connect_chat, limits, idle_ms })
   const startup = startup_handlers({ store })
   const server = create_server(async (request, response) => {
     try {

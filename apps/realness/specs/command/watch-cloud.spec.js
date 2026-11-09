@@ -131,7 +131,7 @@ it('cache shares in-flight reads, including failures, until expiry', async () =>
   assert.equal(reads, 2)
 })
 
-it('sources deduplicate exports and read billing and services once an hour', async () => {
+it('keeps the paid billing query hourly, health at five minutes, and inventory at one', async () => {
   let time = now.getTime()
   const calls = []
   const sources = cloud_sources({
@@ -147,17 +147,27 @@ it('sources deduplicate exports and read billing and services once an hour', asy
       }
     }
   })
+  const counted = () => [
+    calls.filter(command => command === 'bq').length,
+    calls.filter(command => command === 'gcloud').length
+  ]
+  const read = async () => {
+    await sources.billing()
+    await sources.services()
+    await sources.resources()
+  }
+  await read()
   assert.equal((await sources.billing()).exports.length, 1)
-  await sources.services()
-  await sources.billing()
-  time += 59 * 60_000
-  await sources.services()
-  await sources.billing()
-  assert.deepEqual(calls, ['bq', 'gcloud'])
+  assert.deepEqual(counted(), [1, 5])
   time += 60_000
-  await sources.services()
-  await sources.billing()
-  assert.deepEqual(calls, ['bq', 'gcloud', 'gcloud', 'bq'])
+  await read()
+  assert.deepEqual(counted(), [1, 9])
+  time += 4 * 60_000
+  await read()
+  assert.deepEqual(counted(), [1, 14])
+  time += 55 * 60_000
+  await read()
+  assert.deepEqual(counted(), [2, 19])
 })
 
 it('inventory reads real machine power state and retained disks across billed projects', async () => {

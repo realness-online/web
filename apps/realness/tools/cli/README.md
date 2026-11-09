@@ -36,8 +36,8 @@ Model spend is the signed-in person's ledger, shown separately from cloud costs.
 
 Billing is delayed. The screen shows the export's latest usage timestamp and
 query time in details, and a short billing age in the main view. Billing queries
-are cached for 15 minutes, service status for five minutes, and machine/disk
-inventory for one minute. Query failures display unavailable; missing ledgers do not become zero.
+are cached for an hour, service status for five minutes, and machine/disk
+inventory for one minute. The billing export is the only paid read. Query failures display unavailable; missing ledgers do not become zero.
 
 Use `d` for details, `j` and `k` to scroll, `r` to refresh, and `u`, `m`, `h` for 15-second,
 60-second, and five-minute local refresh intervals. Refresh does not bypass the

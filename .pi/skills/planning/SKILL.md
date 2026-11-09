@@ -272,7 +272,12 @@ Present the rendered DAG and order. Ask one question: is the shape right? Only
 topology counts - added, removed, or merged nodes, wrong dependencies, wrong
 order. Wait for the go before executing. Revise and re-present if wrong. Record
 the outcome as the Decisions line `- Gate 1: approved`, not a gate log. That
-line turns on prewalk: active nodes then run on the cheap model.
+line arms prewalk, which hands a plan to the cheap model once one of its nodes
+has finished with a passing spec. Until then the frontier model works the
+nodes, which sets the pattern. After that, active nodes run cheap, in this
+session and in later ones, because the passing spec is read back from
+`artifacts/prewalk/escalations.html`. A failed spec, or an error from the
+cheap model, returns that node to the frontier model.
 
 ### 5. Worker - execute
 
@@ -340,6 +345,7 @@ Summarize what ran. Ask whether it meets the plan. Done is your call. Record
 ## Plan conventions
 
 - `plans/` is the project list; vault/Projects holds files (active), Areas holds parked.
+- Archive/Projects holds finished plans; move a plan there after Gate 2.
 - Projects builds, Areas learns; one subject can be both. Todo's is ignored.
 - One plan file per plan, no companions; normally one work DAG per plan.
 - Check companion plans before scoping nodes.

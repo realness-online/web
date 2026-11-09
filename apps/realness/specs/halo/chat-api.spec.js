@@ -15,8 +15,12 @@ const auth = phone => ({
 
 const start = async ({
   limits = async record => ({ warn: null, owner: record.owner }),
-  receipt = { type: 'done', resumed: true, handover_id: 'handover-1' }
+  receipt = { type: 'done', resumed: true, handover_id: 'handover-1' },
+  idle_ms = undefined,
+  pulse = 0
 } = {}) => {
+  /** @type {ReturnType<typeof setInterval>[]} */
+  const pulses = []
   const seen = {
     hellos: [],
     wakes: 0,
@@ -61,10 +65,20 @@ const start = async ({
             `${JSON.stringify({ type: 'done', text: `ran ${hello.command}` })}\n`
           )
           this.push(null)
-        } else this.push('{"type":"history","turns":[]}\n')
+        } else {
+          this.push('{"type":"history","turns":[]}\n')
+          if (pulse)
+            pulses.push(
+              setInterval(
+                () => this.push('{"type":"delta","text":"."}\n'),
+                pulse
+              )
+            )
+        }
         done()
       },
       destroy(error, done) {
+        for (const timer of pulses) clearInterval(timer)
         seen.closed++
         done(error)
       }
@@ -73,7 +87,8 @@ const start = async ({
   }
   const server = make_server(store, null, undefined, null, {
     connect_chat,
-    limits
+    limits,
+    idle_ms
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
   return {
@@ -168,6 +183,41 @@ it('events stream until the reader leaves; limit answers JSON', async () => {
       headers: auth(alice)
     })
     assert.deepEqual(await limit.json(), { warn: null, owner: alice })
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})
+
+it('a quiet watch is closed after the idle window, so the halo can park', async () => {
+  const { server, seen, at } = await start({ idle_ms: 60 })
+  try {
+    const events = await fetch(`${at}/a-alice0000000/chat/events`, {
+      headers: auth(alice),
+      signal: AbortSignal.timeout(2000)
+    })
+    assert.match(await events.text(), /history/)
+    assert.equal(seen.closed, 1)
+    assert.deepEqual(seen.work, [], 'watching is not work')
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})
+
+it('a watch that keeps talking outlives the idle window', async () => {
+  const { server, seen, at } = await start({ idle_ms: 80, pulse: 10 })
+  const controller = new AbortController()
+  try {
+    const events = await fetch(`${at}/a-alice0000000/chat/events`, {
+      headers: auth(alice),
+      signal: controller.signal
+    })
+    const reader = events.body.getReader()
+    await reader.read()
+    await new Promise(done => setTimeout(done, 200))
+    assert.equal(seen.closed, 0)
+    controller.abort()
   } finally {
     server.closeAllConnections()
     server.close()

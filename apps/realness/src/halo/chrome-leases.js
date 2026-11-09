@@ -1,5 +1,6 @@
 import { run } from './syscalls.js'
 import { DEVTOOLS_PORT } from './chrome-pool.js'
+import { devtools_cookies, site_of } from './cookie-jar.js'
 import { logger } from './log.js'
 import { MS_PER_MINUTE } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- leases return one at a time so each copy is freed before the next */
@@ -94,6 +95,8 @@ const iptables_firewall = {
  * @property {string} address
  * @property {string} devtools
  * @property {number} expires
+ * @property {string} [site] the cookie jar this lease keeps, when it keeps one
+ * @property {string} [owner] whose jar it is
  */
 
 export class ChromeLeases {
@@ -107,6 +110,11 @@ export class ChromeLeases {
   now
   /** @type {{ begin_work: (id: string, key: string) => void, end_work: (id: string, key: string) => void } | null} */
   work
+  /** @type {{ load: (owner: string, site: string) => Promise<import('./cookie-jar.js').Cookie[]>, save: (owner: string, site: string, cookies: import('./cookie-jar.js').Cookie[]) => Promise<unknown> } | null} */
+  jars
+  /** @type {{ get: (address: string) => Promise<import('./cookie-jar.js').Cookie[]>, set: (address: string, cookies: import('./cookie-jar.js').Cookie[]) => Promise<unknown> }} */
+  cookies
+
   /**
    * A `{ ready: null }` placeholder while the pool restores, then the lease.
    * @type {Map<string, Lease | { ready: null }>}
@@ -115,9 +123,10 @@ export class ChromeLeases {
 
   /**
    * pool: restore() and destroy(n). firewall: open/close(actor_ip, copy_ip).
-   * work: holds the actor busy while it holds a copy.
+   * work: holds the actor busy while it holds a copy. jars: a site's saved
+   * cookies, loaded into the copy and saved again when the copy goes back.
    * @param {ChromeLeases['pool'] | import('./chrome-pool.js').ChromePool} pool
-   * @param {{ firewall?: ChromeLeases['firewall'], minutes?: number, now?: () => number, work?: ChromeLeases['work'] }} [options]
+   * @param {{ firewall?: ChromeLeases['firewall'], minutes?: number, now?: () => number, work?: ChromeLeases['work'], jars?: ChromeLeases['jars'], cookies?: ChromeLeases['cookies'] }} [options]
    */
   constructor(
     pool,
@@ -125,15 +134,23 @@ export class ChromeLeases {
       firewall = iptables_firewall,
       minutes = LEASE_MINUTES,
       now = () => Date.now(),
-      work = null
+      work = null,
+      jars = null,
+      cookies = devtools_cookies
     } = {}
   ) {
-    Object.assign(this, { pool, firewall, minutes, now, work })
+    Object.assign(this, { pool, firewall, minutes, now, work, jars, cookies })
     this.leases = new Map()
   }
 
-  /** A fresh copy for this actor; an actor holds at most one, and leasing again replaces it. */
-  async lease(actor_id, actor_ip) {
+  /**
+   * A fresh copy for this actor; an actor holds at most one, and leasing again
+   * replaces it. A `site` and the actor's `owner` load that site's jar first.
+   * @param {string} actor_id
+   * @param {string} actor_ip
+   * @param {{ site?: string | null, owner?: string | null }} [options]
+   */
+  async lease(actor_id, actor_ip, { site = null, owner = null } = {}) {
     if (this.leases.has(actor_id)) await this.give_back(actor_id)
     const pending = { ready: null }
     this.leases.set(actor_id, pending)
@@ -156,6 +173,15 @@ export class ChromeLeases {
       throw new Error('lease was returned before it was ready')
     }
     this.firewall.open(actor_ip, copy.address)
+    if (site && this.jars) {
+      if (!owner) throw new Error("a cookie jar needs the actor's owner")
+      lease.site = site_of(site)
+      lease.owner = owner
+      await this.cookies.set(
+        copy.devtools,
+        await this.jars.load(owner, lease.site)
+      )
+    }
     this.leases.set(actor_id, lease)
     this.work?.begin_work(actor_id, 'browser')
     LOG.info(
@@ -174,6 +200,12 @@ export class ChromeLeases {
     this.work?.end_work(actor_id, 'browser')
     if (!('n' in lease)) return true
     if (lease.n === null || lease.n === undefined) return true
+    if (lease.site && lease.owner && this.jars)
+      await this.jars.save(
+        lease.owner,
+        lease.site,
+        await this.cookies.get(lease.devtools).catch(() => [])
+      )
     this.firewall.close(lease.actor_ip, lease.address)
     await this.pool.destroy(lease.n)
     LOG.info(`${actor_id} returned chrome copy ${lease.n}`)

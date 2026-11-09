@@ -327,6 +327,11 @@ const stage_app = async ({
   site.selected_pages = pages.map(
     page => `/${page.path.replace(/index\.html$/, '')}`
   )
+  site.areas = Object.fromEntries(
+    sources
+      .filter(source => source.area)
+      .map(source => [source.slug, source.area])
+  )
   await write_file(
     join(output, 'site.json'),
     `${JSON.stringify(site, null, 2)}\n`

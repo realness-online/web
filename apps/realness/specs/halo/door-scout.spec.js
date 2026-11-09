@@ -32,6 +32,37 @@ const add_scout = (vault, name, status) => {
   writeFileSync(join(folder, 'Sources.md'), '# sources\n')
 }
 
+it('the scout timer wakes the box and starts only the scouts with budget left', async () => {
+  const root = mkdtempSync(out_path('door-timer-'))
+  const vault = join(root, 'vault')
+  add_scout(vault, 'Realness', 'active')
+  const owner = '+14155550123'
+  const box = { id: 'a-2', owner, state: 'stopped' }
+  const woken = []
+  const store = {
+    host_vault: { owner, path: vault },
+    list: () => [box, { id: 'L-1', owner, state: 'running' }],
+    ensure_running: async id => {
+      woken.push(id)
+      box.state = 'running'
+      return box
+    },
+    get: () => box
+  }
+  const door = new Door(store)
+  door.loops = {
+    loops: { 'L-1': { parent: box.id, depth: 1 } },
+    start: async () => ({ id: 'L-2', depth: 1 })
+  }
+  try {
+    assert.deepEqual(await door.run_due_scouts(), ['Scouts/Realness'])
+    assert.deepEqual(woken, [box.id])
+    assert.deepEqual(await door.run_due_scouts(), [])
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
 it('the door starts each active scout as a one-shot loop on the owner halo', async () => {
   const root = mkdtempSync(out_path('door-scout-'))
   const vault = join(root, 'vault')
@@ -48,7 +79,12 @@ it('the door starts each active scout as a one-shot loop on the owner halo', asy
     host_vault: { owner: record.owner, path: vault }
   }
   const started = []
+  store.free_bytes = () => 10 * 1024 ** 3
   const door = new Door(store)
+  door.chrome = {
+    reap: async () => [],
+    pool: { restore: async () => ({ n: 1 }), destroy: async () => {} }
+  }
   door.loops = {
     loops: {},
     start: async (parent, goal, options) => {
@@ -89,7 +125,8 @@ it('the door starts each active scout as a one-shot loop on the owner halo', asy
     )
     assert.deepEqual(started[0].options, {
       once: true,
-      deadline_ms: 30 * 60_000
+      deadline_ms: 30 * 60_000,
+      session_dir: `${started[0].goal.match(/Read (\S+)\/goal\.md/)[1]}/sessions`
     })
     store.host_vault = { owner: '+14155559999', path: vault }
     const elsewhere = await send({ op: 'scouts' })

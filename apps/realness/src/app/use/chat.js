@@ -24,6 +24,9 @@ import {
 } from '@/utils/chat-context'
 
 const RECONNECT_MS = 2000
+/** A stream that keeps failing backs off, so a dead tab cannot poll forever. */
+const RECONNECT_MAX_MS = 60_000
+const GONE = 404
 const START_TIMEOUT_MS = 60_000
 const STARTUP_EVENT_LIMIT = 100
 const PI_NOT_READY = 'Pi is not running in the terminal'
@@ -243,6 +246,14 @@ const create_startup_status = (status, set_working, get_startup_id) => {
       problem = ''
       set_starting(false)
     },
+    /** The halo closed the stream on purpose; wait for the next message. */
+    sleep() {
+      finish?.('cancelled')
+      finish = null
+      started = null
+      if (status.value === 'Starting...') status.value = ''
+      set_starting(false)
+    },
     stop() {
       finish?.('cancelled')
       finish = null
@@ -420,38 +431,21 @@ const create_message_preparer =
     return null
   }
 
-export const use_chat = (
+/**
+ * The chat watch: history, then one live stream per actor. A stream the halo
+ * closes on purpose waits for the user; only a failure reconnects, with backoff.
+ * @param {{ actor: import('vue').Ref<string | null>, messages: import('vue').Ref<Array<object>>, working: import('vue').Ref<boolean>, status: import('vue').Ref<string>, on_change: () => void, startup: ReturnType<typeof create_startup_status>, waiting_state: ReturnType<typeof make_waiting>, apply: (record: any, streaming: any) => any }} options
+ */
+const make_watch = ({
   actor,
-  {
-    on_change = () => {},
-    get_context = () => null,
-    set_working = () => {},
-    get_startup_id = () => null
-  } = {}
-) => {
-  const messages = ref(
-    /** @type {Array<{sender: string, text: string, context?: {path: string, title: string, text?: string}}>} */ ([])
-  )
-  const draft = ref('')
-  const status = ref('')
-  const working = ref(false)
-  const taken = ref(false)
-  const stop_owner = watch_owner(value => {
-    taken.value = value
-  })
-  const stop_following = follow(history => {
-    messages.value = to_view(history)
-    on_change()
-  })
-  const startup = create_startup_status(status, set_working, get_startup_id)
-  const waiting_state = make_waiting({
-    actor,
-    draft,
-    status,
-    messages,
-    working,
-    open_watch: () => (in_flight ? undefined : watch())
-  })
+  messages,
+  working,
+  status,
+  on_change,
+  startup,
+  waiting_state,
+  apply
+}) => {
   let in_flight = false
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   let watch_timer = undefined
@@ -459,15 +453,7 @@ export const use_chat = (
   /** @type {AbortController | null} */
   let watching = null
   let stopped = false
-
-  const apply = make_record_handler({
-    actor,
-    messages,
-    working,
-    status,
-    startup,
-    waiting_state
-  })
+  let reconnects = 0
 
   const watch = async (target = null) => {
     if (stopped) return
@@ -493,11 +479,13 @@ export const use_chat = (
     startup.begin()
     watching = new AbortController()
     let reply = null
+    let failed = false
     in_flight = true
     try {
       const records = await watch_chat(current_user.value, actor_id, {
         signal: watching.signal
       })
+      reconnects = 0
       for await (const record of records) {
         if (stopped || generation !== watch_generation) return
         reply = apply(record, reply)
@@ -507,14 +495,95 @@ export const use_chat = (
       if (stopped || generation !== watch_generation) return
       startup.failed(thrown.message)
       if (!startup.starting.value) waiting_state.give_back()
+      if (thrown.status === GONE) {
+        status.value = 'This chat no longer exists.'
+        return
+      }
+      failed = true
+      reconnects += 1
     } finally {
       if (generation === watch_generation) in_flight = false
     }
     if (stopped || generation !== watch_generation) return
     working.value = waiting_state.waiting.value
-    watch_timer = setTimeout(watch, RECONNECT_MS)
+    if (!failed) {
+      startup.sleep()
+      return
+    }
+    watch_timer = setTimeout(
+      watch,
+      Math.min(
+        RECONNECT_MS * 2 ** Math.max(0, reconnects - 1),
+        RECONNECT_MAX_MS
+      )
+    )
   }
 
+  return {
+    watch,
+    /** Whether a stream is open; a queued message opens one only when idle. */
+    busy: () => in_flight,
+    stop() {
+      stopped = true
+      clearTimeout(watch_timer)
+      watching?.abort()
+    }
+  }
+}
+
+export const use_chat = (
+  actor,
+  {
+    on_change = () => {},
+    get_context = () => null,
+    set_working = () => {},
+    get_startup_id = () => null
+  } = {}
+) => {
+  const messages = ref(
+    /** @type {Array<{sender: string, text: string, context?: {path: string, title: string, text?: string}}>} */ ([])
+  )
+  const draft = ref('')
+  const status = ref('')
+  const working = ref(false)
+  const taken = ref(false)
+  const stop_owner = watch_owner(value => {
+    taken.value = value
+  })
+  const stop_following = follow(history => {
+    messages.value = to_view(history)
+    on_change()
+  })
+  const startup = create_startup_status(status, set_working, get_startup_id)
+  /** @type {ReturnType<typeof make_watch> | null} */
+  let watcher = null
+  const waiting_state = make_waiting({
+    actor,
+    draft,
+    status,
+    messages,
+    working,
+    open_watch: () => (watcher?.busy() ? undefined : watcher?.watch())
+  })
+  const apply = make_record_handler({
+    actor,
+    messages,
+    working,
+    status,
+    startup,
+    waiting_state
+  })
+  watcher = make_watch({
+    actor,
+    messages,
+    working,
+    status,
+    on_change,
+    startup,
+    waiting_state,
+    apply
+  })
+  const { watch } = watcher
   const run = make_command_runner({
     actor,
     messages,
@@ -578,10 +647,8 @@ export const use_chat = (
   const stop = () => {
     stop_owner()
     stop_following()
-    stopped = true
+    watcher?.stop()
     waiting_state.clear()
-    clearTimeout(watch_timer)
-    watching?.abort()
     startup.stop()
     if (current_user.value)
       return stop_explorer().catch(error => {

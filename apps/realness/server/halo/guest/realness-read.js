@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 /**
- * realness-read <url> [--fresh] - read a public page through the halo's internet engine.
+ * realness-read <url> [--fresh] [--site <slug>] - read a page through the halo.
+ *
+ * A `--site` names the cookie jar the read uses, so a logged-in source reads
+ * signed in: the halo leases a copy, loads the jar, reads, and gives it back.
  *
  * Asks the halo through the door. The halo reads the page from its shared
  * cache, a static fetch, a Chrome VM, or Firecrawl, and replies with JSON on
@@ -9,11 +12,22 @@
  */
 import { ask, exit } from './realness-door.js'
 
-const args = process.argv.slice(2).filter(arg => arg !== '--fresh')
-if (args.length !== 1) exit('usage: realness-read <url> [--fresh]')
+const argv = process.argv.slice(2)
+const site_at = argv.indexOf('--site')
+const site = site_at === -1 ? null : argv[site_at + 1]
+const args = argv.filter(
+  (arg, i) => arg !== '--fresh' && arg !== '--site' && i !== site_at + 1
+)
+if (args.length !== 1)
+  exit('usage: realness-read <url> [--fresh] [--site <slug>]')
 try {
   const reply = await ask(
-    { op: 'read', url: args[0], fresh: process.argv.includes('--fresh') },
+    {
+      op: 'read',
+      url: args[0],
+      fresh: argv.includes('--fresh'),
+      ...(site ? { site } : {})
+    },
     { timeout_ms: 180_000 }
   )
   if (!reply.ok)

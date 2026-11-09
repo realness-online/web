@@ -29,7 +29,10 @@ it('the Lima template names no checkout; every mount is filled from this one', (
     filled,
     /- location: "\/Users\/person x\/Realness-sync"\n\s+mountPoint: \/sync-data\n/
   )
-  assert.doesNotMatch(filled, /host\/vault/)
+  assert.match(
+    filled,
+    /- location: "\/Users\/person x\/realness\/vault"\n\s+mountPoint: \/host\/vault\n/
+  )
   assert.doesNotMatch(filled, /\{\{|""/)
 })
 
@@ -43,4 +46,18 @@ it('a relative folder or an unknown placeholder is refused', () => {
     () => render_vm_config('x: {{home}}', { project: '/p', out: '/o' }),
     /unknown placeholder \{\{home\}\}/
   )
+})
+
+it('the VM is sized for a box and a Chrome copy at once', async () => {
+  const { BOX_CPUS, BOX_MIB } = await import('../../src/halo/box.js')
+  const { COPY_VCPUS, DEFAULT_MIB } =
+    await import('../../src/halo/chrome-pool.js')
+  const value = key =>
+    Number(
+      template.match(new RegExp(`^${key}: (\\d+)`, 'm'))?.[1] ??
+        template.match(new RegExp(`^${key}: (\\d+)GiB`, 'm'))?.[1]
+    )
+  const mib = value('memory') * 1024
+  assert.ok(mib >= BOX_MIB + DEFAULT_MIB + 1024, 'memory leaves the halo a GiB')
+  assert.ok(value('cpus') >= BOX_CPUS + COPY_VCPUS, 'cpus avoid a squeeze')
 })

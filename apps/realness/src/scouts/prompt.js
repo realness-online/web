@@ -48,7 +48,9 @@ ${profile.trim()}
 # The sources
 
 Work through these in order. A source that fails or needs a login you do not
-have is a line in your summary, not a reason to stop.
+have is a line in your summary, not a reason to stop. A source behind a Chrome
+lease is the exception: when \`realness chrome lease\` fails, say so and stop;
+the run is dead either way.
 
 ${sources.trim()}
 

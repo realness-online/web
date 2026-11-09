@@ -10,6 +10,9 @@ it('only a fixed Gate 1 line approves a plan', () => {
     gate_lines('- Gate 2: held\n- Gate 2: reshaped a1, b2\n- Gate 2: fine').map(({ ok }) => ok),
     [true, true, false]
   )
+  assert.equal(approved('- Gate 1: pending'), false)
+  assert.equal(approved('- Gate 1: not approved'), false)
+  assert.equal(gate_lines('- Gate 1: pending')[0].ok, true)
 })
 
 it('nodes are read from mermaid class lines', () => {

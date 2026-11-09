@@ -4,6 +4,7 @@ import {
   writeFile as write_file
 } from 'node:fs/promises'
 import { dirname, join, relative } from 'node:path'
+import { save_digest } from './digest.js'
 import { read_leads } from './leads.js'
 import { load_finds, save_finds, split_fresh, with_finds } from './seen.js'
 import {
@@ -17,6 +18,7 @@ import { load_runs, run_item, save_runs } from './runs.js'
 import { scout_pages, find_scout } from './scout.js'
 import { scout_prompt } from './prompt.js'
 import { scout_nodes } from './nodes.js'
+import { dead_source } from './source.js'
 
 const MINUTES = 30
 
@@ -41,6 +43,7 @@ const read_or_throw = (path, what) =>
  * @param {number} [options.minutes] overrides the scout page's own deadline
  * @param {() => number} [options.clock]
  * @param {boolean} [options.dry_run] return the brief and write nothing
+ * @param {() => Promise<unknown>} [options.preflight] gates checked before pi
  */
 export const run_scout = async ({
   scout,
@@ -51,7 +54,8 @@ export const run_scout = async ({
   person,
   minutes,
   clock = Date.now,
-  dry_run = false
+  dry_run = false,
+  preflight
 }) => {
   const page = find_scout(scout_pages(vault_dir), scout)
   const label = page.path.split('/').at(-1) ?? page.path
@@ -85,11 +89,21 @@ export const run_scout = async ({
     minutes: deadline
   })
   if (dry_run) return { brief, run_dir }
+  await preflight?.()
   await mkdir(run_dir, { recursive: true })
   await write_file(join(run_dir, 'goal.md'), brief)
   const started = new Date(clock()).toISOString()
   const code = (await spawn_pi(brief, run_dir, deadline)) ?? 0
   const ended = new Date(clock()).toISOString()
+  const log = join(run_dir, 'pi.log')
+  const dead = dead_source(
+    await read_file(log, 'utf8').catch(error => {
+      if (error.code === 'ENOENT') return ''
+      throw error
+    })
+  )
+  if (dead)
+    throw new Error(`a login source was unreadable: ${dead}; read ${log}`)
   const leads_file = await read_file(join(run_dir, 'finds.html'), 'utf8').catch(
     error => {
       if (error.code === 'ENOENT') return ''
@@ -122,7 +136,7 @@ export const run_scout = async ({
   await mkdir(dirname(path), { recursive: true })
   await write_file(path, note)
   await save_finds(page_path, label, with_finds(finds, fresh, { person, now }))
-  const log = join(run_dir, 'pi.log')
+  await save_digest(join(scout_vault, 'index.md'), { date, leads })
   const runs = runs_path(scout_vault)
   await save_runs(runs, label, [
     ...(await load_runs(runs)),

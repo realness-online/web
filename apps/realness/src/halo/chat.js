@@ -1,9 +1,11 @@
 import { randomUUID as random_uuid } from 'node:crypto'
 import { logger } from './log.js'
 import { HTTP } from '#root/lib/http.js'
-import { MIB } from '#root/lib/units.js'
+import { MIB, MS_PER_MINUTE } from '#root/lib/units.js'
 
 const LOG = logger('halo')
+/** A watch stream this quiet is abandoned; closing it lets the halo park. */
+const WATCH_IDLE_MS = 5 * MS_PER_MINUTE
 const MESSAGE_LIMIT = 16_384
 /** The chat bridge's commands; anything else never reaches the guest. */
 const COMMANDS = new Set(['stop', 'new', 'compact', 'model', 'thinking'])
@@ -31,7 +33,7 @@ const stream = (response, guest, hello) => {
 }
 
 /**
- * @param {{ store: any, connect: (record: any) => Promise<{ socket: any, lines: any }>, limits?: ((record: any) => Promise<any>) | null }} options
+ * @param {{ store: any, connect: (record: any) => Promise<{ socket: any, lines: any }>, limits?: ((record: any) => Promise<any>) | null, idle_ms?: number }} options
  */
 const TOO_LONG = Symbol('too long')
 
@@ -70,9 +72,14 @@ const read_log = async request => {
 }
 
 /**
- * @param {{ store: import('./server.js').RouteStore, connect: (record: any) => Promise<{ socket: any, lines: any }>, limits?: ((record: any) => Promise<any>) | null }} options
+ * @param {{ store: import('./server.js').RouteStore, connect: (record: any) => Promise<{ socket: any, lines: any }>, limits?: ((record: any) => Promise<any>) | null, idle_ms?: number }} options
  */
-export const chat_handlers = ({ store, connect, limits = null }) => {
+export const chat_handlers = ({
+  store,
+  connect,
+  limits = null,
+  idle_ms = WATCH_IDLE_MS
+}) => {
   const receiving = new Set()
   /** Hand one request to the guest's chat bridge; the actor is working until it answers. */
   const relay = async (id, response, hello) => {
@@ -128,8 +135,25 @@ export const chat_handlers = ({ store, connect, limits = null }) => {
         LOG.warn(`chat watch failed for ${id}: ${error.message}`)
         return text(response, HTTP.BAD_GATEWAY, 'chat is unavailable\n')
       }
-      response.once('close', () => guest.socket.destroy())
+      /** @type {ReturnType<typeof setTimeout> | null} */
+      let idle = null
+      const stop = () => clearTimeout(idle ?? undefined)
+      const quiet = () => {
+        stop()
+        idle = setTimeout(() => {
+          LOG.info(`chat watch ${id} idle; closing`)
+          guest.socket.destroy()
+          response.end()
+        }, idle_ms)
+        idle.unref?.()
+      }
+      response.once('close', () => {
+        stop()
+        guest.socket.destroy()
+      })
       stream(response, guest, { watch: true })
+      guest.socket.on('data', quiet)
+      quiet()
     },
 
     async limit(id, response) {

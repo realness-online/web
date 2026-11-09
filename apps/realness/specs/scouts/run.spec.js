@@ -181,6 +181,43 @@ it('the second run reports the same lead as already seen', async () => {
   await rm(root, { recursive: true })
 })
 
+it('a run writes its day into the plan digest, and the page keeps the older days', async () => {
+  const root = await scratch()
+  const index = join(root, SCOUTS, 'Realness/index.md')
+  await writeFile(
+    index,
+    '# Realness\n\n### Finds\n\n<details>\n<summary><strong>Nov 7</strong> <span>1 lead</span></summary>\n<table>\n<tbody>\n<tr><td>9</td><td><a href="https://example.com/old">Old</a></td><td>old reason</td></tr>\n</tbody>\n</table>\n</details>\n'
+  )
+  await run_scout({
+    scout: 'realness',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-08',
+    spawn_pi: pi_writing([lead('https://vuejobs.com/jobs/acme', 8)])
+  })
+  const markdown = await readFile(index, 'utf8')
+  assert.match(
+    markdown,
+    /<summary><strong>Nov 8<\/strong> <span>1 lead<\/span><\/summary>/
+  )
+  assert.ok(markdown.indexOf('Nov 8') < markdown.indexOf('Nov 7'))
+  assert.match(markdown, /old reason/)
+  await rm(root, { recursive: true })
+})
+
+it('a plan with no digest section still runs', async () => {
+  const root = await scratch()
+  const result = await run_scout({
+    scout: 'realness',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-08',
+    spawn_pi: pi_writing([lead('https://vuejobs.com/jobs/acme', 8)])
+  })
+  assert.equal(result.fresh.length, 1)
+  await rm(root, { recursive: true })
+})
+
 it('a run that writes no finds is reported, and the page keeps what it had', async () => {
   const root = await scratch()
   await seed(root, 'https://example.com/old')

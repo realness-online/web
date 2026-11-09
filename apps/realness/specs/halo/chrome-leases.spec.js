@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { it } from 'node:test'
 import { out_path } from '#root/lib/output.js'
 import { ChromeLeases, lease_rules } from '../../src/halo/chrome-leases.js'
+import { cookie_jars } from '../../src/halo/cookie-jar.js'
 import { copy_net, namespace_commands } from '../../src/halo/chrome-pool.js'
 import { Door } from '../../src/halo/door.js'
 
@@ -27,6 +28,16 @@ const fake_pool = ({ delay = 0 } = {}) => {
   }
   return pool
 }
+/** A DevTools stand-in: each address keeps its own cookies. */
+const fake_cookies = () => {
+  const kept = new Map()
+  return {
+    kept,
+    get: async address => kept.get(address) ?? [],
+    set: async (address, cookies) => kept.set(address, cookies)
+  }
+}
+
 const fake_firewall = () => {
   const open = new Set()
   return {
@@ -139,11 +150,16 @@ it('the door leases and returns Chrome for its own actor only', async () => {
   const store = { live_actors: () => [record], get: () => record }
   const pool = fake_pool()
   const { open, firewall } = fake_firewall()
+  const jar_root = join(root, 'jars')
   const door = new Door(
     store,
     '/s/{id}/',
     null,
-    new ChromeLeases(pool, { firewall })
+    new ChromeLeases(pool, {
+      firewall,
+      jars: cookie_jars(jar_root),
+      cookies: fake_cookies()
+    })
   )
   door.reconcile()
   const { path, server } = door.listeners.get(record.id)
@@ -173,11 +189,67 @@ it('the door leases and returns Chrome for its own actor only', async () => {
       returned: true
     })
     assert.deepEqual([pool.destroyed, [...open]], [[1], []])
+    const jarred = await send({ op: 'chrome-lease', site: 'yc' })
+    assert.equal(jarred.ok, true)
+    assert.deepEqual(
+      await door.chrome.cookies.get('http://172.19.2.2:9222'),
+      []
+    )
+    await send({ op: 'chrome-return' })
+    assert.deepEqual(await door.chrome.jars.load(record.owner, 'yc'), [])
     record.owner = null
     assert.equal((await send({ op: 'chrome-lease' })).ok, false)
     door.chrome = null
     record.owner = '+14155550123'
     assert.match((await send({ op: 'chrome-lease' })).error, /no chrome pool/)
+  } finally {
+    await new Promise(done => server.close(done))
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+it('a box actor leases Chrome at its own address, with no TAP to open', async () => {
+  mkdir_sync(out_path(), { recursive: true })
+  const root = mkdtempSync(out_path('door-chrome-box-'))
+  const record = {
+    id: 'a-abcdef123456',
+    owner: '+14155550123',
+    address: { guest: '172.16.7.2', prefix: 30, gateway: '172.16.7.1' },
+    vsock_path: join(root, 'vsock.sock')
+  }
+  const store = { live_actors: () => [record], get: () => record }
+  const pool = fake_pool()
+  const { open, firewall } = fake_firewall()
+  const door = new Door(
+    store,
+    '/s/{id}/',
+    null,
+    new ChromeLeases(pool, { firewall })
+  )
+  door.reconcile()
+  const { path, server } = door.listeners.get(record.id)
+  await new Promise(done =>
+    server.listening ? done() : server.once('listening', done)
+  )
+  const send = value =>
+    new Promise((done, fail) => {
+      const socket = connect(path)
+      socket.once('error', fail)
+      socket.once('connect', () => socket.write(`${JSON.stringify(value)}\n`))
+      let answer = ''
+      socket.on('data', data => (answer += data.toString()))
+      socket.once('end', () => done(JSON.parse(answer)))
+    })
+  try {
+    const lease = await send({ op: 'chrome-lease' })
+    assert.equal(lease.ok, true)
+    assert.deepEqual(
+      [...open],
+      ['172.16.7.2>172.19.1.2'],
+      "the box's own guest address, not a tap it does not have"
+    )
+    await send({ op: 'chrome-return' })
+    assert.deepEqual([...open], [])
   } finally {
     await new Promise(done => server.close(done))
     rmSync(root, { recursive: true, force: true })

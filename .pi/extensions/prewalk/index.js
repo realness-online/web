@@ -2,9 +2,13 @@
  * Prewalk: the frontier model shapes and gates a plan, a cheap model works its nodes.
  *
  * Arms on its own once a plan under the plans folder carries `- Gate 1: approved`.
- * A node marked `active` runs on the cheap model; a failing spec returns that
- * node to the frontier model. No active node, as at a gate, means the frontier
- * model, as does an error turn on the cheap model. Each escalation, and each node leaving `active`, is an item in `vault/Prewalk/escalations.html`.
+ * The frontier works the plan's first node whole, so the pattern is set before
+ * the cheap model takes over: once a node's spec passes, later nodes run cheap.
+ * A failing spec returns that node to the frontier model. No active node, as at
+ * a gate, means the frontier
+ * model, as does an error turn on the cheap model. Each node entering and
+ * leaving `active`, and each escalation, is an item in
+ * `artifacts/prewalk/escalations.html`.
  *
  * /prewalk              - status
  * /prewalk <target>     - cheap model as provider/id
@@ -18,7 +22,7 @@ import { approved, nodes_in } from '../../bin/lib/plan-gates.js'
 import { plan_files } from '../../bin/lib/plan-files.js'
 import { product_import } from '../../bin/lib/product.js'
 
-const { item_html } = await product_import('items')
+const { item_html, read_items } = await product_import('items')
 const root = resolve(import.meta.dirname, '../../..')
 
 export const DEFAULT_TARGET = 'openrouter/deepseek/deepseek-v4.1-flash-1017'
@@ -33,12 +37,13 @@ export const is_spec_run = command =>
     .some(part => RUNNER.test(part))
 
 /**
- * The model a turn should run on.
- * @param {{ on: boolean, approved: boolean, active: string[], escalated: Set<string> }} state
+ * The model a turn should run on: the frontier sets the pattern on a plan's
+ * first node, then the cheap model takes the rest.
+ * @param {{ on: boolean, approved: boolean, active: string[], escalated: Set<string>, proven?: boolean }} state
  * @returns {'cheap' | 'frontier'}
  */
-export const route = ({ on, approved, active, escalated }) =>
-  on && approved && active.length > 0 && !active.some(id => escalated.has(id)) ? 'cheap' : 'frontier'
+export const route = ({ on, approved, active, escalated, proven = false }) =>
+  on && approved && proven && active.length > 0 && !active.some(id => escalated.has(id)) ? 'cheap' : 'frontier'
 
 /**
  * The plan file a tool path names, or null outside the plans folder.
@@ -79,7 +84,7 @@ export default (
   {
     plans = join(root, plans_path(root)),
     ignored = plans_ignore(root),
-    log = join(root, 'vault/Prewalk/escalations.html')
+    log = join(root, 'artifacts/prewalk/escalations.html')
   } = {}
 ) => {
   let on = true
@@ -96,29 +101,55 @@ export default (
   /** @type {Map<string, Set<string>>} */
   const models = new Map()
   const verified = new Set()
+  /** Plans whose log holds a node spec that passed; the frontier keeps a plan's work until then. */
+  const proven = new Set()
+  /** True while prewalk itself put this session on the cheap model. */
+  let routed = false
   let nudge = 'none'
 
+  /** @param {any} ctx */
+  const session_of = ctx => ctx?.sessionManager?.getSessionId?.() ?? ''
+
   /**
+   * @param {any} ctx
    * @param {string} node
    * @param {string} reason
    * @param {string} model
    */
-  const record = (node, reason, model) => append('escalation', { node, reason, model })
+  const record = (ctx, node, reason, model) => append(ctx, 'escalation', { node, reason, model })
 
   /**
-   * @param {'escalation' | 'outcome'} kind
+   * @param {any} ctx
+   * @param {'start' | 'escalation' | 'outcome'} kind
    * @param {Record<string, string>} fields
    */
-  const append = (kind, fields) => {
+  const append = (ctx, kind, fields) => {
     const at = new Date().toISOString()
     mkdirSync(dirname(log), { recursive: true })
     appendFileSync(
       log,
-      item_html(`prewalk/${kind}`, { plan: relative(root, plan ?? ''), ...fields, at }).replace(
-        'itemscope',
-        `itemscope itemid="/prewalk/${kind}s/${fields.node}/${at}"`
+      item_html(`prewalk/${kind}`, {
+        plan: relative(root, plan ?? ''),
+        session: session_of(ctx),
+        ...fields,
+        at
+      }).replace('itemscope', `itemscope itemid="/prewalk/${kind}s/${fields.node}/${at}"`)
+    )
+  }
+
+  /** Whether this plan's log already holds a passing spec, so a later session keeps its nodes cheap. */
+  const proven_plan = () => {
+    const key = relative(root, plan ?? '')
+    if (proven.has(key)) return true
+    if (!existsSync(log)) return false
+    if (
+      !read_items(readFileSync(log, 'utf8'), 'prewalk/outcome').some(
+        item => item.plan === key && item.spec === 'passed'
       )
     )
+      return false
+    proven.add(key)
+    return true
   }
 
   /** @param {any} ctx */
@@ -127,12 +158,15 @@ export default (
     const text = readFileSync(plan, 'utf8')
     const active = nodes_in(text, 'active')
     const blocked = nodes_in(text, 'blocked')
+    for (const id of active.filter(id => !state.active.includes(id)))
+      append(ctx, 'start', { node: id, model: name_of(ctx.model) })
     for (const id of state.active.filter(id => !active.includes(id))) {
       if (!blocked.includes(id) && !verified.has(id)) {
-        record(id, 'finished without a passing spec', name_of(ctx.model))
+        record(ctx, id, 'finished without a passing spec', name_of(ctx.model))
         ctx.ui.notify(`Prewalk: ${id} finished without a passing spec`, 'warning')
       }
-      append('outcome', {
+      if (verified.has(id)) proven.add(relative(root, plan ?? ''))
+      append(ctx, 'outcome', {
         node: id,
         status: blocked.includes(id) ? 'blocked' : 'done',
         models: [...(models.get(id) ?? [])].join(', '),
@@ -170,7 +204,7 @@ export default (
       if (event.isError && !escalated.has(id)) {
         verified.delete(id)
         escalated.add(id)
-        record(id, 'spec failed', name_of(ctx.model))
+        record(ctx, id, 'spec failed', name_of(ctx.model))
       }
     }
   })
@@ -182,15 +216,15 @@ export default (
     }
     const current = name_of(ctx.model)
     for (const id of state.active) models.set(id, (models.get(id) ?? new Set()).add(current))
-    if (on && current === target && event.message?.stopReason === 'error') {
+    if (on && routed && current === target && event.message?.stopReason === 'error') {
       const error = event.message.errorMessage || 'unknown error'
       for (const id of state.active.filter(id => !escalated.has(id))) {
         escalated.add(id)
         errors.set(id, error)
-        record(id, `model error: ${error}`, current)
+        record(ctx, id, `model error: ${error}`, current)
       }
     }
-    const want = route({ on, ...state, escalated })
+    const want = route({ on, ...state, escalated, proven: proven_plan() })
     if (nudge === 'due' && want === 'frontier') {
       nudge = 'sent'
       return {
@@ -215,6 +249,7 @@ export default (
       }
       frontier = ctx.model
       if (!(await pi.setModel(model))) return
+      routed = true
       ctx.ui.notify(`Prewalk: ${state.active.join(', ')} on ${target}`, 'info')
       return {
         entries: [
@@ -231,8 +266,9 @@ export default (
         ]
       }
     }
-    if (want === 'frontier' && frontier && current === target) {
+    if (want === 'frontier' && routed && frontier && current === target) {
       if (!(await pi.setModel(frontier))) return
+      routed = false
       const failed = state.active.filter(id => escalated.has(id))
       ctx.ui.notify(`Prewalk: back to ${name_of(frontier)}${failed.length ? ` for ${failed.join(', ')}` : ''}`, 'info')
       if (!failed.length) return
@@ -256,12 +292,14 @@ export default (
 
   pi.on('session_start', () => {
     on = true
+    routed = false
     frontier = null
     plan = null
     state = { approved: false, active: [] }
     nudge = 'none'
     escalated.clear()
     verified.clear()
+    proven.clear()
     errors.clear()
     failed.clear()
     models.clear()
@@ -272,7 +310,10 @@ export default (
     handler: async (args, ctx) => {
       const arg = args?.trim() ?? ''
       if (arg === 'off' || arg === 'on') on = arg === 'on'
-      else if (arg) target = arg
+      else if (arg) {
+        target = arg
+        routed = false
+      }
       const where = plan
         ? `${relative(root, plan)}, ${state.approved ? 'approved' : 'not approved'}`
         : 'no plan read yet'

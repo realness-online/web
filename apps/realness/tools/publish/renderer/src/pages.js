@@ -97,13 +97,16 @@ const title_of = (data, named, slug) => {
   return title_case((slug.split('/').pop() ?? '').replace(/-/g, ' '))
 }
 
-/** The pages a build writes, newest first: plans by update, articles by date. */
+/** @param {import('./types.js').Article} article */
+const created_at = article => new Date(article.created ?? 0).getTime() || 0
+
+/** The pages a build writes, newest first: plans by creation, articles by date. */
 const published_articles = (articles, drafts, plans) =>
   articles
     .filter(article => drafts || !article.draft)
     .sort((a, b) =>
       plans
-        ? (b.updated ?? 0) - (a.updated ?? 0)
+        ? created_at(b) - created_at(a)
         : (b.date || '').localeCompare(a.date || '')
     )
 
@@ -195,6 +198,7 @@ const load_article = async (ctx, file) => {
     img: data.img,
     focus: data.focus,
     draft,
+    created: data.created,
     updated: (await stat(file)).mtimeMs
   }
 }
@@ -266,6 +270,7 @@ const build_article = async (ctx, file) => {
     draft,
     html,
     notes,
+    created: data.created,
     updated: (await stat(file)).mtimeMs
   }
 }

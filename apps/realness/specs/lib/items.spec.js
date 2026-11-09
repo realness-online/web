@@ -54,3 +54,9 @@ it('trusted extra markup rides inside the item', () => {
   )
   assert.deepEqual(read_item(html, 'loop'), { id: 'x', goal: 'ship it' })
 })
+
+it('an itemid before itemtype still reads', () => {
+  const html =
+    '<article itemscope itemid="/plan/1" itemtype="/plan"><span itemprop="status">active</span></article>'
+  assert.deepEqual(read_item(html, 'plan'), { status: 'active' })
+})

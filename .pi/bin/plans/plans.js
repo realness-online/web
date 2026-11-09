@@ -32,10 +32,29 @@ export const select_plans = async root => {
   for (const { file, name } of plan_files(folder, plans_ignore(root))) {
     const path = inside ? `${inside}/${file}` : file
     const id = await mint_item(vault, path, { author: person(root), type: 'plans', scan })
-    sources.push({ id, slug: as_slug(slugs.get(id) ?? name) })
+    sources.push({ id, slug: as_slug(slugs.get(id) ?? name), area: area_of(file) })
   }
   await write_app(app_dir, { ...app, sources })
   return sources
+}
+
+const AREAS = {
+  art: 'Art',
+  blog: 'Blog',
+  music: 'Music',
+  planning: 'Planning',
+  realness: 'Realness',
+  seeq: 'SEEQ',
+  scouts: 'Scouts'
+}
+
+/**
+ * A plan's functional area: its top folder, else the prefix of its filename.
+ * @param {string} file plan file relative to the plans folder
+ */
+export const area_of = file => {
+  const key = file.split('/')[0].replace(/\.md$/, '').split('-')[0].toLowerCase()
+  return AREAS[key] ?? key.charAt(0).toUpperCase() + key.slice(1)
 }
 
 /** A page address from a note's name: lowercase words joined by dashes. */

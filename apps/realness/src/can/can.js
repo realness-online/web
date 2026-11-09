@@ -96,8 +96,9 @@ const halos_allowed = (action, owner, rest, me) => {
   if (me.gate)
     return (
       owner === me.gate &&
-      file === 'lifecycle.html' &&
-      (action === 'get' || action === 'write')
+      (action === 'get'
+        ? file === 'lifecycle.html' || file === 'status.html'
+        : file === 'lifecycle.html')
     )
   if (me.halo) {
     if (owner !== me.halo) return false

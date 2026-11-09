@@ -58,7 +58,12 @@ export const create_templates = (site, poster_sizes, watch = false) => {
     },
     /** @param {import('./types.js').Article[]} articles */
     index_body(articles) {
-      return index_body(render_poster, site.type === 'plans', articles)
+      return index_body(
+        render_poster,
+        site.type === 'plans',
+        articles,
+        site.areas
+      )
     },
     /** @param {import('./types.js').SitemapEntry[]} urls */
     sitemap(urls) {

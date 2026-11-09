@@ -127,7 +127,7 @@ it('wide terminals get a two-column clay dashboard that fills the window', () =>
     assert.equal(lines.length, height)
     const plain = lines.map(line => line.replace(/\x1b\[[0-9;]*m/g, ''))
     for (const line of plain.slice(1, -1)) assert.equal([...line].length, width)
-    assert.match(plain[1], /^╭─ CLOUD SPEND .*╮╭─ HEALTH .*╮$/)
+    assert.match(plain[1], /^╭─ CLOUD SPEND .*╮╭─ CLOUD HEALTH .*╮$/)
     assert.match(plain.at(-2), /^╰─+╯╰─+╯$/)
     assert.ok(lines[1].includes('\x1b[38;2;163;65;69m'))
   }

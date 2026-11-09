@@ -223,6 +223,13 @@ test('BoxStore: seed_status reflects the template', () => {
   assert.equal(status.matches, true)
 })
 
+test('BoxStore: free space comes from its own volume', () => {
+  const store = new BoxStore({ volume, template: '/opt/fc/template.ext4' })
+  assert.ok(store.free_bytes() > 0)
+  store.volume = `${volume}/missing`
+  assert.equal(store.free_bytes(), Infinity)
+})
+
 test('BoxStore: owner required', async () => {
   const store = new BoxStore({ volume, template: '/opt/fc/template.ext4' })
   await assert.rejects(() => store.create('nobody'), /verified owner/)

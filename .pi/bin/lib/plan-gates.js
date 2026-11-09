@@ -1,8 +1,9 @@
 const GATE_LINE = /^- Gate ([12]):\s*(.*)$/
 const OUTCOME = {
-  1: /^approved\b/,
+  1: /^(approved|pending|not approved)\b/,
   2: /^(held|reshaped [a-zA-Z][\w-]*(, ?[a-zA-Z][\w-]*)*)\b/
 }
+const APPROVED = /^approved\b/
 
 /**
  * Every `- Gate N:` decision line, with whether it uses the fixed wording.
@@ -18,7 +19,7 @@ export const gate_lines = text =>
   })
 
 /** @param {string} text */
-export const approved = text => gate_lines(text).some(({ gate, ok }) => gate === 1 && ok)
+export const approved = text => gate_lines(text).some(({ gate, outcome }) => gate === 1 && APPROVED.test(outcome))
 
 /**
  * Node ids under one state class in the plan's mermaid `class` lines.

@@ -24,8 +24,10 @@ import {
   frame,
   halo_lines,
   health_lights,
+  local_light_lines,
   local_panel_lines,
   halo_panel_lines,
+  with_machines,
   interval_for,
   panel,
   resource_lines,
@@ -613,7 +615,7 @@ it('the watch report sums every person and reaches the frame', async () => {
   assert.match(text, /2 calls  1 error \(50\.0%\)  p50 100ms  p95 900ms/)
   assert.match(text, /model m  2 calls  1 errors  p95 900ms/)
   const compact = frame({ snapshot, on: false, width: 100, height: 40 })
-  assert.match(compact, /Model calls: 2 calls  1 error/)
+  assert.match(compact, /cloud: model calls: 2 calls  1 error/)
 })
 
 it('a failed watch report is visible, not a zero', async () => {
@@ -633,7 +635,7 @@ it('a failed watch report is visible, not a zero', async () => {
   })
   assert.equal(snapshot.panels.model.status, 'failed')
   const text = frame({ snapshot, on: false, width: 100, height: 40 })
-  assert.match(text, /Model call stats unavailable/)
+  assert.match(text, /model call stats unavailable/)
 })
 
 it('model ledger failures do not turn into a zero-dollar balance', async () => {
@@ -1191,12 +1193,38 @@ it('the local halo gets its own light, panel, and status line', () => {
     },
     services: { status: 'ok', rows: [] }
   }
-  const lights = health_lights(panels, false, 200).join(' ')
-  assert.match(lights, /local ok/)
+  assert.doesNotMatch(health_lights(panels, false, 200).join(' '), /local/)
+  const lights = local_light_lines(panels, false).join(' ')
+  assert.match(lights, /halo ok/)
+  assert.match(lights, /sync \?/)
   const lines = local_panel_lines(panels.local, false, 200)
   assert.equal(lines.length, 2)
-  assert.match(lines[0], /running {2}127\.0\.0\.1:18080/)
+  assert.match(lines[0], /up {2}127\.0\.0\.1:18080/)
   assert.match(lines[1], /1 run 0 idle 2 stop {2}seed built/)
+})
+
+it('a machine that is running is never drawn as parked', () => {
+  const halos = {
+    status: 'ok',
+    rows: [{ name: 'realness-1', state: 'parked', age_s: 40, actors: null }]
+  }
+  const resources = {
+    status: 'ok',
+    inventories: [
+      {
+        project: 'p',
+        disks: [],
+        instances: [{ name: 'realness-1', status: 'RUNNING' }]
+      }
+    ]
+  }
+  const shown = with_machines(halos, resources)
+  assert.equal(shown.rows[0].state, 'running')
+  assert.doesNotMatch(halo_panel_lines(shown, false, 200)[0], /parked/)
+  assert.equal(
+    with_machines(halos, { status: 'ok', inventories: [] }).rows[0].state,
+    'parked'
+  )
 })
 
 it('a narrow halo panel keeps the actor labels and drops the age', () => {
@@ -1235,7 +1263,7 @@ it('with no local halo reading, nothing local is drawn', () => {
   assert.doesNotMatch(health_lights(panels, false, 200).join(' '), /local/)
 })
 
-it('a tall dashboard gives the local halo its own tile between halos and spend', () => {
+it('a tall dashboard gives the local halo its own tile above the cloud tiles', () => {
   const panels = {
     halos: { status: 'ok', rows: [] },
     services: { status: 'ok', rows: [] },
@@ -1255,7 +1283,8 @@ it('a tall dashboard gives the local halo its own tile between halos and spend',
   })
   assert.match(text, /LOCAL/)
   assert.match(text, /127\.0\.0\.1:18080/)
-  assert.match(text, /Local halo: running at 127\.0\.0\.1:18080/)
+  assert.match(text, /local: halo up at 127\.0\.0\.1:18080/)
+  assert.match(text, /cloud: 0 services ready/)
 })
 
 it('a short dashboard drops the local tile rather than overflow the window', () => {

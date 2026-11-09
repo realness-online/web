@@ -17,6 +17,7 @@ import {
   renameSync as rename_sync,
   rmSync as rm_sync,
   statSync as stat_sync,
+  statfsSync as statfs_sync,
   writeFileSync as write_file_sync,
   copyFileSync as copy_file_sync,
   chmodSync as chmod_sync,
@@ -67,14 +68,17 @@ const halo_claim = () => {
 const ACTOR_INIT = '/usr/local/bin/realness-actor-init'
 const HANDSOVER = '/realness/.handover/log.json'
 const ID = /^[A-Za-z0-9][A-Za-z0-9-]*$/
+/** Leased Chrome copies, and the chain their pairs are allowed in. */
+const POOL_IFACE = 'brc+'
+const LEASE_CHAIN = 'REALNESS-LEASE'
 const TRACES = 'traces'
 const PUBLISHED = 'published'
 const VERSIONS = 'published-versions'
 const EXPORTS = 'exports'
 const ARTIFACT_PATHS = ['realness']
 /** Per-box cgroup limits: one runaway box cannot starve the others. */
-const BOX_MIB = 1536
-const BOX_CPUS = 2
+export const BOX_MIB = 1536
+export const BOX_CPUS = 2
 const BOX_PIDS = 1024
 const CPU_PERIOD = 100_000
 /** Root in a box is uid 100000 on the VM: it owns nothing outside the box. */
@@ -382,6 +386,10 @@ export class BoxStore extends Store {
         ['-C', 'FORWARD', '-i', host, '-d', range, '-j', 'DROP'],
         ['-A', 'FORWARD', '-i', host, '-d', range, '-j', 'DROP']
       )
+    this.#add_iptables(
+      ['-C', 'FORWARD', '-i', host, '-o', POOL_IFACE, '-j', LEASE_CHAIN],
+      ['-I', 'FORWARD', '1', '-i', host, '-o', POOL_IFACE, '-j', LEASE_CHAIN]
+    )
     this.#add_iptables(
       ['-C', 'FORWARD', '-i', host, '-j', 'ACCEPT'],
       ['-A', 'FORWARD', '-i', host, '-j', 'ACCEPT']
@@ -1278,6 +1286,16 @@ export class BoxStore extends Store {
       )
       .filter(entry => exists_sync(join(this.volume, entry.name, 'actor.json')))
       .map(entry => this.get(entry.name))
+  }
+
+  /** Free bytes on the actors volume; Infinity when it cannot be read. */
+  free_bytes() {
+    try {
+      const { bsize, bavail } = statfs_sync(this.volume)
+      return bsize * bavail
+    } catch {
+      return Infinity
+    }
   }
 
   /** Actor directories that have no actor.json. */

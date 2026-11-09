@@ -194,7 +194,8 @@ cat > "$TREE/usr/local/bin/agent-browser" <<'WRAPPER'
 #!/bin/sh
 REAL=/usr/local/lib/node_modules/agent-browser/bin/agent-browser.js
 case "${1:-}" in ""|--version|-V|--help|-h|help|install|skills) exec /usr/local/bin/node "$REAL" "$@" ;; esac
-LEASE="/tmp/realness-chrome-$(id -u)"
+LEASE="/realness/artifacts/tmp/realness-chrome-$(id -u)"
+mkdir -p /realness/artifacts/tmp 2> /dev/null || true
 url="$(cat "$LEASE" 2> /dev/null)"
 if [ -z "$url" ] || ! curl -fs -m 3 -o /dev/null "$url/json/version"; then
   url="$(/usr/local/bin/realness-chrome)" || exit 1
@@ -299,7 +300,7 @@ chroot "$TREE" env $editor_env XDG_CONFIG_HOME=/realness/.pi/editors XDG_DATA_HO
   '+lua local o = require("lazy.core.plugin").values(require("lazy.core.config").plugins["nvim-treesitter"], "opts", false); require("nvim-treesitter").install(o.ensure_installed or {}):wait(900000)' \
   +qa < /dev/null > "$RUN/treesitter.log" 2>&1 || tail -40 "$RUN/treesitter.log"
 parsers="$(ls "$TREE$EDITORS/share/nvim/site/parser" 2> /dev/null | wc -l)"
-grep -i "error" "$RUN/treesitter.log" | tail -5 >&2
+{ grep -i "error" "$RUN/treesitter.log" || true; } | tail -5 >&2
 log "editors: $parsers Treesitter parsers; the compiler leaves"
 rm -f "$TREE/usr/local/bin/tree-sitter"
 chroot "$TREE" env DEBIAN_FRONTEND=noninteractive apt-get purge -y -qq --autoremove gcc libc6-dev > /dev/null 2>&1
@@ -368,7 +369,7 @@ mkfs.ext4 -q -F -d "$TREE" "$IMG.new"
 e2fsck -fn "$IMG.new" > /dev/null && mv "$IMG.new" "$IMG"
 
 log "done"
-du -sh "$TREE" | sed 's/^/  tree: /'
+rm -rf "$TREE"
 ls -lh "$IMG" | awk '{print "  image: " $5 " " $9}'
 dumpe2fs -h "$IMG" 2> /dev/null \
   | awk '/^Block count:/{b=$3} /^Block size:/{s=$3} /^Free blocks:/{f=$3} END{

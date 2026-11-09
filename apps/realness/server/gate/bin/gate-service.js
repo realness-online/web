@@ -10,6 +10,7 @@ import { store_of } from '#root/src/can/store.js'
 import { environment_settings } from '#root/src/settings/environments.js'
 import { parseArgs as parse_args } from 'node:util'
 import { explain_halo } from '#root/src/gate/halo-status.js'
+import { read_status } from '#root/src/sync/halo-status.js'
 import { sync_records } from '#root/src/gate/sync-records.js'
 import {
   lifecycle_html,
@@ -74,6 +75,35 @@ const halo_for = env.GATE_HALOS
       })()
     )
 
+/** How long the gate trusts the halo's last actor report, in milliseconds. */
+const ROSTER_MS = 60_000
+
+/**
+ * Whether the named halo last reported the named actor. A stale client asking
+ * for an actor that no longer exists must not wake the machine, so this reads
+ * the report the halo publishes and says no. No report means no answer, and
+ * the wake goes ahead.
+ */
+const roster = () => {
+  const name = String(env.GATE_HALO_NAME ?? '')
+  /** @type {{ at: number, actors: string[] | null }} */
+  let cached = { at: 0, actors: null }
+  return async ({ actor }) => {
+    if (!name) return true
+    if (Date.now() - cached.at > ROSTER_MS) {
+      const file = await records()
+        .get(`halos/${name}/status.html`)
+        .catch(() => null)
+      const read = file ? read_status(file.body.toString('utf8')) : null
+      cached = {
+        at: Date.now(),
+        actors: read ? read.actors.map(item => item.id).filter(Boolean) : null
+      }
+    }
+    return !cached.actors || cached.actors.includes(actor)
+  }
+}
+
 /** A probe needs a halo, not a person; this phone only picks the first one. */
 const PROBE_PHONE = '+14155550000'
 
@@ -109,7 +139,8 @@ const gate = make_gate({
   secret,
   origins,
   wake: waker(),
-  unreachable
+  unreachable,
+  holds: roster()
 })
 
 const port = Number(env.PORT ?? DEFAULT_PORT)

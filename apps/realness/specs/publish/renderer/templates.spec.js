@@ -58,3 +58,29 @@ it('an article shows its owner phone from the itemid, not only in attributes', a
   assert.match(html, /<address itemprop="author"/)
   assert.doesNotMatch(article_body(poster)({}, 'T', '', ''), /<address/)
 })
+
+it('plans show an area label and a filter built from the areas present', () => {
+  const { index_body } = create_templates(
+    {
+      ...site,
+      type: 'plans',
+      areas: { alpha: 'Realness', beta: 'SEEQ' }
+    },
+    {}
+  )
+  const html = index_body([
+    { slug: 'alpha', title: 'A' },
+    { slug: 'beta', title: 'B' }
+  ])
+  assert.match(html, /<nav aria-label="Plans by area">/)
+  assert.match(
+    html,
+    /<button type="button" data-area="" aria-pressed="true">All<\/button>/
+  )
+  assert.match(
+    html,
+    /<button type="button" data-area="Realness" aria-pressed="false">Realness<\/button>/
+  )
+  assert.match(html, /<article data-area="Realness" itemscope/)
+  assert.match(html, /<span itemprop="genre">Realness<\/span>/)
+})

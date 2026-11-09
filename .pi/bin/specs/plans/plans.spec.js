@@ -7,6 +7,7 @@ import { harness_require } from '../../lib/harness-dependencies.js'
 const { parseHTML: parse_html } = harness_require('linkedom')
 
 import { size_diagrams } from '../../../../apps/realness/tools/publish/renderer/static/scripts/plan-diagrams.js'
+import { area_of } from '../../plans/plans.js'
 
 const css = readFileSync(
   new URL('../../../../apps/realness/tools/publish/renderer/static/scripts/diagrams.css', import.meta.url),
@@ -186,9 +187,21 @@ it('h5: a plan keeps its chosen slug and itemid with no catalog file', async () 
         sources: [{ id: itemid, slug: 'chosen' }]
       })
     )
-    assert.deepEqual(await select_plans(root), [{ id: itemid, slug: 'chosen' }])
+    assert.deepEqual(await select_plans(root), [{ id: itemid, slug: 'chosen', area: 'One' }])
     await assert.rejects(stat(join(root, 'vault/catalog.json')), { code: 'ENOENT' })
   } finally {
     await rm(root, { recursive: true, force: true })
   }
+})
+
+it('a plan takes its area from its top folder or filename prefix', () => {
+  assert.equal(area_of('realness-scouts/index.md'), 'Realness')
+  assert.equal(area_of('realness-leads/index.md'), 'Realness')
+  assert.equal(area_of('seeq-leads/index.md'), 'SEEQ')
+  assert.equal(area_of('realness-vulnerabilities/index.md'), 'Realness')
+  assert.equal(area_of('realness-site.md'), 'Realness')
+  assert.equal(area_of('seeq-app-remove-vuetify.md'), 'SEEQ')
+  assert.equal(area_of('music-Prologue RK-002 Channel Switching.md'), 'Music')
+  assert.equal(area_of('art-drawing-haight-ship.md'), 'Art')
+  assert.equal(area_of('planning-performance.md'), 'Planning')
 })

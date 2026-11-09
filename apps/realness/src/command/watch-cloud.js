@@ -5,13 +5,19 @@ import {
 } from '#root/src/control/cloud-reads.js'
 import { ENVIRONMENTS } from '#root/tools/control/webspace.config.js'
 import { attempt } from '#root/src/control/exec.js'
-import { ISO_DATE, MS_PER_HOUR } from '#root/lib/units.js'
+import { ISO_DATE, MS_PER_HOUR, MS_PER_MINUTE } from '#root/lib/units.js'
 import {
   default_cache_path,
   default_host,
   default_project_id
 } from '#root/tools/ops/hosting-traffic.js'
 
+/** The billing export is the only paid query, so it runs once an hour. */
+const SPEND_MS = MS_PER_HOUR
+/** Service health changes slowly and reads for free. */
+const SERVICE_MS = 5 * MS_PER_MINUTE
+/** A machine that parks must leave the screen within a minute. */
+const INVENTORY_MS = MS_PER_MINUTE
 const PAST_DAY = /^can:\/\/usage\/[^/]+\/(\d{4}-\d\d-\d\d)\//
 const SITE_DAYS = 7
 const SITE_WEEKS = 2
@@ -155,7 +161,7 @@ export const cloud_sources = ({
         for (const row of bill.rows) if (row.project) projects.add(row.project)
       return { exports }
     },
-    MS_PER_HOUR,
+    SPEND_MS,
     now
   )
   return {
@@ -170,7 +176,7 @@ export const cloud_sources = ({
         )
         return { inventories, checked: new Date(now()).toISOString() }
       },
-      MS_PER_HOUR,
+      INVENTORY_MS,
       now
     ),
     services: cached_read(
@@ -185,7 +191,7 @@ export const cloud_sources = ({
         )
         return { rows: rows.flat() }
       },
-      MS_PER_HOUR,
+      SERVICE_MS,
       now
     ),
     plans: cached_read(

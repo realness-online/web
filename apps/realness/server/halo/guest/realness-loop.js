@@ -5,6 +5,8 @@
  *     realness loop "<goal>"        start a loop; prints its id
  *     realness loop report <id>     its status, runs, stop reason, log tail
  *     realness loop scout <name>    run a plan's scout once, in a loop actor
+ *     realness loop scout <name> --probe
+ *                                   check the gates and one YC read, run nothing
  *     realness loop scouts          run every active scout, each in its own loop
  *
  * Asks the halo through the door. The halo bounds depth, fan-out, runs, and
@@ -12,8 +14,13 @@
  */
 import { ask_ok, exit } from './realness-door.js'
 
+const PROBE_MS = 300_000
+const REPLY_MS = 30_000
+const KIB = 1024
+const GIB = KIB * KIB * KIB
+
 const USAGE =
-  'usage: realness loop "<goal>" | realness loop report <id> | realness loop scout <name> | realness loop scouts'
+  'usage: realness loop "<goal>" | realness loop report <id> | realness loop scout <name> [--probe] | realness loop scouts'
 const args = process.argv.slice(2)
 
 if (args.length === 2 && args[0] === 'report') {
@@ -23,14 +30,22 @@ if (args.length === 2 && args[0] === 'report') {
     { timeout_ms: 30_000 }
   )
   process.stdout.write(`${JSON.stringify(reply.loop, null, 2)}\n`)
-} else if (args.length === 2 && args[0] === 'scout') {
+} else if (
+  (args.length === 2 || (args.length === 3 && args[2] === '--probe')) &&
+  args[0] === 'scout'
+) {
+  const probe = args[2] === '--probe'
   const reply = await ask_ok(
     'realness loop',
-    { op: 'scout', scout: args[1] },
-    { timeout_ms: 30_000 }
+    probe
+      ? { op: 'scout', scout: args[1], probe }
+      : { op: 'scout', scout: args[1] },
+    { timeout_ms: probe ? PROBE_MS : REPLY_MS }
   )
   process.stdout.write(
-    `scout ${reply.scout} started; its finds land in Finds/\n`
+    probe
+      ? `probe ok: ${Math.floor(reply.probe.free / GIB)} GiB free, ${reply.probe.cookies} yc cookies, directory HTTP ${reply.probe.status}\n`
+      : `scout ${reply.scout} started; its finds land in Finds/\n`
   )
 } else if (args.length === 1 && args[0] === 'scouts') {
   const reply = await ask_ok(

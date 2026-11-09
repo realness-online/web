@@ -174,6 +174,7 @@ it('dashboard names a traffic read that stopped in STATUS', () => {
     on: false,
     now
   })
-  assert.match(text, /Site traffic not refreshing: ERROR: no/)
+  assert.match(text, /site traffic not refreshing:/)
+  assert.match(text, /ERROR: no/)
   assert.match(text, /credentials/)
 })

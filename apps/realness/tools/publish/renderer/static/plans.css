@@ -258,3 +258,40 @@ section[itemprop='articleBody'] {
     }
   }
 }
+
+nav[aria-label='Plans by area'] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: var(--max-width);
+  margin: var(--base-line) auto 0;
+  padding-inline: var(--base-line);
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 0.15em 0.7em;
+    cursor: pointer;
+    opacity: 0.6;
+  }
+
+  button[aria-pressed='true'] {
+    opacity: 1;
+    background: var(--text);
+    color: var(--surface);
+  }
+}
+
+article > [itemprop='genre'] {
+  display: block;
+  max-width: var(--max-width);
+  margin: calc(var(--base-line) * 0.5) auto 0;
+  padding-inline: var(--base-line);
+  font-size: 0.75em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}

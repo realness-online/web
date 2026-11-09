@@ -1,60 +1,73 @@
 import {
   existsSync as exists_sync,
+  mkdirSync as mkdir_sync,
   readFileSync as read_file_sync
 } from 'node:fs'
 import { write_file_durable } from './durable.js'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { hostname } from 'node:os'
 import { BadRequest } from './errors.js'
-import { MS_PER_MINUTE } from '#root/lib/units.js'
+import { MIB, MS_PER_MINUTE } from '#root/lib/units.js'
 import { escape, item_html } from '#root/lib/items.js'
 /* eslint-disable no-await-in-loop -- each loop run finishes before the next starts */
 
 const MAX_RUNS = 20
 
 const GOAL_LIMIT = 4000
-/** @param {string} goal @param {boolean} [once] one plain prompt, then exit */
-export const launch_argv = (goal, once = false) => [
-  'systemd-run',
-  '--unit=realness-loop',
-  '--uid=realness',
-  '--gid=realness',
-  '--collect',
-  '/usr/local/bin/node',
-  '/usr/local/bin/realness-loop-run',
-  ...(once ? ['--once'] : []),
-  goal
-]
+/**
+ * @param {string} goal
+ * @param {boolean} [once] one plain prompt, then exit
+ * @param {string} [runtime] a box has no systemd
+ * @param {string} [session_dir] where pi writes its session, when it is not the loop's own
+ */
+export const launch_argv = (
+  goal,
+  once = false,
+  runtime = 'firecracker',
+  session_dir = ''
+) => {
+  const run = [
+    '/usr/local/bin/node',
+    '/usr/local/bin/realness-loop-run',
+    ...(once ? ['--once'] : []),
+    ...(session_dir ? ['--sessions', session_dir] : []),
+    goal
+  ]
+  return runtime === 'box'
+    ? [
+        'sh',
+        '-c',
+        'setsid -f /usr/sbin/runuser -u realness -- env HOME=/realness USER=realness "$@" </dev/null >/dev/null 2>&1',
+        'sh',
+        ...run
+      ]
+    : [
+        'systemd-run',
+        '--unit=realness-loop',
+        '--uid=realness',
+        '--gid=realness',
+        '--collect',
+        ...run
+      ]
+}
 const LIVE = new Set(['starting', 'running'])
 export const STOP_ARGV = ['systemctl', 'stop', 'realness-loop']
+export const BOX_STOP_ARGV = ['pkill', '-f', '/usr/local/bin/realness-loop-run']
+/** @param {string} [runtime] */
+export const stop_argv = runtime =>
+  runtime === 'box' ? BOX_STOP_ARGV : STOP_ARGV
+
+const LOG_BYTES = 2 * MIB
+export const LOG_ARGV = [
+  'sh',
+  '-c',
+  `cd /realness/work/loop && cat stderr.log events.jsonl 2>/dev/null | tail -c ${LOG_BYTES}`
+]
 
 export const PROBE_ARGV = [
   '/usr/local/bin/node',
   '-e',
-  `
-const fs = process.getBuiltinModule('node:fs')
-const d = '/realness/work/loop'
-const read = (path, tail = 0) => {
-  try {
-    const bytes = fs.readFileSync(path)
-    return bytes.subarray(tail ? Math.max(0, bytes.length - tail) : 0).toString()
-  } catch {
-    return ''
-  }
-}
-let status = {}
-try {
-  status = JSON.parse(read(d + '/status.json') || '{}')
-} catch {}
-const runs = read(d + '/.auto/log.jsonl')
-  .split('\\n')
-  .filter(line => line.includes('"run":')).length
-const quota = read(d + '/events.jsonl', 65536).includes('quota exceeded')
-const tail = read(d + '/.auto/log.jsonl', 16384).split('\\n').slice(-20)
-process.stdout.write(
-  JSON.stringify({ state: status.state, tokens: status.tokens ?? 0, runs, quota, tail }) + '\\n'
-)
-`
+  read_file_sync(new URL('./loop-probe.js', import.meta.url), 'utf8')
 ]
 
 /** Why a running loop should stop now, or null. */
@@ -75,6 +88,7 @@ export const stop_reason = (
  * One tracked loop, as saved in the loops file.
  * @typedef {object} LoopRecord
  * @property {string} [parent] absent on the record `report` returns
+ * @property {string} [owner] kept after the loop's box is gone
  * @property {number} depth
  * @property {string} [goal] absent on the record `report` returns
  * @property {string} status
@@ -176,9 +190,13 @@ export class Loops {
   /**
    * @param {string} parent_id
    * @param {string} goal
-   * @param {{ once?: boolean, deadline_ms?: number }} [options]
+   * @param {{ once?: boolean, deadline_ms?: number, session_dir?: string }} [options]
    */
-  async #start(parent_id, goal, { once = false, deadline_ms } = {}) {
+  async #start(
+    parent_id,
+    goal,
+    { once = false, deadline_ms, session_dir = '' } = {}
+  ) {
     const parent = this.store.get(parent_id)
     if (!parent?.owner) throw new BadRequest('loop needs an owned actor')
     if (typeof goal !== 'string' || !goal.trim() || goal.length > GOAL_LIMIT)
@@ -191,19 +209,21 @@ export class Loops {
     const record = await this.store.create(parent.owner)
     this.loops[record.id] = {
       parent: parent_id,
+      owner: parent.owner,
       depth,
       goal,
       status: 'starting',
       started: new Date().toISOString(),
       ...(once ? { once } : {}),
-      ...(deadline_ms ? { deadline_ms } : {})
+      ...(deadline_ms ? { deadline_ms } : {}),
+      ...(session_dir ? { session_dir } : {})
     }
     this.#save()
     const loop = this.loops[record.id]
     try {
       const { exit_code, stderr_b64 } = await this.store.exec(
         record.id,
-        launch_argv(goal, once),
+        launch_argv(goal, once, this.store.runtime, session_dir),
         { cwd: '/' }
       )
       if (exit_code !== 0)
@@ -242,8 +262,8 @@ export class Loops {
     const loop = {
       id,
       halo: this.halo,
-      owner: this.store.get(id)?.owner ?? '',
-      ...this.loops[id]
+      ...this.loops[id],
+      owner: this.loops[id].owner ?? this.store.get(id)?.owner ?? ''
     }
     const fields = [
       'id',
@@ -296,8 +316,8 @@ export class Loops {
     return Object.entries(this.loops)
       .map(([id, { tail, ...loop }]) => ({
         id,
-        owner: this.store.get(id)?.owner ?? null,
-        ...loop
+        ...loop,
+        owner: loop.owner ?? this.store.get(id)?.owner ?? null
       }))
       .sort((a, b) => b.started.localeCompare(a.started))
   }
@@ -345,9 +365,20 @@ export class Loops {
     return stopped
   }
 
+  /** Where a stopped loop's log stays once its box is gone. */
+  log_path(id) {
+    return join(dirname(this.file), 'loop-logs', `${id}.log`)
+  }
+
   async stop(id, reason) {
     const loop = this.loops[id]
-    if (reason !== 'exited') await this.store.exec(id, STOP_ARGV, { cwd: '/' })
+    if (reason !== 'exited')
+      await this.store.exec(id, stop_argv(this.store.runtime), { cwd: '/' })
+    const { stdout_b64 = '' } = await this.store.exec(id, LOG_ARGV, {
+      cwd: '/'
+    })
+    mkdir_sync(dirname(this.log_path(id)), { recursive: true })
+    write_file_durable(this.log_path(id), Buffer.from(stdout_b64, 'base64'))
     Object.assign(loop, {
       status: 'stopped',
       reason,
@@ -356,7 +387,7 @@ export class Loops {
     this.#save()
     await this.#publish(id)
     this.store.end_work(id, 'loop')
-    await this.store.idle(id)
+    await this.store.destroy(id)
   }
 
   #save() {

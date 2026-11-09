@@ -518,7 +518,10 @@ const detail_rows = (panels, width, on, now) => {
       on
     )
   )
-  section('AGENT REPORT HISTORY', error_lines(panels.halos, on).concat(reports))
+  section(
+    'CLOUD AGENT REPORT HISTORY',
+    error_lines(panels.halos, on).concat(reports)
+  )
   section(
     'LOCAL HALO',
     error_lines(panels.local, on).concat(local_detail_lines(panels.local, on))
@@ -559,51 +562,87 @@ const local_detail_lines = (local, on) => {
 }
 
 /** One line per cloud, sync, halo, and cost problem. */
-/** One line per cloud service, naming each one that is not ready. */
-const cloud_service_lines = (panels, on) => {
-  if (panels.services?.status !== 'ok')
-    return [paint('Cloud service status unavailable', 'failed', on)]
-  const services = panels.services.rows ?? []
-  const problems = services.filter(row => !row.found || !row.ready)
-  if (!problems.length) return [`${services.length} cloud services ready`]
-  return problems.map(row =>
-    paint(
-      `${row.name}: ${row.found ? 'NOT READY' : 'MISSING'} in ${row.project}`,
-      'failed',
-      on
-    )
-  )
+/** The local sync light: its folders read, or one that would not. */
+const sync_light = sync => {
+  if (sync?.status !== 'ok') return 'unknown'
+  return (sync.rows ?? []).some(row => !row.listing) ? 'failed' : 'running'
 }
 
-const status_lines = (panels, width, on) => {
-  const status = [...cloud_service_lines(panels, on)]
+/**
+ * The local piece's lights: the halo on this machine, and its sync reads.
+ * @param {any} panels
+ * @param {boolean} [on]
+ */
+export const local_light_lines = (panels, on = true) => {
   const local = local_of(panels)
-  if (local)
-    status.push(
-      paint(
-        `Local halo: ${local.state} at ${new URL(local.url).host}`,
-        local.state,
+  const lights = [
+    ['halo', local ? 'running' : 'failed'],
+    ['sync', sync_light(panels.sync)]
+  ]
+  return [
+    lights
+      .map(([name, state]) =>
         on
+          ? `${paint(LIGHT, state, on)} ${name}`
+          : `${name} ${LIGHT_WORDS[state]}`
       )
-    )
+      .join('  ')
+  ]
+}
+
+/** One line per cloud service, naming each one that is not ready. */
+const cloud_service_lines = panels => {
+  if (panels.services?.status !== 'ok')
+    return [{ text: 'cloud service status unavailable', state: 'failed' }]
+  const services = panels.services.rows ?? []
+  const problems = services.filter(row => !row.found || !row.ready)
+  if (!problems.length) return [{ text: `${services.length} services ready` }]
+  return problems.map(row => ({
+    text: `${row.name}: ${row.found ? 'NOT READY' : 'MISSING'} in ${row.project}`,
+    state: 'failed'
+  }))
+}
+
+/**
+ * One status line under its scope, wrapped with the scope's own indent.
+ * @param {string} scope
+ * @param {string | { text: string, state?: string }} entry
+ * @param {number} width
+ * @param {boolean} on
+ */
+const scoped_line = (scope, entry, width, on) => {
+  const { text, state } = typeof entry === 'string' ? { text: entry } : entry
+  const pad = ' '.repeat(scope.length)
+  return wrap(text, width - scope.length).map((part, index) => {
+    const line = `${index === 0 ? scope : pad}${part}`
+    return state ? paint(line, state, on) : line
+  })
+}
+
+/** What is wrong, said in two groups: this machine first, the cloud after. */
+const status_lines = (panels, width, on) => {
+  const local = local_of(panels)
+  const at_home = []
+  if (panels.local && !local)
+    at_home.push({ text: 'halo did not answer - see details', state: 'failed' })
+  if (local)
+    at_home.push({
+      text: `halo up at ${new URL(local.url).host}`,
+      state: 'running'
+    })
   if (panels.sync?.status === 'failed')
-    status.push(paint('Sync read failed - see details', 'failed', on))
+    at_home.push({ text: 'sync read failed - see details', state: 'failed' })
   else
     for (const row of panels.sync?.rows ?? [])
       if (!row.listing)
-        status.push(
-          ...wrap(
-            `Cannot read sync folder ${row.folder}: ${row.error ?? 'no reason given'}`,
-            width
-          )
+        at_home.push(
+          `cannot read sync folder ${row.folder}: ${row.error ?? 'no reason given'}`
         )
       else if (row.newest)
-        status.push(
-          ...wrap(
-            `Newest synced session: ${new Date(row.newest).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`,
-            width
-          )
+        at_home.push(
+          `newest synced session: ${new Date(row.newest).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`
         )
+  const status = [...cloud_service_lines(panels)]
   const running = new Set(
     (panels.resources?.inventories ?? []).flatMap(inventory =>
       inventory.instances
@@ -611,31 +650,33 @@ const status_lines = (panels, width, on) => {
         .map(row => row.name)
     )
   )
+  /** Words that say the halo is down; a machine that is up contradicts them. */
+  const DOWN_WORDS = new Set(['parked', 'quiet', 'unknown'])
+
   for (const row of panels.halos?.rows ?? [])
-    if (running.has(row.name) && row.state === 'quiet')
-      status.push(
-        paint(
-          `${row.name}: cloud machine running, agent report missing`,
-          'idle',
-          on
-        )
-      )
+    if (running.has(row.name) && DOWN_WORDS.has(row.state))
+      status.push({
+        text: `${row.name}: cloud machine running, agent report missing`,
+        state: 'idle'
+      })
   if (panels.cost?.status === 'failed')
-    status.push('Model cost unavailable - see details')
+    status.push('model cost unavailable - see details')
   if (panels.model?.status === 'failed')
-    status.push('Model call stats unavailable - see details')
+    status.push('model call stats unavailable - see details')
   else if (panels.model?.totals?.errors)
-    status.push(
-      paint(`Model calls: ${model_summary(panels.model)}`, 'failed', on)
-    )
+    status.push({
+      text: `model calls: ${model_summary(panels.model)}`,
+      state: 'failed'
+    })
   if (panels.traffic?.refresh?.state === 'failed')
-    status.push(
-      ...wrap(
-        `Site traffic not refreshing: ${panels.traffic.refresh.error}`,
-        width
-      ).map(line => paint(line, 'failed', on))
-    )
-  return status
+    status.push({
+      text: `site traffic not refreshing: ${panels.traffic.refresh.error}`,
+      state: 'failed'
+    })
+  return [
+    ...at_home.flatMap(entry => scoped_line('local: ', entry, width, on)),
+    ...status.flatMap(entry => scoped_line('cloud: ', entry, width, on))
+  ]
 }
 
 export const frame_rows = (
@@ -783,6 +824,32 @@ const usage = (label, free, total, on, bar = true) => {
   return `${label} ${bar ? `${paint(meter(share, HALO_METER), state, on)} ` : ''}${(used / GB).toFixed(used / GB < ONE_DECIMAL_BELOW ? 1 : 0)}/${(total / GB).toFixed(0)}G`
 }
 
+/**
+ * Halo records with the cloud machines' own state applied: a machine that is
+ * running is not parked, whatever its last record said.
+ * @param {any} halos
+ * @param {any} resources
+ */
+export const with_machines = (halos, resources) => {
+  const rows = halos?.rows ?? []
+  if (!rows.length) return halos
+  const running = new Set(
+    (resources?.inventories ?? []).flatMap(inventory =>
+      inventory.instances
+        .filter(instance => instance.status === 'RUNNING')
+        .map(instance => instance.name)
+    )
+  )
+  return {
+    ...halos,
+    rows: rows.map(row =>
+      running.has(row.name) && row.state !== 'running'
+        ? { ...row, state: 'running' }
+        : row
+    )
+  }
+}
+
 /** Two rows per synced halo record: actors and age, then memory and disk. */
 export const halo_panel_lines = (halos, on, width = DEFAULT_WIDTH) => {
   if (halos?.status === 'failed') return [paint('UNAVAILABLE', 'failed', on)]
@@ -835,7 +902,7 @@ export const local_panel_lines = (local, on = true, width = DEFAULT_WIDTH) => {
       'the local halo did not answer; run npm run local'
     ]
   const host = local.url ? new URL(local.url).host : 'not in this checkout'
-  const state = paint(local.state, local.state, on)
+  const state = paint('up', 'running', on)
   const actors = local.actors
     ? `${local.actors.running ?? 0} run ${local.actors.idle ?? 0} idle ${local.actors.stopped ?? 0} stop`
     : 'no actors yet'
@@ -863,8 +930,8 @@ const tokens = count => {
 
 const LIGHT = '●'
 const MIN_TILE = 3
-/** The local halo needs two rows; more than four is unused room. */
-const LOCAL_MAX_HEIGHT = 4
+/** The local tile holds a light, the halo's two rows, and its border. */
+const LOCAL_MAX_HEIGHT = 5
 const PERCENT = 100
 const STALE_TRAFFIC_MS = 86_400_000
 const SERVICES = ['sync', 'proxy', 'gate']
@@ -903,12 +970,10 @@ const LIGHT_WORDS = {
   unknown: '?'
 }
 
-/** One colored light per piece; without color each light names its state. */
+/** One colored light per cloud piece; local pieces light up in their own tile. */
 export const health_lights = (panels, on = true, width = DEFAULT_WIDTH) => {
-  const local = local_of(panels)
   const lights = [
     ['halo', halo_light(panels.halos)],
-    ...(local ? [['local', local.state]] : []),
     ...SERVICES.map(name => [name, service_light(panels.services, name)])
   ]
   const lit = lights.map(
@@ -1064,8 +1129,8 @@ const machine_panel = (resources, on) => {
       : [paint('UNAVAILABLE', 'failed', on)]
   return {
     title: instances.length
-      ? `MACHINES  ${running}/${instances.length} running`
-      : 'MACHINES',
+      ? `CLOUD MACHINES  ${running}/${instances.length} running`
+      : 'CLOUD MACHINES',
     lines: machine_lines
   }
 }
@@ -1208,11 +1273,19 @@ const dashboard = (panels, width, height, on, now) => {
     ...model_panel_lines(panels.cost, right - BOX_SIDES, on),
     ...calls
   ]
-  const lights = health_lights(panels, on, right - BOX_SIDES)
-  const halo_lines = halo_panel_lines(panels.halos, on, right - BOX_SIDES)
+  const cloud = with_machines(panels.halos, panels.resources)
+  const lights = health_lights(
+    { ...panels, halos: cloud },
+    on,
+    right - BOX_SIDES
+  )
+  const halo_lines = halo_panel_lines(cloud, on, right - BOX_SIDES)
   const local = local_of(panels)
-  const local_lines = local
-    ? local_panel_lines(local, on, right - BOX_SIDES)
+  const local_lines = panels.local
+    ? [
+        ...local_light_lines(panels, on),
+        ...local_panel_lines(local, on, right - BOX_SIDES)
+      ]
     : []
   const model_height = model_lines.length + 2
   const health_height = lights.length + 2
@@ -1238,16 +1311,16 @@ const dashboard = (panels, width, height, on, now) => {
     status_rows = 0
   }
   const right_column = [
-    ...tile('HEALTH', lights, right, health_height, on),
+    ...(local_fits ? tile('LOCAL', local_lines, right, local_height, on) : []),
+    ...tile('CLOUD HEALTH', lights, right, health_height, on),
     ...tile(machines_title, machine_lines, right, machines_rows, on),
     ...tile(
-      `HALOS  ${(panels.halos?.rows ?? []).length}`,
+      `CLOUD HALOS  ${(cloud?.rows ?? []).length}`,
       halo_lines,
       right,
       halos_rows,
       on
     ),
-    ...(local_fits ? tile('LOCAL', local_lines, right, local_height, on) : []),
     ...tile('MODEL SPEND', model_lines, right, model_height, on),
     ...(status_rows
       ? tile(

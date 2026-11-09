@@ -16,6 +16,8 @@ const SCRIPTS = {
     import('#root/tools/publish/renderer/static/scripts/live-reload.js'),
   'plan-covers': () =>
     import('#root/tools/publish/renderer/static/scripts/plan-covers.js'),
+  'plan-filter': () =>
+    import('#root/tools/publish/renderer/static/scripts/plan-filter.js'),
   diagrams: () =>
     import('#root/tools/publish/renderer/static/scripts/diagrams.js')
 }
@@ -167,5 +169,34 @@ describe('diagrams', () => {
   it('leaves a page without diagrams alone', async () => {
     await load('diagrams')
     expect(document.documentElement.dataset.diagrams).toBeUndefined()
+  })
+})
+
+describe('plan-filter', () => {
+  it('shows only the chosen area and marks its button pressed', async () => {
+    document.body.innerHTML = `
+      <nav aria-label="Plans by area">
+        <button type="button" data-area="" aria-pressed="true">All</button>
+        <button type="button" data-area="SEEQ" aria-pressed="false">SEEQ</button>
+      </nav>
+      <section>
+        <article data-area="Realness"></article>
+        <article data-area="SEEQ"></article>
+      </section>`
+    await load('plan-filter')
+    document.querySelector('button[data-area="SEEQ"]').click()
+    const [realness, seeq] = document.querySelectorAll('section > article')
+    expect(realness.hidden).toBe(true)
+    expect(seeq.hidden).toBe(false)
+    expect(
+      document
+        .querySelector('button[data-area="SEEQ"]')
+        .getAttribute('aria-pressed')
+    ).toBe('true')
+    expect(
+      document
+        .querySelector('button[data-area=""]')
+        .getAttribute('aria-pressed')
+    ).toBe('false')
   })
 })

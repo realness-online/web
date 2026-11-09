@@ -11,8 +11,10 @@ import { join } from 'node:path'
 import * as firecracker from './firecracker.js'
 import { run } from './syscalls.js'
 import { MIB, MS_PER_SECOND } from '#root/lib/units.js'
+import { logger } from './log.js'
 /* eslint-disable no-await-in-loop -- polling waits between tries; copies stop one at a time */
 
+const LOG = logger('chrome-pool')
 const MAX_COPIES = 250
 const POLL_MS = 100
 const SETTLE_POLL_MS = 250
@@ -22,7 +24,9 @@ const LOAD_LIMIT_MS = 30_000
 const SETTLE_MS = 10_000
 const EVAL_TIMEOUT_MS = 15_000
 const SETTLED_FOR_MS = 500
-const DEFAULT_MIB = 1024
+const CONTENT_BYTES = 2000
+export const DEFAULT_MIB = 1024
+export const COPY_VCPUS = 2
 
 const SEED_TAP = 'fc-chrome1'
 const SEED_GATEWAY = '172.18.1.1'
@@ -164,7 +168,7 @@ export class ChromePool {
     kernel = '/opt/fc/vmlinux-6.1.155',
     binary = '/opt/fc/firecracker',
     mib = DEFAULT_MIB,
-    vcpus = 2,
+    vcpus = COPY_VCPUS,
     max = 8
   }) {
     Object.assign(this, { root, image, kernel, binary, mib, vcpus, max })
@@ -320,9 +324,12 @@ export class ChromePool {
 export const render_page = async (
   address,
   url,
-  { limit = LOAD_LIMIT_MS, settle_ms = SETTLE_MS } = {}
+  { limit = LOAD_LIMIT_MS, settle_ms = SETTLE_MS, wait = 'load' } = {}
 ) => {
+  const t0 = Date.now()
   const { webSocketDebuggerUrl } = await devtools(address)
+  const t1 = Date.now()
+  if (wait === 'content') LOG.info(`render ${address} devtools ${t1 - t0}ms`)
   const socket = new WebSocket(webSocketDebuggerUrl)
   await new Promise((done, fail) => {
     socket.onopen = done
@@ -368,9 +375,11 @@ export const render_page = async (
     })
     await send('Page.enable', {}, sessionId)
     await send('Network.enable', {}, sessionId)
+    const t2 = Date.now()
     await send('Page.navigate', { url }, sessionId)
     const deadline = Date.now() + limit
     while (
+      wait === 'load' &&
       !events.some(
         e => e.sessionId === sessionId && e.method === 'Page.loadEventFired'
       )
@@ -378,6 +387,7 @@ export const render_page = async (
       if (Date.now() > deadline) break
       await sleep(50)
     }
+    const t3 = Date.now()
     const status =
       events.find(
         e =>
@@ -390,14 +400,25 @@ export const render_page = async (
       const { result } = await send(
         'Runtime.evaluate',
         {
-          expression: "(document.body?.innerText ?? '').length",
+          expression:
+            wait === 'content'
+              ? 'JSON.stringify({ready: document.readyState, body: Boolean(document.body), bytes: document.documentElement?.outerHTML.length ?? 0})'
+              : "(document.body?.innerText ?? '').length",
           returnByValue: true
         },
         sessionId
       )
-      if (result.value >= SETTLED_FOR_MS) break
+      if (wait === 'content') {
+        const seen = JSON.parse(result.value)
+        if (seen.body && seen.bytes > CONTENT_BYTES) break
+      } else if (result.value >= SETTLED_FOR_MS) break
       await sleep(SETTLE_POLL_MS)
     }
+    const t4 = Date.now()
+    if (wait === 'content')
+      LOG.info(
+        `render ${address} setup ${t2 - t1}ms, navigate ${t3 - t2}ms, settle ${t4 - t3}ms`
+      )
     const { result } = await send(
       'Runtime.evaluate',
       { expression: 'document.documentElement.outerHTML', returnByValue: true },

@@ -51,6 +51,7 @@ if ! e2fsck -fn rootfs.ext4 > /dev/null 2>&1; then
   truncate -s 2G rootfs.ext4.new
   sudo mkfs.ext4 -q -F -d squashfs-root rootfs.ext4.new
   mv rootfs.ext4.new rootfs.ext4
+  sudo rm -rf squashfs-root ubuntu-24.04.squashfs
 fi
 
 e2fsck -fn rootfs.ext4 > /dev/null && log "rootfs.ext4 is a clean ext4 ($(du -h rootfs.ext4 | cut -f1))"

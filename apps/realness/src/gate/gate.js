@@ -233,7 +233,8 @@ const forward = (
  *   wake?: (options?: { watch?: (event: object) => void }) => Promise<void>,
  *   log?: (line: string) => void,
  *   views?: ReturnType<typeof make_views>,
- *   unreachable?: () => string
+ *   unreachable?: () => string,
+ *   holds?: (who: { phone: string, actor: string }) => Promise<boolean>
  * }} options
  */
 export const make_gate = ({
@@ -244,7 +245,8 @@ export const make_gate = ({
   wake = async () => {},
   log = console.info,
   views = make_views(),
-  unreachable = () => 'halo unreachable'
+  unreachable = () => 'halo unreachable',
+  holds = () => Promise.resolve(true)
 }) => {
   const plain = (response, status, text) =>
     response
@@ -286,6 +288,12 @@ export const make_gate = ({
           )
         }
       : undefined
+    const named = /^\/v1\/actors\/([^/]+)(?:\/|$)/.exec(path)?.[1]
+    if (
+      named &&
+      !(await holds({ phone: who.phone, actor: named }).catch(() => true))
+    )
+      return plain(response, HTTP.NOT_FOUND, 'no such actor\n')
     try {
       await wake({ watch })
     } catch (error) {
@@ -295,7 +303,7 @@ export const make_gate = ({
       response.setHeader('retry-after', String(RETRY_AFTER_S))
       return plain(response, HTTP.UNAVAILABLE, `${error.message}\n`)
     }
-    const actor = /^\/v1\/actors\/([^/]+)(?:\/|$)/.exec(path)?.[1]
+    const actor = named
     try {
       await forward(
         request,

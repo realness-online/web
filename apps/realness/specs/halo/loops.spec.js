@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict'
 import { read_item } from '#root/lib/items.js'
-import { mkdtempSync, rmSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { after, it } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import {
+  BOX_STOP_ARGV,
+  LOG_ARGV,
   Loops,
   PROBE_ARGV,
   STOP_ARGV,
@@ -26,15 +35,18 @@ const fake = () => {
   let n = 1
   const execs = []
   const work = new Set()
-  const idled = []
+  const destroyed = []
   return {
     volume: root,
     execs,
     work,
-    idled,
+    destroyed,
     begin_work: id => work.add(id),
     end_work: id => work.delete(id),
-    idle: async id => idled.push(id),
+    destroy: async id => {
+      destroyed.push(id)
+      delete records[id]
+    },
     exec: async (id, argv) => (execs.push([id, argv]), { exit_code: 0 }),
     get: id => records[id],
     create: async owner => {
@@ -57,6 +69,35 @@ it('a loop is a sibling for the same owner', async () => {
   assert.equal(saved.status, 'running')
   assert.deepEqual(store.execs, [[loop.id, launch_argv('make tests faster')]])
   assert.equal(store.execs[0][1].at(-1), 'make tests faster')
+})
+
+it('a loop writes its session where the caller says', async () => {
+  const store = fake()
+  const loops = new Loops(store, { file: join(root, 'sessions.json') })
+  const dir = '/realness/vault/Projects/Scouts/SMS/Runs/2026-11-08-1/sessions'
+  const loop = await loops.start('a-000000000001', 'find leads', {
+    once: true,
+    session_dir: dir
+  })
+  const [, argv] = store.execs[0]
+  assert.deepEqual(argv, launch_argv('find leads', true, 'firecracker', dir))
+  assert.deepEqual(argv.slice(-4), ['--once', '--sessions', dir, 'find leads'])
+  assert.equal(loops.loops[loop.id].session_dir, dir)
+})
+
+it('a box loop starts and stops without systemd', async () => {
+  const store = { ...fake(), runtime: 'box' }
+  const loops = new Loops(store, { file: join(root, 'box.json') })
+  const loop = await loops.start('a-000000000001', 'find leads', {
+    once: true
+  })
+  const [, argv] = store.execs[0]
+  assert.deepEqual(argv, launch_argv('find leads', true, 'box'))
+  assert.equal(argv.includes('systemd-run'), false)
+  assert.match(argv[2], /setsid -f \/usr\/sbin\/runuser -u realness/)
+  assert.deepEqual(argv.slice(-2), ['--once', 'find leads'])
+  await loops.stop(loop.id, 'admin')
+  assert.deepEqual(store.execs.at(-2), [loop.id, BOX_STOP_ARGV])
 })
 
 it('a failed launch is recorded and frees the slot', async () => {
@@ -143,7 +184,7 @@ it('stop reasons: exited, quota, runs, deadline', () => {
   )
 })
 
-it('watch stops a finished loop, idles it, and frees the slot', async () => {
+it('watch stops a finished loop, destroys its box, and frees the slot', async () => {
   const store = fake()
   const loops = new Loops(store, {
     file: join(root, 'watch.json'),
@@ -170,10 +211,13 @@ it('watch stops a finished loop, idles it, and frees the slot', async () => {
   assert.throws(() => loops.report('a-000000000077', id), /no such loop/)
   runs = 2
   assert.deepEqual(await loops.watch(), [{ id, reason: 'runs' }])
-  assert.deepEqual(store.execs.at(-1), [id, STOP_ARGV])
-  assert.deepEqual(store.idled, [id])
+  assert.deepEqual(store.execs.at(-2), [id, STOP_ARGV])
+  assert.deepEqual(store.destroyed, [id])
+  assert.deepEqual(store.execs.at(-1), [id, LOG_ARGV])
+  assert.ok(existsSync(loops.log_path(id)))
   assert.equal(store.work.has(id), false)
   assert.equal(loops.loops[id].status, 'stopped')
+  assert.equal(loops.of_owner('+14155550123')[0].owner, '+14155550123')
   await loops.start('a-000000000001', 'next')
 })
 
@@ -273,7 +317,7 @@ it('mirror: records go to Storage; an admin stop request is obeyed', async () =>
   assert.doesNotMatch(record, /<meta|<tags>/)
   files.set(`loops/${id}/stop.html`, 'stop')
   assert.deepEqual(await loops.watch(), [{ id, reason: 'admin' }])
-  assert.deepEqual(store.execs.at(-1), [id, STOP_ARGV])
+  assert.deepEqual(store.execs.at(-2), [id, STOP_ARGV])
   assert.equal(
     read_item(files.get(`loops/${id}/record.html`), 'loop').reason,
     'admin'
@@ -323,4 +367,31 @@ it('a one-shot loop launches with --once and keeps its own deadline', async () =
     }),
     'deadline'
   )
+})
+
+it('probe reads status, runs, quota, and tail from a loop folder', () => {
+  const dir = join(root, 'probe')
+  mkdirSync(join(dir, '.auto'), { recursive: true })
+  writeFileSync(join(dir, 'status.json'), '{"state":"running","tokens":42}')
+  writeFileSync(join(dir, '.auto/log.jsonl'), '{"run":1}\n{"run":2}\n')
+  writeFileSync(join(dir, 'events.jsonl'), '{"error":"quota exceeded"}\n')
+  const probe = JSON.parse(
+    execFileSync(process.execPath, [...PROBE_ARGV.slice(1), dir])
+  )
+  assert.deepEqual(probe, {
+    state: 'running',
+    tokens: 42,
+    runs: 2,
+    quota: true,
+    tail: ['{"run":1}', '{"run":2}', '']
+  })
+})
+
+it('probe reports empty values for a fresh loop folder', () => {
+  const dir = join(root, 'fresh')
+  mkdirSync(dir)
+  const probe = JSON.parse(
+    execFileSync(process.execPath, [...PROBE_ARGV.slice(1), dir])
+  )
+  assert.deepEqual(probe, { tokens: 0, runs: 0, quota: false, tail: [''] })
 })

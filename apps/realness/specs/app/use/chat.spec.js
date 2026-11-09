@@ -117,28 +117,49 @@ describe('chat watch', () => {
     chat.stop()
   })
 
+  it('a closed watch waits for the user instead of reconnecting', async () => {
+    const chat = use_chat(ref('actor-1'))
+    watch_chat.mockResolvedValueOnce([{ type: 'history', messages: [] }])
+    await chat.watch()
+    expect(vi.getTimerCount()).toBe(0)
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(watch_chat).toHaveBeenCalledTimes(1)
+    chat.stop()
+  })
+
+  it('a watch closed before Pi is ready stops saying Starting', async () => {
+    const chat = use_chat(ref('actor-1'))
+    watch_chat.mockResolvedValueOnce([])
+    await chat.watch()
+    expect(chat.status.value).toBe('')
+    expect(chat.starting.value).toBe(false)
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(watch_chat).toHaveBeenCalledTimes(1)
+    chat.stop()
+  })
+
   it('Retry resets the initial readiness deadline and replaces the queued retry', async () => {
     const chat = use_chat(ref('actor-1'))
-    watch_chat.mockResolvedValueOnce([
-      { type: 'error', text: 'Pi is not running in the terminal' }
-    ])
+    watch_chat.mockRejectedValueOnce(
+      new Error('Pi is not running in the terminal')
+    )
     await chat.watch()
     vi.setSystemTime(Date.now() + 60_000)
-    watch_chat.mockResolvedValueOnce([
-      { type: 'error', text: 'Pi is not running in the terminal' }
-    ])
+    watch_chat.mockRejectedValueOnce(
+      new Error('Pi is not running in the terminal')
+    )
     await chat.watch()
     expect(chat.connection_problem.value).toBe(
       'Pi is not running in the terminal'
     )
-    watch_chat.mockResolvedValueOnce([
-      { type: 'error', text: 'Pi is not running in the terminal' }
-    ])
+    watch_chat.mockRejectedValueOnce(
+      new Error('Pi is not running in the terminal')
+    )
     await chat.retry()
     expect(chat.connection_problem.value).toBe('')
     expect(chat.starting.value).toBe(true)
     watch_chat.mockResolvedValueOnce([{ type: 'history', messages: [] }])
-    await vi.advanceTimersByTimeAsync(2000)
+    await vi.advanceTimersByTimeAsync(8000)
     expect(watch_chat).toHaveBeenCalledTimes(4)
     expect(chat.starting.value).toBe(false)
     chat.stop()
@@ -169,7 +190,7 @@ describe('chat watch', () => {
     ])
     expect(chat.startup_id).toBe('host-startup')
     expect(chat.startup_events.value.at(-1).source).toBe('chat')
-    expect(vi.getTimerCount()).toBe(1)
+    expect(vi.getTimerCount()).toBe(0)
     chat.stop()
     expect(vi.getTimerCount()).toBe(0)
   })
@@ -245,6 +266,32 @@ describe('chat watch', () => {
     chat.stop()
     await vi.runOnlyPendingTimersAsync()
     expect(watch_chat).toHaveBeenCalledTimes(1)
+  })
+
+  it('stops watching a chat the halo says is gone', async () => {
+    const gone = Object.assign(new Error('no such actor'), { status: 404 })
+    watch_chat.mockRejectedValueOnce(gone)
+    const chat = use_chat(ref('actor-1'))
+    await chat.watch()
+    await vi.runOnlyPendingTimersAsync()
+    expect(watch_chat).toHaveBeenCalledTimes(1)
+    expect(chat.status.value).toBe('This chat no longer exists.')
+    chat.stop()
+  })
+
+  it('backs off between failed watches instead of polling every two seconds', async () => {
+    watch_chat.mockRejectedValue(new Error('Realness answered 503'))
+    const chat = use_chat(ref('actor-1'))
+    await chat.watch()
+    await vi.advanceTimersByTimeAsync(1999)
+    expect(watch_chat).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(watch_chat).toHaveBeenCalledTimes(2)
+    await vi.advanceTimersByTimeAsync(3999)
+    expect(watch_chat).toHaveBeenCalledTimes(2)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(watch_chat).toHaveBeenCalledTimes(3)
+    chat.stop()
   })
 
   it('keeps ordinary and malformed messages intact', () => {

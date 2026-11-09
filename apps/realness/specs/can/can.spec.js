@@ -172,6 +172,15 @@ it('halos: a global admin reads halo status; nobody writes it through sync', () 
   assert.equal(can(box, 'list', 'halos/'), false)
 })
 
+it('halos: a gate pass reads its own halo report, to know what it holds', () => {
+  const gate = { gate: 'realness-1' }
+  assert.equal(can(gate, 'get', 'halos/realness-1/status.html'), true)
+  assert.equal(can(gate, 'get', 'halos/realness-1/lifecycle.html'), true)
+  assert.equal(can(gate, 'write', 'halos/realness-1/status.html'), false)
+  assert.equal(can(gate, 'get', 'halos/realness-2/status.html'), false)
+  assert.equal(can(gate, 'list', 'halos/'), false)
+})
+
 it('lifecycle: admins and the named halo record intent; nobody deletes it', () => {
   const admin = { phone: B, admin: true }
   const key = 'halos/realness-1/lifecycle.html'

@@ -54,6 +54,17 @@ for (const binary of ['realness', 'agent-browser'])
     assert.equal(wrapper.split('\n')[0], '#!/bin/sh')
   })
 
+it('the agent-browser lease lives where the loop user can write it', () => {
+  const wrapper = build.split('cat > "$TREE/usr/local/bin/agent-browser"')[1]
+  assert.match(
+    wrapper,
+    /LEASE="\/realness\/artifacts\/tmp\/realness-chrome-\$\(id -u\)"/
+  )
+  assert.match(wrapper, /mkdir -p \/realness\/artifacts\/tmp/)
+  assert.doesNotMatch(wrapper, /LEASE="\/tmp\//)
+  assert.doesNotMatch(wrapper, /LEASE="\/run\//)
+})
+
 it('every runtime file a guest wrapper calls is copied into the template', () => {
   assert.ok(called.length >= 2, 'expected the actor sync and recovery wrappers')
   assert.match(

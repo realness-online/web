@@ -341,6 +341,40 @@ it('r2a: an unreachable halo is a 503 that says why', async () => {
   gate.close()
 })
 
+it('z3: an actor the halo never reported does not wake the machine', async () => {
+  const api = await fake_api()
+  const order = []
+  const gate = make_gate({
+    identify: async token =>
+      token === 'good.id.token'
+        ? { phone }
+        : Promise.reject(new Error('bad token')),
+    halo_for: one_halo('127.0.0.1:1', api.port),
+    secret,
+    origins: [origin],
+    wake: async () => {
+      order.push('wake')
+    },
+    holds: async ({ actor }) => actor === 'a-aaaaaaaaaaaa',
+    log: () => {}
+  })
+  await new Promise(done => gate.listen(0, '127.0.0.1', done))
+  const at = `http://127.0.0.1:${gate.address().port}`
+  const gone = await fetch(`${at}/v1/actors/a-bbbbbbbbbbbb/chat/events`, {
+    headers: { authorization: 'Bearer good.id.token', origin }
+  })
+  assert.equal(gone.status, 404)
+  assert.deepEqual(order, [])
+  assert.equal(api.seen.length, 0)
+  const held = await fetch(`${at}/v1/actors/a-aaaaaaaaaaaa/chat/events`, {
+    headers: { authorization: 'Bearer good.id.token', origin }
+  })
+  assert.equal(held.status, 201)
+  assert.deepEqual(order, ['wake'])
+  gate.close()
+  api.server.close()
+})
+
 it('z3: only a signed-in call wakes the halo, before it is forwarded', async () => {
   const api = await fake_api()
   const order = []

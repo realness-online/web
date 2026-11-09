@@ -7,6 +7,7 @@ import { Door } from '#root/src/halo/door.js'
 import { ChromePool, render_page } from '#root/src/halo/chrome-pool.js'
 import { WebEngine } from '#root/src/halo/web-engine.js'
 import { ChromeLeases } from '#root/src/halo/chrome-leases.js'
+import { cookie_jars } from '#root/src/halo/cookie-jar.js'
 import { Loops } from '#root/src/halo/loops.js'
 import { HaloStatus } from '#root/src/halo/status.js'
 import { ActorRequests } from '#root/src/halo/requests.js'
@@ -17,6 +18,11 @@ import {
   readFileSync as read_file_sync
 } from 'node:fs'
 import { SyncMirror } from '#root/src/halo/sync-mirror.js'
+import {
+  intent_now,
+  lifecycle_html,
+  lifecycle_key
+} from '#root/src/sync/halo-lifecycle.js'
 import { logger } from '#root/src/halo/log.js'
 import * as pty from '#root/src/halo/pty.js'
 import * as server from '#root/src/halo/server.js'
@@ -178,6 +184,17 @@ const mirror = sync_url
       halo
     })
   : null
+/** A halo that serves is running; only parking changes that record. */
+const record_running = () =>
+  mirror
+    ? mirror
+        .put(
+          lifecycle_key(halo),
+          lifecycle_html(intent_now('running', { by: halo }))
+        )
+        .catch(error => LOG.warn(`lifecycle record failed: ${error.message}`))
+    : Promise.resolve()
+
 const loops = new Loops(store, { mirror, halo })
 const site_url = store.sync_sites
   ? `${String(site_public).replace(/\/$/, '')}/sites/{id}/`
@@ -192,7 +209,10 @@ const chrome_pool = exists_sync(chrome_image)
     })
   : null
 const chrome = chrome_pool
-  ? new ChromeLeases(chrome_pool, { work: store })
+  ? new ChromeLeases(chrome_pool, {
+      work: store,
+      jars: cookie_jars(join(values.volume, 'cookie-jars'))
+    })
   : null
 const render = chrome_pool
   ? async url => {
@@ -304,4 +324,7 @@ const report = async () => {
   await status.publish()
   setTimeout(report, STATUS_MS)
 }
-if (mirror) report()
+if (mirror) {
+  record_running()
+  report()
+}

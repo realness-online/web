@@ -38,6 +38,7 @@ const harness = name => {
   const ctx = {
     cwd: dir,
     model: FRONTIER,
+    sessionManager: { getSessionId: () => `session-${name}` },
     modelRegistry: { find: (provider, id) => [FRONTIER, CHEAP].find(m => m.provider === provider && m.id === id) },
     ui: { notify: (text, level) => notes.push({ text, level }) }
   }
@@ -48,7 +49,7 @@ const harness = name => {
   }
   prewalk(/** @type {any} */ (pi), { plans, log })
   const file = join(plans, 'p.md')
-  return {
+  const api = {
     ctx,
     notes,
     log,
@@ -66,6 +67,14 @@ const harness = name => {
     turn: (message = { stopReason: 'stop' }) => handlers.turn_end({ entries: [], message }, ctx),
     command: args => commands.prewalk(args, ctx)
   }
+  /** Frontier works a1 until its spec passes, which sets the pattern. */
+  api.prove = async () => {
+    api.write({ gate: '- Gate 1: approved', active: 'a1' })
+    await api.turn()
+    api.spec(true)
+    api.write({ gate: '- Gate 1: approved', done: 'a1' })
+  }
+  return api
 }
 
 test('spec runs, routes, and plan paths', () => {
@@ -77,11 +86,12 @@ test('spec runs, routes, and plan paths', () => {
   assert.equal(is_spec_run('ls vitest*; cat vitest.config.js | head; grep -n \'"test"\' package.json'), false)
   assert.equal(is_spec_run('cat specs/scouts/halo.spec.js'), false)
   const escalated = new Set(['b2'])
-  assert.equal(route({ on: true, approved: true, active: ['a1'], escalated }), 'cheap')
-  assert.equal(route({ on: true, approved: true, active: ['b2'], escalated }), 'frontier')
-  assert.equal(route({ on: true, approved: true, active: [], escalated }), 'frontier')
-  assert.equal(route({ on: true, approved: false, active: ['a1'], escalated }), 'frontier')
-  assert.equal(route({ on: false, approved: true, active: ['a1'], escalated }), 'frontier')
+  assert.equal(route({ on: true, approved: true, active: ['a1'], escalated, proven: true }), 'cheap')
+  assert.equal(route({ on: true, approved: true, active: ['b2'], escalated, proven: true }), 'frontier')
+  assert.equal(route({ on: true, approved: true, active: [], escalated, proven: true }), 'frontier')
+  assert.equal(route({ on: true, approved: false, active: ['a1'], escalated, proven: true }), 'frontier')
+  assert.equal(route({ on: false, approved: true, active: ['a1'], escalated, proven: true }), 'frontier')
+  assert.equal(route({ on: true, approved: true, active: ['a1'], escalated }), 'frontier')
   assert.equal(plan_of('vault/Projects/p.md', '/r', '/r/vault/Projects'), '/r/vault/Projects/p.md')
   assert.equal(plan_of('/r/README.md', '/r', '/r/vault/Projects'), null)
 })
@@ -93,54 +103,58 @@ test('an unapproved plan stays on the frontier model', async () => {
   assert.equal(h.ctx.model, FRONTIER)
 })
 
-test('an active node on an approved plan moves to the cheap model with instructions', async () => {
+test('the frontier works the first node; later nodes run cheap', async () => {
   const h = harness('approved')
   h.write({ gate: '- Gate 1: approved' })
   await h.turn()
   assert.equal(h.ctx.model, FRONTIER)
   h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.turn()
+  assert.equal(h.ctx.model, FRONTIER)
+  h.spec(true)
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   const result = await h.turn()
   assert.equal(h.ctx.model, CHEAP)
-  assert.match(result.entries[0].content, /node a1 .* run the node's own spec/)
+  assert.match(result.entries[0].content, /node b2 .* run the node's own spec/)
 })
 
 test('a failing spec returns the node to the frontier model and logs it', async () => {
   const h = harness('failing')
   h.write({ gate: '- Gate 1: approved', active: 'a1' })
   await h.turn()
-  h.spec(false)
-  const result = await h.turn()
-  assert.equal(h.ctx.model, FRONTIER)
-  assert.match(result.entries[0].content, /spec failed on a1/)
-  const html = readFileSync(h.log, 'utf8')
-  assert.match(html, /itemtype="\/prewalk\/escalation"/)
-  assert.match(html, /<span itemprop="node">a1<\/span>.*spec failed/)
+  h.spec(true)
   h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   await h.turn()
   assert.equal(h.ctx.model, CHEAP)
+  h.spec(false)
+  const result = await h.turn()
+  assert.equal(h.ctx.model, FRONTIER)
+  assert.match(result.entries[0].content, /spec failed on b2/)
+  const html = readFileSync(h.log, 'utf8')
+  assert.match(html, /itemtype="\/prewalk\/escalation"/)
+  assert.match(html, /<span itemprop="node">b2<\/span>.*spec failed/)
 })
 
 test('a cheap-model error turn returns the session to the frontier model with a notice', async () => {
   const h = harness('error')
   h.write({ gate: '- Gate 1: approved', active: 'a1' })
   await h.turn()
+  h.spec(true)
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await h.turn()
   assert.equal(h.ctx.model, CHEAP)
   const result = await h.turn({ stopReason: 'error', errorMessage: 'provider 503' })
   assert.equal(h.ctx.model, FRONTIER)
-  assert.match(result.entries[0].content, /cheaper model failed on a1: provider 503/)
-  assert.ok(h.notes.some(note => /back to anthropic\/opus for a1/.test(note.text)))
-  assert.match(readFileSync(h.log, 'utf8'), /<span itemprop="node">a1<\/span>.*model error: provider 503/)
+  assert.match(result.entries[0].content, /cheaper model failed on b2: provider 503/)
+  assert.ok(h.notes.some(note => /back to anthropic\/opus for b2/.test(note.text)))
+  assert.match(readFileSync(h.log, 'utf8'), /<span itemprop="node">b2<\/span>.*model error: provider 503/)
   await h.turn()
   assert.equal(h.ctx.model, FRONTIER)
 })
 
 test('each node leaving active logs one outcome beside the escalations', async () => {
   const h = harness('outcome')
-  h.write({ gate: '- Gate 1: approved', active: 'a1' })
-  await h.turn()
-  h.spec(false)
-  await h.turn()
-  h.spec(true)
+  await h.prove()
   h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   await h.turn()
   await h.turn()
@@ -150,7 +164,7 @@ test('each node leaving active logs one outcome beside the escalations', async (
   assert.equal(outcomes.length, 2)
   assert.match(
     outcomes[0],
-    /itemprop="node">a1<.*itemprop="status">done<.*itemprop="models">anthropic\/opus, openrouter\/deepseek\/deepseek-v4.1-flash-1017<.*itemprop="spec">passed<.*itemprop="escalated">yes</s
+    /itemprop="node">a1<.*itemprop="status">done<.*itemprop="models">anthropic\/opus<.*itemprop="spec">passed<.*itemprop="escalated">no</s
   )
   assert.match(
     outcomes[1],
@@ -184,10 +198,11 @@ test('a node finished without a passing spec is flagged; a verified one is not',
 test('a plan changed through bash is read again', async () => {
   const h = harness('shell')
   h.write({ gate: '- Gate 1: approved' })
-  h.shell({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.prove()
+  h.shell({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   await h.turn()
   assert.equal(h.ctx.model, CHEAP)
-  h.shell({ gate: '- Gate 1: approved', done: 'a1' })
+  h.shell({ gate: '- Gate 1: approved', done: 'a1,b2' })
   await h.turn()
   assert.equal(h.ctx.model, FRONTIER)
 })
@@ -200,30 +215,66 @@ test('work on an approved plan with no active node is told to mark one, once', a
   assert.match(result.entries[0].content, /no active node\. If this is node work, mark the node `active`/)
   h.change()
   assert.equal(await h.turn(), undefined)
-  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.prove()
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   await h.turn()
   assert.equal(h.ctx.model, CHEAP)
 })
 
 test('/prewalk off keeps the frontier model', async () => {
   const h = harness('off')
+  await h.prove()
   await h.command('off')
-  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   await h.turn()
   assert.equal(h.ctx.model, FRONTIER)
   await h.command('on')
-  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   await h.turn()
   assert.equal(h.ctx.model, CHEAP)
 })
 
-test('with no plan read, the one approved plan with an active node is found', async () => {
+test('a plan whose node passed its spec keeps its nodes cheap in a new session', async () => {
   const h = harness('found')
-  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.prove()
   const fresh = harness('found')
+  fresh.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   await fresh.turn()
   assert.equal(fresh.ctx.model, CHEAP)
   const other = harness('none')
   await other.turn()
   assert.equal(other.ctx.model, FRONTIER)
+})
+
+test('a manual switch to the cheap model that errors is left alone', async () => {
+  const h = harness('manual')
+  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.turn()
+  h.ctx.model = CHEAP
+  const result = await h.turn({ stopReason: 'error', errorMessage: 'This operation was aborted' })
+  assert.equal(result, undefined)
+  assert.equal(h.ctx.model, CHEAP)
+  assert.doesNotMatch(readFileSync(h.log, 'utf8'), /model error/)
+  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.turn()
+  assert.equal(h.ctx.model, CHEAP)
+})
+
+test('each log item names the session that wrote it', async () => {
+  const h = harness('session-id')
+  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.turn()
+  assert.match(readFileSync(h.log, 'utf8'), /itemprop="session">session-session-id</)
+})
+
+test('a node entering active logs one start item with the model', async () => {
+  const h = harness('start')
+  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.turn()
+  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.turn()
+  const html = readFileSync(h.log, 'utf8')
+  const starts = html.split('<article').filter(item => item.includes('itemtype="/prewalk/start"'))
+  assert.equal(starts.length, 1)
+  assert.match(starts[0], /itemprop="plan">.*plans\/p\.md<.*itemprop="node">a1<.*itemprop="model">anthropic\/opus</s)
 })

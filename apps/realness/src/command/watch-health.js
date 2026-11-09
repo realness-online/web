@@ -132,9 +132,10 @@ const attempt = async (read, at = () => new Date().toISOString()) => {
 export const local_halo_panel = async (request = local_request) => {
   const service = local_plan().services.find(service => service.name === 'halo')
   const url = service?.url
-  if (!url) return { url: null, state: 'unknown', actors: null }
+  if (!url)
+    return { url: null, state: 'unknown', answering: false, actors: null }
   const reply = await request(url).catch(() => null)
-  if (!reply) return { url, state: 'sleeping', actors: null }
+  if (!reply) return { url, state: 'sleeping', answering: false, actors: null }
   if (reply.status !== HTTP.OK)
     throw new Error(`the local halo answered ${reply.status}`)
   const health = JSON.parse(reply.body)
@@ -148,6 +149,7 @@ export const local_halo_panel = async (request = local_request) => {
   return {
     url,
     state: state === 'unknown' ? 'sleeping' : state,
+    answering: true,
     actors: counts,
     seed: health.seed?.built ? 'built' : 'unbuilt'
   }

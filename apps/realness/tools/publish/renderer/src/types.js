@@ -17,6 +17,7 @@
  * @property {string} [back_label]
  * @property {Object<string, PageMetadata>} [pages]
  * @property {string[]} [selected_pages] Public routes of selected full HTML pages.
+ * @property {Object<string, string>} [areas] Plan slug to its functional area.
  * @property {boolean} [pwa] Generate the public snapshot's manifest and worker.
  * @property {'app'|'document'} [pwa_profile] How the worker caches; default document.
  */
@@ -33,6 +34,7 @@
  * @property {string} [html] Absent for an omitted draft.
  * @property {string} [notes]
  * @property {number} [updated]
+ * @property {string | Date} [created]
  */
 
 /**

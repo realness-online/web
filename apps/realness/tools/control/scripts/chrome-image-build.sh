@@ -52,5 +52,5 @@ rm -f "$IMG.new"
 truncate -s "$SIZE" "$IMG.new"
 mkfs.ext4 -q -F -d "$TREE" "$IMG.new"
 e2fsck -fn "$IMG.new" > /dev/null && mv "$IMG.new" "$IMG"
-du -sh "$TREE" | sed 's/^/  tree: /'
+rm -rf "$TREE"
 ls -lh "$IMG" | awk '{print "  image: " $5 " " $9}'

@@ -40,7 +40,7 @@ const trace = async (
   const source = await read_file(path, 'utf8')
   const require = create_require(path)
   for (const [, specifier] of source.matchAll(
-    /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\(\s*)["']([^"']+)["']/g
+    /(?:\bfrom\s+|\bimport\s*(?:\(\s*)?|\brequire\(\s*)["']([^"']+)["']/g
   )) {
     if (specifier.startsWith('node:')) continue
     const local = specifier.startsWith('.') || specifier.startsWith('#root/')

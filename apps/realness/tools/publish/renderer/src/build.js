@@ -26,7 +26,11 @@ const markdown_files = async directory => {
 }
 
 /** Renderer files a page links only in plans mode. */
-const PLANS_ONLY = new Set(['plans.css', 'scripts/plan-covers.js'])
+const PLANS_ONLY = new Set([
+  'plans.css',
+  'scripts/plan-covers.js',
+  'scripts/plan-filter.js'
+])
 
 /**
  * Whether a renderer static file belongs in this snapshot: plans files for

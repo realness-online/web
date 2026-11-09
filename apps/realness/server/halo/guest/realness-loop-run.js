@@ -4,6 +4,7 @@
  *
  *     realness-loop-run <goal>
  *     realness-loop-run --once <goal>   one plain prompt; pi exits once it settles
+ *     realness-loop-run --sessions <dir> write pi's session to <dir>, not the loop
  *
  * The halo starts this in a loop actor under systemd-run. Pi runs in RPC mode:
  * print mode drops the autoresearch tools (vault/Projects/realness.md). Nobody
@@ -11,7 +12,9 @@
  * decides when the loop stops; closing stdin is Pi's orderly shutdown.
  *
  *     /realness/work/loop/goal.md        the goal, as given
+ *     /realness/work/loop/sessions/      pi's session, unless --sessions names a dir
  *     /realness/work/loop/events.jsonl   Pi's RPC events
+ *     /realness/work/loop/stderr.log     Pi's errors
  *     /realness/work/loop/status.json    {"state": "running" | "exited", "tokens": N, ...}
  */
 import { spawn } from 'node:child_process'
@@ -20,7 +23,8 @@ import {
   mkdirSync as mkdir_sync,
   writeFileSync as write_file_sync,
   renameSync as rename_sync,
-  existsSync as exists_sync
+  existsSync as exists_sync,
+  openSync as open_sync
 } from 'node:fs'
 import { join } from 'node:path'
 import { createInterface as create_interface } from 'node:readline'
@@ -36,11 +40,19 @@ const status = fields => {
   rename_sync(tmp, join(LOOP, 'status.json'))
 }
 
-const args = process.argv.slice(2)
-const once = args[0] === '--once'
-const goal = args.slice(once ? 1 : 0).join(' ')
+const argv = process.argv.slice(2)
+const once = argv[0] === '--once'
+const flags = once ? argv.slice(1) : argv
+let session_dir = join(LOOP, 'sessions')
+let goal
+if (flags[0] === '--sessions') {
+  session_dir = flags[1] ?? session_dir
+  goal = flags.slice(2).join(' ')
+} else goal = flags.join(' ')
 if (!goal.trim()) {
-  process.stderr.write('usage: realness-loop-run [--once] <goal>\n')
+  process.stderr.write(
+    'usage: realness-loop-run [--once] [--sessions <dir>] <goal>\n'
+  )
   process.exit(1)
 }
 mkdir_sync(LOOP, { recursive: true })
@@ -52,20 +64,23 @@ if (!exists_sync('.git')) {
   })
 }
 write_file_sync('goal.md', `${goal}\n`)
+mkdir_sync(session_dir, { recursive: true })
 
 const pi = spawn(
   '/usr/local/bin/realness',
-  ['--mode', 'rpc', '--session-dir', join(LOOP, 'sessions')],
+  ['--mode', 'rpc', '--session-dir', session_dir],
   {
-    stdio: ['pipe', 'pipe', 'inherit']
+    stdio: ['pipe', 'pipe', open_sync('stderr.log', 'a')]
   }
 )
+const { stdin, stdout } = pi
+if (!stdin || !stdout) throw new Error('Pi has no pipes')
 const send = value => {
   try {
-    pi.stdin.write(`${JSON.stringify(value)}\n`)
+    stdin.write(`${JSON.stringify(value)}\n`)
   } catch {}
 }
-process.on('SIGTERM', () => pi.stdin.end())
+process.on('SIGTERM', () => stdin.end())
 let tokens = 0
 status({ state: 'running', pid: pi.pid, tokens })
 send({
@@ -76,7 +91,7 @@ send({
     : `/autoresearch ${goal}\n\nNobody is watching: never ask questions; start the loop now.`
 })
 
-const events = create_interface({ input: pi.stdout, crlfDelay: Infinity })
+const events = create_interface({ input: stdout, crlfDelay: Infinity })
 for await (const line of events) {
   append_file_sync('events.jsonl', `${line}\n`)
   let event
@@ -90,7 +105,7 @@ for await (const line of events) {
     tokens += Number(usage.input ?? 0) + Number(usage.output ?? 0)
     status({ state: 'running', pid: pi.pid, tokens })
   }
-  if (once && event.type === 'agent_settled') pi.stdin.end()
+  if (once && event.type === 'agent_settled') stdin.end()
   if (event.type === 'extension_ui_request' && DIALOGS.has(event.method))
     send({ type: 'extension_ui_response', id: event.id, cancelled: true })
 }

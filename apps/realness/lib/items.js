@@ -78,7 +78,10 @@ const fields_of = body => {
  */
 export const read_items = (html, type) => {
   const found = []
-  const open = new RegExp(`<(\\w+) itemscope itemtype="/${type}">`, 'g')
+  const open = new RegExp(
+    `<(\\w+) itemscope(?:\\s+[\\w-]+="[^"]*")*\\s+itemtype="/${type}">`,
+    'g'
+  )
   for (const match of String(html).matchAll(open)) {
     const start = match.index + match[0].length
     const end = html.indexOf(`</${match[1]}>`, start)
