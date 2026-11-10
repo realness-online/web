@@ -22,7 +22,7 @@ const CLOUD_RUN = ['realness-sync', 'realness-proxy', 'realness-gate']
 const NAME_WIDTH = 16
 const ENVIRONMENT = 'production'
 const HALO_FLAG = '--halo='.length
-const REPO = file_url_to_path(new URL('../../../../', import.meta.url))
+const REPO = file_url_to_path(new URL('../../../../../', import.meta.url))
 const VERSION = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z]))?$/
 
 const out = text => process.stdout.write(`${text}\n`)
