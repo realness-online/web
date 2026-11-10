@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- **A parked VM leaves the watch within a minute** - The watch reads machine
+  and disk state every minute and service health every five, while the paid
+  billing export stays on its hourly read.
+- **A quiet chat stream closes itself** - A chat/events stream that sends
+  nothing for five minutes is closed, and the browser waits for your next
+  message instead of reopening it, so a forgotten tab stops waking the VM.
+- **A stale tab cannot wake a VM** - The gate answers 404 for an actor the
+  halo no longer reports instead of starting the machine.
+- **Scouts check the ground before they spend** - A run clears free space and
+  takes a fresh Chrome copy first, and a probe reports the gate result without
+  using the run.
+- **Login-only pages read with the saved cookie jar** - A reader fetches the
+  server-rendered page with the jar and falls back to a browser copy.
+- **Scout finds land in their plan's Finds section** - The digest and mail
+  scouts write each day's finds newest first.
+
 ## v3.0.0-y - 2026-11-04
 
 - **The header stays still between views** - Every header bar has one
