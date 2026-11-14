@@ -15,7 +15,7 @@ const removes_after = (script, built, removed) => {
   assert.ok(script.indexOf(removed, at) > at, `${removed} after ${built}`)
 }
 
-for (const name of ['template-build.sh', 'chrome-image-build.sh'])
+for (const name of ['template-build.sh'])
   it(`${name} removes its working tree once the image is built`, () =>
     removes_after(read(name), 'mv "$IMG.new" "$IMG"', 'rm -rf "$TREE"'))
 

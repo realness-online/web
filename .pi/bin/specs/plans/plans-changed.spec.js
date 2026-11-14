@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
-import { changed_pages } from '../../plans/plans.js'
+import { build_choice, changed_pages } from '../../plans/plans.js'
 
 const owned = new Map([
   [
@@ -32,4 +32,14 @@ it('a changed plan, its linked note, and a note in its folder each reach that pl
 it('a save two plans reach names both, and a file outside them names none', () => {
   assert.deepEqual(slugs(['Projects/realness.md', 'Projects/Scouts/index.md']), ['realness', 'scouts'])
   assert.deepEqual(slugs(['Journal/2026-11-05.md']), [])
+})
+
+it('a saved blog post rebuilds everything even when no plan changed', () => {
+  const built = () => true
+  assert.equal(build_choice({ sources_unchanged: true, plan_pages: [], blog_pages: [{ slug: 'post' }], built }), 'all')
+  assert.equal(build_choice({ sources_unchanged: true, plan_pages: [], blog_pages: [], built }), 'none')
+  assert.equal(
+    build_choice({ sources_unchanged: true, plan_pages: [{ id: '/+1/plans/1' }], blog_pages: [], built }),
+    'pages'
+  )
 })

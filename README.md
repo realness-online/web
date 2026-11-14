@@ -18,7 +18,7 @@ realness/
 │   ├── checks/          repo checks: extensions, skills, tooling, comments, soundness
 │   ├── plans/           plan pages and plan shape
 │   ├── graphics/        themes, palette, posters, gallery
-│   ├── web/             web-md
+│   ├── web/             realness-read
 │   ├── lib/             shared modules
 │   └── specs/           specs for all of the above
 ├── vault/               personal notes (edit)

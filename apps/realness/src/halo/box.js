@@ -49,6 +49,7 @@ import { logger } from './log.js'
 import { Store, now_iso } from './store.js'
 import { alive } from './firecracker.js'
 import { create_startup_trace } from '#root/src/harness/startup.js'
+import { local_person_file } from '#root/src/harness/settings.js'
 import { issue_recovery_pass } from '#root/src/sign-on/node/recovery-pass.js'
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { hostname } from 'node:os'
@@ -77,7 +78,7 @@ const VERSIONS = 'published-versions'
 const EXPORTS = 'exports'
 const ARTIFACT_PATHS = ['realness']
 /** Per-box cgroup limits: one runaway box cannot starve the others. */
-export const BOX_MIB = 1536
+export const BOX_MIB = 2048
 export const BOX_CPUS = 2
 const BOX_PIDS = 1024
 const CPU_PERIOD = 100_000
@@ -100,6 +101,32 @@ const sh = (argv, options = {}) =>
   spawn_sync(argv[0], argv.slice(1), { encoding: 'utf8', ...options })
 const BOOT_TIMEOUT_S = 60
 const API_TIMEOUT_S = 30
+/** The resolvers a box asks, as `realness-net-up` gives a microVM. */
+const RESOLVER =
+  'nameserver 1.1.1.1\nnameserver 8.8.8.8\noptions single-request-reopen\n'
+
+/** A box has no `realness-net-up`; its resolver is written before it boots. */
+export const write_resolver = etc =>
+  write_file_sync(join(etc, 'resolv.conf'), RESOLVER)
+
+/**
+ * The box's harness names its owner, so scout runs mint the owner's itemids.
+ * A person file the owner wrote is kept.
+ * @param {string} realness the box's /realness on the VM
+ * @param {string} owner a phone like +14155551234
+ */
+export const write_owner_person = (realness, owner) => {
+  const file = join(realness, local_person_file)
+  if (exists_sync(file)) return
+  const { uid, gid } = stat_sync(realness)
+  mkdir_sync(join(realness, '.pi'), { recursive: true })
+  write_file_sync(
+    file,
+    `<a itemprop="telephone" href="tel:${owner}">${owner}</a>\n`
+  )
+  chown_sync(file, uid, gid)
+}
+
 /** Boxes take 172.16.<n>.0/30 for n in 1..254, as Firecracker TAPs do. */
 const LAST_SUBNET = 254
 /** rwxr-xr-x: the box's own user reads and runs what the halo lays down. */
@@ -125,6 +152,7 @@ const GUEST_COPIES = [
   'realness-agent.js',
   'realness-chat.js',
   'realness-chrome.js',
+  'realness-cookies.js',
   'realness-door.js',
   'realness-loop.js',
   'realness-loop-run.js',
@@ -134,16 +162,24 @@ const GUEST_COPIES = [
   'realness-pty.js',
   'realness-read.js',
   'realness-responder.js',
+  'realness-scout.js',
+  'realness-scouts',
   'realness-site.js'
 ]
 
+const MODULES = new Set([
+  'realness-cookies.js',
+  'realness-door.js',
+  'realness-scout.js'
+])
+
 /**
  * The name a guest script runs under, the same as the template installs it:
- * executables drop `.js`; the door keeps it because Node imports it.
+ * executables drop `.js`; the modules keep it because Node imports them.
  * @param {string} name
  */
 export const installed_name = name =>
-  name === 'realness-door.js' ? name : name.replace(/\.js$/, '')
+  MODULES.has(name) ? name : name.replace(/\.js$/, '')
 
 /** `pi` once it holds across two checks, `starting` while its launcher runs. */
 const PI_STATE =
@@ -577,6 +613,8 @@ export class BoxStore extends Store {
     if (!exists_sync(join(etc, 'hostname')))
       await run('cp', ['-a', `${loop}/etc/.`, etc])
     await this.#owner_uid(record, etc, realness)
+    write_resolver(etc)
+    if (record.owner) write_owner_person(realness, record.owner)
 
     await run('mount', [
       '-t',
@@ -1016,7 +1054,7 @@ export class BoxStore extends Store {
         {
           cwd,
           stdin,
-          timeout: timeout || this.api_timeout,
+          timeout: timeout ?? 0,
           port: this.vsock_port
         }
       )
@@ -1053,7 +1091,7 @@ export class BoxStore extends Store {
     this.begin_work(id, work)
     try {
       const result = await vsock.exec_in_guest_stream(record.vsock_path, argv, {
-        timeout: options.timeout ?? this.api_timeout,
+        timeout: options.timeout ?? 0,
         port: this.vsock_port,
         signal: options.signal,
         on_output: chunk => {

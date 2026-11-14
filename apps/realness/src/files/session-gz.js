@@ -7,6 +7,7 @@
  */
 import { readFile as read_file } from 'node:fs/promises'
 import { join } from 'node:path'
+import { version_file } from './version-file.js'
 import { unzip, zip } from './zip.js'
 
 const PACKED = /\.html\.gz$/
@@ -56,6 +57,20 @@ export const read_local = async (name, path) => {
     return unzip(bytes)
   } catch {
     throw new OpenSession(`${name} is mid-write`)
+  }
+}
+
+/**
+ * A local file's sync version without reading it whole: a packed session
+ * hashes its plain HTML. A session mid-write is `OpenSession`.
+ */
+export const version_local = async (name, path) => {
+  const packed = packed_on_disk(name, path)
+  try {
+    return await version_file(path, { unpack: packed })
+  } catch (error) {
+    if (packed) throw new OpenSession(`${name} is mid-write`)
+    throw error
   }
 }
 

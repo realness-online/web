@@ -42,6 +42,44 @@ describe('@/use/poster-svg-activate-pointer', () => {
     expect(navigator.vibrate).toHaveBeenCalled()
   })
 
+  it('a short touch tap neither activates nor vibrates', () => {
+    const on_activate = vi.fn()
+    const { handle_pointerdown, handle_pointerup } =
+      use_poster_svg_activate_pointer({ on_activate })
+
+    handle_pointerdown({ pointerType: 'touch', clientX: 10, clientY: 10 })
+    vi.advanceTimersByTime(100)
+    handle_pointerup({ pointerType: 'touch', clientX: 10, clientY: 10 })
+    vi.advanceTimersByTime(LONG_PRESS_TOGGLE_MS)
+
+    expect(on_activate).not.toHaveBeenCalled()
+    expect(navigator.vibrate).not.toHaveBeenCalled()
+  })
+
+  it('a held touch vibrates once through release', () => {
+    const on_activate = vi.fn()
+    const { handle_pointerdown, handle_pointerup } =
+      use_poster_svg_activate_pointer({ on_activate })
+
+    handle_pointerdown({ pointerType: 'touch', clientX: 10, clientY: 10 })
+    vi.advanceTimersByTime(LONG_PRESS_TOGGLE_MS + 100)
+    handle_pointerup({ pointerType: 'touch', clientX: 10, clientY: 10 })
+
+    expect(on_activate).toHaveBeenCalledTimes(1)
+    expect(navigator.vibrate).toHaveBeenCalledTimes(1)
+  })
+
+  it('mouse clicks never vibrate', () => {
+    const { handle_pointerdown, handle_pointerup } =
+      use_poster_svg_activate_pointer({ on_activate: vi.fn() })
+
+    handle_pointerdown({ pointerType: 'mouse', clientX: 0, clientY: 0 })
+    vi.advanceTimersByTime(LONG_PRESS_TOGGLE_MS + 100)
+    handle_pointerup({ pointerType: 'mouse', clientX: 0, clientY: 0 })
+
+    expect(navigator.vibrate).not.toHaveBeenCalled()
+  })
+
   it('touch slide cancels long-press before it fires', () => {
     const on_activate = vi.fn()
     const { handle_pointerdown, handle_pointermove, handle_pointerup } =

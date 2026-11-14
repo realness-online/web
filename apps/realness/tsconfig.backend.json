@@ -16,7 +16,9 @@
     "lib": ["esnext", "dom"],
     "paths": {
       "/scripts/register.js": ["./packages/pwa/src/register.js"],
-      "/scripts/watch-for-updates.js": ["./packages/pwa/src/watch-for-updates.js"]
+      "/scripts/watch-for-updates.js": [
+        "./packages/pwa/src/watch-for-updates.js"
+      ]
     }
   },
   "include": [

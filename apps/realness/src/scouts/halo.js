@@ -1,19 +1,13 @@
-import { copyFile as copy_file } from 'node:fs/promises'
-import { join, relative } from 'node:path'
-import { setTimeout as wait } from 'node:timers/promises'
+import { readFile as read_file } from 'node:fs/promises'
+import { join } from 'node:path'
 import { ISO_DATE, MS_PER_DAY, MS_PER_MINUTE } from '#root/lib/units.js'
 import { runs_path } from './report.js'
-import { run_scout } from './run.js'
 import { load_runs } from './runs.js'
 import { scout_pages } from './scout.js'
+import { source_sections } from './sources.js'
 
-/** Where the owner's box mounts this machine's vault. */
-export const ACTOR_VAULT = '/realness/vault'
-const POLL_MS = 15_000
-
-/** @param {string} actor_run_dir */
-export const scout_goal = actor_run_dir =>
-  `Read ${actor_run_dir}/goal.md and do all of it. Write ${actor_run_dir}/finds.html before you stop.`
+/** A run that never ended is a retry, and a day holds a few of them. */
+const RETRIES = 4
 
 /**
  * The scouts a batch run starts: every active page below `Projects`, in folder
@@ -36,87 +30,108 @@ export const scout_due = (
   page,
   runs,
   { date, now = Date.now(), running = false }
+) => source_due(page, runs, null, { date, now, running })
+
+/**
+ * Whether one source of this scout may run now: active, budget left for it
+ * today, its own pace passed, and no run of it already in flight. A source is
+ * run on its own, so one source that hangs never holds another.
+ * @param {import('./scout.js').Scout} page
+ * @param {import('./runs.js').Run[]} runs
+ * @param {string | null} source the source key, or null for any run
+ * @param {{ date: string, now?: number, running?: boolean }} options
+ */
+const source_due = (
+  page,
+  runs,
+  source,
+  { date, now = Date.now(), running = false }
 ) => {
   if (running || page.status !== 'active') return false
   const per_day = page.per_day || 1
-  const today = runs.filter(
+  const mine = runs.filter(run =>
+    source === null ? true : (run.source ?? '') === source
+  )
+  const today = mine.filter(
     run => (run.started ?? '').slice(0, ISO_DATE) === date
   )
-  if (today.length >= per_day) return false
-  const last = Date.parse(runs.at(-1)?.started ?? '')
+  if (today.length >= per_day + RETRIES) return false
+  if (today.filter(run => run.ended).length >= per_day) return false
+  const last = Date.parse(mine.findLast(run => run.ended)?.started ?? '')
   return !Number.isFinite(last) || now - last >= MS_PER_DAY / per_day
 }
 
 /**
- * The scouts the timer may start now, each one's runs page read to see what it
- * already spent today.
+ * The source runs the timer may start now: one entry per due source of every
+ * active scout. Each source is its own run, so a source that hangs costs only
+ * its own run.
  * @param {string} vault_dir
  * @param {{ date: string, now?: number, running?: Set<string> }} options
- * @returns {Promise<import('./scout.js').Scout[]>}
+ * @returns {Promise<{ page: import('./scout.js').Scout, source: string }[]>}
  */
 export const due_scouts = async (
   vault_dir,
   { date, now = Date.now(), running = new Set() }
 ) => {
-  const checked = await Promise.all(
-    active_scouts(vault_dir).map(async page => ({
-      page,
-      due: scout_due(page, await load_runs(runs_path(page.folder)), {
-        date,
-        now,
-        running: running.has(page.path)
-      })
-    }))
+  const entries = await Promise.all(
+    active_scouts(vault_dir).map(async page => {
+      const doc = await read_file(
+        join(page.folder, 'Sources.md'),
+        'utf8'
+      ).catch(() => '')
+      const sections = source_sections(doc)
+      const keys = sections.length ? sections.map(one => one.key) : ['']
+      const runs = await load_runs(runs_path(page.folder))
+      return keys
+        .filter(key =>
+          source_due(page, runs, key || null, {
+            date,
+            now,
+            running: running.has(`${page.path}|${key}`)
+          })
+        )
+        .map(key => ({ page, source: key }))
+    })
   )
-  return checked.filter(entry => entry.due).map(entry => entry.page)
+  return entries.flat()
 }
 
+/** A run that holds the box longer than this is stopped and retried. */
+const RUN_MINUTES = 15
+
 /**
- * Run one scout in the halo: `run_scout` builds the brief and merges the
- * finds; its pi step is a one-shot loop actor that reads the brief from the
- * vault and stops when pi settles or the scout's minutes run out.
- * @param {object} options
- * @param {{ start: Function, log_path: (id: string) => string, loops: Record<string, { status: string, reason?: string }> }} options.loops
- * @param {string} options.parent the asking actor's id
- * @param {string} options.scout
- * @param {string} options.vault_dir this machine's vault
- * @param {string} options.person
- * @param {string} options.date
- * @param {number} [options.poll_ms]
- * @param {() => Promise<unknown>} [options.preflight] gates checked before pi starts
+ * The command a box runs for one source: the same `scout.js --run` the Mac
+ * runs, through the box's own wrapper, so the read and the model pass come from
+ * the box and the door answers both.
+ * @param {string} scout
+ * @param {string} [source]
  */
-export const run_scout_loop = ({
-  loops,
-  parent,
-  scout,
-  vault_dir,
-  person,
-  date,
-  poll_ms = POLL_MS,
-  preflight
-}) =>
-  run_scout({
-    scout,
-    vault_dir,
-    actor_vault: ACTOR_VAULT,
-    person,
-    date,
-    preflight,
-    spawn_pi: async (brief, run_dir, minutes) => {
-      const goal = scout_goal(join(ACTOR_VAULT, relative(vault_dir, run_dir)))
-      const { id } = await loops.start(parent, goal, {
-        once: true,
-        deadline_ms: minutes * MS_PER_MINUTE,
-        session_dir: join(ACTOR_VAULT, relative(vault_dir, run_dir), 'sessions')
-      })
-      const settled = async () => {
-        if (loops.loops[id]?.status !== 'running')
-          return loops.loops[id]?.reason
-        await wait(poll_ms)
-        return settled()
-      }
-      const reason = await settled()
-      await copy_file(loops.log_path(id), join(run_dir, 'pi.log'))
-      return reason === 'exited' ? 0 : 1
-    }
+const box_argv = (scout, source = '') =>
+  source
+    ? ['/usr/local/bin/realness-scouts', scout, '--source', source]
+    : ['/usr/local/bin/realness-scouts', scout]
+
+/**
+ * Run one scout in the owner's box with the same command the Mac runs. The box
+ * writes the run folder, the finds, and the leads note; the halo only starts it
+ * and reports how it ended.
+ * @param {object} options
+ * @param {{ exec: (id: string, argv: string[], options: object) => Promise<{ exit_code: number, stdout_b64: string, stderr_b64: string }> }} options.store the box store
+ * @param {string} options.actor the owner's box
+ * @param {string} options.scout
+ * @param {string} [options.source] the one source this run reads
+ * @returns {Promise<{ code: number, said: string }>}
+ */
+export const run_scout_box = async ({ store, actor, scout, source = '' }) => {
+  const reply = await store.exec(actor, box_argv(scout, source), {
+    cwd: '/',
+    timeout: RUN_MINUTES * MS_PER_MINUTE
   })
+  const said =
+    Buffer.from(`${reply.stdout_b64 ?? ''}`, 'base64').toString('utf8') +
+    Buffer.from(`${reply.stderr_b64 ?? ''}`, 'base64').toString('utf8')
+  return {
+    code: reply.exit_code ?? 0,
+    said: said.trim().split('\n').at(-1) ?? ''
+  }
+}

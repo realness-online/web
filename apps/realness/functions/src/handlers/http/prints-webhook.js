@@ -46,7 +46,12 @@ export const prints_webhook_handler = async (req, res) => {
     if (await record_sale(poster_id, sale)) {
       log_info('prints webhook: sale recorded', { poster_id, ...sale })
       log_info('prints webhook: index refresh needed', { poster_id })
-    } else log_warn('prints webhook: edition or session already recorded', { poster_id, ...sale })
+    } else
+      {log_warn('prints webhook: edition or session already recorded', {
+        poster_id,
+        ...sale
+      })}
+
     res.status(200).send('ok')
   } catch (error) {
     log_error('prints webhook: storage write failed', error)

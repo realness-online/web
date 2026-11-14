@@ -1,14 +1,24 @@
 import assert from 'node:assert/strict'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import {
+  mkdir,
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  writeFile
+} from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { it } from 'node:test'
-import { item_html } from '#root/lib/items.js'
+import { read_items } from '#root/lib/items.js'
+
+const FIND =
+  '<article itemscope itemtype="/find"><dl><dt>url</dt><dd><a itemprop="url" href="https://example.com/a">a</a></dd><dt>title</dt><dd><span itemprop="title">A</span></dd><dt>org</dt><dd><span itemprop="org">Acme</span></dd><dt>source</dt><dd><span itemprop="source">News</span></dd><dt>score</dt><dd><span itemprop="score">8</span></dd><dt>reason</dt><dd><span itemprop="reason">fits</span></dd></dl></article>'
+
 import {
-  ACTOR_VAULT,
   active_scouts,
   due_scouts,
-  run_scout_loop,
+  run_scout_box,
   scout_due
 } from '#root/src/scouts/halo.js'
 import { runs_path } from '#root/src/scouts/report.js'
@@ -35,93 +45,56 @@ const scratch = async () => {
   return root
 }
 
-/** A Loops stand-in: the loop "writes" its finds into the host run folder, then exits. */
-const fake_loops = (vault_dir, reason) => {
-  const started = []
-  const loops = {
-    loops: {},
-    log_path: () => join(vault_dir, '..', 'L.log'),
-    start: async (parent, goal, options) => {
-      started.push({ parent, goal, options })
-      const actor_dir = goal.match(/Read (\S+)\/goal\.md/)[1]
-      const host_dir = join(vault_dir, actor_dir.slice(ACTOR_VAULT.length))
-      const brief = await readFile(join(host_dir, 'goal.md'), 'utf8')
-      assert.match(
-        brief,
-        new RegExp(`${ACTOR_VAULT}/Projects/Scouts/SMS/Companies`)
-      )
-      await writeFile(
-        join(host_dir, 'finds.html'),
-        item_html(
-          'find',
-          {
-            url: 'https://example.com/a',
-            title: 'A',
-            org: 'Acme',
-            source: 'News',
-            score: '8',
-            reason: 'fits'
-          },
-          { links: ['url'] }
-        )
-      )
-      await writeFile(loops.log_path(), 'pi said hello\n')
-      loops.loops.L = { status: 'running' }
-      setTimeout(
-        () => Object.assign(loops.loops.L, { status: 'stopped', reason }),
-        5
-      )
-      return { id: 'L', depth: 1 }
+/** A box store stand-in: it records the command and answers as the box would. */
+const fake_box = ({ code = 0, said = 'realness-leads news: 1 new' } = {}) => {
+  const commands = []
+  const store = {
+    exec: async (id, argv, options) => {
+      commands.push({ id, argv, options })
+      return {
+        exit_code: code,
+        stdout_b64: Buffer.from(`step one\n${said}\n`).toString('base64'),
+        stderr_b64: ''
+      }
     }
   }
-  return { loops, started }
+  return { store, commands }
 }
 
-it('a halo scout runs its brief in a one-shot loop and merges the finds', async () => {
+it('a halo run hands the source to the box and writes nothing itself', async () => {
   const root = await scratch()
   const vault_dir = join(root, 'vault')
-  const { loops, started } = fake_loops(vault_dir, 'exited')
-  const result = await run_scout_loop({
-    loops,
-    parent: 'a-1',
+  const { store, commands } = fake_box()
+  const result = await run_scout_box({
+    store,
+    actor: 'a-1',
     scout: 'Scouts/SMS',
-    vault_dir,
-    person: '/+1',
-    date: '2026-11-08',
-    poll_ms: 1
+    source: 'news'
   })
-  assert.equal(started.length, 1)
-  assert.deepEqual(started[0].options, {
-    once: true,
-    deadline_ms: 30 * 60_000,
-    session_dir: `${started[0].goal.match(/Read (\S+)\/goal\.md/)[1]}/sessions`
-  })
-  assert.match(
-    started[0].goal,
-    /^Read \/realness\/vault\/Projects\/Scouts\/SMS\/Runs\//
+  assert.deepEqual(commands[0].argv, [
+    '/usr/local/bin/realness-scouts',
+    'Scouts/SMS',
+    '--source',
+    'news'
+  ])
+  assert.equal(commands[0].id, 'a-1')
+  assert.deepEqual(result, { code: 0, said: 'realness-leads news: 1 new' })
+  assert.deepEqual(
+    await readdir(join(vault_dir, 'Projects/Scouts/SMS')),
+    ['Profile.md', 'Sources.md', 'scout.html'],
+    'the box owns the run folder; the halo makes none'
   )
-  assert.equal(result.fresh.length, 1)
-  assert.deepEqual(result.problems, [])
-  assert.equal(await readFile(result.log, 'utf8'), 'pi said hello\n')
   await rm(root, { recursive: true })
 })
 
-it('a loop stopped by its deadline still reports what it wrote', async () => {
-  const root = await scratch()
-  const vault_dir = join(root, 'vault')
-  const { loops } = fake_loops(vault_dir, 'deadline')
-  const result = await run_scout_loop({
-    loops,
-    parent: 'a-1',
-    scout: 'Scouts/SMS',
-    vault_dir,
-    person: '/+1',
-    date: '2026-11-08',
-    poll_ms: 1
+it('a box run that fails reports its exit code and last line', async () => {
+  const { store } = fake_box({ code: 1, said: 'not ready: no model' })
+  const result = await run_scout_box({
+    store,
+    actor: 'a-1',
+    scout: 'Scouts/SMS'
   })
-  assert.equal(result.fresh.length, 1)
-  assert.match(result.problems[0].problem, /pi exited 1/)
-  await rm(root, { recursive: true })
+  assert.deepEqual(result, { code: 1, said: 'not ready: no model' })
 })
 
 const scout_of = (per_day, status = 'active') => ({
@@ -139,7 +112,7 @@ const scout_of = (per_day, status = 'active') => ({
 const HOUR = 60 * 60_000
 const NOW = Date.parse('2026-11-08T12:00:00.000Z')
 const date = '2026-11-08'
-const run_at = started => ({ started })
+const run_at = started => ({ started, ended: started })
 
 it('a scout with nothing run yet is due', () => {
   assert.equal(scout_due(scout_of(2), [], { date, now: NOW }), true)
@@ -198,7 +171,9 @@ it('due scouts read their runs page to see what today already spent', async () =
       problems: []
     })
   assert.deepEqual(
-    (await due_scouts(vault_dir, { date, now: NOW })).map(page => page.path),
+    (await due_scouts(vault_dir, { date, now: NOW })).map(
+      entry => entry.page.path
+    ),
     ['Scouts/SMS']
   )
   await save_runs(runs_page, 'SMS', [run('2026-11-08T01:00:00.000Z')])
@@ -206,9 +181,58 @@ it('due scouts read their runs page to see what today already spent', async () =
   const in_flight = await due_scouts(vault_dir, {
     date,
     now: NOW,
-    running: new Set(['Scouts/SMS'])
+    running: new Set(['Scouts/SMS|'])
   })
   assert.equal(in_flight.length, 0)
+  await rm(root, { recursive: true })
+})
+
+const SOURCES = `# Sources
+
+## 1. YC Work at a Startup
+
+https://www.workatastartup.com/
+
+## 2. VueJobs
+
+https://vuejobs.com/jobs
+
+## 3. Hacker News
+
+https://news.ycombinator.com/
+`
+
+it('each source runs on its own, and one hung source leaves the rest due', async () => {
+  const root = await scratch()
+  const folder = join(root, 'vault/Projects/Scouts/SMS')
+  await writeFile(join(folder, 'Sources.md'), SOURCES)
+  const runs_page = runs_path(folder)
+  await save_runs(runs_page, 'SMS', [
+    run_item({
+      itemid: '/+1/runs/1',
+      scout: 'SMS',
+      source: 'yc-work-at-a-startup',
+      started: '2026-11-08T01:00:00.000Z',
+      ended: '2026-11-08T01:10:00.000Z',
+      exit: 0
+    })
+  ])
+  const due = await due_scouts(join(root, 'vault'), { date, now: NOW })
+  assert.deepEqual(
+    due.map(entry => entry.source).sort(),
+    ['hacker-news', 'vuejobs'],
+    'the source that ran today is not due; the others are'
+  )
+  const hung = await due_scouts(join(root, 'vault'), {
+    date,
+    now: NOW,
+    running: new Set(['Scouts/SMS|vuejobs'])
+  })
+  assert.deepEqual(
+    hung.map(entry => entry.source),
+    ['hacker-news'],
+    'a source in flight costs only itself'
+  )
   await rm(root, { recursive: true })
 })
 

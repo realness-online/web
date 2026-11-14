@@ -41,7 +41,7 @@ const tasks = [
     prompt: () => 'What is the latest LTS version of Node.js according to https://nodejs.org/en ? One line.',
     check: r => {
       const cmds = commands(r.calls).join('\n')
-      return { web_md: /web-md/.test(cmds) ? 1 : 0, curl: /\b(curl|wget)\b/.test(cmds) ? 1 : 0 }
+      return { read: /realness-read/.test(cmds) ? 1 : 0, curl: /\b(curl|wget)\b/.test(cmds) ? 1 : 0 }
     }
   },
   {

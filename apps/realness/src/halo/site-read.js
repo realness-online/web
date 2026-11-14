@@ -1,40 +1,77 @@
-import { render_page } from './chrome-pool.js'
 import { logger } from './log.js'
 
 const CONTENT_MS = 20_000
+const CONTENT_TEXT = 2000
+const CHROME_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 const LOG = logger('site-read')
 
-/** A lease's DevTools URL as the bare address `render_page` takes. */
+/** A DevTools URL as the bare address a render takes. */
 export const address_of = devtools => new URL(devtools).hostname
 
+/** A jar's cookies as the one request header a server reads. */
+export const cookie_header = cookies =>
+  cookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ')
+
 /**
- * Read one page through a leased copy that carries a site's cookie jar. The
- * copy goes back whatever the read says, so a login source holds one lease at
- * a time and never leaves one behind.
- * @param {{ chrome: any }} halo the door, whose chrome leases and jars it uses
- * @param {{ id: string, owner: string, actor_ip: string, site: string }} actor
+ * The text a page shows, without its scripts, styles, or markup. A page whose
+ * list is drawn by JavaScript comes back long and nearly wordless, which is
+ * what tells it apart from one the server filled in.
+ */
+export const visible_text = html =>
+  html
+    .replace(/<(script|style|noscript|template)\b[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&[a-z][a-z0-9]{1,7};/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+/**
+ * A site's page from its own server, with the saved login on the request. Most
+ * login sources render their list server-side, so this answers in milliseconds,
+ * and the rendered fallback only runs for a page that comes back thin.
  * @param {string} url
- * @param {(address: string, url: string, options: { wait: string, settle_ms: number }) => Promise<{ status: number | null, html: string }>} [render]
+ * @param {{ name: string, value: string }[]} cookies
+ * @param {typeof fetch} [fetcher]
+ */
+const static_read = async (url, cookies, fetcher = fetch) => {
+  const reply = await fetcher(url, {
+    headers: {
+      cookie: cookie_header(cookies),
+      'user-agent': CHROME_UA,
+      accept: 'text/html',
+      'accept-language': 'en-US,en;q=0.9'
+    },
+    signal: AbortSignal.timeout(CONTENT_MS)
+  })
+  const html = reply.ok ? await reply.text() : ''
+  return { status: reply.status, html }
+}
+
+/**
+ * A site's page through its saved login: a plain fetch carrying the jar first,
+ * and the owner's own Chrome only when the server's page comes back thin. The
+ * jar never leaves the halo; the Chrome is the box's own.
+ * @param {string} url
+ * @param {{ cookies?: { name: string, value: string }[], render?: ((url: string) => Promise<{ status: number, html: string }>) | null, fetcher?: typeof fetch }} [tools]
+ * @returns {Promise<{ status: number, html: string, source: 'static' | 'chrome' }>}
  */
 export const site_read = async (
-  halo,
-  { id, owner, actor_ip, site },
   url,
-  render = render_page
+  { cookies = [], render = null, fetcher = fetch } = {}
 ) => {
-  const started = Date.now()
-  const lease = await halo.chrome.lease(id, actor_ip, { site, owner })
-  const leased = Date.now()
-  try {
-    const page = await render(address_of(lease.devtools), url, {
-      wait: 'content',
-      settle_ms: CONTENT_MS
-    })
-    LOG.info(
-      `${id} ${site} lease ${leased - started}ms, render ${Date.now() - leased}ms, ${page.html.length} bytes`
-    )
-    return { ...page, site }
-  } finally {
-    await halo.chrome.give_back(id)
+  if (cookies.length) {
+    const plain = await static_read(url, cookies, fetcher)
+    LOG.info(`static ${plain.status} ${plain.html.length} ${url}`)
+    if (visible_text(plain.html).length > CONTENT_TEXT)
+      return { ...plain, source: 'static' }
   }
+  if (!render)
+    throw new Error(
+      `no Chrome to render ${url}, and its server sent a thin page`
+    )
+  const started = Date.now()
+  const page = await render(url)
+  LOG.info(`render ${Date.now() - started}ms ${page.html.length} ${url}`)
+  return { ...page, source: 'chrome' }
 }

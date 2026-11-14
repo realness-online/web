@@ -19,6 +19,8 @@ import { token_trust } from '#root/src/sign-in/trust.js'
 import { dev_issuer } from '#root/src/sync/dev-token.js'
 import { rights } from '#root/src/sync/rights.js'
 import { sync_service } from '#root/src/sync/server.js'
+import { vault_events } from '#root/src/sync/vault-events.js'
+import { watch_vault_disk } from '#root/src/sync/vault-watch.js'
 import { store_of } from '#root/src/can/store.js'
 import { gce_statuses } from '#root/src/sync/halo-power.js'
 import { sync_dir } from '#root/src/settings/output.js'
@@ -87,7 +89,23 @@ const git_app =
       }
     : null
 
+const vault_dir = process.env.VAULT_DIR ?? null
+const vault_index = process.env.VAULT_INDEX ?? null
+const vault_owner = process.env.VAULT_OWNER ?? null
+const artifacts_dir = process.env.ARTIFACTS_DIR ?? null
+const events = vault_events()
+
+if (vault_dir && vault_index && vault_owner)
+  watch_vault_disk({
+    dir: vault_dir,
+    index: vault_index,
+    owner: vault_owner,
+    events,
+    log: line => console.info(`# vault ${line}`)
+  })
+
 sync_service({
+  events,
   storage,
   rights: rights(storage),
   project,
@@ -97,9 +115,10 @@ sync_service({
   halo_pass_secret: halo_pass_secret(),
   /** vlt1: on the Mac, the owner's actors search this vault's index here. */
   vault: vault_door({
-    dir: process.env.VAULT_DIR ?? null,
-    index: process.env.VAULT_INDEX ?? null,
-    owner: process.env.VAULT_OWNER ?? null
+    dir: vault_dir,
+    index: vault_index,
+    owner: vault_owner,
+    artifacts: artifacts_dir
   }),
   git_app,
   halo_statuses,

@@ -113,7 +113,7 @@ it('the ship tree carries the harness, prompts, and starting examples', () => {
     assert.equal(theme.colors.userMessageText, 'accent')
   }
   const harness = JSON.parse(readFileSync(join(ship, '.pi/package.json')))
-  assert.ok(harness.dependencies.linkedom, 'web-md dependencies ship')
+  assert.ok(harness.dependencies.linkedom, 'realness-read dependencies ship')
   assert.ok(existsSync(join(ship, '.pi/package-lock.json')))
   assert.equal(settings.enabledModels, undefined)
   const npm = JSON.parse(readFileSync(join(ship, '.pi/agent/npm/package.json')))
@@ -226,14 +226,14 @@ it('home-only skills stay home', () => {
     assert.ok(!existsSync(join(ship, '.pi/skills', name)), `${name} shipped`)
   }
   assert.ok(
-    existsSync(join(ship, '.pi/skills/web-md/SKILL.md')),
+    existsSync(join(ship, '.pi/skills/realness-read/SKILL.md')),
     'a shared skill ships'
   )
   assert.equal(
     ships(join('.pi', 'skills', 'vuetify-to-semantic', 'SKILL.md')),
     false
   )
-  assert.equal(ships(join('.pi', 'skills', 'web-md', 'SKILL.md')), true)
+  assert.equal(ships(join('.pi', 'skills', 'realness-read', 'SKILL.md')), true)
   assert.equal(ships(join('extensions', 'x', 'node_modules', 'y.js')), false)
   assert.equal(
     ships(join('.pi', 'extensions', 'memory', 'artifacts', 'memory', 'x.db')),
@@ -274,7 +274,7 @@ it('the starter names its version and every shipped file', () => {
     'an identical rebuild keeps its date'
   )
   assert.ok(starter.files['package.json'])
-  assert.ok(starter.files['.pi/skills/web-md/SKILL.md'])
+  assert.ok(starter.files['.pi/skills/realness-read/SKILL.md'])
   assert.equal(
     starter.files[STARTER],
     undefined,

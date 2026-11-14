@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict'
-import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { it } from 'node:test'
-import { item_html } from '#root/lib/items.js'
+import { item_html, read_items } from '#root/lib/items.js'
 import { run_scout } from '#root/src/scouts/run.js'
 import { scout_page } from '#root/src/scouts/scout.js'
 import { dead_source } from '#root/src/scouts/source.js'
@@ -44,7 +43,7 @@ const scratch = async () => {
   return { root, folder }
 }
 
-it('a dead login source fails the run instead of a quiet zero', async () => {
+it('a dead login source fails the run and still records it', async () => {
   const { root, folder } = await scratch()
   await assert.rejects(
     run_scout({
@@ -62,7 +61,12 @@ it('a dead login source fails the run instead of a quiet zero', async () => {
     }),
     /a login source was unreadable: realness chrome: no reply from the halo/
   )
-  assert.equal(existsSync(join(folder, 'Runs/runs.html')), false)
+  const runs = read_items(
+    await readFile(join(folder, 'Runs/runs.html'), 'utf8'),
+    'run'
+  )
+  assert.equal(runs.length, 1)
+  assert.match(runs[0].problems, /realness chrome: no reply from the halo/)
   await rm(root, { recursive: true })
 })
 

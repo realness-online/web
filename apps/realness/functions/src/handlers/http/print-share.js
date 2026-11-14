@@ -7,8 +7,12 @@ import { log_error } from '#utils/log.js'
 const origin = 'https://realness.online'
 
 const escape_html = value =>
-  String(value).replace(/[&<>"']/g, character =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]
+  String(value).replace(
+    /[&<>"']/g,
+    character =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[
+        character
+      ]
   )
 
 export const print_share_handler = async (req, res) => {
@@ -16,7 +20,9 @@ export const print_share_handler = async (req, res) => {
     res.status(405).send('Method Not Allowed')
     return
   }
-  const created = (req.path ?? req.url ?? '').match(/^\/prints\/(\d+)\/?(?:\?.*)?$/)?.[1] ?? ''
+  const created =
+    (req.path ?? req.url ?? '').match(/^\/prints\/(\d+)\/?(?:\?.*)?$/)?.[1] ??
+    ''
   const author = process.env.PRINTS_AUTHOR
   if (!created || !author) {
     res.status(404).send('Print not found')
@@ -46,7 +52,11 @@ export const print_share_handler = async (req, res) => {
       : ''
     res.set('Cache-Control', 'public, max-age=60')
     res.set('Content-Type', 'text/html; charset=utf-8')
-    res.status(200).send(`<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>${title}</title><meta name="description" content="${escape_html(description)}" /><link rel="canonical" href="${url}" /><meta property="og:type" content="website" /><meta property="og:url" content="${url}" /><meta property="og:title" content="${title}" /><meta property="og:description" content="${escape_html(description)}" /><meta name="twitter:card" content="summary_large_image" />${image_meta}</head><body><main><h1>Hand-finished print</h1>${image ? `<img src="${escape_html(image)}" alt="Hand-finished Realness print" style="max-width:100%;height:auto" />` : ''}${thought ? `<blockquote><p>${escape_html(thought)}</p></blockquote>` : ''}<h2>Recorded sale dates</h2>${dates.length ? `<ol>${dates.map(date => `<li><time datetime="${escape_html(date)}">${escape_html(date.slice(0, 10))}</time></li>`).join('')}</ol>` : '<p>No sales recorded yet.</p>'}<p><a href="${origin}/prints">All prints</a></p></main></body></html>`)
+    res
+      .status(200)
+      .send(
+        `<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>${title}</title><meta name="description" content="${escape_html(description)}" /><link rel="canonical" href="${url}" /><meta property="og:type" content="website" /><meta property="og:url" content="${url}" /><meta property="og:title" content="${title}" /><meta property="og:description" content="${escape_html(description)}" /><meta name="twitter:card" content="summary_large_image" />${image_meta}</head><body><main><h1>Hand-finished print</h1>${image ? `<img src="${escape_html(image)}" alt="Hand-finished Realness print" style="max-width:100%;height:auto" />` : ''}${thought ? `<blockquote><p>${escape_html(thought)}</p></blockquote>` : ''}<h2>Recorded sale dates</h2>${dates.length ? `<ol>${dates.map(date => `<li><time datetime="${escape_html(date)}">${escape_html(date.slice(0, 10))}</time></li>`).join('')}</ol>` : '<p>No sales recorded yet.</p>'}<p><a href="${origin}/prints">All prints</a></p></main></body></html>`
+      )
   } catch (error) {
     log_error('print share failed', error)
     res.status(502).send('Print unavailable')

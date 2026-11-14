@@ -24,6 +24,7 @@ export const steps = {
       run: 'node .pi/bin/graphics/themes.js --check && node .pi/bin/graphics/palette-sync.js --check'
     },
     { name: 'ds-store', area: 'harness', run: 'node .pi/bin/checks/ds-store.js' },
+    { name: 'pi-version', area: 'harness', run: 'node .pi/bin/checks/pi-version.js' },
     { name: 'doc-scripts', area: 'harness', run: 'node .pi/bin/checks/doc-scripts.js' },
     { name: 'format', area: 'harness', run: 'node .pi/bin/checks/format.js' },
     { name: 'dead-code', area: 'harness', run: 'apps/realness/node_modules/.bin/fallow dead-code --fail-on-issues' },

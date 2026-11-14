@@ -26,11 +26,15 @@ import {
   existsSync as exists_sync,
   openSync as open_sync
 } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { createInterface as create_interface } from 'node:readline'
 
 const LOOP = '/realness/work/loop'
+const STAGES_PAGE = 'stages.html.gz'
 const DIALOGS = new Set(['select', 'confirm', 'input', 'editor'])
+const LIB = process.env.REALNESS_LIB ?? '/usr/local/lib/realness'
+/** One gzip HTML member per record, the same page a run reads back. */
+const { append_item } = await import(`${LIB}/src/files/item-log.js`)
 
 /** The status file the halo reads: written whole, then moved into place. */
 const status = fields => {
@@ -100,6 +104,19 @@ for await (const line of events) {
   } catch {
     continue
   }
+  if (
+    event.type === 'tool_execution_start' ||
+    (event.type === 'message_end' && event.message?.role === 'assistant')
+  )
+    await append_item(join(dirname(session_dir), STAGES_PAGE), 'stage', {
+      at: Date.now(),
+      tool:
+        event.type === 'message_end'
+          ? ''
+          : String(
+              event.args?.command ?? event.args?.path ?? event.toolName ?? ''
+            )
+    })
   const usage = event.type === 'message_end' ? event.message?.usage : null
   if (usage && typeof usage === 'object') {
     tokens += Number(usage.input ?? 0) + Number(usage.output ?? 0)

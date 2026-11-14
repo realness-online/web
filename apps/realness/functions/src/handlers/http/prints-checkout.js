@@ -31,7 +31,8 @@ export const prints_checkout_handler = async (req, res) => {
     return
   }
 
-  const poster_id = req.method === 'GET' ? req.query?.poster_id : payload.poster_id
+  const poster_id =
+    req.method === 'GET' ? req.query?.poster_id : payload.poster_id
   if (!is_print_poster(poster_id, process.env.PRINTS_AUTHOR)) {
     res.status(400).json({ error: 'Poster is not for sale' })
     return

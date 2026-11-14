@@ -53,8 +53,8 @@ const create = async () => {
   made.add(result.json.id)
   return result.json
 }
-const web_md = async (id, url, extra = '') => {
-  const command = `cd /realness && node .pi/bin/web/web-md.js '${url}' --max 300 ${extra}`
+const read_page = async (id, url, extra = '') => {
+  const command = `realness-read '${url}' --max 300 ${extra}`
   const result = await call('POST', `/v1/actors/${id}/exec`, {
     argv: [
       'runuser',
@@ -97,20 +97,20 @@ test(
     const [first, second] = await Promise.all([create(), create()])
     const rows = []
     for (const url of PAGES) {
-      const fresh = await web_md(first.id, url, '--fresh')
+      const fresh = await read_page(first.id, url, '--fresh')
       assert.equal(fresh.code, 0, fresh.err)
       assert.match(
         fresh.source,
-        /^engine (static|chrome|firecrawl)$/,
+        /^(static|chrome|firecrawl)$/,
         fresh.out.slice(0, 300)
       )
       let clock = performance.now()
-      const again = await web_md(second.id, url)
+      const again = await read_page(second.id, url)
       const again_s = (performance.now() - clock) / 1000
       assert.equal(again.code, 0, again.err)
       assert.match(
         again.source,
-        /^engine cache /,
+        /^cache /,
         `${url}: the second actor read from the shared cache`
       )
       rows.push({
@@ -122,7 +122,7 @@ test(
     }
     console.table(rows)
     assert.ok(
-      rows.some(r => r.first === 'engine chrome'),
+      rows.some(r => r.first === 'chrome'),
       'a JavaScript-only page rendered in a Chrome copy'
     )
   }

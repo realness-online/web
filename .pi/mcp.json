@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "e2e": {
+      "command": "./node_modules/.bin/e2e",
+      "args": ["mcp"],
+      "cwd": "artifacts/e2e/try"
+    }
+  }
+}

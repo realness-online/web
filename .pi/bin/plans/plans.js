@@ -38,6 +38,29 @@ export const select_plans = async root => {
   return sources
 }
 
+/**
+ * The blog app's selection: every article note under `Areas/Blog/`, by itemid.
+ * Known articles keep their slug and order; new ones take their filename.
+ * @param {string} root Harness root.
+ */
+export const select_blog = async root => {
+  const app_dir = join(root, 'apps/blog')
+  const app = await read_app(app_dir)
+  const { items } = await scan_vault(resolve(app_dir, app.vault))
+  const articles = [...items].filter(
+    ([id, path]) => id.includes('/articles/') && path.startsWith('Areas/Blog/') && path.endsWith('.md')
+  )
+  const found = new Map(articles)
+  const kept = app.sources.filter(({ id }) => found.has(id))
+  const known = new Set(kept.map(({ id }) => id))
+  const added = articles
+    .filter(([id]) => !known.has(id))
+    .map(([id, path]) => ({ id, slug: as_slug(path.split('/').pop().replace(/\.md$/, '')) }))
+  const sources = [...kept, ...added]
+  await write_app(app_dir, { ...app, sources })
+  return sources
+}
+
 const AREAS = {
   art: 'Art',
   blog: 'Blog',
@@ -116,6 +139,7 @@ const commands_page = root => join(root, 'vault/Areas/Realness/pages/commands.ht
 const build_all = async root => {
   await update_commands(root, { page: commands_page(root) })
   const sources = await select_plans(root)
+  await select_blog(root)
   const { dist } = await build_app(root, 'plans')
   console.log(`${sources.length} plans -> ${relative(root, dist)}`)
   const blog = await build_app(root, 'blog', { drafts: true })
@@ -144,21 +168,39 @@ const rebuild_pages = async (root, slugs) => {
  * @param {string} root Harness root.
  * @param {string[]} changed vault-relative files; none means everything
  */
+/**
+ * What a save needs: everything, those plan pages, or nothing. A blog page
+ * rebuilds everything even when no plan changed.
+ * @param {{ sources_unchanged: boolean, plan_pages: { id: string }[], blog_pages: unknown[], built: (id: string) => boolean }} state
+ * @returns {'all' | 'pages' | 'none'}
+ */
+export const build_choice = ({ sources_unchanged, plan_pages, blog_pages, built }) => {
+  if (!sources_unchanged || blog_pages.length) return 'all'
+  if (!plan_pages.length) return 'none'
+  return plan_pages.every(({ id }) => built(id)) ? 'pages' : 'all'
+}
+
 export const build_vault = async (root, changed = []) => {
   if (!changed.length) return build_all(root)
-  const before = (await read_app(join(root, 'apps/plans'))).sources
-  const sources = await select_plans(root)
-  const ids = new Set(sources.map(({ id }) => id))
-  const unchanged = before.length === ids.size && before.every(({ id }) => ids.has(id))
-  if (!unchanged) return build_all(root)
-  const pages = changed_pages(await app_owned(root, 'plans'), changed)
-  if (!pages.length) return
-  if (changed_pages(await app_owned(root, 'blog'), changed).length) return build_all(root)
-  const built = join(root, 'artifacts/apps/plans/dist')
-  if (!pages.every(({ id }) => exists_sync(join(built, id.slice(1), 'index.html')))) return build_all(root)
+  const same = (before, after) => before.length === after.length && before.every(({ id }, i) => id === after[i].id)
+  const plans_before = (await read_app(join(root, 'apps/plans'))).sources
+  const blog_before = (await read_app(join(root, 'apps/blog'))).sources
+  const ids = new Set((await select_plans(root)).map(({ id }) => id))
+  const blog_after = await select_blog(root)
+  const plan_pages = changed_pages(await app_owned(root, 'plans'), changed)
+  const dist = join(root, 'artifacts/apps/plans/dist')
+  const choice = build_choice({
+    sources_unchanged:
+      plans_before.length === ids.size && plans_before.every(({ id }) => ids.has(id)) && same(blog_before, blog_after),
+    plan_pages,
+    blog_pages: changed_pages(await app_owned(root, 'blog'), changed),
+    built: id => exists_sync(join(dist, id.slice(1), 'index.html'))
+  })
+  if (choice === 'all') return build_all(root)
+  if (choice === 'none') return
   await rebuild_pages(
     root,
-    pages.map(({ slug }) => slug)
+    plan_pages.map(({ slug }) => slug)
   )
 }
 

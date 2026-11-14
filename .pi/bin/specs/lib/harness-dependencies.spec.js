@@ -13,7 +13,9 @@ it('harness dependencies resolve inside .pi without a root dependency store', ()
   assert.equal(manifest('package.json').devDependencies, undefined)
   const hidden = manifest('.pi/package.json')
   for (const name of Object.keys({ ...hidden.dependencies, ...hidden.devDependencies })) {
-    const path = harness_require.resolve(name)
+    const { main, exports, bin } = harness_require(`${name}/package.json`)
+    const command_only = bin && !main && !exports
+    const path = harness_require.resolve(command_only ? `${name}/package.json` : name)
     assert.ok(path.startsWith(join(root, '.pi/node_modules') + sep), path)
   }
 })

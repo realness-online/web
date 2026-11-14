@@ -275,7 +275,7 @@ export const cli_families = [
         'Writes local state.'
       ],
       [
-        'turn-end --session <file> --turn <number>',
+        'turn-end --session <file> --turn <number> [--no-sync]',
         'Internal helpers',
         'Record and sync a completed turn.',
         '--json',

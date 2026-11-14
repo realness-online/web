@@ -34,14 +34,15 @@ import { apply, is_session_file, load_calls, replayable } from './replay.js'
 import { homedir } from 'node:os'
 import { basename, dirname, join, relative, resolve, sep } from 'node:path'
 import { merge_session } from './session-merge.js'
-import { promisify } from 'node:util'
-import { gzip as gzip_callback } from 'node:zlib'
+import { gzipped_size } from './version-file.js'
+import { style_local } from './preview-styles.js'
 import {
   OpenSession,
   disk_bytes,
   read_local,
   new_local_path,
-  sync_names
+  sync_names,
+  version_local
 } from './session-gz.js'
 import { zip } from './zip.js'
 import { skipped, skipped_name } from './skip.js'
@@ -366,12 +367,26 @@ const save_sync_record = async ({
  */
 const OPEN = Symbol('open session')
 
-/** zlib's async gzip runs on libuv's worker pool, off the event loop. */
-const gzip = promisify(gzip_callback)
+/**
+ * Too big to send: uploads go packed, so only the zip has to fit. A file
+ * under the limit skips the zip, and one over it is metered, never held.
+ */
+const too_big_file = async (path, max) => {
+  const info = await stat(path).catch(() => null)
+  if (!info || info.size <= max) return false
+  return (await gzipped_size(path)) > max
+}
 
-/** Too big to send: uploads go packed, so only the zip has to fit. */
-const too_big = async (bytes, max) =>
-  bytes.length > max && (await gzip(bytes)).length > max
+/** A local file's sync version, null when absent, OPEN while a session is mid-write. */
+const sync_version = async (name, file) => {
+  if (!file) return null
+  try {
+    return await version_local(name, file)
+  } catch (error) {
+    if (error instanceof OpenSession) return OPEN
+    throw error
+  }
+}
 
 /** A local file's sync bytes, null when absent, OPEN while a session is mid-write. */
 const sync_bytes = async (name, file) => {
@@ -654,23 +669,22 @@ const transfer_one = async (run, name) => {
     managed,
     manifest,
     mass_removal,
+    deferred,
     max_bytes,
     pull_only,
     remotes,
     report,
-    sha,
     stock,
     update_starter
   } = run
   if (stock && name === STARTER_FILE) return
   const base = manifest[name]
   const file = locals.get(name)
-  const read = await sync_bytes(name, file)
-  if (read === OPEN) return report.held.push(name)
-  const bytes = /** @type {Buffer | null} */ (read)
-  if (bytes && (await too_big(bytes, max_bytes)))
+  if (!pull_only) await style_local(name, file)
+  const local_sha = await sync_version(name, file)
+  if (local_sha === OPEN) return report.held.push(name)
+  if (file && (await too_big_file(file, max_bytes)))
     return report.too_big.push(name)
-  const local_sha = bytes ? sha(bytes) : null
   const remote_version = remotes[name] ?? null
   const local_moved = local_sha !== (base?.local ?? base?.version ?? null)
   const remote_moved = remote_version !== (base?.version ?? null)
@@ -682,42 +696,84 @@ const transfer_one = async (run, name) => {
       !stock.pending.has(name) &&
       (pull_only || stock.previous?.version !== stock.latest.version)
     if (
+      !updating_starter &&
+      !pull_only &&
+      !local_moved &&
+      !remote_moved &&
+      !deferred[name]
+    )
+      return report.unchanged.push(name)
+    const read = await sync_bytes(name, file)
+    if (read === OPEN) return report.held.push(name)
+    const bytes = /** @type {Buffer | null} */ (read)
+    if (
       updating_starter &&
       (await update_starter(run, name, { bytes, remote_version }))
     )
       return
-    if (pull_only)
-      return await pull_only_transfer(run, {
-        bytes,
-        local_sha,
-        name,
-        remote_version
-      })
-    if (!local_moved && !remote_moved)
-      return await both_unchanged(run, { base, bytes, local_sha, name })
-    if (local_moved && !remote_moved)
-      return await local_moved_only(run, { base, bytes, local_sha, name })
-    if (!local_moved && remote_moved)
-      return await remote_moved_only(run, {
-        base,
-        bytes,
-        in_sessions,
-        local_sha,
-        mass_removal,
-        name,
-        remote_version
-      })
-    return await both_moved(run, name, {
+    await transfer_phase(run, name, {
       base,
       bytes,
       file,
+      in_sessions,
+      local_moved,
       local_sha,
+      mass_removal,
+      pull_only,
+      remote_moved,
       remote_version
     })
   } catch (error) {
     if (error.status !== HTTP.PRECONDITION_FAILED) throw error
     report.conflicts.push(name)
   }
+}
+
+/** Hand one decided name to the phase that tells what moved. */
+const transfer_phase = async (
+  run,
+  name,
+  {
+    base,
+    bytes,
+    file,
+    in_sessions,
+    local_moved,
+    local_sha,
+    mass_removal,
+    pull_only,
+    remote_moved,
+    remote_version
+  }
+) => {
+  if (pull_only)
+    return await pull_only_transfer(run, {
+      bytes,
+      local_sha,
+      name,
+      remote_version
+    })
+  if (!local_moved && !remote_moved)
+    return await both_unchanged(run, { base, bytes, local_sha, name })
+  if (local_moved && !remote_moved)
+    return await local_moved_only(run, { base, bytes, local_sha, name })
+  if (!local_moved && remote_moved)
+    return await remote_moved_only(run, {
+      base,
+      bytes,
+      in_sessions,
+      local_sha,
+      mass_removal,
+      name,
+      remote_version
+    })
+  return await both_moved(run, name, {
+    base,
+    bytes,
+    file,
+    local_sha,
+    remote_version
+  })
 }
 
 /** A managed starter file moved on. True when this name is done. */

@@ -10,6 +10,7 @@ import { createServer } from 'node:http'
 import { join } from 'node:path'
 import { after, before, it } from 'node:test'
 import { fileURLToPath } from 'node:url'
+import { gzipSync } from 'node:zlib'
 import {
   WebEngine,
   cache_time,
@@ -20,7 +21,8 @@ import {
   learn,
   robots_allows,
   safe_fetch,
-  shortfall
+  shortfall,
+  warc_page
 } from '../../src/halo/web-engine.js'
 
 const root = mkdtempSync(
@@ -30,6 +32,14 @@ const root = mkdtempSync(
 )
 const article = (n = '') =>
   `<html><head><title>Article${n}</title></head><body><article><h1>Article</h1><p>${'Words that make a real article. '.repeat(30)}${n}</p></article></body></html>`
+/** One gzipped WARC response record, as Common Crawl serves it. */
+const warc = html => {
+  const http = `HTTP/1.1 200 OK\r\ncontent-type: text/html; charset=utf-8\r\n\r\n${html}`
+  return gzipSync(
+    `WARC/1.0\r\nWARC-Type: response\r\nContent-Length: ${Buffer.byteLength(http)}\r\n\r\n${http}\r\n\r\n`
+  )
+}
+const crawled = warc(article(' crawled'))
 const hits = {}
 let base
 let server
@@ -39,6 +49,22 @@ before(async () => {
     hits[req.url] = (hits[req.url] ?? 0) + 1
     const html = (body, headers = {}) =>
       res.writeHead(200, { 'content-type': 'text/html', ...headers }).end(body)
+    if (req.url === '/cc/collinfo.json')
+      return res
+        .writeHead(200, { 'content-type': 'application/json' })
+        .end('[{"id":"CC-TEST"}]')
+    if (req.url.startsWith('/cc/CC-TEST-index?')) {
+      const wanted = new URL(req.url, 'http://x').searchParams.get('url')
+      if (!wanted?.endsWith('/crawled')) return res.writeHead(404).end('{}')
+      const hit = {
+        filename: 'crawl.warc.gz',
+        offset: '0',
+        length: String(crawled.length),
+        timestamp: '20261001000000'
+      }
+      return res.writeHead(200).end(`${JSON.stringify(hit)}\n`)
+    }
+    if (req.url === '/cc/crawl.warc.gz') return res.writeHead(206).end(crawled)
     if (req.url === '/robots.txt')
       return res
         .writeHead(200, { 'content-type': 'text/plain' })
@@ -48,6 +74,7 @@ before(async () => {
       req.url === '/' ||
       req.url === '/docs/x' ||
       req.url === '/steady' ||
+      req.url === '/crawled' ||
       req.url.startsWith('/page?')
     )
       return html(article())
@@ -393,4 +420,49 @@ it('search results are served but never kept', async () => {
       [false, 'search results']
     ]
   )
+})
+
+it('a WARC record gives back its HTTP status, type, and body', () => {
+  const page = warc_page(
+    Buffer.from(
+      'WARC/1.0\r\nContent-Length: 49\r\n\r\nHTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\ncafé\r\n\r\n'
+    )
+  )
+  assert.deepEqual(page, { status: 200, type: 'text/html', html: 'café' })
+})
+
+it('a crawled copy reads before the site; fresh, front pages, and misses read the site', async () => {
+  const common_crawl = { index: `${base}/cc`, data: `${base}/cc` }
+  const web = engine({ dir: 'crawl', common_crawl })
+  const page = await web.read(`${base}/crawled`)
+  assert.deepEqual(
+    [page.source, page.title, page.crawled],
+    ['commoncrawl', 'Article crawled', '20261001000000']
+  )
+  assert.equal(hits['/crawled'], undefined, 'the site was never read')
+  assert.equal(
+    (await web.read(`${base}/crawled`, { fresh: true })).source,
+    'static'
+  )
+  assert.equal(hits['/crawled'], 1)
+  const asked = () =>
+    Object.keys(hits).filter(url => url.startsWith('/cc/CC-TEST-index')).length
+  const before_front = asked()
+  assert.equal((await web.read(`${base}/`)).source, 'static')
+  assert.equal(asked(), before_front, 'a front page never asks the crawl')
+  const missed = await web.read(`${base}/steady`)
+  assert.equal(missed.source, 'static')
+  assert.equal(log_lines('crawl').at(-1).attempts[0].outcome, 'not in crawl')
+})
+
+it('a method that fails on a site three times in a row is skipped there', async () => {
+  let rendered = 0
+  const render = async () => (
+    (rendered += 1),
+    { status: 200, html: '<html><body></body></html>' }
+  )
+  const web = engine({ dir: 'route', render })
+  for (let i = 0; i < 4; i += 1) await assert.rejects(web.read(`${base}/shell`))
+  assert.equal(rendered, 3)
+  assert.match(JSON.stringify(log_lines('route').at(-1).attempts), /static/)
 })

@@ -681,6 +681,17 @@ export const fingerprint = path => {
   return createHash('sha1').update(path).digest('hex').slice(0, 12)
 }
 
+/**
+ * A note's title for search and recall. A folder plan, `<Plan>/index.md`, is
+ * named by its folder, since its filename names every folder plan alike.
+ * @param {string} path vault-relative path
+ * @returns {string}
+ */
+const note_title = path => {
+  const name = path.split('/').pop()?.replace(/\.md$/, '') ?? path
+  return name === 'index' ? (path.split('/').at(-2) ?? name) : name
+}
+
 /** Every markdown note under the vault, as paths relative to it. */
 const vault_notes = (root, rel = '') => {
   const out = []
@@ -731,7 +742,7 @@ export const indexVault = async (options = {}) => {
       known.delete(path)
       if (stat.size > NOTE_BYTES || seen === stat.mtimeMs) continue
       const text = await readFile(full, 'utf8')
-      const title = path.split('/').pop().replace(/\.md$/, '')
+      const title = note_title(path)
       if (seen !== undefined) drop.run(path)
       upsert.run(path, stat.mtimeMs, title, text)
       indexed++

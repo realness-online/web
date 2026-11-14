@@ -39,6 +39,44 @@ it('a day of finds scores above the line first, dimmed below it', () => {
   assert.doesNotMatch(block, /&(?!amp;|lt;|gt;|quot;)/)
 })
 
+it('a day with nothing above the line still dims every row', () => {
+  const block = digest_block({
+    date: '2026-11-12',
+    leads: [lead(5, 'Below'), lead(2, 'Out')]
+  })
+  assert.match(block, /<tbody>\n<\/tbody>\n<tbody>\n<tr><td>5<\/td>/)
+})
+
+it('a company gets one row, its best opening', () => {
+  const block = digest_block({
+    date: '2026-11-12',
+    leads: [
+      lead(3, 'Brickanta', 'https://example.com/1'),
+      lead(5, 'Brickanta', 'https://example.com/2'),
+      lead(4, 'Other', 'https://example.com/3')
+    ]
+  })
+  assert.equal((block.match(/>Brickanta</g) ?? []).length, 1)
+  assert.match(
+    block,
+    /<td>5<\/td><td><a href="https:\/\/example.com\/2">Brickanta/
+  )
+  assert.match(block, /<span>2 leads<\/span>/)
+})
+
+it('a reason is one line', () => {
+  const block = digest_block({
+    date: '2026-11-12',
+    leads: [
+      {
+        ...lead(2, 'Arpari'),
+        reason: 'No human stake. Down-signal: it is a contract in India.\nMore.'
+      }
+    ]
+  })
+  assert.match(block, /<td>No human stake\.<\/td>/)
+})
+
 it('today goes first and older days stay as they were', () => {
   const before = plan()
   const after = with_digest(

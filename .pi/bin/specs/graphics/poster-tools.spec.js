@@ -11,7 +11,7 @@ import { join, resolve } from 'node:path'
 import { it } from 'node:test'
 import { kind_of, list_sources, poster_paths_for, slices_of } from '../../lib/sources.js'
 import { chrome_path, data_url_of, frame_problem } from '../../lib/poster-driver.js'
-import { resolve_file, serve } from '../../plans/plans-serve.js'
+import { RELOAD_SCRIPT, resolve_file, serve } from '../../plans/plans-serve.js'
 
 const root = resolve(import.meta.dirname, '../../../..')
 
@@ -80,7 +80,7 @@ it('plans-serve resolves pages and never leaves its root', async t => {
   const at = `http://127.0.0.1:${server.address().port}`
   const page = await fetch(`${at}/blog/post`)
   assert.equal(page.headers.get('content-type'), 'text/html; charset=utf-8')
-  assert.equal(await page.text(), '<h1>post</h1>')
+  assert.equal(await page.text(), `<h1>post</h1>${RELOAD_SCRIPT}`)
   assert.equal((await fetch(`${at}/missing`)).status, 404)
 })
 

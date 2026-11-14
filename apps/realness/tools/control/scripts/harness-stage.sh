@@ -7,11 +7,11 @@ node "$project/tools/control/scripts/ship-stage.js" --env "$env"
 . "$project/lib/output.sh"
 out="$OUT"
 tar czf "$out/realness-harness.tar.gz" --owner=0 --group=0 --numeric-owner \
-  --no-mac-metadata -C "$out/ship" .
+  --no-mac-metadata --no-xattrs -C "$out/ship" .
 shasum -a 256 "$out/realness-harness.tar.gz" > "$out/realness-harness.manifest"
 echo "staged $out/realness-harness.tar.gz"
 apps="$(cd "$project/.." && pwd)"
-tar czf "$out/realness-apps.tar.gz" --owner=0 --group=0 --numeric-owner --no-mac-metadata \
+tar czf "$out/realness-apps.tar.gz" --owner=0 --group=0 --numeric-owner --no-mac-metadata --no-xattrs \
   --exclude=node_modules --exclude=dist --exclude=.cache --exclude=.fallow \
   --exclude=coverage --exclude=tracer --exclude=artifacts --exclude=.DS_Store \
   --exclude='*.pem' --exclude='.env*' \

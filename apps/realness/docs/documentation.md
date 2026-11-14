@@ -697,9 +697,9 @@ We manage the server. An author writes one handler, standard library only:
 // server.js
 export default {
   async fetch(request) {
-    return new Response("hi");
-  },
-};
+    return new Response('hi')
+  }
+}
 ```
 
 Our server (`server/halo/guest/realness-serve.js`, on the node runtime disk) turns HTTP

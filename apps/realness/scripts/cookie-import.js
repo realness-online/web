@@ -6,7 +6,7 @@
  *       --domain workatastartup.com --json cookies.json
  *
  *     node scripts/cookie-import.js --json cookies.json \
- *       --owner +16282281824 --site yc --root /opt/fc/boxes/cookie-jars
+ *       --owner +16282281824 --site yc --root /opt/fc/jars
  *
  * The first form reads a Chrome's cookies over DevTools; the second writes
  * them to a jar page. Run the first on the Mac that holds the login, the

@@ -13,7 +13,7 @@ try {
     'realness-model-pass',
     { op: 'model-pass' },
     {
-      timeout_ms: 10_000,
+      timeout_ms: 30_000,
       timeout_error: 'the halo door did not issue a model pass'
     }
   )

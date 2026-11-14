@@ -48,16 +48,15 @@ it('a relative folder or an unknown placeholder is refused', () => {
   )
 })
 
-it('the VM is sized for a box and a Chrome copy at once', async () => {
+it('the VM is sized for a box with its own Chrome', async () => {
   const { BOX_CPUS, BOX_MIB } = await import('../../src/halo/box.js')
-  const { COPY_VCPUS, DEFAULT_MIB } =
-    await import('../../src/halo/chrome-pool.js')
+  const CHROME_MIB = 1024
   const value = key =>
     Number(
       template.match(new RegExp(`^${key}: (\\d+)`, 'm'))?.[1] ??
         template.match(new RegExp(`^${key}: (\\d+)GiB`, 'm'))?.[1]
     )
   const mib = value('memory') * 1024
-  assert.ok(mib >= BOX_MIB + DEFAULT_MIB + 1024, 'memory leaves the halo a GiB')
-  assert.ok(value('cpus') >= BOX_CPUS + COPY_VCPUS, 'cpus avoid a squeeze')
+  assert.ok(mib >= BOX_MIB + CHROME_MIB + 1024, 'memory leaves the halo a GiB')
+  assert.ok(value('cpus') >= BOX_CPUS + 2, 'cpus avoid a squeeze')
 })

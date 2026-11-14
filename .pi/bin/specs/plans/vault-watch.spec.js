@@ -61,6 +61,7 @@ it('hidden files, session transcripts, and the commands page never start a build
   mkdir_sync(join(dir, '.obsidian'))
   mkdir_sync(join(dir, 'Sessions'))
   mkdir_sync(join(dir, 'Areas/Realness/pages'), { recursive: true })
+  mkdir_sync(join(dir, 'Projects/leads/Runs/r1/sessions'), { recursive: true })
   let builds = 0
   const watcher = watch_builds({ folder: dir, wait: 50, ignore: ignored, log: () => {}, build: async () => builds++ })
   t.after(watcher.close)
@@ -71,6 +72,7 @@ it('hidden files, session transcripts, and the commands page never start a build
   write_file_sync(join(dir, 'Areas/Realness/pages/commands.js'), '')
   write_file_sync(join(dir, 'Sessions/a.html.gz'), '')
   write_file_sync(join(dir, 'Sessions/a.html.gz.lock'), '')
+  write_file_sync(join(dir, 'Projects/leads/Runs/r1/sessions/a.html.gz'), '')
   await sleep(200)
   assert.equal(builds, 0)
 })

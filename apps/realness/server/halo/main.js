@@ -4,9 +4,8 @@ import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { join } from 'node:path'
 import { parseArgs as parse_args } from 'node:util'
 import { Door } from '#root/src/halo/door.js'
-import { ChromePool, render_page } from '#root/src/halo/chrome-pool.js'
-import { WebEngine } from '#root/src/halo/web-engine.js'
-import { ChromeLeases } from '#root/src/halo/chrome-leases.js'
+
+import { COMMON_CRAWL, WebEngine } from '#root/src/halo/web-engine.js'
 import { cookie_jars } from '#root/src/halo/cookie-jar.js'
 import { Loops } from '#root/src/halo/loops.js'
 import { HaloStatus } from '#root/src/halo/status.js'
@@ -50,6 +49,7 @@ const { positionals, values } = parse_args({
   allowPositionals: true,
   options: {
     volume: { type: 'string', default: '/opt/fc/actors/mnt' },
+    jars: { type: 'string', default: '/opt/fc/jars' },
     template: { type: 'string', default: '/opt/fc/template.ext4' },
     'app-image': { type: 'string', default: '/opt/fc/app.ext4' },
     kernel: { type: 'string', default: '/opt/fc/vmlinux-6.1.155' },
@@ -199,35 +199,11 @@ const loops = new Loops(store, { mirror, halo })
 const site_url = store.sync_sites
   ? `${String(site_public).replace(/\/$/, '')}/sites/{id}/`
   : '/s/{id}/'
-const chrome_image = '/opt/fc/chrome.ext4'
-const chrome_pool = exists_sync(chrome_image)
-  ? new ChromePool({
-      root: join(values.volume, 'chrome-pool'),
-      image: chrome_image,
-      kernel: values.kernel,
-      binary: values.firecracker
-    })
-  : null
-const chrome = chrome_pool
-  ? new ChromeLeases(chrome_pool, {
-      work: store,
-      jars: cookie_jars(join(values.volume, 'cookie-jars'))
-    })
-  : null
-const render = chrome_pool
-  ? async url => {
-      const copy = await chrome_pool.restore()
-      try {
-        return await render_page(copy.address, url)
-      } finally {
-        await chrome_pool.destroy(copy.n)
-      }
-    }
-  : null
+const jars = cookie_jars(values.jars)
 const web_firecrawl_file = process.env.FIRECRAWL_API_KEY_FILE
 const web = new WebEngine({
   root: join(values.volume, 'web-cache'),
-  render,
+  common_crawl: COMMON_CRAWL,
   firecrawl_key:
     process.env.FIRECRAWL_API_KEY ??
     (web_firecrawl_file && exists_sync(web_firecrawl_file)
@@ -235,7 +211,7 @@ const web = new WebEngine({
       : null)
 })
 setInterval(() => web.prune(), WEB_PRUNE_HOURS * MS_PER_HOUR).unref()
-new Door(store, values['site-url'] ?? site_url, loops, chrome, web).start()
+new Door(store, values['site-url'] ?? site_url, loops, jars, web).start()
 const apps = new AppStore({
   volume: values.volume,
   image: values['app-image'],

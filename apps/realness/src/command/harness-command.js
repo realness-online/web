@@ -9,6 +9,7 @@ import {
   use_harness_state
 } from '#root/src/harness/harness.js'
 import { turn_end, turn_start } from '#root/src/harness/turns.js'
+import { claim_turn_sync } from '#root/src/harness/sync-lock.js'
 import { prepare_actor_state } from '#root/src/harness/state.js'
 
 export const SYNC_PAUSED = 'sync-paused'
@@ -89,7 +90,9 @@ const harness_options = rest => {
   }
   const session = option('session')
   const turn = Number(option('turn') ?? 0)
-  return { session, turn }
+  const no_sync = rest.includes('--no-sync')
+  if (no_sync) rest.splice(rest.indexOf('--no-sync'), 1)
+  return { no_sync, session, turn }
 }
 
 /**
@@ -100,6 +103,7 @@ const end_turn = async ({
   command,
   local,
   json,
+  no_sync,
   root,
   session,
   state,
@@ -110,18 +114,24 @@ const end_turn = async ({
   const logged = await turn_end({ root, state, session, turn })
   if (logged.length && !json && !actor)
     stdout.write(`turn ${turn}: ${logged.length} change(s) logged\n`)
-  if (!actor && !local) {
-    if (json)
-      stdout.write(
-        `${JSON.stringify({
-          ok: true,
-          command,
-          result: { logged: logged.length, synced: false }
-        })}\n`
-      )
-    return 0
-  }
-  return null
+  const syncs = !no_sync && (actor || local)
+  const claimed = syncs && claim_turn_sync(state)
+  if (claimed) return null
+  const skipped = syncs ? 'another turn-end is syncing' : null
+  if (skipped && !json) stdout.write(`turn ${turn}: ${skipped}\n`)
+  if (json)
+    stdout.write(
+      `${JSON.stringify({
+        ok: true,
+        command,
+        result: {
+          logged: logged.length,
+          synced: false,
+          ...(skipped && { skipped })
+        }
+      })}\n`
+    )
+  return 0
 }
 
 /**
@@ -213,7 +223,7 @@ export const run_harness = async (
   const [command, ...rest] = args
   const json = rest.includes('--json')
   const dry_run = command === 'sync' && rest.includes('--dry-run')
-  const { session, turn } = harness_options(rest)
+  const { no_sync, session, turn } = harness_options(rest)
   if (command.startsWith('turn') && !session) {
     const message = 'turn commands need --session <file>'
     if (json)
@@ -243,6 +253,7 @@ export const run_harness = async (
     command,
     local: where?.local,
     json,
+    no_sync,
     root,
     session,
     state,

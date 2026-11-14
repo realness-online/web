@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec node "$(cd "$(dirname "$0")/../../.." && pwd)/apps/realness/server/halo/guest/realness-read.js" "$@"

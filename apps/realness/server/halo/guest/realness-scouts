@@ -1,0 +1,4 @@
+#!/bin/sh
+mkdir -p /realness/artifacts/tmp
+REALNESS_HOME=/realness TMPDIR=/realness/artifacts/tmp \
+  exec /usr/local/bin/node /usr/local/lib/realness/scripts/scout.js "$@" --run

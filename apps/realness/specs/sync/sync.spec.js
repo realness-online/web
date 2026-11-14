@@ -34,6 +34,23 @@ before(async () => {
     project: issuer.project,
     certs: issuer.certs,
     origins: ['https://realness.example'],
+    vault: {
+      allows: () => true,
+      plans: () => [],
+      articles: () => [],
+      shared: ({ itemid }) =>
+        itemid === '/+1555/plans/1'
+          ? {
+              path: 'Projects/a.md',
+              storage: `people/${A}/harness/vault/Projects/a.md`,
+              title: 'A',
+              text: 'Body',
+              itemid
+            }
+          : null,
+      note: async () => null,
+      search: () => []
+    },
     log: l => lines.push(l)
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
@@ -757,4 +774,76 @@ it('m2: a rewrite at the same path gets a new versioned URL', async () => {
     read.headers.get('cache-control'),
     'public, max-age=0, s-maxage=60'
   )
+})
+
+it('x9: an itemid opens for its owner through can, and never for a stranger', async () => {
+  const owner = await call(
+    'GET',
+    'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1',
+    { headers: as(A) }
+  )
+  assert.equal(owner.status, 200)
+  assert.equal((await owner.json()).path, 'Projects/a.md')
+  const stranger = await call(
+    'GET',
+    'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1',
+    { headers: as(B) }
+  )
+  assert.equal(stranger.status, 404)
+  const anon = await call('GET', 'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1')
+  assert.equal(anon.status, 404)
+  const unknown = await call(
+    'GET',
+    'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F9',
+    { headers: as(A) }
+  )
+  assert.equal(unknown.status, 404)
+})
+
+it('x9: a stored key opens nothing at all', async () => {
+  const by_key = await call('GET', 'v1/vault/find?key=abc_def', {
+    headers: as(A)
+  })
+  assert.equal(by_key.status, 404)
+})
+
+it('s1: an open page hears a vault note written within two seconds', async () => {
+  const events = []
+  const stream = request(
+    `${base}/v1/vault/events`,
+    { headers: as(A) },
+    response => {
+      response.setEncoding('utf8')
+      response.on('data', chunk => {
+        for (const line of chunk.split('\n')) {
+          if (line.startsWith('data: '))
+            events.push(JSON.parse(line.slice(6)).path)
+        }
+      })
+    }
+  )
+  stream.end()
+  await new Promise(done => setTimeout(done, 50))
+  assert.equal(
+    await status('PUT', `people/${A}/vault/Projects/live.md`, {
+      headers: as(A),
+      body: 'live'
+    }),
+    200
+  )
+  const heard = await new Promise(done => {
+    const began = Date.now()
+    const look = setInterval(() => {
+      if (events.length) {
+        clearInterval(look)
+        done({ events: [...events], ms: Date.now() - began })
+      } else if (Date.now() - began > 2000) {
+        clearInterval(look)
+        done({ events: [], ms: 2000 })
+      }
+    }, 20)
+  })
+  stream.destroy()
+  assert.deepEqual(heard.events, [`people/${A}/vault/Projects/live.md`])
+  assert.ok(heard.ms < 2000, `heard in ${heard.ms}ms`)
 })

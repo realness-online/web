@@ -1,21 +1,20 @@
 import { existsSync as exists_sync, rmSync as rm_sync } from 'node:fs'
+import { readFile as read_file } from 'node:fs/promises'
 import { hostname } from 'node:os'
 import { createServer as create_server } from 'node:net'
+import { join } from 'node:path'
 import { logger } from './log.js'
 import { Loops } from './loops.js'
-import { MS_PER_MINUTE } from '#root/lib/units.js'
 import {
   active_scouts,
   due_scouts,
-  run_scout_loop
+  run_scout_box
 } from '#root/src/scouts/halo.js'
 import { find_scout, scout_pages } from '#root/src/scouts/scout.js'
-import { scout_preflight } from '#root/src/scouts/preflight.js'
+import { source_sections } from '#root/src/scouts/sources.js'
 import { scout_probe } from '#root/src/scouts/probe.js'
-import { site_read } from './site-read.js'
 import { site_of } from './cookie-jar.js'
 import { Lines } from './vsock.js'
-import { tap_guest } from './syscalls.js'
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { can } from '#root/src/can/can.js'
 import {
@@ -51,31 +50,47 @@ const owner_vault = (door, owner) => {
   return vault
 }
 
-/** Start one scout's loop without waiting for it; its log line lands when it ends. */
-const start_scout = (door, id, owner, vault, scout) => {
-  door.scouting.add(scout)
-  return run_scout_loop({
-    loops: loops_of(door),
-    parent: id,
-    scout,
-    vault_dir: vault.path,
-    person: `/${owner}`,
-    date: new Date().toISOString().slice(0, DATE_LENGTH),
-    preflight: () => scout_preflight(door)
-  })
+/**
+ * The owner's own box: the actor a scout run hangs off. Loop actors are left
+ * out, so the run lands on the box the owner opened.
+ * @param {Door} door
+ * @param {string} owner
+ */
+const owner_box = (door, owner) => {
+  const loops = Object.keys(door.loops?.loops ?? {})
+  const own = door.store
+    .list()
+    .filter(record => record.owner === owner && !loops.includes(record.id))
+  return own.find(record => record.state === 'running') ?? own[0] ?? null
+}
+
+/**
+ * Start one scout's run in the owner's box, without waiting for it; its log
+ * line lands when the box's pi ends. The box reaches the model through the door,
+ * so its rights and limits hold, and the read keeps the box's cookies.
+ */
+const start_scout = async ({ door, id, owner, vault, scout, source = '' }) => {
+  const key = `${scout}|${source}`
+  door.scouting.add(key)
+  const box = owner_box(door, owner)
+  if (!box) throw new Error('no box to run scouts in')
+  await door.store.ensure_running(box.id)
+  return run_scout_box({ store: door.store, actor: box.id, scout, source })
     .then(
-      ({ fresh, path }) =>
-        LOG.info(`door: scout ${scout} wrote ${fresh.length} new to ${path}`),
-      error => LOG.error(`door: scout ${scout} failed: ${error.message}`)
+      ({ code, said }) =>
+        code
+          ? LOG.error(`door: scout ${scout} ${source} exited ${code}: ${said}`)
+          : LOG.info(`door: scout ${scout} ${source} done: ${said}`),
+      error =>
+        LOG.error(`door: scout ${scout} ${source} failed: ${error.message}`)
     )
-    .finally(() => door.scouting.delete(scout))
+    .finally(() => door.scouting.delete(key))
 }
 
 const DOOR_PORT = 54
 const LINE_LIMIT = 1 << LINE_LIMIT_BITS
 const RECONCILE_MS = 500
-const LOOP_WATCH_MS = 30_000
-const SCOUT_WATCH_MS = 5 * MS_PER_MINUTE
+const LOOP_WATCH_MS = 15_000
 
 /** The guest's door socket for an actor; listening once the reconciler has run for it. */
 export const door_path = vsock_path => `${vsock_path}_${DOOR_PORT}`
@@ -126,26 +141,20 @@ const manage_site = async (door, { id, request, site }) => {
   return { ok: true, ...result, url: site_url_of(door, site) }
 }
 
-/** The address a copy is opened to: a tap actor's guest, or a box's own guest. */
-const lease_ip = record =>
-  record.address?.guest ?? (record.tap ? tap_guest(record.tap) : null)
-
 /**
  * @type {Answer}
- * A `site` names the cookie jar the copy keeps, so a logged-in site stays
- * logged in across runs.
+ * A site's saved login, for the owner's own box to load into its own Chrome and
+ * to give back when it is done. The jar stays on the halo; only the cookies
+ * cross, and only into the owner's box.
  */
-const use_chrome = async (door, { id, owner, record, request }) => {
-  if (!door.chrome) throw new Error('this halo has no chrome pool')
-  if (request.op === 'chrome-return')
-    return { ok: true, returned: await door.chrome.give_back(id) }
-  const actor_ip = lease_ip(record)
-  if (!actor_ip) throw new Error('actor has no network')
-  const lease = await door.chrome.lease(id, actor_ip, {
-    site: request.site ?? null,
-    owner
-  })
-  return { ok: true, ...lease }
+const use_jar = async (door, { owner, request }) => {
+  if (!door.jars) throw new Error('this halo has no cookie jars')
+  const site = site_of(request.site)
+  if (Array.isArray(request.save)) {
+    await door.jars.save(owner, site, request.save)
+    return { ok: true, saved: request.save.length }
+  }
+  return { ok: true, cookies: await door.jars.load(owner, site) }
 }
 
 /**
@@ -192,49 +201,42 @@ const OPS = {
     answer: async (door, { id, owner, record, request }) => {
       const vault = owner_vault(door, owner)
       const page = find_scout(scout_pages(vault.path), String(request.scout))
-      if (request.probe) {
-        const actor_ip = lease_ip(record)
-        if (!actor_ip) throw new Error('the actor has no network')
-        return {
-          ok: true,
-          probe: await scout_probe(door, { id, owner, actor_ip })
-        }
-      }
+      if (request.probe)
+        return { ok: true, probe: await scout_probe(door, owner) }
       if (page.status !== 'active')
         throw new Error(`${page.path} is ${page.status || 'missing a status'}`)
-      start_scout(door, id, owner, vault, page.path)
-      return { ok: true, scout: page.path }
+      const source = String(request.source ?? '')
+      start_scout({ door, id, owner, vault, scout: page.path, source })
+      return { ok: true, scout: page.path, source }
     }
   },
   scouts: {
     refused: 'actor cannot start loops',
-    answer: (door, { id, owner }) => {
+    answer: async (door, { id, owner }) => {
       const vault = owner_vault(door, owner)
-      const pages = active_scouts(vault.path)
-      for (const page of pages) start_scout(door, id, owner, vault, page.path)
-      return { ok: true, scouts: pages.map(page => page.path) }
+      const started = []
+      for (const page of active_scouts(vault.path)) {
+        const doc = await read_file(
+          join(page.folder, 'Sources.md'),
+          'utf8'
+        ).catch(() => '')
+        const sections = source_sections(doc)
+        const keys = sections.length ? sections.map(one => one.key) : ['']
+        for (const key of keys) {
+          start_scout({ door, id, owner, vault, scout: page.path, source: key })
+          started.push(`${page.path} ${key}`.trim())
+        }
+      }
+      return { ok: true, scouts: started }
     }
   },
   read: {
     refused: 'actor cannot read the web',
-    answer: async (door, { id, owner, record, request }) => {
-      if (request.site) {
-        const actor_ip = lease_ip(record)
-        if (!actor_ip) throw new Error('the actor has no network')
-        const page = await site_read(
-          door,
-          { id, owner, actor_ip, site: site_of(request.site) },
-          String(request.url ?? '')
+    answer: async (door, { id, request }) => {
+      if (request.site)
+        throw new Error(
+          'a login site is read in the box that holds it: pass the cookies, not a site'
         )
-        return {
-          ok: true,
-          source: 'chrome',
-          kind: 'html',
-          body: page.html,
-          status: page.status,
-          site: page.site
-        }
-      }
       if (!door.web) throw new Error('this halo has no internet engine')
       return {
         ok: true,
@@ -245,8 +247,7 @@ const OPS = {
       }
     }
   },
-  'chrome-lease': { refused: 'actor cannot use chrome', answer: use_chrome },
-  'chrome-return': { refused: 'actor cannot use chrome', answer: use_chrome },
+  'site-cookies': { refused: 'actor cannot read its login', answer: use_jar },
   'site-versions': {
     refused: 'actor cannot read site versions',
     site: true,
@@ -285,28 +286,27 @@ export class Door {
    * @param {import('./actors.js').HaloStore} store
    * @param {string} [site_url]
    * @param {import('./loops.js').Loops | null} [loops]
-   * @param {import('./chrome-leases.js').ChromeLeases | null} [chrome]
+   * @param {{ load: Function, save: Function } | null} [jars]
    * @param {import('./web-engine.js').WebEngine | null} [web]
    */
   constructor(
     store,
     site_url = '/s/{id}/',
     loops = null,
-    chrome = null,
+    jars = null,
     web = null
   ) {
     this.web = web
     this.store = store
     this.site_url = site_url
     this.loops = loops
-    this.chrome = chrome
+    this.jars = jars
     this.listeners = new Map()
     this.scouting = new Set()
   }
 
   start() {
     this.#watch_loops()
-    this.#watch_scouts()
     const tick = () => {
       try {
         this.reconcile()
@@ -319,19 +319,6 @@ export class Door {
   }
 
   /**
-   * The owner's own box: the actor a timed scout run hangs off. Loop actors are
-   * left out, so the run lands at depth one.
-   * @param {string} owner
-   */
-  #owner_box(owner) {
-    const loops = Object.keys(this.loops?.loops ?? {})
-    const own = this.store
-      .list()
-      .filter(record => record.owner === owner && !loops.includes(record.id))
-    return own.find(record => record.state === 'running') ?? own[0] ?? null
-  }
-
-  /**
    * Start every scout whose budget says now, on the owner's own box, which is
    * woken first: a halo restart leaves it stopped and the door shut.
    * @returns {Promise<string[]>} the scouts it started
@@ -339,30 +326,25 @@ export class Door {
   async run_due_scouts() {
     const vault = host_vault_of(this.store)
     if (!vault) return []
+    if (this.scouting.size) return []
     const due = await due_scouts(vault.path, {
       date: new Date().toISOString().slice(0, DATE_LENGTH),
       running: this.scouting
     })
     if (!due.length) return []
-    const box = this.#owner_box(vault.owner)
+    const box = owner_box(this, vault.owner)
     if (!box) throw new Error('no actor to run scouts from')
     await this.store.ensure_running(box.id)
-    for (const page of due)
-      start_scout(this, box.id, vault.owner, vault, page.path)
-    return due.map(page => page.path)
-  }
-
-  #watch_scouts() {
-    const tick = async () => {
-      try {
-        for (const scout of await this.run_due_scouts())
-          LOG.info(`door: scout timer started ${scout}`)
-      } catch (error) {
-        LOG.error('scout timer failed', error)
-      }
-      this.scoutTimer = setTimeout(tick, SCOUT_WATCH_MS)
-    }
-    this.scoutTimer = setTimeout(tick, SCOUT_WATCH_MS)
+    const [next] = due
+    start_scout({
+      door: this,
+      id: box.id,
+      owner: vault.owner,
+      vault,
+      scout: next.page.path,
+      source: next.source
+    })
+    return [`${next.page.path} ${next.source}`.trim()]
   }
 
   #watch_loops() {
@@ -392,11 +374,6 @@ export class Door {
 
     for (const [id, record] of live)
       if (!this.listeners.has(id)) this.#listen(record)
-    if (this.chrome && !this.reaping)
-      this.reaping = this.chrome
-        .reap([...live.keys()])
-        .catch(error => LOG.error('chrome lease reap failed', error))
-        .finally(() => (this.reaping = null))
   }
 
   #listen(record) {

@@ -30,7 +30,3 @@ ensure template /opt/fc/template.ext4 "$({
   tar -tzf "$harness" | sort
   tar -xzOf "$harness" | sha256sum
 } | sha256sum | cut -d' ' -f1)" tools/control/scripts/template-build.sh
-
-ensure chrome /opt/fc/chrome.ext4 "$(
-  find tools/control/scripts/chrome-image-build.sh tools/control/scripts/app-image-build.sh server/halo/guest -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1
-)" tools/control/scripts/chrome-image-build.sh

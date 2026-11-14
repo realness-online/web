@@ -69,14 +69,26 @@ export const jar_page = (site, cookies) =>
 /** The cookies a jar page holds. */
 export const read_jar = html => read_items(html, 'cookie').map(cookie_of)
 
+/** A jar holds a live login, so its root never sits inside a vault that syncs. */
+const jar_root = root => {
+  if (
+    String(root)
+      .split(/[\\/]+/)
+      .includes('vault')
+  )
+    throw new Error(`a jar root stays outside the vault: ${root}`)
+  return root
+}
+
 /**
  * One owner's saved logins, a page per site, in a folder only the halo reads.
  * @param {string} root
  */
 export const cookie_jars = root => {
+  const base = jar_root(root)
   const path_of = (owner, site) => {
     if (!OWNER.test(owner)) throw new Error('a jar needs a verified owner')
-    return join(root, owner, `${site_of(site)}.html`)
+    return join(base, owner, `${site_of(site)}.html`)
   }
   return {
     /** @param {string} owner @param {string} site @returns {Promise<Cookie[]>} */
@@ -90,7 +102,7 @@ export const cookie_jars = root => {
     /** Written whole, then moved into place. @param {string} owner @param {string} site @param {Cookie[]} cookies */
     save: async (owner, site, cookies) => {
       const path = path_of(owner, site)
-      await mkdir(join(root, owner), { recursive: true, mode: 0o700 })
+      await mkdir(join(base, owner), { recursive: true, mode: 0o700 })
       const tmp = `${path}.tmp`
       await write_file(tmp, jar_page(site, cookies), { mode: OWNER_ONLY })
       await chmod(tmp, OWNER_ONLY)

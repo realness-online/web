@@ -139,7 +139,9 @@ it('all direct desktop Realness dispatch commands have reviewed routes', async (
 it('every authored shell file is either a helper or a sourced library', async () => {
   const scan = async directory => {
     const files = []
-    for (const entry of await readdir(join(root, directory), { withFileTypes: true })) {
+    const entries = await readdir(join(root, directory), { withFileTypes: true })
+    if (directory !== '.' && entries.some(entry => entry.name === '.git')) return files
+    for (const entry of entries) {
       if (
         [
           'node_modules',

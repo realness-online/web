@@ -17,8 +17,8 @@ export const prints_reconcile_handler = async () => {
   )
   let recorded = 0
   let failed = 0
-  for (const { poster_id, ...sale } of paid) {
-    try {
+  for (const { poster_id, ...sale } of paid)
+    {try {
       // eslint-disable-next-line no-await-in-loop -- one poster at a time
       if (await record_sale(poster_id, sale)) recorded++
     } catch (error) {
@@ -27,8 +27,8 @@ export const prints_reconcile_handler = async () => {
         poster_id,
         error: error.message
       })
-    }
-  }
+    }}
+
   log_info('prints reconcile', { paid: paid.length, recorded, failed })
 }
 

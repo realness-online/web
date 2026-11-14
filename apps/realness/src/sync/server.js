@@ -17,6 +17,7 @@
  * Browsers may call it only from `origins`, the sites allowed to read and write.
  */
 import { answer_release } from '#root/lib/release.js'
+import { is_vault_note, vault_events } from './vault-events.js'
 import {
   createHash as create_hash,
   timingSafeEqual as timing_safe_equal
@@ -775,16 +776,60 @@ const answer_vault = async (vault, path, request, response) => {
     const text = await vault.note(query.get('path'))
     if (text === null) throw new Status(HTTP.NOT_FOUND)
     body = { path: query.get('path'), text }
-  } else if (path === 'v1/vault/find') {
-    const found = vault.find({
-      key: query.get('key'),
-      itemid: query.get('itemid')
-    })
-    if (!found) throw new Status(HTTP.NOT_FOUND)
-    body = found
-  } else throw new Status(HTTP.NOT_FOUND)
+  } else if (path === 'v1/vault/plans') body = { plans: vault.plans() }
+  else if (path === 'v1/vault/articles') body = { articles: vault.articles() }
+  else if (path === 'v1/vault/pages') body = { pages: await vault.pages() }
+  else if (path === 'v1/vault/commands')
+    body = { groups: await vault.commands() }
+  else if (path === 'v1/vault/keys') body = { keys: await vault.keys() }
+  else if (path === 'v1/vault/artifacts') {
+    const wanted = query.get('path')
+    if (wanted === null)
+      body = { files: await vault.artifacts(query.get('folder') ?? '') }
+    else {
+      const file = await vault.artifact(wanted)
+      if (file === null) throw new Status(HTTP.NOT_FOUND)
+      body = file
+    }
+  } else if (path === 'v1/vault/maps')
+    body = {
+      map: await vault.map_of(
+        /** @type {'modules' | 'ways-in'} */ (query.get('page') ?? '')
+      )
+    }
+  else throw new Status(HTTP.NOT_FOUND)
   response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
   response.end(JSON.stringify(body))
+}
+
+/**
+ * x9: one note, by itemid, opened only where `can` allows it.
+ * @param {{ vault: ReturnType<typeof import('./vault.js').vault_door>, storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, request: import('node:http').IncomingMessage, response: import('node:http').ServerResponse, who: Caller | null }} call
+ */
+const answer_item = async ({
+  vault,
+  storage,
+  rights,
+  request,
+  response,
+  who
+}) => {
+  const found = vault.shared({
+    itemid: new URL(request.url ?? '/', 'http://sync').searchParams.get(
+      'itemid'
+    )
+  })
+  if (!found) throw new Status(HTTP.NOT_FOUND)
+  const [top, owner] = found.storage.split('/')
+  const grants =
+    who?.instance && top === 'people' && owner
+      ? (await rights.grants(owner)).grants
+      : []
+  const org = await org_of(storage, found.storage, owner)
+  if (!can(who, 'get', found.storage, grants, org))
+    throw new Status(HTTP.NOT_FOUND)
+  response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
+  response.end(JSON.stringify(found))
 }
 
 /** Top folders whose rules ask whether the caller is an admin. */
@@ -809,13 +854,13 @@ const org_of = (storage, path, owner) => {
 /**
  * Read, list, write, or delete one stored file, after can() allows it. An
  * anonymous read gets a cache header the CDN may keep.
- * @param {{ storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, admins: { has: (phone: string) => Promise<boolean> }, keep: ReturnType<typeof keeper> }} sync
+ * @param {{ storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, admins: { has: (phone: string) => Promise<boolean> }, keep: ReturnType<typeof keeper>, events: ReturnType<typeof vault_events> }} sync
  * @param {import('node:http').IncomingMessage} request
  * @param {import('node:http').ServerResponse} response
  * @param {{ path: string, action: string, caller: Caller | null }} call caller is null when anonymous
  */
 const answer_record = async (
-  { storage, rights, admins, keep },
+  { storage, rights, admins, keep, events },
   request,
   response,
   { path, action, caller }
@@ -855,6 +900,7 @@ const answer_record = async (
     keep
   })
   response.end()
+  if (is_vault_note(path)) events.send(path)
 }
 
 /**
@@ -887,6 +933,7 @@ const answer_record = async (
  * @param {{ app_id: string, private_key: string } | null} [options.git_app]
  * @param {typeof fetch} [options.git_fetch]
  * @param {ReturnType<typeof import('./vault.js').vault_door> | null} [options.vault] the Mac's vault door (vlt1); off by default
+ * @param {ReturnType<typeof vault_events>} [options.events] pushes a vault note change to open pages
  * @param {(...parts: unknown[]) => void} [options.log]
  */
 export const sync_service = ({
@@ -903,6 +950,7 @@ export const sync_service = ({
   git_app = null,
   git_fetch = fetch,
   vault = null,
+  events = vault_events(),
   log = console.info
 }) => {
   const pins = storage_pins(storage, issuer ? PINS_REALNESS : undefined)
@@ -999,13 +1047,20 @@ export const sync_service = ({
       })
       return who
     }
+    if (path === 'v1/vault/item' && method === 'GET') {
+      const who = await who_is(request)
+      if (!vault) throw new Status(HTTP.NOT_FOUND)
+      await answer_item({ vault, storage, rights, request, response, who })
+      return who
+    }
     if (path.startsWith('v1/vault/') && method === 'GET') {
       const who = await who_is(request)
-      const public_key =
-        path === 'v1/vault/find' &&
-        new URL(request.url ?? '/', 'http://sync').searchParams.get('key')
       if (!vault) throw new Status(HTTP.NOT_FOUND)
-      if (!public_key && !vault.allows(who)) throw new Status(HTTP.NOT_FOUND)
+      if (!vault.allows(who)) throw new Status(HTTP.NOT_FOUND)
+      if (path === 'v1/vault/events') {
+        events.listen(response)
+        return who
+      }
       await answer_vault(vault, path, request, response)
       return who
     }
@@ -1019,11 +1074,16 @@ export const sync_service = ({
     const action = action_for(method, record)
     if (!action) throw new Status(HTTP.METHOD_NOT_ALLOWED)
     const who = await who_is(request)
-    await answer_record({ storage, rights, admins, keep }, request, response, {
-      path: record,
-      action,
-      caller: who
-    })
+    await answer_record(
+      { storage, rights, admins, keep, events },
+      request,
+      response,
+      {
+        path: record,
+        action,
+        caller: who
+      }
+    )
     return who
   }
 

@@ -56,7 +56,7 @@ const HEAD = 8192
 export const carried_itemid = text => {
   const front = text.match(/^---\n([\s\S]*?)\n?---(?:\n|$)/)?.[1] ?? ''
   return (
-    front.match(/^itemid: *"?([^"\n]+?)"? *$/m)?.[1] ??
+    front.match(/^itemid: *(["']?)([^"'\n]+?)\1 *$/m)?.[2] ??
     text.match(/<(?:svg|html)\b[^>]*?\sitemid="([^"]+)"/)?.[1] ??
     null
   )

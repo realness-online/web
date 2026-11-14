@@ -8,7 +8,9 @@ then a cheaper model finishes it in the same context, so nothing is read twice.
 
 ## How it works
 
-1. `/planning <plan>` reads a plan in the plans folder. Prewalk reads it too.
+1. `/planning <plan>` binds the session to that plan: its folder, its file, or the one
+   plan whose name holds the word. Reading other plans never moves the session off it.
+   With no `/planning`, the first plan the session edits is bound instead.
 2. With `- Gate 1: approved` in the plan and a node marked `active`, the frontier
    works that node only: it sets the pattern, and nothing switches yet.
 3. When that node's spec passes and it leaves `active`, the pattern counts as set.
@@ -16,8 +18,9 @@ then a cheaper model finishes it in the same context, so nothing is read twice.
    (`openrouter/deepseek/deepseek-v4.1-flash-1017`), told to run the node's spec after each change.
 4. A failing spec sends that node back to the frontier model, told to find the cause.
    An error turn on the cheap model does the same, with a notice naming the error.
-5. No active node, as at a gate, means the frontier model. A new session proves the
-   pattern again, since a fresh context has no worked example.
+5. No active node, as at a gate, means the frontier model. Prewalk routes only the bound
+   plan; active nodes in other plans are ignored. A new
+   session whose plan log already holds a passing spec runs its nodes cheap.
 
 Editing files on an approved plan with no active node gets one hidden reminder to mark the
 node `active`. Plan changes made through bash are read too. A node that leaves `active`

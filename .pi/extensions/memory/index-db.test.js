@@ -488,3 +488,33 @@ test('the index holds no copy of transcript or note text beyond its own table', 
     db.close()
   }
 })
+
+test('a folder plan is indexed and named by its folder', async () => {
+  const { indexVault } = await import('./index-db.js')
+  const scratch = fileURLToPath(new URL('../../../artifacts/memory', import.meta.url))
+  mkdirSync(scratch, { recursive: true })
+  const dir = mkdtempSync(join(scratch, 'folder-plan-'))
+  try {
+    const vault = join(dir, 'vault')
+    mkdirSync(join(vault, 'Projects/realness-leads'), { recursive: true })
+    writeFileSync(join(vault, 'Projects/one.md'), '---\nitemid: "/+1/plans/1"\n---\n# One\n')
+    writeFileSync(join(vault, 'Projects/realness-leads/index.md'), '---\nitemid: "/+1/plans/2"\n---\n# Leads\n')
+    const index = join(dir, 'memory.db')
+    await indexVault({ root: vault, path: index })
+    const db = openIndex(index)
+    try {
+      const rows = db.prepare('SELECT path, title FROM note ORDER BY path').all()
+      assert.deepEqual(
+        rows.map(row => [row.path, row.title]),
+        [
+          ['Projects/one.md', 'one'],
+          ['Projects/realness-leads/index.md', 'realness-leads']
+        ]
+      )
+    } finally {
+      db.close()
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})

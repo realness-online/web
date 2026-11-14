@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { after, test } from 'node:test'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import prewalk, { is_spec_run, plan_of, route } from './index.js'
+import prewalk, { is_spec_run, plan_named, plan_of, route, takes_over } from './index.js'
 
 const scratch = new URL('../../../artifacts/', import.meta.url).pathname
 mkdirSync(scratch, { recursive: true })
@@ -62,10 +62,19 @@ const harness = name => {
       handlers.tool_result({ toolName: 'bash', input: { command: `sed -i '' s/x/y/ ${file}` }, isError: false }, ctx)
     },
     change: () => handlers.tool_result({ toolName: 'edit', input: { path: join(dir, 'src.js') } }, ctx),
+    seed: shape => writeFileSync(file, plan_text(shape)),
     spec: ok =>
       handlers.tool_result({ toolName: 'bash', input: { command: 'node --test a.spec.js' }, isError: !ok }, ctx),
     turn: (message = { stopReason: 'stop' }) => handlers.turn_end({ entries: [], message }, ctx),
-    command: args => commands.prewalk(args, ctx)
+    command: args => commands.prewalk(args, ctx),
+    read: () => handlers.tool_result({ toolName: 'read', input: { path: file } }, ctx),
+    planning: name =>
+      handlers.before_agent_start({ prompt: `<skill name="planning" location="x">\nbody\n</skill>\n\n${name}` }, ctx),
+    other: shape => {
+      const other = join(plans, 'other.md')
+      writeFileSync(other, plan_text(shape))
+      handlers.tool_result({ toolName: 'edit', input: { path: other } }, ctx)
+    }
   }
   /** Frontier works a1 until its spec passes, which sets the pattern. */
   api.prove = async () => {
@@ -246,6 +255,21 @@ test('a plan whose node passed its spec keeps its nodes cheap in a new session',
   assert.equal(other.ctx.model, FRONTIER)
 })
 
+test('a session that has not read the plan stays on the frontier model', async () => {
+  const h = harness('untouched')
+  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.turn()
+  h.spec(true)
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await h.turn()
+  assert.equal(h.ctx.model, CHEAP)
+  const fresh = harness('untouched')
+  fresh.seed({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await fresh.turn()
+  assert.equal(fresh.ctx.model, FRONTIER)
+  assert.equal(fresh.notes.filter(note => /on openrouter\//.test(note.text)).length, 0)
+})
+
 test('a manual switch to the cheap model that errors is left alone', async () => {
   const h = harness('manual')
   h.write({ gate: '- Gate 1: approved', active: 'a1' })
@@ -277,4 +301,65 @@ test('a node entering active logs one start item with the model', async () => {
   const starts = html.split('<article').filter(item => item.includes('itemtype="/prewalk/start"'))
   assert.equal(starts.length, 1)
   assert.match(starts[0], /itemprop="plan">.*plans\/p\.md<.*itemprop="node">a1<.*itemprop="model">anthropic\/opus</s)
+})
+
+test('/planning <name> finds the plan by folder, file, or part of its name', () => {
+  const plans = join(dir, 'named')
+  mkdirSync(join(plans, 'realness-scouts'), { recursive: true })
+  writeFileSync(join(plans, 'realness-scouts', 'index.md'), '')
+  writeFileSync(join(plans, 'realness-presentation.md'), '')
+  const ask = name => plan_named(`<skill name="planning" location="x">\nbody\n</skill>\n\n${name}`, plans)
+  assert.equal(ask('realness-scouts'), join(plans, 'realness-scouts', 'index.md'))
+  assert.equal(ask('realness-presentation more words'), join(plans, 'realness-presentation.md'))
+  assert.equal(ask('presentation'), join(plans, 'realness-presentation.md'))
+  assert.equal(ask('realness'), null)
+  assert.equal(plan_named('read the scouts plan', plans), null)
+})
+
+test('reading a plan never routes the session to it', async () => {
+  const h = harness('read-only')
+  await h.prove()
+  await h.command('on')
+  const fresh = harness('read-only')
+  fresh.seed({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  fresh.read()
+  await fresh.turn()
+  assert.equal(fresh.ctx.model, FRONTIER)
+})
+
+test('/planning binds the plan; other plans with active nodes are ignored', async () => {
+  const h = harness('bound')
+  await h.prove()
+  const fresh = harness('bound')
+  fresh.seed({ gate: '- Gate 1: approved', done: 'a1' })
+  fresh.planning('p')
+  fresh.other({ gate: '- Gate 1: approved', active: 'a1' })
+  await fresh.turn()
+  assert.equal(fresh.ctx.model, FRONTIER)
+  fresh.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await fresh.turn()
+  assert.equal(fresh.ctx.model, CHEAP)
+})
+
+test('an edited approved plan takes over from an unapproved or idle one', () => {
+  const idle = { approved: true, active: [] }
+  const working = { approved: true, active: ['s1'] }
+  assert.equal(takes_over({ approved: false, active: [] }, idle), true)
+  assert.equal(takes_over(idle, working), true)
+  assert.equal(takes_over(working, { approved: true, active: ['b2'] }), false)
+  assert.equal(takes_over(idle, idle), false)
+  assert.equal(takes_over({ approved: false, active: [] }, { approved: false, active: ['a1'] }), false)
+})
+
+test('the session moves to the approved plan it works, and says so', async () => {
+  const h = harness('takeover')
+  h.other({})
+  assert.match(h.notes.at(-1).text, /bound to other\.md, no Gate 1 approval/)
+  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  assert.match(h.notes.at(-1).text, /bound to p\.md \(Gate 1 approved\)/)
+  await h.turn()
+  h.spec(true)
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await h.turn()
+  assert.equal(h.ctx.model, CHEAP)
 })

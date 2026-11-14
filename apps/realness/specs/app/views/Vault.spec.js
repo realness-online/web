@@ -17,10 +17,11 @@ vi.mock('@/utils/serverless', async () => {
 })
 
 vi.mock('@/utils/markdown', () => ({
-  markdown_html: text => `<h1>${text}</h1>`
+  markdown_html: text => (text.startsWith('<') ? text : `<h1>${text}</h1>`)
 }))
 
 import Vault from '@/views/Vault.vue'
+import { current_user } from '@/utils/serverless'
 
 enable_auto_unmount(after_each)
 
@@ -28,17 +29,29 @@ const at = hash => {
   vi.stubGlobal('location', { hash })
 }
 
-const respond = () => {
+const respond = (note = {}) => {
   const spy = vi.fn(async () => ({
     status: 200,
     ok: true,
-    json: async () => ({ path: 'plan.md', title: 'Plan', text: 'Plan' })
+    json: async () => ({
+      path: 'plan.md',
+      title: 'Plan',
+      text: 'Plan',
+      ...note
+    })
   }))
   vi.stubGlobal('fetch', spy)
   return spy
 }
 
-after_each(() => vi.unstubAllGlobals())
+const signed_in = async () => {
+  current_user.value = { getIdToken: async () => 'token' }
+}
+
+after_each(() => {
+  vi.unstubAllGlobals()
+  current_user.value = null
+})
 
 const router_link_stub = {
   props: ['to'],
@@ -49,19 +62,28 @@ const at_page = () =>
   mount(Vault, { global: { stubs: { 'router-link': router_link_stub } } })
 
 describe('@/views/Vault', () => {
-  it('reads a public key and draws the note in its own header', async () => {
-    at('#olxW625le8JL7L-NKakKIw')
+  it('opens an itemid link through the route that asks can', async () => {
+    await signed_in()
+    at('#/+16282281824/plans/1785887078791')
     const fetch = respond()
     const page = at_page()
     await flush_promises()
     expect(fetch).toHaveBeenCalledWith(
-      '/v1/vault/find?key=olxW625le8JL7L-NKakKIw',
-      { headers: {} }
+      '/v1/vault/item?itemid=%2F%2B16282281824%2Fplans%2F1785887078791',
+      { headers: { authorization: 'Bearer token' } }
     )
     expect(page.get('header h1').text()).toBe('Realness')
     expect(page.get('header p').text()).toBe('Vault')
     expect(page.get('section[itemprop="articleBody"] h1').text()).toBe('Plan')
-    expect(page.find('nav').exists()).toBe(false)
+  })
+
+  it('refuses a stored key, which would skip every right', async () => {
+    at('#olxW625le8JL7L-NKakKIw')
+    const fetch = respond()
+    const page = at_page()
+    await flush_promises()
+    expect(fetch).not.toHaveBeenCalled()
+    expect(page.get('p[role="status"]').text()).toBe('That note is not here.')
   })
 
   it('asks the owner to sign in for an itemid link', async () => {
@@ -71,5 +93,50 @@ describe('@/views/Vault', () => {
     await flush_promises()
     expect(page.text()).toContain('Sign in to open this link.')
     expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('names a missing note instead of failing', async () => {
+    await signed_in()
+    at('#/+16282281824/plans/1799999999999')
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ status: 404, ok: false, json: async () => ({}) }))
+    )
+    const page = at_page()
+    await flush_promises()
+    expect(page.text()).toContain('That note is not here.')
+  })
+
+  it('opens a body link that names another vault note as that note', async () => {
+    await signed_in()
+    at('#/+16282281824/plans/1785887078791')
+    respond({
+      text: '<p><a href="a.md">A</a> <a href="https://example.com/a.md">out</a></p>',
+      links: { 'a.md': '#/+16282281824/plans/1794248309040' }
+    })
+    const page = at_page()
+    await flush_promises()
+    const links = page.get('section[itemprop="articleBody"]').findAll('a')
+    expect(links[0].attributes('href')).toBe(
+      '#/+16282281824/plans/1794248309040'
+    )
+    expect(links[1].attributes('href')).toBe('https://example.com/a.md')
+  })
+
+  it("shows a signed-in owner the plan's related links", async () => {
+    await signed_in()
+    at('#/+16282281824/plans/1785887078791')
+    respond({
+      related: [
+        { title: 'Hosting', href: '#/+16282281824/plans/1794248309040' },
+        { title: 'Away', href: '../../work/away.md' }
+      ]
+    })
+    const page = at_page()
+    await flush_promises()
+    const nav = page.get('nav[aria-label="Related"]')
+    const links = nav.findAll('a')
+    expect(links.map(link => link.text())).toEqual(['Hosting', 'Away'])
+    expect(links[1].attributes('href')).toBe('../../work/away.md')
   })
 })

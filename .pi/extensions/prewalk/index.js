@@ -1,8 +1,11 @@
 /**
  * Prewalk: the frontier model shapes and gates a plan, a cheap model works its nodes.
  *
- * Arms on its own once a plan under the plans folder carries `- Gate 1: approved`.
- * The frontier works the plan's first node whole, so the pattern is set before
+ * Arms on the plan `/planning <name>` names, or else the first plan the session
+ * edits, when it carries `- Gate 1: approved`. An edit to an approved plan takes
+ * over from an edited plan that is unapproved, or idle while the edited one has an
+ * active node; a named plan stays. Each
+ * binding is announced. Reading a plan never arms it. The frontier works the plan's first node whole, so the pattern is set before
  * the cheap model takes over: once a node's spec passes, later nodes run cheap.
  * A failing spec returns that node to the frontier model. No active node, as at
  * a gate, means the frontier
@@ -15,11 +18,10 @@
  * /prewalk off | on     - stop or resume routing this session
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
-import { plans_ignore, plans_path } from '../../bin/lib/harness-settings.js'
+import { plans_path } from '../../bin/lib/harness-settings.js'
 import { approved, nodes_in } from '../../bin/lib/plan-gates.js'
-import { plan_files } from '../../bin/lib/plan-files.js'
 import { product_import } from '../../bin/lib/product.js'
 
 const { item_html, read_items } = await product_import('items')
@@ -58,18 +60,39 @@ export const plan_of = (path, cwd, plans) => {
 }
 
 /**
- * The one approved plan with an active node, or null when none or several.
+ * The plan a `/planning <name>` prompt names: `<name>/index.md` or `<name>.md`
+ * in the plans folder, else the one plan whose name holds `<name>`.
+ * @param {string | undefined} prompt
  * @param {string} plans
- * @param {Iterable<string>} [ignored]
  */
-export const working_plan = (plans, ignored = []) => {
-  const found = plan_files(plans, ignored)
-    .map(({ file }) => join(plans, file))
-    .filter(file => {
-      const text = readFileSync(file, 'utf8')
-      return approved(text) && nodes_in(text, 'active').length > 0
-    })
+export const plan_named = (prompt, plans) => {
+  const match = /^<skill name="planning"[\s\S]*?<\/skill>\n\n(\S+)/.exec(prompt ?? '')
+  if (!match) return null
+  const name = match[1].replace(/\.md$/, '').replace(/\/$/, '')
+  const file_of = entry =>
+    [join(plans, entry, 'index.md'), join(plans, `${entry.replace(/\.md$/, '')}.md`)].find(existsSync)
+  const exact = file_of(name)
+  if (exact) return exact
+  const found = readdirSync(plans)
+    .filter(entry => entry.toLowerCase().includes(name.toLowerCase()))
+    .map(file_of)
+    .filter(Boolean)
   return found.length === 1 ? found[0] : null
+}
+
+/**
+ * Whether an edit to another plan takes prewalk over: the edited plan is
+ * approved, and the bound one is not, or has no active node while it does.
+ * @param {{ approved: boolean, active: string[] }} bound
+ * @param {{ approved: boolean, active: string[] }} edited
+ */
+export const takes_over = (bound, edited) =>
+  edited.approved && (!bound.approved || (!bound.active.length && edited.active.length > 0))
+
+/** @param {string} file */
+const plan_state = file => {
+  const text = readFileSync(file, 'utf8')
+  return { approved: approved(text), active: nodes_in(text, 'active') }
 }
 
 /** @param {{ provider: string, id: string } | undefined} model */
@@ -77,15 +100,11 @@ const name_of = model => (model ? `${model.provider}/${model.id}` : '')
 
 /**
  * @param {ExtensionAPI} pi
- * @param {{ plans?: string, ignored?: Iterable<string>, log?: string }} [where]
+ * @param {{ plans?: string, log?: string }} [where]
  */
 export default (
   pi,
-  {
-    plans = join(root, plans_path(root)),
-    ignored = plans_ignore(root),
-    log = join(root, 'artifacts/prewalk/escalations.html')
-  } = {}
+  { plans = join(root, plans_path(root)), log = join(root, 'artifacts/prewalk/escalations.html') } = {}
 ) => {
   let on = true
   let target = DEFAULT_TARGET
@@ -93,6 +112,8 @@ export default (
   let frontier = null
   /** @type {string | null} */
   let plan = null
+  /** True when `/planning` named the plan, which no edit takes over. */
+  let named = false
   let state = { approved: false, active: /** @type {string[]} */ ([]) }
   const escalated = new Set()
   /** @type {Map<string, string>} */
@@ -183,13 +204,36 @@ export default (
     state = { approved: approved(text), active }
   }
 
+  /**
+   * @param {string} file
+   * @param {any} ctx
+   */
+  const bind = (file, ctx) => {
+    const moved = file !== plan
+    if (moved) state = { approved: false, active: [] }
+    plan = file
+    read_plan(ctx)
+    if (moved)
+      ctx.ui.notify(
+        `Prewalk: bound to ${relative(plans, file)}${state.approved ? ' (Gate 1 approved)' : ', no Gate 1 approval, frontier only'}`,
+        'info'
+      )
+  }
+
+  pi.on('before_agent_start', (event, ctx) => {
+    const file = plan_named(event.prompt, plans)
+    if (file) {
+      named = true
+      bind(file, ctx)
+    }
+  })
+
   pi.on('tool_result', (event, ctx) => {
     if (!on) return
     const file = ['read', 'edit', 'write'].includes(event.toolName) && plan_of(event.input?.path, ctx.cwd, plans)
     if (file) {
-      if (file !== plan) state = { approved: false, active: [] }
-      plan = file
-      read_plan(ctx)
+      if (file === plan) read_plan(ctx)
+      else if (event.toolName !== 'read' && (!plan || (!named && takes_over(state, plan_state(file))))) bind(file, ctx)
       return
     }
     const working = ['edit', 'write'].includes(event.toolName) && plan && state.approved && !state.active.length
@@ -210,10 +254,6 @@ export default (
   })
 
   pi.on('turn_end', async (event, ctx) => {
-    if (on && !plan) {
-      plan = working_plan(plans, ignored)
-      read_plan(ctx)
-    }
     const current = name_of(ctx.model)
     for (const id of state.active) models.set(id, (models.get(id) ?? new Set()).add(current))
     if (on && routed && current === target && event.message?.stopReason === 'error') {

@@ -73,6 +73,7 @@ install -m 0644 "$GUEST_SRC/realness-bashrc" "$TREE/usr/local/share/realness-bas
 install -m 0755 "$GUEST_SRC/realness-actor-init" "$TREE/usr/local/bin/realness-actor-init"
 install -m 0755 "$GUEST_SRC/realness-publish.js" "$TREE/usr/local/bin/realness-publish"
 install -m 0755 "$GUEST_SRC/realness-chrome.js" "$TREE/usr/local/bin/realness-chrome"
+install -m 0755 "$GUEST_SRC/realness-cookies.js" "$TREE/usr/local/bin/realness-cookies.js"
 install -m 0755 "$GUEST_SRC/realness-read.js" "$TREE/usr/local/bin/realness-read"
 install -m 0755 "$GUEST_SRC/realness-site.js" "$TREE/usr/local/bin/realness-site"
 install -m 0755 "$GUEST_SRC/realness-loop-run.js" "$TREE/usr/local/bin/realness-loop-run"
@@ -81,6 +82,7 @@ install -m 0755 "$GUEST_SRC/realness-recover" "$TREE/usr/local/bin/realness-reco
 install -m 0755 "$GUEST_SRC/realness-model-pass.js" "$TREE/usr/local/bin/realness-model-pass"
 install -m 0755 "$GUEST_SRC/realness-models.js" "$TREE/usr/local/bin/realness-models"
 install -m 0755 "$GUEST_SRC/realness-door.js" "$TREE/usr/local/bin/realness-door.js"
+install -m 0755 "$GUEST_SRC/realness-scout.js" "$TREE/usr/local/bin/realness-scout.js"
 install -m 0644 "$GUEST_SRC/realness-net.service" "$TREE/etc/systemd/system/realness-net.service"
 install -m 0644 "$GUEST_SRC/realness-vsock.service" "$TREE/etc/systemd/system/realness-vsock.service"
 install -m 0644 "$GUEST_SRC/realness-pty.service" "$TREE/etc/systemd/system/realness-pty.service"
@@ -99,6 +101,14 @@ cleanup_mounts() {
 }
 trap cleanup_mounts EXIT
 
+CHROME_PACKAGES=(
+  libasound2t64 libatk-bridge2.0-0t64 libatk1.0-0t64 libatspi2.0-0t64 libcairo2
+  libcups2t64 libdbus-1-3 libdrm2 libgbm1 libglib2.0-0t64 libnspr4 libnss3
+  libpango-1.0-0 libx11-6 libxcb1 libxcomposite1 libxdamage1 libxext6
+  libxfixes3 libxkbcommon0 libxrandr2 fonts-liberation fonts-noto-core
+  fonts-noto-color-emoji fonts-noto-cjk
+)
+
 BASE_PACKAGES=(
   systemd systemd-sysv
   udev kmod
@@ -115,6 +125,30 @@ chroot "$TREE" env DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 \
   apt-get install -y -qq --no-install-recommends "${BASE_PACKAGES[@]}"
 
 log "installed packages: $(chroot "$TREE" dpkg-query -f '.\n' -W | wc -l)"
+
+CHROME_REVISION=1194
+case "$(uname -m)" in
+  x86_64) CHROME_ZIP=chromium-headless-shell-linux.zip CHROME_SUM=d745c7210cc88b73c7991a22c9624819960d84bc3de77ac7336d2de841a8c91f ;;
+  aarch64 | arm64) CHROME_ZIP=chromium-headless-shell-linux-arm64.zip CHROME_SUM=6b963b7651119c81fa51312c1176429d3235bbefb56d5c687730cf44a5b1fdd7 ;;
+  *) echo "unsupported arch $(uname -m)" >&2; exit 1 ;;
+esac
+
+log "chrome: headless shell r$CHROME_REVISION, the box renders for itself"
+chroot "$TREE" env DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 \
+  apt-get install -y -qq --no-install-recommends "${CHROME_PACKAGES[@]}"
+[ -f "$ROOT/$CHROME_ZIP" ] || curl -fsSL -o "$ROOT/$CHROME_ZIP" \
+  "https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/$CHROME_REVISION/$CHROME_ZIP"
+echo "$CHROME_SUM  $ROOT/$CHROME_ZIP" | sha256sum -c -
+rm -rf "$TREE/opt/chrome"
+cp "$ROOT/$CHROME_ZIP" "$TREE/var/chrome.zip"
+chroot "$TREE" unzip -q /var/chrome.zip -d /opt
+rm -f "$TREE/var/chrome.zip"
+mv "$TREE/opt/chrome-linux" "$TREE/opt/chrome"
+chmod -R a+rX,go-w "$TREE/opt/chrome"
+missing="$(chroot "$TREE" ldd /opt/chrome/headless_shell | grep 'not found' || true)"
+[ -z "$missing" ] || { echo "headless_shell is missing libraries:" >&2; echo "$missing" >&2; exit 1; }
+chroot "$TREE" /opt/chrome/headless_shell --version 2> /dev/null || true
+rm -f "$TREE/usr/bin/unzip"
 
 log "dbus reads the actor's machine-id through /etc"
 mkdir -p "$TREE/var/lib/dbus"

@@ -7,11 +7,11 @@ metadata:
 
 # Interview Prep
 
-Prepares a target company/role end-to-end: research, fit, behavioral prep, technical prep, and process tracking. All notes live in the vault under `Projects/Scouts/Realness/` (`vault/Projects/Scouts/Realness/`) -- see `references/process-and-tracker.md` for the exact layout.
+Prepares a target company/role end-to-end: research, fit, behavioral prep, technical prep, and process tracking. All notes live in the vault under `Projects/realness-leads/` (`vault/Projects/realness-leads/`) -- see `references/process-and-tracker.md` for the exact layout.
 
 ## Workflow
 
-1. **Capture the target.** Get company name, role, and how it came up (referral, job post, cold interest). Create `Projects/Scouts/Realness/Companies/<company-slug>.md` from `assets/company-note-template.md` if it doesn't exist. Add a row to `Projects/Scouts/Realness/tracker.md`.
+1. **Capture the target.** Get company name, role, and how it came up (referral, job post, cold interest). Create `Projects/realness-leads/Companies/<company-slug>.md` from `assets/company-note-template.md` if it doesn't exist. Add a row to `Projects/realness-leads/tracker.md`.
 
 2. **Research the company.** Read `references/research.md`. Use WebSearch/WebFetch to fill in product, stage, recent news, tech stack, competitors, culture signals. Write findings into the company note.
 
@@ -21,6 +21,7 @@ Prepares a target company/role end-to-end: research, fit, behavioral prep, techn
    - Behavioral round -> `references/fit-and-story-bank.md` STAR story bank.
    - Technical/DSA round -> `references/technical-prep.md`, including `work/kata-machine` for hands-on practice.
    - System design or take-home -> same file, relevant section.
+   - To learn a technical topic to mastery, not only rehearse it -> the `tutor` skill. Its skill map in `Resources/Tutor/` carries across companies.
 
 5. **Track through the process.** Read `references/process-and-tracker.md`. Update `tracker.md` and the company note's hiring-process table as stages happen. Log post-interview notes right after each round while it's fresh.
 

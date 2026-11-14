@@ -38,6 +38,7 @@ const walk = async (root, directory, skip = excluded) => {
     if (error.code === 'ENOENT') return files
     throw error
   }
+  if (directory !== '.' && entries.some(entry => entry.name === '.git')) return files
   for (const entry of entries) {
     if (skip.has(entry.name) || entry.name.startsWith('.DS_Store')) continue
     const path = `${directory}/${entry.name}`

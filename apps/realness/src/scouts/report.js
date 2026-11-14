@@ -3,9 +3,10 @@ import { DRAFT_MIN, RESEARCH_MIN } from './leads.js'
 
 /** @typedef {import('./leads.js').Lead} Lead */
 
-/** The note a run writes: one per scout per day, replaced by a later run. */
-export const report_path = (scout_dir, date) =>
-  join(scout_dir, 'Leads', `${date}.md`)
+/** The note a run writes: one per scout per source per day, replaced by a later
+ * run of the same source. */
+export const report_path = (scout_dir, date, source = '') =>
+  join(scout_dir, 'Leads', source ? `${date}-${source}.md` : `${date}.md`)
 
 /** The scout's finds page: the seen store, one `/find` item per find. */
 export const finds_path = scout_dir => join(scout_dir, 'Finds', 'finds.html')

@@ -19,6 +19,7 @@ import {
 } from 'node:net'
 import { dirname, join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
+import { gunzipSync as gunzip_sync } from 'node:zlib'
 import { HTTP } from '#root/lib/http.js'
 import {
   HOURS_PER_DAY,
@@ -50,7 +51,19 @@ const UA =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
 const GONE = new Set([HTTP.NOT_FOUND, HTTP.GONE])
 const BLOCKED_TEXT =
-  /just a moment|attention required|verify you are human|access denied|are you a robot|captcha|enable javascript and cookies/i
+  /just a moment|attention required|performing security verification|been blocked|verify you are human|access denied|are you a robot|captcha|enable javascript and cookies|unusual traffic/i
+const SKIP_AFTER = 3
+const DAYS_PER_WEEK = 7
+const RETRY_HOURS = DAYS_PER_WEEK * HOURS_PER_DAY
+const CRAWL_TIMEOUT_MS = 20_000
+const INDEX_TIMEOUT_MS = 8000
+const END_OF_HEADERS = '\r\n\r\n'
+
+/** Common Crawl's public index and data hosts. */
+export const COMMON_CRAWL = {
+  index: 'https://index.commoncrawl.org',
+  data: 'https://data.commoncrawl.org'
+}
 
 const hash = text => create_hash('sha256').update(text).digest('hex')
 
@@ -236,6 +249,44 @@ const html_read = (method, body) => ({
   title: title_of(body)
 })
 
+/**
+ * The HTTP response inside one gunzipped WARC record.
+ * @param {Buffer} record
+ */
+export const warc_page = record => {
+  const warc_end = record.indexOf(END_OF_HEADERS)
+  const warc_headers = record.subarray(0, warc_end).toString('latin1')
+  const length = Number(/^content-length:\s*(\d+)/im.exec(warc_headers)?.[1])
+  const block = record.subarray(
+    warc_end + END_OF_HEADERS.length,
+    warc_end + END_OF_HEADERS.length + length
+  )
+  const http_end = block.indexOf(END_OF_HEADERS)
+  const http_headers = block.subarray(0, http_end).toString('latin1')
+  return {
+    status: Number(/^HTTP\/[\d.]+ (\d+)/.exec(http_headers)?.[1]),
+    type: /^content-type:\s*(.*)$/im.exec(http_headers)?.[1].trim() ?? '',
+    html: block.subarray(http_end + END_OF_HEADERS.length).toString('utf8')
+  }
+}
+
+/**
+ * A site's record of how each method did there.
+ * @typedef {{ methods: Record<string, { fails_in_row: number, last_at: string, last_outcome: string }> }} SiteRecord
+ */
+
+/**
+ * Skip a slow method that failed on a site three times in a row, for a week.
+ * @param {SiteRecord} site
+ * @param {string} method
+ * @param {number} now
+ */
+const skips = (site, method, now) => {
+  const record = site.methods[method]
+  if (!record || record.fails_in_row < SKIP_AFTER) return false
+  return now - Date.parse(record.last_at) < RETRY_HOURS * HOUR
+}
+
 const markdown_shortfall = page =>
   page.markdown.replace(/\s+/g, ' ').trim().length < MIN_TEXT ? 'thin' : null
 
@@ -355,6 +406,8 @@ export class WebEngine {
   render
   /** @type {string | null} */
   firecrawl_key
+  /** @type {{ index: string, data: string } | null} */
+  common_crawl
   /** @type {boolean} */
   allow_private
   /** @type {() => number} */
@@ -372,6 +425,8 @@ export class WebEngine {
    * @param {((url: string) => Promise<{ status: number, html: string }>) | null} [options.render]
    *   reads a page in a Chrome copy, or null where the halo has none
    * @param {string | null} [options.firecrawl_key]
+   * @param {{ index: string, data: string } | null} [options.common_crawl]
+   *   where to look for a crawled copy before reading the site, or null to skip it
    * @param {boolean} [options.allow_private] tests only
    * @param {() => number} [options.now]
    * @param {object} [options.times] the cache-time rules, read from disk by default
@@ -380,6 +435,7 @@ export class WebEngine {
     root,
     render = null,
     firecrawl_key = null,
+    common_crawl = null,
     allow_private = false,
     now = () => Date.now(),
     times = read_json(TIMES_FILE, { default_hours: DEFAULT_HOURS, rules: [] })
@@ -388,6 +444,7 @@ export class WebEngine {
       root,
       render,
       firecrawl_key,
+      common_crawl,
       allow_private,
       now,
       times
@@ -413,6 +470,82 @@ export class WebEngine {
 
   page_file(url) {
     return join(this.root, 'pages', `${hash(url)}.json`)
+  }
+
+  site_file(url) {
+    return join(this.root, 'sites', `${new URL(url).host}.json`)
+  }
+
+  /**
+   * @param {string} url
+   * @param {{ method: string, outcome: string }[]} attempts
+   */
+  #record(url, attempts) {
+    if (!attempts.length) return
+    const file = this.site_file(url)
+    /** @type {SiteRecord} */
+    const site = read_json(file, { methods: {} })
+    const at = new Date(this.now()).toISOString()
+    for (const { method, outcome } of attempts) {
+      const fails = site.methods[method]?.fails_in_row ?? 0
+      site.methods[method] = {
+        fails_in_row: outcome === 'ok' ? 0 : fails + 1,
+        last_at: at,
+        last_outcome: outcome
+      }
+    }
+    write_json(file, site)
+  }
+
+  /**
+   * The newest crawl's id, asked for once a day.
+   * @param {string} index
+   */
+  async #latest_crawl(index) {
+    const file = join(this.root, 'common-crawl.json')
+    const kept = read_json(file, null)
+    if (kept && this.now() - Date.parse(kept.at) < DEFAULT_HOURS * HOUR)
+      return kept.id
+    const reply = await fetch(`${index}/collinfo.json`, {
+      signal: AbortSignal.timeout(CRAWL_TIMEOUT_MS)
+    })
+    if (!reply.ok) throw new Error(`crawl list HTTP ${reply.status}`)
+    const [{ id }] = await reply.json()
+    write_json(file, { id, at: new Date(this.now()).toISOString() })
+    return id
+  }
+
+  /**
+   * The newest crawled copy of a page: one index lookup, one byte range.
+   * @param {string} url
+   */
+  async #crawled(url) {
+    const { index, data } = /** @type {{ index: string, data: string }} */ (
+      this.common_crawl
+    )
+    const crawl = await this.#latest_crawl(index)
+    const query = new URLSearchParams({
+      url,
+      output: 'json',
+      filter: '=status:200'
+    })
+    const found = await fetch(`${index}/${crawl}-index?${query}`, {
+      signal: AbortSignal.timeout(INDEX_TIMEOUT_MS)
+    })
+    if (found.status === HTTP.NOT_FOUND) throw new Error('not in crawl')
+    if (!found.ok) throw new Error(`index HTTP ${found.status}`)
+    const hit = JSON.parse((await found.text()).trim().split('\n').at(-1) ?? '')
+    const start = Number(hit.offset)
+    const record = await fetch(`${data}/${hit.filename}`, {
+      headers: { range: `bytes=${start}-${start + Number(hit.length) - 1}` },
+      signal: AbortSignal.timeout(CRAWL_TIMEOUT_MS)
+    })
+    if (record.status !== HTTP.PARTIAL_CONTENT)
+      throw new Error(`data HTTP ${record.status}`)
+    return {
+      ...warc_page(gunzip_sync(Buffer.from(await record.arrayBuffer()))),
+      crawled: hit.timestamp
+    }
   }
 
   log(line) {
@@ -511,7 +644,8 @@ export class WebEngine {
             kind: kept.kind,
             body: kept.body,
             title: kept.title,
-            fetched: kept.fetched
+            fetched: kept.fetched,
+            ...(kept.crawled && { crawled: kept.crawled })
           },
           { shared: true, reuses: kept.reuses, time, age_h }
         )
@@ -560,14 +694,20 @@ export class WebEngine {
       if (read_json(file, null)) return this.read(url, { actor })
     }
     try {
-      const got = await this.#read_now(url, fresh ? null : kept, attempts)
+      const got = await this.#read_now(
+        url,
+        fresh ? null : kept,
+        attempts,
+        fresh
+      )
       return finish(
         {
           source: got.method,
           kind: got.kind,
           body: got.body,
           title: got.title,
-          fetched: got.fetched
+          fetched: got.fetched,
+          ...(got.crawled && { crawled: got.crawled })
         },
         { shared: got.shared, time: got.time, changed: got.changed }
       )
@@ -605,28 +745,64 @@ export class WebEngine {
    * @param {string} url
    * @param {KeptPage | null} [kept] the cached page, which teaches the new time
    * @param {{ method: string, outcome: string }[]} [attempts]
+   * @param {boolean} [fresh] read the site itself, never a crawled copy
    */
-  async #read_now(url, kept = null, attempts = []) {
+  async #read_now(url, kept = null, attempts = [], fresh = false) {
+    const from = attempts.length
+    try {
+      return await this.#read_methods(url, kept, attempts, fresh)
+    } finally {
+      this.#record(url, attempts.slice(from))
+    }
+  }
+
+  /**
+   * @param {string} url
+   * @param {KeptPage | null} kept
+   * @param {{ method: string, outcome: string }[]} attempts
+   * @param {boolean} fresh
+   */
+  async #read_methods(url, kept, attempts, fresh) {
     /** @type {{ etag?: string | null, last_modified?: string | null, cache_control?: string | null }} */
     let headers = {}
     /** @type {number | null} */
     let gone = null
-    /** @type {PageRead | null} */
+    /** @type {(PageRead & { crawled?: string }) | null} */
     let got = null
-    try {
-      const reply = await safe_fetch(url, { allow_private: this.allow_private })
-      ;({ headers } = reply)
-      if (GONE.has(reply.status)) gone = reply.status
-      const why = static_shortfall(reply)
-      attempts.push({ method: 'static', outcome: why ?? 'ok' })
-      if (!why) got = html_read('static', reply.body)
-    } catch (error) {
-      attempts.push({ method: 'static', outcome: error.message })
-      if (/private address|credentials|only http/.test(error.message))
-        throw error
+    const site = read_json(this.site_file(url), { methods: {} })
+    const tries = method => !skips(site, method, this.now())
+    const lasting =
+      this.time(url, {}).hours >= (this.times.default_hours ?? DEFAULT_HOURS)
+    if (this.common_crawl && !fresh && lasting && tries('commoncrawl')) {
+      const tried = await this.#try_render({
+        attempts,
+        get_page: () => this.#crawled(url),
+        method: 'commoncrawl',
+        page_of: page => ({
+          ...html_read('commoncrawl', page.html),
+          crawled: page.crawled
+        }),
+        why_of: page => static_shortfall({ ...page, body: page.html })
+      })
+      ;({ got } = tried)
     }
+    if (!got)
+      try {
+        const reply = await safe_fetch(url, {
+          allow_private: this.allow_private
+        })
+        ;({ headers } = reply)
+        if (GONE.has(reply.status)) gone = reply.status
+        const why = static_shortfall(reply)
+        attempts.push({ method: 'static', outcome: why ?? 'ok' })
+        if (!why) got = html_read('static', reply.body)
+      } catch (error) {
+        attempts.push({ method: 'static', outcome: error.message })
+        if (/private address|credentials|only http/.test(error.message))
+          throw error
+      }
     const { render } = this
-    if (!got && !gone && render) {
+    if (!got && !gone && render && tries('chrome')) {
       const tried = await this.#try_render({
         attempts,
         get_page: () => render(url),
@@ -638,7 +814,7 @@ export class WebEngine {
       got = read
       gone ??= was_gone
     }
-    if (!got && !gone && this.firecrawl_key) {
+    if (!got && !gone && this.firecrawl_key && tries('firecrawl')) {
       const tried = await this.#try_render({
         attempts,
         get_page: () => this.#firecrawl(url),
@@ -673,7 +849,11 @@ export class WebEngine {
     const shared =
       shareable_headers(headers) &&
       !never_kind &&
-      robots_allows(await this.#robots(parsed), parsed.pathname + parsed.search)
+      (got.method === 'commoncrawl' ||
+        robots_allows(
+          await this.#robots(parsed),
+          parsed.pathname + parsed.search
+        ))
     const fetched = new Date(this.now()).toISOString()
     const file = this.page_file(url)
     if (shared)

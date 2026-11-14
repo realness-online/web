@@ -14,7 +14,7 @@
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
 import { execFile, spawn } from 'node:child_process'
-import { mkdirSync, openSync, readFileSync } from 'node:fs'
+import { mkdirSync, openSync, readFileSync, renameSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { openLog, record, sha, stateDir, logPath } from './log.js'
@@ -29,6 +29,23 @@ const in_actor = is_actor
  */
 const sync_command = args =>
   !in_actor() ? [process.execPath, [product_entry('command'), ...args]] : ['realness', args]
+
+/** One rotation, so a detached turn-end's chatter never grows without bound. */
+const ROTATE_BYTES = 8 * 1024 * 1024
+
+/**
+ * The turn-end log is scratch: it lives beside the artifacts, not in harness
+ * state. The last run's log is kept as `sync.log.1`.
+ * @param {string} root
+ */
+const open_sync_log = root => {
+  const dir = join(root, 'artifacts', 'edit-log')
+  mkdirSync(dir, { recursive: true })
+  const path = join(dir, 'sync.log')
+  const size = statSync(path, { throwIfNoEntry: false })?.size ?? 0
+  if (size > ROTATE_BYTES) renameSync(path, `${path}.1`)
+  return openSync(path, 'a')
+}
 
 /**
  * @param {string} cwd
@@ -101,8 +118,15 @@ const editLog = pi => {
     mkdirSync(stateDir(root), {
       recursive: true
     })
-    const out = openSync(join(stateDir(root), 'sync.log'), 'a')
-    const [command, args] = sync_command(['turn-end', '--session', session, '--turn', String(turn)])
+    const out = open_sync_log(root)
+    const [command, args] = sync_command([
+      'turn-end',
+      '--session',
+      session,
+      '--turn',
+      String(turn),
+      ...(session === 'ephemeral' ? ['--no-sync'] : [])
+    ])
     spawn(command, args, {
       cwd: root,
       detached: true,

@@ -40,13 +40,19 @@ you design storage, add a data file, or link to a note.
   (`apps/realness/lib/items.js`). Never JSON or JSONL.
 - State lives in pages. A program reads pages, acts, and writes pages; it
   keeps no state of its own. `artifacts/` holds scratch, never state.
-- A plan is a folder or a file in `vault/Projects/`. A folder plan can hold
-  plans: `<Plan>/<Inner>/index.md`.
+- A plan is a markdown file in `vault/Projects/` until it needs scripts to
+  run. Then it becomes a folder, `<Plan>/index.md`, and its scripts sit
+  beside it and archive with it. Product code stays in `apps/`. A folder plan
+  can hold plans: `<Plan>/<Inner>/index.md`.
 
 ## Voice
 
+Write 80% of the way to ASD-STE100 (Simple Technical English).
+
 - Do not compliment or encourage the user.
 - When the user invokes a skill, acknowledge it by name.
+- Be direct. Phrase rules positively; a negative rule reads as
+  passive-aggressive.
 
 ## Accuracy
 
@@ -96,7 +102,7 @@ code.
 
 ## Web and browser
 
-- Read any URL with `.pi/bin/web/web-md.js <url> --max 4000` (`web-md` skill),
+- Read any URL with `.pi/bin/web/realness-read <url> --max 4000` (`realness-read` skill),
   never `curl` or agent-browser. To find one fact, add `--grep <word>`, never
   `curl | grep`. agent-browser is for interaction - clicking, forms, logins.
 - Observe a browser page in this order: `eval` a specific computed value or

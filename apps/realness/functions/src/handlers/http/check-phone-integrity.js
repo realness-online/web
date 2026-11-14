@@ -42,12 +42,12 @@ export const check_phone_integrity_handler = async (req, res) => {
 
   try {
     const result = await lookup_phone_integrity(phone, twilio_credentials())
-    if (!result.allowed) {
-      log_warn('integrity sign-in denied', {
+    if (!result.allowed)
+      {log_warn('integrity sign-in denied', {
         type: result.integrity_data.type,
         carrier_name: result.integrity_data.carrier_name
-      })
-    }
+      })}
+
     res.json(result)
   } catch (error) {
     log_error('integrity lookup failed', error)

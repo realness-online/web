@@ -1,4 +1,7 @@
-import { createHmac as create_hmac, timingSafeEqual as timing_safe_equal } from 'node:crypto'
+import {
+  createHmac as create_hmac,
+  timingSafeEqual as timing_safe_equal
+} from 'node:crypto'
 import { defineSecret as define_secret } from 'firebase-functions/params'
 import { secret_set } from '#utils/secrets.js'
 
@@ -24,11 +27,19 @@ const SIGNATURE_TOLERANCE_SECONDS = 300
  * @param {number} [now] - seconds since the epoch
  * @returns {boolean}
  */
-export const verify_signature = (raw_body, header, secret, now = Date.now() / 1000) => {
+export const verify_signature = (
+  raw_body,
+  header,
+  secret,
+  now = Date.now() / 1000
+) => {
   if (!raw_body || !header || !secret) return false
   const pairs = header.split(',').map(pair => pair.split('='))
   const timestamp = pairs.find(([key]) => key === 't')?.[1]
-  if (!timestamp || Math.abs(now - Number(timestamp)) > SIGNATURE_TOLERANCE_SECONDS)
+  if (
+    !timestamp ||
+    Math.abs(now - Number(timestamp)) > SIGNATURE_TOLERANCE_SECONDS
+  )
     return false
 
   const expected = create_hmac('sha256', secret)
@@ -38,7 +49,10 @@ export const verify_signature = (raw_body, header, secret, now = Date.now() / 10
   return pairs
     .filter(([key]) => key === 'v1')
     .map(([, signature]) => Buffer.from(signature ?? '', 'hex'))
-    .some(given => given.length === expected.length && timing_safe_equal(given, expected))
+    .some(
+      given =>
+        given.length === expected.length && timing_safe_equal(given, expected)
+    )
 }
 
 /**
@@ -49,7 +63,11 @@ export const verify_signature = (raw_body, header, secret, now = Date.now() / 10
  * @param {URLSearchParams} [into]
  * @returns {URLSearchParams}
  */
-export const form_encode = (params, prefix = '', into = new URLSearchParams()) => {
+export const form_encode = (
+  params,
+  prefix = '',
+  into = new URLSearchParams()
+) => {
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === null) continue
     const name = prefix ? `${prefix}[${key}]` : key

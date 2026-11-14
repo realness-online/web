@@ -71,6 +71,60 @@ const routes = [
     meta: { support: true }
   },
   {
+    path: '/planning/maps/modules',
+    component: () => import('@/views/Modules'),
+    meta: { note: true },
+    beforeEnter: signed_in_first
+  },
+  {
+    path: '/planning/maps/ways-in',
+    component: () => import('@/views/WaysIn'),
+    meta: { note: true },
+    beforeEnter: signed_in_first
+  },
+  {
+    path: '/planning/keys',
+    component: () => import('@/views/KeyLayouts'),
+    meta: { note: true },
+    beforeEnter: signed_in_first
+  },
+  {
+    path: '/artifacts',
+    component: () => import('@/views/Artifacts'),
+    meta: { note: true },
+    beforeEnter: signed_in_first
+  },
+  {
+    path: '/planning/commands',
+    component: () => import('@/views/Commands'),
+    meta: { note: true },
+    beforeEnter: signed_in_first
+  },
+  {
+    path: '/planning/tools',
+    component: () => import('@/views/Tools'),
+    meta: { note: true },
+    beforeEnter: signed_in_first
+  },
+  {
+    path: '/planning/page',
+    component: () => import('@/views/Page'),
+    meta: { note: true },
+    beforeEnter: signed_in_first
+  },
+  {
+    path: '/blog',
+    component: () => import('@/views/Blog'),
+    meta: { note: true },
+    beforeEnter: signed_in_first
+  },
+  {
+    path: '/planning',
+    component: () => import('@/views/Planning'),
+    meta: { note: true },
+    beforeEnter: signed_in_first
+  },
+  {
     path: '/vault',
     component: () => import('@/views/Vault'),
     meta: { note: true }

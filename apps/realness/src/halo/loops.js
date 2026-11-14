@@ -3,6 +3,7 @@ import {
   mkdirSync as mkdir_sync,
   readFileSync as read_file_sync
 } from 'node:fs'
+import { EventEmitter } from 'node:events'
 import { write_file_durable } from './durable.js'
 import { dirname, join } from 'node:path'
 import { hostname } from 'node:os'
@@ -123,6 +124,7 @@ export class Loops {
   halo
   /** @type {Record<string, LoopRecord>} */
   loops = {}
+  events = new EventEmitter()
   /** @type {Promise<unknown>} */
   tail = Promise.resolve()
 
@@ -370,6 +372,24 @@ export class Loops {
     return join(dirname(this.file), 'loop-logs', `${id}.log`)
   }
 
+  /**
+   * The reason a loop stopped, the moment it stops.
+   * @param {string} id
+   * @returns {Promise<string | undefined>}
+   */
+  stopped(id) {
+    const loop = this.loops[id]
+    if (loop?.status !== 'running') return Promise.resolve(loop?.reason)
+    return new Promise(done => {
+      const on_stop = (stopped_id, reason) => {
+        if (stopped_id !== id) return
+        this.events.off('stopped', on_stop)
+        done(reason)
+      }
+      this.events.on('stopped', on_stop)
+    })
+  }
+
   async stop(id, reason) {
     const loop = this.loops[id]
     if (reason !== 'exited')
@@ -384,6 +404,7 @@ export class Loops {
       reason,
       ended: new Date().toISOString()
     })
+    this.events.emit('stopped', id, reason)
     this.#save()
     await this.#publish(id)
     this.store.end_work(id, 'loop')

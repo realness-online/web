@@ -126,6 +126,18 @@ wiring, and PWA file structure. It does not prove appearance, installability,
 offline operation, or safe updates. Verify those in a browser before completion.
 Do not replace the built-site gate with a source scan.
 
+### Component names: noun, then element
+
+A component lives at `components/<noun>/as-<element>.vue`. The folder names
+the thing (`person`, `plan`, `note`); the file names the HTML element it
+renders as (`as-article`, `as-figure`, `as-dialog-preferences`). One noun can
+render as several elements: `person/as-article.vue`, `person/as-figure.vue`.
+
+- A view (`views/<Name>.vue`) is a route: it fetches, then hands items to
+  components. Item markup belongs in a component, not in the view.
+- Content stays in the vault; a component renders it. Behaviour lives in the
+  app. Never copy a person's prose into a component.
+
 ### Markup over map()
 
 For a small, fixed set of items whose content differs in shape, write each one

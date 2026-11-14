@@ -31,6 +31,21 @@ it('the proxy chooses the model and keeps the other request fields', async () =>
       sort: 'price',
       quantizations: ['fp8', 'unknown']
     },
+    reasoning: { effort: 'low' },
     usage: { include: true }
   })
+})
+
+it("the house model keeps a caller's own reasoning setting", async () => {
+  let sent
+  await call_upstream(
+    { reasoning: { effort: 'high' }, messages: [] },
+    {
+      fetcher: async (_url, options) => {
+        sent = JSON.parse(options.body)
+        return new Response(null, { status: 200 })
+      }
+    }
+  )
+  assert.deepEqual(sent.reasoning, { effort: 'high' })
 })

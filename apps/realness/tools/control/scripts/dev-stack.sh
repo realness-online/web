@@ -121,4 +121,4 @@ if [ "$RUNTIME" = box ]; then
   fi
   exec node server/halo/main.js serve --environment local --runtime box --volume "$BOX_VOL" --listen 0.0.0.0 --port "$PORT" --boot-timeout "${ACTOR_BOOT_TIMEOUT:-120}" "${vault_args[@]}"
 fi
-exec node server/halo/main.js serve --environment local --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT" --mem-mib "${ACTOR_MIB:-1536}" --boot-timeout "${ACTOR_BOOT_TIMEOUT:-240}"
+exec node server/halo/main.js serve --environment local --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT" --mem-mib "${ACTOR_MIB:-2048}" --boot-timeout "${ACTOR_BOOT_TIMEOUT:-240}"

@@ -239,12 +239,28 @@ Write ideas, not explanations: one idea per line, seven to ten words where
 possible. The reader knows what to do; no instructions addressed to them, no
 hedges, no reasoning they did not ask for.
 
-The opening line of Notes names who it is for: one sentence naming the target
-customer, so every node can be judged against them.
+The opening line of Notes names who it is for and what the plan owns. One
+sentence names the target customer, one says the job the plan does. A third
+says what it does not own when a neighbour plan could be mistaken for it. Every
+node is judged against that scope.
 
 Carries: decisions and what was rejected, one line each. Open questions, as
 questions. What to do next and how to judge it. What the code cannot say -
 gotchas that bite, why the thing exists at all.
+
+**Budgets.** A plan is the DAG, the table, then about a page of Notes. When the
+Notes outweigh the nodes, the plan is carrying a second job or an archive.
+
+- Decisions: about twenty lines. Each passes "does this change a decision?"
+  Code, a spec, or a sibling plan's job does not.
+- Gotchas: five, the ones that bite a run. Longer ones move to AGENTS.md
+  Learnings.
+- Node goals read as outcomes, not mechanisms: "one live run finds YC leads",
+  not "wire the probe into the door op".
+- No finished-work list and no where-the-work-sits map. Git holds both; the
+  dimmed rows and the code paths carry what still matters.
+- A plan that needs a second page of Notes is two plans. Propose the split at
+  Gate 1.
 
 Does not carry:
 
@@ -266,18 +282,23 @@ own.
 Trim words on the way out of a session, not later. Say what you cut. See the
 `readable` skill for the sentence-level pass.
 
+Read the plan top to bottom before Gate 1 and again after Gate 2: a reader with
+no context must say its purpose after the first line of Notes. If they cannot,
+the scope line is wrong, not the reader.
+
 ### 4. Gate 1 - approve the shape
 
 Present the rendered DAG and order. Ask one question: is the shape right? Only
 topology counts - added, removed, or merged nodes, wrong dependencies, wrong
 order. Wait for the go before executing. Revise and re-present if wrong. Record
 the outcome as the Decisions line `- Gate 1: approved`, not a gate log. That
-line arms prewalk, which hands a plan to the cheap model once one of its nodes
-has finished with a passing spec. Until then the frontier model works the
-nodes, which sets the pattern. After that, active nodes run cheap, in this
-session and in later ones, because the passing spec is read back from
-`artifacts/prewalk/escalations.html`. A failed spec, or an error from the
-cheap model, returns that node to the frontier model.
+line arms prewalk, which routes only a plan this session has read and hands it
+to the cheap model once one of its nodes has finished with a passing spec.
+Until then the frontier model works the nodes, which sets the pattern. After
+that, active nodes run cheap, in this session and in later ones, because the
+passing spec is read back from `artifacts/prewalk/escalations.html`. A failed
+spec, or an error from the cheap model, returns that node to the frontier
+model.
 
 ### 5. Worker - execute
 
@@ -348,8 +369,11 @@ Summarize what ran. Ask whether it meets the plan. Done is your call. Record
 - Archive/Projects holds finished plans; move a plan there after Gate 2.
 - Projects builds, Areas learns; one subject can be both. Todo's is ignored.
 - One plan file per plan, no companions; normally one work DAG per plan.
+- A plan stays one markdown file until it needs scripts to run.
+- Then it becomes `<Plan>/index.md`; its scripts sit beside it and archive with it.
 - Check companion plans before scoping nodes.
 - Plan lines: seven to ten words; apply the rule during reviews.
+- In chat, name the step, then its id: "file layout gate (L1)".
 - Skip what reference repos already teach. Labels beat pane fit.
 - Independent nodes still run one at a time.
 - Header links: front matter `related:` (`title`, `href`) renders as the header nav. Eight at most, one-to-three-word titles, the links a reader opens first.

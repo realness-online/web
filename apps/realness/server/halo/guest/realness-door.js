@@ -27,10 +27,12 @@ export const ask = (
   new Promise((done, fail) => {
     const chunks = []
     const socket = connect(door_path())
-    const timer = setTimeout(() => {
-      socket.destroy()
-      fail(new Error(timeout_error))
-    }, timeout_ms)
+    const timer =
+      timeout_ms &&
+      setTimeout(() => {
+        socket.destroy()
+        fail(new Error(timeout_error))
+      }, timeout_ms)
     socket.on('error', error => {
       clearTimeout(timer)
       fail(

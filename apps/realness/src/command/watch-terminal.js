@@ -145,6 +145,14 @@ const age = seconds => {
   return `${Math.floor(seconds / SECONDS_PER_HOUR)}h`
 }
 
+const local_time = iso =>
+  new Date(iso).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  })
+
 const usd = value => `$${Number(value).toFixed(2)}`
 
 /** Wrap long text after a space where one fits, splitting a word otherwise. */
@@ -313,8 +321,23 @@ const spend_line = (daily = [], width = 80, on = true, height = GRAPH_ROWS) => {
   const high = usd(Math.max(...costs))
   const low = usd(Math.min(...costs))
   const label = Math.max(high.length, low.length)
-  const plot = braille_line(costs, Math.max(1, width - label - 3), height)
+  const cells = Math.max(1, width - label - 3)
+  const plot = braille_line(costs, cells, height)
+  const peak_at = costs.indexOf(Math.max(...costs))
+  const peak_date = daily[peak_at].date.slice(5)
+  const peak_cell =
+    costs.length > 1
+      ? Math.floor(((peak_at / (costs.length - 1)) * (cells * 2 - 1)) / 2)
+      : 0
+  const date_at = Math.max(
+    0,
+    Math.min(
+      cells - peak_date.length,
+      peak_cell - Math.floor(peak_date.length / 2)
+    )
+  )
   return [
+    `${' '.repeat(label + 3 + date_at)}${paint(peak_date, 'unknown', on)}`,
     ...plot.map((row, at) => {
       let axis = ''
       if (at === 0) axis = high
@@ -483,7 +506,7 @@ const detail_rows = (panels, width, on, now) => {
   const { billing } = panels
   const scope = (billing?.exports ?? []).flatMap(bill => [
     ...wrap(`Export: ${bill.table}`, width),
-    `Usage through ${bill.through}; queried ${bill.checked}`
+    `Usage through ${local_time(bill.through)}; queried ${local_time(bill.checked)}`
   ])
   section('BILLING DETAILS', error_lines(billing, on).concat(scope))
   section(

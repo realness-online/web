@@ -369,6 +369,18 @@ it('a one-shot loop launches with --once and keeps its own deadline', async () =
   )
 })
 
+it('stopped resolves with the reason the moment a loop stops', async () => {
+  const store = fake()
+  const loops = new Loops(store, { file: join(root, 'stopped.json') })
+  const { id } = await loops.start('a-000000000001', 'read goal.md', {
+    once: true
+  })
+  const reason = loops.stopped(id)
+  await loops.stop(id, 'exited')
+  assert.equal(await reason, 'exited')
+  assert.equal(await loops.stopped(id), 'exited')
+})
+
 it('probe reads status, runs, quota, and tail from a loop folder', () => {
   const dir = join(root, 'probe')
   mkdirSync(join(dir, '.auto'), { recursive: true })

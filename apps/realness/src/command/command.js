@@ -27,7 +27,7 @@ const FILES_SYNC_WORDS = 4
 
 const USAGE = `usage: realness sync [--deletes] [--dry-run] [plan ...]
        realness turn-start --session <file>
-       realness turn-end --session <file> --turn <n>
+       realness turn-end --session <file> --turn <n> [--no-sync]
        realness login|logout|whoami|ls|cat|cp|rm ...
        realness trash [+org]           (what sync kept from deletes, 30 days)
        realness restore <day/time/path> [+org]

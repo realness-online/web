@@ -32,7 +32,9 @@ export const validate_phone_integrity = integrity_data => {
   const carrier_lower = carrier_name?.toLowerCase()
   if (
     carrier_lower &&
-    blacklisted_carriers.some(carrier => carrier.toLowerCase() === carrier_lower)
+    blacklisted_carriers.some(
+      carrier => carrier.toLowerCase() === carrier_lower
+    )
   )
     return false
 
@@ -42,9 +44,7 @@ export const validate_phone_integrity = integrity_data => {
 const to_integrity_data = intelligence => ({
   type: intelligence?.type || 'unknown',
   carrier_name:
-    intelligence?.carrierName ||
-    intelligence?.carrier_name ||
-    'unknown',
+    intelligence?.carrierName || intelligence?.carrier_name || 'unknown',
   country_code:
     intelligence?.mobileCountryCode ||
     intelligence?.mobile_country_code ||
@@ -69,12 +69,11 @@ export const lookup_phone_integrity = async (phone, credentials) => {
 
   const intelligence = result.lineTypeIntelligence
 
-  if (!intelligence) {
-    return {
+  if (!intelligence)
+    {return {
       allowed: false,
       integrity_data: to_integrity_data(null)
-    }
-  }
+    }}
 
   const integrity_data = to_integrity_data(intelligence)
   const allowed = validate_phone_integrity({

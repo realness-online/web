@@ -1,10 +1,24 @@
 import { existsSync } from 'node:fs'
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import {
+  chmod,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile
+} from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
+import { item_html } from '#root/lib/items.js'
 import { scout_page } from '../../../src/scouts/scout.js'
-import { main } from '../../../scripts/scout.js'
+import {
+  at_most,
+  local_pi,
+  main,
+  read_outside,
+  reads_inside
+} from '../../../scripts/scout.js'
 
 const SCOUTS = 'vault/Projects/Scouts'
 
@@ -112,5 +126,285 @@ describe('scout script', () => {
       /two scouts are named Realness: Scouts\/Bedroom\/Realness, Scouts\/Realness/
     )
     await rm(root, { recursive: true })
+  })
+})
+
+describe('scout --run', () => {
+  it('starts every source at once, and one failure leaves the others', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'scout-run-all-'))
+    const folder = join(root, 'vault/Projects/leads')
+    await mkdir(folder, { recursive: true })
+    await writeFile(
+      join(folder, 'scout.html'),
+      scout_page('leads', {
+        itemid: '/+1/scouts/leads',
+        org: '+1',
+        schedule: 'daily',
+        minutes: 1,
+        per_day: 1,
+        status: 'active'
+      })
+    )
+    await writeFile(join(folder, 'Profile.md'), '# profile\n')
+    await writeFile(
+      join(folder, 'Sources.md'),
+      '# sources\n\n## 1. Alpha\n\nread a\n\n## 2. Beta\n\nread b\n\n## 3. Gamma\n\nread c\n'
+    )
+    await writeFile(
+      join(root, 'package.json'),
+      '{"realness":{"person":"+14155550123"}}'
+    )
+    let running = 0
+    let peak = 0
+    let all_started
+    const together = new Promise(done => (all_started = done))
+    const spawn_pi = async (brief, run_dir) => {
+      running += 1
+      peak = Math.max(peak, running)
+      if (running === 3) all_started()
+      await together
+      running -= 1
+      if (/read b/.test(brief)) return 1
+      await writeFile(
+        join(run_dir, 'finds.html'),
+        item_html(
+          'find',
+          {
+            url: `https://example.com/${run_dir.length}`,
+            title: 'A',
+            org: 'Acme',
+            source: 'x',
+            score: '7',
+            reason: 'fits'
+          },
+          { links: ['url'] }
+        )
+      )
+      return 0
+    }
+    const out = lines()
+    const rows = await main({
+      args: ['leads', '--run'],
+      vault: join(root, 'vault'),
+      out,
+      err: lines(),
+      spawn_pi,
+      ready: async () => 'mac'
+    })
+    expect(peak).toBe(3)
+    expect(rows).toHaveLength(3)
+    expect(rows.filter(row => /1 leads/.test(row))).toHaveLength(2)
+    expect(rows.filter(row => /failed/.test(row))).toHaveLength(1)
+    await rm(root, { recursive: true })
+  })
+
+  it('a box the halo has not readied starts no pi and says why', async () => {
+    let spawned = 0
+    const err = lines()
+    const rows = await main({
+      args: ['--run'],
+      vault: '/nowhere',
+      out: lines(),
+      err,
+      spawn_pi: async () => (spawned += 1),
+      ready: async () => {
+        throw new Error('the halo issued no model pass: door closed')
+      }
+    })
+    expect(rows).toEqual([])
+    expect(spawned).toBe(0)
+    expect(err.written.join('')).toMatch(
+      /not ready: the halo issued no model pass/
+    )
+    process.exitCode = 0
+  })
+})
+
+describe('at most', () => {
+  it('never runs more than the limit, and runs every job', async () => {
+    let running = 0
+    let peak = 0
+    const done = await at_most([1, 2, 3, 4, 5, 6, 7], 3, async n => {
+      running += 1
+      peak = Math.max(peak, running)
+      await new Promise(resolve => setTimeout(resolve, 5))
+      running -= 1
+      return n * 2
+    })
+    expect(peak).toBe(3)
+    expect(done).toEqual([2, 4, 6, 8, 10, 12, 14])
+  })
+})
+
+/** A pi stand-in: prints the given event lines, then waits forever. */
+const fake_pi = async (dir, events) => {
+  const bin = join(dir, 'fake-pi.js')
+  await writeFile(
+    bin,
+    `#!/usr/bin/env node\nfor (const line of ${JSON.stringify(events.map(event => JSON.stringify(event)))}) console.log(line)\nsetInterval(() => {}, 1 << 30)\n`
+  )
+  await chmod(bin, 0o755)
+  return bin
+}
+
+const start = (id, args) => ({
+  type: 'tool_execution_start',
+  toolCallId: id,
+  toolName: 'bash',
+  args
+})
+const end = (id, name, text, args) => ({
+  type: 'tool_execution_end',
+  toolCallId: id,
+  toolName: name,
+  ...(args ? { args } : {}),
+  result: { content: [{ type: 'text', text }] }
+})
+
+describe('the pages a run may read', () => {
+  it('is the source URL and the pages under it', () => {
+    const allowed = ['https://board.test/jobs', 'https://api.test/search']
+    expect(read_outside('realness-read https://board.test/jobs', allowed)).toBe(
+      ''
+    )
+    expect(read_outside('read https://board.test/jobs?page=2', allowed)).toBe(
+      ''
+    )
+    expect(
+      read_outside('read https://board.test/jobs/acme-engineer', allowed)
+    ).toBe('')
+    expect(read_outside('read https://api.test/search?q=rust', allowed)).toBe(
+      ''
+    )
+    expect(read_outside('read https://api.test/search.', allowed)).toBe('')
+    expect(read_outside('ls /vault', allowed)).toBe('')
+  })
+
+  it('a page beside the source, or a listing next to another, is outside', () => {
+    expect(
+      read_outside('read https://board.test/other/jobs', [
+        'https://board.test/jobs'
+      ])
+    ).toBe('https://board.test/other/jobs')
+    expect(
+      reads_inside('https://api.test/listing-2', 'https://api.test/list')
+    ).toBe(false)
+    expect(
+      reads_inside('https://api.test/list/2', 'https://api.test/list')
+    ).toBe(true)
+    expect(
+      reads_inside('https://api.test/list?q=2', 'https://api.test/list')
+    ).toBe(true)
+    expect(
+      reads_inside(
+        'https://www.workatastartup.com/jobs/9',
+        'https://www.workatastartup.com/'
+      )
+    ).toBe(true)
+    expect(
+      reads_inside(
+        'https://www.workatastartup.com/jobs/9',
+        'https://www.workatastartup.com/jobs/<id>'
+      )
+    ).toBe(true)
+    expect(
+      reads_inside(
+        'https://ubuntu.com/security/CVE-2024-1234',
+        'https://ubuntu.com/security/CVE-<year>-<number>'
+      )
+    ).toBe(true)
+    expect(
+      reads_inside(
+        'https://ubuntu.com/security/notices/CVE-2024-1234',
+        'https://ubuntu.com/security/CVE-<year>-<number>'
+      )
+    ).toBe(false)
+  })
+
+  it('a source that names no page allows no page', () => {
+    expect(read_outside('read https://any.test/x', [])).toBe(
+      'https://any.test/x'
+    )
+  })
+})
+
+describe('a run ends on its own events', () => {
+  it('the write of finds.html ends the run, and every step is on screen and on disk', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pi-events-'))
+    const bin = await fake_pi(dir, [
+      start('1', { command: 'realness-read --site yc --brief https://x' }),
+      end('1', 'bash', '<article>job</article>'),
+      start('2', { path: `${dir}/finds.html` }),
+      end('2', 'write', 'wrote it', { path: `${dir}/finds.html` })
+    ])
+    const said = []
+    const code = await local_pi(bin, line => said.push(line))(
+      'brief',
+      dir,
+      null,
+      ['https://x']
+    )
+    expect(code).toBe(0)
+    expect(said).toHaveLength(2)
+    expect(said[0]).toMatch(/bash {2}realness-read --site yc/)
+    const page = await readFile(join(dir, 'steps.html'), 'utf8')
+    expect(page.match(/itemtype="\/step"/g)).toHaveLength(2)
+    await rm(dir, { recursive: true })
+  })
+
+  it('pi settling ends the run, though its process lingers', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pi-events-'))
+    const bin = await fake_pi(dir, [{ type: 'agent_settled', aborted: false }])
+    expect(await local_pi(bin)('brief', dir)).toBe(0)
+    await rm(dir, { recursive: true })
+  })
+
+  it('a model error ends the run at once and says why', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pi-events-'))
+    const bin = await fake_pi(dir, [
+      {
+        type: 'message_end',
+        message: { stopReason: 'error', errorMessage: 'API key auth failed' }
+      }
+    ])
+    expect(await local_pi(bin)('brief', dir)).not.toBe(0)
+    expect(await readFile(join(dir, 'pi.log'), 'utf8')).toMatch(
+      /API key auth failed/
+    )
+    await rm(dir, { recursive: true })
+  })
+
+  it('a read outside the source ends the run at once and says which page', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pi-events-'))
+    const bin = await fake_pi(dir, [
+      start('1', { command: 'read https://board.test/jobs' }),
+      end('1', 'bash', 'jobs'),
+      start('2', { command: 'read https://other.test/jobs?page=4' }),
+      end('2', 'bash', 'more jobs')
+    ])
+    const code = await local_pi(bin)('brief', dir, null, [
+      'https://board.test/jobs'
+    ])
+    expect(code).not.toBe(0)
+    expect(await readFile(join(dir, 'pi.log'), 'utf8')).toMatch(
+      /a read outside the source: https:\/\/other\.test\/jobs\?page=4/
+    )
+    await rm(dir, { recursive: true })
+  })
+
+  it('a refused read ends the run at once and says why', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pi-events-'))
+    const bin = await fake_pi(dir, [
+      start('1', { command: 'fetch-site one' }),
+      end('1', 'bash', 'static: HTTP 403; chrome: HTTP 403')
+    ])
+    const said = []
+    const code = await local_pi(bin, line => said.push(line))('brief', dir)
+    expect(code).not.toBe(0)
+    expect(said[0]).toMatch(/-> HTTP 403/)
+    expect(await readFile(join(dir, 'pi.log'), 'utf8')).toMatch(
+      /a read was refused: HTTP 403/
+    )
+    await rm(dir, { recursive: true })
   })
 })

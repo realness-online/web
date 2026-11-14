@@ -6,6 +6,10 @@ import { dirname, join } from 'node:path'
 import { it } from 'node:test'
 import { item_html, read_items } from '#root/lib/items.js'
 import { run_scout } from '#root/src/scouts/run.js'
+import { STAGES_PAGE } from '#root/src/scouts/stages.js'
+import { append_item } from '#root/src/files/item-log.js'
+import { save_finds } from '#root/src/scouts/seen.js'
+import { scout_due } from '#root/src/scouts/halo.js'
 import { scout_page } from '#root/src/scouts/scout.js'
 
 const SCOUTS = 'vault/Projects/Scouts'
@@ -64,13 +68,37 @@ it('a scout in a plan inside a plan is found by its page alone', async () => {
     vault_dir: join(root, 'vault'),
     person: '/+1',
     date: '2026-11-05',
-    spawn_pi: async (brief, run_dir, minutes) => {
-      assert.equal(minutes, 5)
+    spawn_pi: async brief => {
       assert.match(brief, /# bedroom profile/)
-      assert.match(brief, /Projects\/Scouts\/Bedroom\/Realness\/Companies/)
+      assert.match(
+        brief,
+        /Projects\/Scouts\/Bedroom\/Realness\/Runs\/\S+\/finds\.html/
+      )
     }
   })
   assert.equal(result.run_dir.startsWith(nested), true)
+  await rm(root, { recursive: true })
+})
+
+it('a run has no clock: pi gets the brief, its folder, and the stages to time', async () => {
+  const root = await scratch()
+  await writeFile(join(root, SCOUTS, 'SMS/Profile.md'), '# sms\n')
+  await writeFile(
+    join(root, SCOUTS, 'SMS/Sources.md'),
+    '# sms\n\nhttps://sms.test/board\n'
+  )
+  await run_scout({
+    scout: 'sms',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-05',
+    spawn_pi: async (...args) => {
+      assert.equal(args.length, 4)
+      assert.equal(typeof args[2], 'function')
+      assert.deepEqual(args[3], ['https://sms.test/board'])
+      assert.doesNotMatch(args[0], /minutes/)
+    }
+  })
   await rm(root, { recursive: true })
 })
 
@@ -238,7 +266,271 @@ it('a run that writes no finds is reported, and the page keeps what it had', asy
   await rm(root, { recursive: true })
 })
 
-it('a run that wrote nothing and failed writes no note and keeps the store alone', async () => {
+const SOURCES = `# Sources
+
+## 1. YC Work at a Startup
+
+Start here.
+
+    realness-read --site yc https://www.workatastartup.com/
+
+## 2. VueJobs
+
+https://vuejobs.com/jobs
+`
+
+it('a run reads one source, and its row names it', async () => {
+  const root = await scratch()
+  await writeFile(join(root, SCOUTS, 'Realness/Sources.md'), SOURCES)
+  let brief = ''
+  const result = await run_scout({
+    scout: 'realness',
+    source: 'vuejobs',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-05',
+    spawn_pi: async text => {
+      brief = text
+    }
+  })
+  assert.match(brief, /This run reads one source: VueJobs/)
+  assert.match(brief, /vuejobs\.com/)
+  assert.doesNotMatch(brief, /workatastartup/)
+  assert.match(
+    brief,
+    /Run `realness-read --site <site> --brief <url>` on each URL below[\s\S]*- https:\/\/vuejobs\.com\/jobs/,
+    'the brief names the URL to read'
+  )
+  assert.match(brief, /That is\s+your one read/)
+  assert.match(
+    brief,
+    /Opening a posting, a company page, or a search is a failed run/
+  )
+  const runs = read_items(
+    await readFile(
+      join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html'),
+      'utf8'
+    ),
+    'run'
+  )
+  assert.equal(runs.length, 1)
+  assert.equal(runs[0].source, 'vuejobs')
+  assert.equal(result.run_dir.includes('/Runs/'), true)
+  await rm(root, { recursive: true })
+})
+
+it('a run is given its source URLs, and no other page is its own', async () => {
+  const root = await scratch()
+  await writeFile(join(root, SCOUTS, 'Realness/Sources.md'), SOURCES)
+  let allowed = []
+  await run_scout({
+    scout: 'realness',
+    source: 'vuejobs',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-05',
+    spawn_pi: async (_brief, _run_dir, _staged, urls) => {
+      allowed = urls
+    }
+  })
+  assert.deepEqual(allowed, ['https://vuejobs.com/jobs'])
+  await rm(root, { recursive: true })
+})
+
+it('two source runs the same day both keep their leads in the digest', async () => {
+  const root = await scratch()
+  await writeFile(join(root, SCOUTS, 'Realness/Sources.md'), SOURCES)
+  const index = join(root, SCOUTS, 'Realness/index.md')
+  await writeFile(
+    index,
+    '# Realness\n\n### Finds\n\n<small>Dimmed: scored below 6.</small>\n'
+  )
+  const options = {
+    scout: 'realness',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-05'
+  }
+  await run_scout({
+    ...options,
+    source: 'yc-work-at-a-startup',
+    spawn_pi: pi_writing([lead('https://example.com/acme', 8)])
+  })
+  await run_scout({
+    ...options,
+    source: 'vuejobs',
+    spawn_pi: pi_writing([
+      { ...lead('https://example.com/globex', 7), org: 'Globex' }
+    ])
+  })
+  const markdown = await readFile(index, 'utf8')
+  assert.match(markdown, /example\.com\/acme/)
+  assert.match(markdown, /example\.com\/globex/)
+  assert.equal((markdown.match(/<strong>Nov 5<\/strong>/g) ?? []).length, 1)
+  await rm(root, { recursive: true })
+})
+
+it('runs that finish at once each keep their row and their find', async () => {
+  const root = await scratch()
+  const options = {
+    scout: 'realness',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-05'
+  }
+  await Promise.all(
+    [0, 1, 2, 3, 4].map(at =>
+      run_scout({
+        ...options,
+        clock: () => 1794000000000 + at * 10,
+        spawn_pi: pi_writing([lead(`https://example.com/${at}`, 7)])
+      })
+    )
+  )
+  const urls = (await finds_of(root)).map(find => find.url).sort()
+  assert.deepEqual(urls, [
+    'https://example.com/0',
+    'https://example.com/1',
+    'https://example.com/2',
+    'https://example.com/3',
+    'https://example.com/4'
+  ])
+  const runs = read_items(
+    await readFile(
+      join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html'),
+      'utf8'
+    ),
+    'run'
+  )
+  assert.equal(runs.length, 5)
+  await rm(root, { recursive: true })
+})
+
+it('a run is on its page from the moment pi starts, so nothing chains a second', async () => {
+  const root = await scratch()
+  const page = join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html')
+  let during = []
+  await run_scout({
+    scout: 'realness',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-05',
+    spawn_pi: async () => {
+      during = read_items(await readFile(page, 'utf8'), 'run')
+    }
+  })
+  assert.equal(during.length, 1)
+  assert.equal(during[0].ended, '')
+  assert.equal(during[0].exit, '')
+  assert.equal(
+    scout_due({ status: 'active', per_day: 1 }, during, {
+      date: during[0].started.slice(0, 10),
+      now: Date.parse(during[0].started),
+      running: true
+    }),
+    false
+  )
+  const after = read_items(await readFile(page, 'utf8'), 'run')
+  assert.equal(after.length, 1)
+  assert.notEqual(after[0].ended, '')
+  await rm(root, { recursive: true })
+})
+
+it('a run times each stage and shows what it waited on', async () => {
+  const root = await scratch()
+  const page = join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html')
+  let at = 1794000000000
+  let during = []
+  await run_scout({
+    scout: 'realness',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-05',
+    clock: () => (at += 1000),
+    spawn_pi: async (brief, run_dir) => {
+      during = read_items(await readFile(page, 'utf8'), 'run')
+      at += 60000
+      await writeFile(
+        join(run_dir, 'finds.html'),
+        item_html('find', lead('https://example.com/a', 8), { links: ['url'] })
+      )
+    }
+  })
+  assert.equal(during.length, 1)
+  assert.match(during[0].stage, /^pi work since \d{4}-/)
+  const [run] = read_items(await readFile(page, 'utf8'), 'run')
+  assert.match(run.stages, /brief work \d{4}-/)
+  assert.match(run.stages, /lock wait \d{4}-/)
+  assert.match(run.stages, /pi work \d{4}-/)
+  assert.match(run.stages, /write work \d{4}-/)
+  assert.equal(run.stage, '')
+  assert.equal(run.waited.endsWith('s'), true)
+  assert.equal(run.worked.endsWith('s'), true)
+  assert.equal(Number.parseFloat(run.worked) >= 60, true)
+  await rm(root, { recursive: true })
+})
+
+it('a run splits pi into read, lease, and score by what pi recorded', async () => {
+  const root = await scratch()
+  const page = join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html')
+  const at = seconds => new Date(1794000000000 + seconds * 1000).toISOString()
+  await run_scout({
+    scout: 'realness',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-05',
+    spawn_pi: async (brief, run_dir) => {
+      for (const record of [
+        { at: Date.parse(at(0)), tool: '' },
+        { at: Date.parse(at(3)), tool: 'realness-read --site yc' },
+        { at: Date.parse(at(8)), tool: '' },
+        { at: Date.parse(at(11)), tool: 'realness-chrome' }
+      ])
+        await append_item(join(run_dir, STAGES_PAGE), 'stage', record)
+      await writeFile(
+        join(run_dir, 'finds.html'),
+        item_html('find', lead('https://example.com/a', 8), { links: ['url'] })
+      )
+    }
+  })
+  const [run] = read_items(await readFile(page, 'utf8'), 'run')
+  assert.doesNotMatch(run.stages, /pi work/)
+  assert.match(run.stages, /score work \d{4}-/)
+  assert.match(run.stages, /read work \d{4}-/)
+  assert.match(run.stages, /lease work \d{4}-/)
+  assert.match(run.worked, /s$/)
+  await rm(root, { recursive: true })
+})
+
+it('a later run that fails keeps the finds another run wrote first', async () => {
+  const root = await scratch()
+  await assert.rejects(
+    run_scout({
+      scout: 'realness',
+      vault_dir: join(root, 'vault'),
+      person: '/+1',
+      date: '2026-11-06',
+      spawn_pi: async () => {
+        await save_finds(join(root, FINDS), 'Realness', [
+          {
+            itemid: '/+1/finds/9',
+            url: 'https://example.com/late',
+            status: 'new'
+          }
+        ])
+        return 1
+      }
+    }),
+    /the run failed/
+  )
+  assert.deepEqual(
+    (await finds_of(root)).map(find => find.url),
+    ['https://example.com/late']
+  )
+  await rm(root, { recursive: true })
+})
+
+it('a failed run keeps its row and its reason', async () => {
   const root = await scratch()
   await assert.rejects(
     run_scout({
@@ -250,12 +542,17 @@ it('a run that wrote nothing and failed writes no note and keeps the store alone
     }),
     /the run failed: pi exited 1/
   )
-  await assert.rejects(
-    readFile(join(root, 'vault/Projects/Scouts/Realness/Leads/2026-11-05.md')),
-    {
-      code: 'ENOENT'
-    }
+  const runs = read_items(
+    await readFile(
+      join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html'),
+      'utf8'
+    ),
+    'run'
   )
+  assert.equal(runs.length, 1)
+  assert.equal(runs[0].exit, '1')
+  assert.match(runs[0].problems, /the run wrote no finds\.html/)
+  assert.equal((await finds_of(root)).length, 0, 'a failed run adds no find')
   await rm(root, { recursive: true })
 })
 
@@ -321,7 +618,9 @@ it('the brief carries the profile, the sources, the open nodes, and the leads to
   assert.match(brief, /# sources/)
   assert.match(brief, /example\.com\/old/)
   assert.match(brief, /c4: draft outreach/)
-  assert.match(brief, /Projects\/Scouts\/Realness\/Companies/)
+  assert.match(brief, /Projects\/Scouts\/Realness\/Runs\/\S+\/finds\.html/)
+  assert.match(brief, /That is\s+your one read/)
+  assert.match(brief, /Writing it ends the run/)
   await rm(root, { recursive: true })
 })
 

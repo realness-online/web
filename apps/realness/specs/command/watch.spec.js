@@ -738,6 +738,36 @@ it('missing billing data never presents a zero-dollar cloud total', () => {
   assert.doesNotMatch(present, /behind/)
 })
 
+it('billing details show times in local time', () => {
+  const bill = {
+    table: 'project.billing.export',
+    through: '2026-10-11T09:00:00Z',
+    checked: '2026-10-11T17:01:52.065Z',
+    rows: []
+  }
+  const text = frame({
+    snapshot: { panels: { billing: { status: 'ok', exports: [bill] } } },
+    width: 100,
+    height: 60,
+    on: false,
+    details: true
+  })
+  const local = iso =>
+    new Date(iso).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    })
+  assert.ok(
+    text.includes(
+      `Usage through ${local(bill.through)}; queried ${local(bill.checked)}`
+    ),
+    text
+  )
+  assert.doesNotMatch(text, /T09:00:00Z/)
+})
+
 it('sync shows a summary and wraps full problem paths', () => {
   const folder = 'harness/vault/Areas/a-long-folder-name/'
   const lines = sync_lines(

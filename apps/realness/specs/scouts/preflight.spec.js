@@ -4,47 +4,25 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { it } from 'node:test'
-import { FREE_BYTES, scout_preflight } from '#root/src/scouts/preflight.js'
+import {
+  FREE_BYTES,
+  box_ready,
+  scout_preflight
+} from '#root/src/scouts/preflight.js'
 import { run_scout } from '#root/src/scouts/run.js'
 import { scout_page } from '#root/src/scouts/scout.js'
 import { GIB } from '#root/lib/units.js'
 
-/** A chrome pool that records what a preflight did to it. */
-const pool_of = calls => ({
-  restore: async () => {
-    calls.push('restore')
-    return { n: 3 }
-  },
-  destroy: async n => calls.push(`destroy ${n}`)
-})
-
-it('a run needs free space before it makes a copy', async () => {
-  const calls = []
-  await assert.rejects(
-    scout_preflight({
-      store: { free_bytes: () => GIB },
-      chrome: { pool: pool_of(calls) }
-    }),
+it('a run needs free space before any loop starts', () => {
+  assert.throws(
+    () => scout_preflight({ store: { free_bytes: () => GIB } }),
     /1 GiB free; a run needs 2/
   )
-  assert.deepEqual(calls, [])
 })
 
-it('a halo with no chrome pool cannot start a run', async () => {
-  await assert.rejects(
-    scout_preflight({ store: { free_bytes: () => FREE_BYTES }, chrome: null }),
-    /no chrome pool/
-  )
-})
-
-it('a copy is made and destroyed, so a run inherits no lease', async () => {
-  const calls = []
-  const result = await scout_preflight({
-    store: { free_bytes: () => 8 * GIB },
-    chrome: { pool: pool_of(calls) }
-  })
+it('a run with room passes the gate', () => {
+  const result = scout_preflight({ store: { free_bytes: () => 8 * GIB } })
   assert.equal(result.free, 8 * GIB)
-  assert.deepEqual(calls, ['restore', 'destroy 3'])
 })
 
 /** A failed gate stops the run before a folder or a pi is made. */
@@ -83,4 +61,32 @@ it('a failed preflight writes nothing and starts no pi', async () => {
   )
   assert.equal(spawned, false)
   assert.equal(existsSync(join(folder, 'Runs')), false)
+})
+
+it('a Mac has no model pass command and is ready', async () => {
+  const missing = Object.assign(new Error('spawn'), { code: 'ENOENT' })
+  assert.equal(
+    await box_ready(async () => {
+      throw missing
+    }),
+    'mac'
+  )
+})
+
+it('a box is ready only when the halo issues it a pass', async () => {
+  assert.equal(await box_ready(async () => ({ stdout: 'eyJ\n' })), 'box')
+  await assert.rejects(
+    box_ready(async () => ({ stdout: '\n' })),
+    /empty model pass/
+  )
+  const refused = Object.assign(new Error('exit 1'), {
+    code: 1,
+    stderr: 'realness-model-pass: the halo door did not issue a model pass\n'
+  })
+  await assert.rejects(
+    box_ready(async () => {
+      throw refused
+    }),
+    /the halo issued no model pass: realness-model-pass: the halo door/
+  )
 })

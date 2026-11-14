@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict'
 import { mkdir, mkdtemp, readdir, readFile, rm } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
+import { gunzipSync } from 'node:zlib'
 import { it } from 'node:test'
 import { agent_service } from '#root/src/proxy/server.js'
 import { disk_recorder } from '#root/src/proxy/recorder.js'
+import { read_items } from '#root/lib/items.js'
 
 const scratch = resolve(
   import.meta.dirname,
@@ -38,15 +40,16 @@ it('each call lands whole on local disk, filed by person and day', async t => {
   await settle()
   const days = await readdir(join(dir, '+14155550123'))
   assert.equal(days.length, 1)
-  assert.match(days[0], /^\d{4}-\d{2}-\d{2}\.jsonl$/)
-  const [line] = (await readFile(join(dir, '+14155550123', days[0]), 'utf8'))
-    .trim()
-    .split('\n')
-  const entry = JSON.parse(line)
-  assert.equal(entry.messages, undefined)
-  assert.deepEqual(entry.request.messages, [{ role: 'user', content: 'hi' }])
+  assert.match(days[0], /^\d{4}-\d{2}-\d{2}\.html\.gz$/)
+  const html = gunzipSync(
+    await readFile(join(dir, '+14155550123', days[0]))
+  ).toString('utf8')
+  const [entry] = read_items(html, 'model-call')
+  assert.deepEqual(JSON.parse(entry.request).messages, [
+    { role: 'user', content: 'hi' }
+  ])
   assert.equal(entry.response, 'data: hello\n\ndata: done\n')
-  assert.equal(entry.status, 200)
+  assert.equal(entry.status, '200')
 })
 
 it('the local stack records the proxy into artifacts, never into sync', async () => {

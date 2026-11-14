@@ -351,3 +351,9 @@ it('an app rejects a route it has twice, a missing item, and a bad recipe', asyn
     await rm(vault, { recursive: true, force: true })
   }
 })
+
+it('a note carries its itemid in single, double, or no quotes', () => {
+  const id = '/+15550001111/plans/1791571682897'
+  for (const line of [`itemid: '${id}'`, `itemid: "${id}"`, `itemid: ${id}`])
+    assert.equal(carried_itemid(`---\n${line}\n---\n# Plan\n`), id)
+})

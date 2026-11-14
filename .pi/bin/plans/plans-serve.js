@@ -44,6 +44,45 @@ self.addEventListener('activate', event => event.waitUntil((async () => {
 })()))
 `
 
+/** Every open page listens here: it reloads after a build and shows a failed build's line. */
+export const RELOAD_SCRIPT = `<script>{
+const events = new EventSource('/events')
+events.onmessage = () => location.reload()
+events.addEventListener('failed', ({ data }) => {
+  let shown = document.querySelector('output[role=alert]')
+  if (!shown) {
+    shown = document.createElement('output')
+    shown.setAttribute('role', 'alert')
+    document.body.prepend(shown)
+  }
+  shown.style.cssText = 'display:block;position:sticky;top:0;z-index:9;padding:.5rem 1rem;background:#933237;color:#ecebe4;font:inherit'
+  shown.textContent = 'Build failed - showing the last good build. ' + data
+})
+}</script>`
+
+/** Open `/events` streams; `send` tells each page a build finished, `fail` that one failed. A page that opens after a failure hears it. */
+export const reload_events = () => {
+  const streams = new Set()
+  let failure = null
+  const failed = line => `event: failed\ndata: ${line.replace(/\n/g, ' ')}\n\n`
+  return {
+    add: response => {
+      response.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store' })
+      response.write(failure ? failed(failure) : ': open\n\n')
+      streams.add(response)
+      response.on('close', () => streams.delete(response))
+    },
+    send: () => {
+      failure = null
+      for (const stream of streams) stream.write('data: reload\n\n')
+    },
+    fail: line => {
+      failure = line
+      for (const stream of streams) stream.write(failed(line))
+    }
+  }
+}
+
 /** Blog pages are /articles/ and the article slugs; their partials come from the blog. */
 const from_blog = async (blog, path) => {
   if (path === '/articles' || path.startsWith('/articles/')) return true
@@ -56,11 +95,13 @@ const from_blog = async (blog, path) => {
  * A file either lacks falls back to the other.
  * @param {string} plans plans dist
  * @param {string} [blog] blog dist
+ * @param {ReturnType<typeof reload_events>} [events]
  */
-export const serve = (plans, blog) =>
+export const serve = (plans, blog, events = reload_events()) =>
   create_server(async (request, response) => {
     const url = request.url ?? '/'
     const path = url.split('?')[0]
+    if (path === '/events') return events.add(response)
     if (path === '/service.worker.js') {
       response.writeHead(200, { 'content-type': TYPES['.js'], 'cache-control': 'no-store' })
       return response.end(RETIRE_WORKER)
@@ -82,7 +123,8 @@ export const serve = (plans, blog) =>
       'content-type': TYPES[extname(file)] ?? 'application/octet-stream',
       'cache-control': 'no-store'
     })
-    response.end(await read_file(file))
+    const body = await read_file(file)
+    response.end(extname(file) === '.html' ? `${body}${RELOAD_SCRIPT}` : body)
   })
 
 /** The one line of a failed build worth showing. */
@@ -111,7 +153,7 @@ export const watch_builds = ({ folder, build, wait = 500, ignore = () => false, 
     changed.clear()
     const began = Date.now()
     running = build(files).then(
-      () => log(`built in ${Date.now() - began}ms`),
+      () => log(`built in ${Date.now() - began}ms: ${files.join(', ') || 'all'}`),
       error => log(`build failed: ${failure_line(error)}`)
     )
     await running
@@ -140,6 +182,7 @@ export const watch_builds = ({ folder, build, wait = 500, ignore = () => false, 
 export const ignored = file =>
   file.split(sep).some(part => part.startsWith('.')) ||
   file.startsWith(`Sessions${sep}`) ||
+  /[\\/]Runs[\\/].+[\\/]sessions[\\/]/.test(file) ||
   /pages[\\/]commands\.(html|js)$/.test(file)
 
 if (process.argv[1] === file_url_to_path(import.meta.url)) {
@@ -147,6 +190,7 @@ if (process.argv[1] === file_url_to_path(import.meta.url)) {
   const apps = join(root, 'artifacts/apps')
   const port = Number(process.env.PORT ?? 4323)
   const run = promisify(exec_file)
+  const events = reload_events()
   const builds = watch_builds({
     folder: realpath_sync(join(root, 'vault')),
     ignore: ignored,
@@ -155,10 +199,13 @@ if (process.argv[1] === file_url_to_path(import.meta.url)) {
         cwd: root,
         timeout: 120_000,
         maxBuffer: 1024 * 1024
+      }).then(events.send, error => {
+        events.fail(failure_line(error))
+        throw error
       })
   })
   builds.start()
-  serve(join(apps, 'plans/dist'), join(apps, 'blog/dist')).listen(port, '127.0.0.1', () =>
+  serve(join(apps, 'plans/dist'), join(apps, 'blog/dist'), events).listen(port, '127.0.0.1', () =>
     console.log(`vault -> http://127.0.0.1:${port}/  articles -> http://127.0.0.1:${port}/articles/`)
   )
 }

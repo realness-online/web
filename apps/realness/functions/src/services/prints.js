@@ -102,7 +102,12 @@ export const return_origin = origin =>
  * @param {{ poster_id: string, amount: number, origin?: string, image?: string | null }} options
  * @returns {Promise<{ url: string, id: string }>}
  */
-export const create_print_checkout = async ({ poster_id, amount, origin, image }) => {
+export const create_print_checkout = async ({
+  poster_id,
+  amount,
+  origin,
+  image
+}) => {
   const base = return_origin(origin)
   const metadata = { poster_id, realness_product: PRODUCT }
   const session = await stripe_request('checkout/sessions', {

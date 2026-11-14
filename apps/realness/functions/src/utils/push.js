@@ -43,16 +43,15 @@ const subscriptions = async () => {
   for (const [pattern, files] of [
     [SYNC, sync],
     [FIREBASE, firebase]
-  ]) {
-    for (const file of files) {
+  ])
+    {for (const file of files) {
       const match = pattern.exec(file.name)
       if (!match) continue
       const key = `${match[1]}/${match[2]}`
       const entry = found.get(key)
       if (entry) entry.copies.push(file)
       else found.set(key, { read: file, copies: [file] })
-    }
-  }
+    }}
 
   return [...found.values()]
 }

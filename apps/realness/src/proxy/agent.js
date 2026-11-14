@@ -11,6 +11,8 @@ const ROUTING = {
   sort: 'price',
   quantizations: ['fp8', 'unknown']
 }
+/** The house model thinks briefly unless the caller asks for more. */
+const REASONING = { effort: 'low' }
 const TIMEOUT_MS = 120_000
 const LIMIT = LIMIT_MIB * MIB
 
@@ -38,6 +40,9 @@ export const call_upstream = (
       ...body,
       model,
       ...(model === HOUSE_MODEL && { provider: ROUTING }),
+      ...(model === HOUSE_MODEL &&
+        !body.reasoning &&
+        !body.reasoning_effort && { reasoning: REASONING }),
       usage: { include: true }
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS)

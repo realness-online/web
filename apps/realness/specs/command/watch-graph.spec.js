@@ -59,6 +59,8 @@ it('billing shows numbers and a braille graph without color', () => {
   assert.match(text, /LATEST \$4\.25 {3}AVG\/DAY \$2\.25 {3}PEAK \$4\.25 10-05/)
   assert.match(text, /\$4\.25 ┤ [\u2800-\u28ff]+/)
   assert.match(text, /\$0\.25 ┤ [\u2800-\u28ff]+/)
+  const top = lines.findIndex(line => /\$4\.25 ┤/.test(line))
+  assert.match(lines[top - 1], /^ +10-05$/)
   assert.ok(!text.includes('\x1b['))
 })
 
