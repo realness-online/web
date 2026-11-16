@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-z - 2026-11-16
+
 - **Pricing shows up in search** - Each tier, Endorse, Teams, and
   Enterprise, is its own page that Google can index, and `/pricing` sends
   search engines to Endorse.
