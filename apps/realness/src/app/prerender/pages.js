@@ -35,11 +35,25 @@ export const prerender_pages = [
     og_title: 'Realness Online - Prints'
   },
   {
-    path: '/pricing',
-    title: 'Realness Online - Pricing',
+    path: '/pricing/endorse',
+    title: 'Realness Online - Pricing - Endorse',
     description:
-      'Realness is free to use — but it has a price, if you want one. Separate paid tiers for teams and organizations.',
-    og_title: 'Realness Online - Pricing'
+      'Endorse Realness: photo to poster, mosaics, shadow layers, SVG, PNG, PSD, video, and GLB export, the Thoughts feed, and commercial use.',
+    og_title: 'Realness Online - Pricing - Endorse'
+  },
+  {
+    path: '/pricing/teams',
+    title: 'Realness Online - Pricing - Teams',
+    description:
+      'Realness for teams: run an instance for your studio, family, or circle. One moderator, shared tools, and one price for the group, never per seat.',
+    og_title: 'Realness Online - Pricing - Teams'
+  },
+  {
+    path: '/pricing/enterprise',
+    title: 'Realness Online - Pricing - Enterprise',
+    description:
+      'Realness for companies and institutions: many communities, governance that scales, and hosting for large groups. One price, never per seat.',
+    og_title: 'Realness Online - Pricing - Enterprise'
   },
   {
     path: '/license',

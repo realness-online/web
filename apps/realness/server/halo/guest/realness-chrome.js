@@ -113,7 +113,9 @@ const lease = async () => {
   const port = await port_for()
   const url = `http://127.0.0.1:${port}`
   const profile = join(DIR, `realness-chrome-profile-${port}`)
+  const temp = join(DIR, `realness-chrome-temp-${port}`)
   mkdir_sync(profile, { recursive: true })
+  mkdir_sync(temp, { recursive: true })
   const child = spawn(
     SHELL,
     [
@@ -125,7 +127,7 @@ const lease = async () => {
       `--user-data-dir=${profile}`,
       'about:blank'
     ],
-    { detached: true, stdio: 'ignore' }
+    { detached: true, stdio: 'ignore', env: { ...process.env, TMPDIR: temp } }
   )
   child.unref()
   await wait_for(url)

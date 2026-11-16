@@ -27,7 +27,7 @@ workspace's separate selected-fork installation is not changed by this installer
 `npm run pi:reinstall` only reinstalls this pin. It does not choose an upstream
 release. Provider credentials must come from each user, never from this package.
 
-Current release evidence is `verification.json` beside the selected 1.5.0 fork.
+Current release evidence is `verification.json` beside the selected 1.5.2 fork.
 The 1.5.0 fork commit is `b36be911294bd7d638f5f0d5bb6fe7c78bc4b5ff`.
 The previous 1.4.0 pin (fork `08620a3b`) is kept at `artifacts/pi/pin-v1.4.0/`.
 macOS clean-install and RPC startup checks passed. Linux is tested by the halo image.

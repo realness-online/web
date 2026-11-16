@@ -39,7 +39,7 @@ import {
   randomUUID as random_uuid,
   createHash as create_hash
 } from 'node:crypto'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { BadRequest, HaloError, NotFound } from './errors.js'
 import * as vsock from './vsock.js'
 import { wait_for_door } from './door.js'
@@ -54,7 +54,8 @@ import { issue_recovery_pass } from '#root/src/sign-on/node/recovery-pass.js'
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { hostname } from 'node:os'
 import { Mutex, PTY_PORT, check_command } from '#root/src/halo/actors.js'
-import { ID_BYTES, MIB, MS_PER_SECOND } from '#root/lib/units.js'
+import { ID_BYTES, MIB, MS_PER_DAY, MS_PER_SECOND } from '#root/lib/units.js'
+import { halo_code, read_code_stamp, stale_code } from '#root/lib/code-stamp.js'
 /* eslint-disable no-await-in-loop -- lifecycle steps run in order, as in actors.js; the Pi poll waits each turn */
 
 const LOG = logger('box')
@@ -115,6 +116,44 @@ export const write_resolver = etc =>
  * @param {string} realness the box's /realness on the VM
  * @param {string} owner a phone like +14155551234
  */
+/**
+ * A box's harness is seeded once, but `.pi/bin` is program code: every start
+ * replaces it with the template's, so it holds what the image holds, no more.
+ * @param {string} seed the template's harness folder
+ * @param {string} realness the box's harness folder
+ */
+export const refresh_bin = async (seed, realness) => {
+  const bin = join(seed, '.pi', 'bin')
+  if (!exists_sync(bin)) return
+  const target = join(realness, '.pi', 'bin')
+  rm_sync(target, { recursive: true, force: true })
+  mkdir_sync(target, { recursive: true })
+  await run('cp', ['-a', `${bin}/.`, target])
+}
+
+/** Scratch older than this leaves a parked box. */
+const ARTIFACTS_KEEP_DAYS = 30
+const ARTIFACTS_KEEP_MS = ARTIFACTS_KEEP_DAYS * MS_PER_DAY
+const CACHES = ['.npm', '.cache']
+
+/**
+ * A parked box drops what it can rebuild: package caches, and artifacts
+ * nobody touched in 30 days. The vault, sessions, and harness stay.
+ * @param {string} realness the box's harness folder
+ * @param {number} [now]
+ */
+export const shed_caches = (realness, now = Date.now()) => {
+  for (const name of CACHES)
+    rm_sync(join(realness, name), { recursive: true, force: true })
+  const artifacts = join(realness, 'artifacts')
+  if (!exists_sync(artifacts)) return
+  for (const entry of readdir_sync(artifacts)) {
+    const path = join(artifacts, entry)
+    if (now - stat_sync(path).mtimeMs > ARTIFACTS_KEEP_MS)
+      rm_sync(path, { recursive: true, force: true })
+  }
+}
+
 export const write_owner_person = (realness, owner) => {
   const file = join(realness, local_person_file)
   if (exists_sync(file)) return
@@ -260,6 +299,7 @@ class Actor {
   tap
   /** @type {string} */ last_activity
   /** @type {string} */ synced_at
+  /** @type {{ halo?: string | null, image?: string | null } | undefined} */ code
   /** @type {string} */ vsock_path
   /** @type {string} */ pty_path
   /** @type {string | undefined} veth on the halo side of the box's netns */ host_veth
@@ -606,9 +646,13 @@ export class BoxStore extends Store {
         join(dir, 'work')
       ])
     }
-    if (!exists_sync(join(realness, 'AGENTS.md'))) {
-      const seed = join(loop, 'realness')
-      if (exists_sync(seed)) await run('cp', ['-a', `${seed}/.`, realness])
+    const seed = join(loop, 'realness')
+    if (!exists_sync(join(realness, 'AGENTS.md')) && exists_sync(seed))
+      await run('cp', ['-a', `${seed}/.`, realness])
+    await refresh_bin(seed, realness)
+    record.code = {
+      halo: halo_code(),
+      image: read_code_stamp(join(loop, 'etc', 'realness-code'))
     }
     if (!exists_sync(join(etc, 'hostname')))
       await run('cp', ['-a', `${loop}/etc/.`, etc])
@@ -1022,6 +1066,35 @@ export class BoxStore extends Store {
     })
   }
 
+  /** The labels a box started now would carry. */
+  code_now() {
+    return {
+      halo: halo_code(),
+      image: read_code_stamp(join(dirname(this.template), 'template-code'))
+    }
+  }
+
+  /**
+   * An idle actor that runs old code restarts before it works, so it always
+   * runs what the halo would give it now. A busy one keeps its work.
+   * @param {Actor} record
+   */
+  async #current(record) {
+    if (record.state === 'stopped' || this.is_busy(record.id)) return
+    const stale = stale_code(record.code, this.code_now())
+    if (!stale.length) return
+    if (
+      record.state === 'running' &&
+      (await sessions_busy(record, this.vsock_port).catch(() => [])).length
+    )
+      return
+    this.trace(record.id, 'code-restart', { stale })
+    LOG.info(
+      `actor ${record.id} runs old ${stale.join(' and ')} code; restarting`
+    )
+    await this.idle(record.id, 'disk')
+  }
+
   async ensure_running(id) {
     const record = this.get(id)
     if (record.state !== 'stopped') {
@@ -1033,7 +1106,8 @@ export class BoxStore extends Store {
         this.#write(record)
       }
     }
-    if (record.state !== 'running') await this.reload(id)
+    await this.#current(record)
+    if (this.get(id).state !== 'running') await this.reload(id)
     return this.get(id)
   }
 
@@ -1217,6 +1291,7 @@ export class BoxStore extends Store {
       if (tier === 'disk') {
         await this.runc(id, ['kill', 'KILL']).catch(() => {})
         await this.runc(id, ['delete', '--force']).catch(() => {})
+        if (record.realness) shed_caches(record.realness)
       }
       record.state = tier === 'disk' ? 'stopped' : 'idle'
       this.#write(record)
@@ -1426,6 +1501,7 @@ export class BoxStore extends Store {
   seed_status() {
     return {
       built: exists_sync(this.template),
+      code: read_code_stamp(join(dirname(this.template), 'template-code')),
       matches: true,
       /** @type {string[]} */ mismatches: [],
       record: null

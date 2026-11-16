@@ -510,7 +510,7 @@ export class ActorStore extends Store {
 
   /** Whether a seed exists and matches the build; a stale seed forks quietly, so say so. */
   seed_status() {
-    /** @type {{ built: boolean, matches: boolean, mismatches: string[], record: Record<string, number> | null }} */
+    /** @type {{ built: boolean, matches: boolean, mismatches: string[], record: Record<string, number> | null, code?: string | null }} */
     const status = {
       built: false,
       matches: false,

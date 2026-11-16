@@ -125,7 +125,7 @@ export const main = async ({
     site_origin,
     pages,
     lastmod: sitemap_lastmod,
-    extra_urls: ['/', '/documentation.md']
+    extra_urls: ['/']
   })
   fs.writeFileSync(path.join(dist_dir, 'sitemap.xml'), sitemap)
   console.info(`prerender: wrote ${path.join(dist_dir, 'sitemap.xml')}`)

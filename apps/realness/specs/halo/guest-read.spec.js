@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync
+} from 'node:fs'
+import { createServer as createHttpServer } from 'node:http'
 import { createServer } from 'node:net'
 import { join } from 'node:path'
 import { after, it } from 'node:test'
@@ -79,57 +87,82 @@ it('a site read asks the door for its login, and page flags do not break it', as
   assert.deepEqual(fake.asked, [{ op: 'site-cookies', site: 'yc' }])
 })
 
-it('a brief read asks for the body alone and prints it', async t => {
+const harness_pi = new URL('../../../../.pi', import.meta.url).pathname
+const JOBS =
+  '<html><head><title>Jobs</title></head><body><main><h1>Jobs</h1>' +
+  `<p>One job. Another job. ${'More words about the work. '.repeat(40)}</p>` +
+  '</main></body></html>'
+
+/**
+ * An actor's home whose page cache already holds one page, read once by the
+ * engine from a local server; the actor then reads that page from its cache.
+ */
+const cached_page = async t => {
+  const home = mkdtempSync(out_path('guest-read-home-'))
+  t.after(() => rmSync(home, { recursive: true, force: true }))
+  symlinkSync(harness_pi, join(home, '.pi'))
+  const server = createHttpServer((request, response) => {
+    response.writeHead(200, {
+      'content-type': 'text/html',
+      'cache-control': 'max-age=86400'
+    })
+    response.end(JOBS)
+  })
+  await new Promise(done => server.listen(0, '127.0.0.1', done))
+  t.after(() => new Promise(done => server.close(done)))
+  const url = `http://127.0.0.1:${server.address().port}/jobs`
+  const { WebEngine } = await import('../../src/halo/web-engine.js')
+  await new WebEngine({
+    root: join(home, 'artifacts', 'realness-read'),
+    allow_private: true
+  }).read(url)
+  return { home, url }
+}
+
+it('a brief read prints the body alone, read in the actor', async t => {
   const fake = await door()
   t.after(fake.close)
-  const run = await read(['https://vuejobs.com/jobs', '--brief'], fake)
-  assert.equal(run.code, 0)
-  assert.equal(run.out, 'x\n')
-  assert.deepEqual(fake.asked, [
-    {
-      op: 'read',
-      url: 'https://vuejobs.com/jobs',
-      fresh: false,
-      brief: true
-    }
-  ])
+  const { home, url } = await cached_page(t)
+  const run = await read([url, '--brief'], fake, { REALNESS_HOME: home })
+  assert.equal(run.code, 0, run.err)
+  assert.match(run.out, /<h1>Jobs<\/h1>/)
+  assert.deepEqual(fake.asked, [])
 })
 
-it('a plain read asks for no site and prints the page as markdown', async t => {
-  const fake = await door(() => ({
-    ok: true,
-    source: 'commoncrawl',
-    kind: 'html',
-    title: 'Jobs',
-    crawled: '20261001000000',
-    body: '<html><body><main><h1>Jobs</h1><p>One job. Another job.</p></main></body></html>'
-  }))
+it('a plain read prints the page as markdown, read in the actor', async t => {
+  const fake = await door()
   t.after(fake.close)
-  const run = await read(
-    ['https://vuejobs.com/jobs', '--fresh', '--grep', 'another'],
-    fake
-  )
+  const { home, url } = await cached_page(t)
+  const run = await read([url, '--grep', 'another'], fake, {
+    REALNESS_HOME: home
+  })
   assert.equal(run.code, 0, run.err)
   assert.match(
     run.out,
-    /^# Jobs\n<!-- https:\/\/vuejobs\.com\/jobs \| commoncrawl 20261001 \| \d+ chars -->/
+    /^# Jobs\n<!-- http:\/\/127\.0\.0\.1:\d+\/jobs \| cache static \| \d+ chars -->/
   )
   assert.match(run.out, /One job\. Another job\./)
-  assert.deepEqual(fake.asked, [
-    { op: 'read', url: 'https://vuejobs.com/jobs', fresh: true }
-  ])
+  assert.deepEqual(fake.asked, [])
 })
 
 it('a json read prints the whole reply; a failed read exits 3', async t => {
   const fake = await door()
   t.after(fake.close)
-  const run = await read(['https://vuejobs.com/jobs', '--json'], fake)
-  assert.deepEqual(JSON.parse(run.out), { ok: true, kind: 'html', body: 'x' })
-  const broken = await door(() => ({ ok: false, error: 'static: thin' }))
-  t.after(broken.close)
-  const failed = await read(['https://vuejobs.com/jobs'], broken)
+  const { home, url } = await cached_page(t)
+  const run = await read([url, '--json'], fake, { REALNESS_HOME: home })
+  const reply = JSON.parse(run.out)
+  assert.equal(reply.ok, true)
+  assert.equal(reply.source, 'cache')
+  assert.equal(reply.via, 'static')
+  assert.equal(reply.kind, 'html')
+  assert.match(reply.body, /<h1>Jobs<\/h1>/)
+  const failed = await read(['https://example.invalid/', '--fresh'], fake, {
+    REALNESS_HOME: home,
+    REALNESS_CHROME_BIN: '/bin/false'
+  })
   assert.equal(failed.code, 3)
-  assert.match(failed.err, /realness-read: static: thin/)
+  assert.match(failed.err, /realness-read: /)
+  assert.deepEqual(fake.asked, [])
 })
 
 it('a site flag with no slug is a usage error', async t => {
@@ -169,4 +202,54 @@ it('scout code that throws falls back to the login read', async t => {
     fake.asked.map(request => request.op),
     ['site-cookies', 'site-cookies']
   )
+})
+
+it('an actor loads a plain page itself, in its own Chrome, and never asks the halo', async t => {
+  const fake = await door()
+  t.after(fake.close)
+  const home = mkdtempSync(out_path('guest-read-home-'))
+  t.after(() => rmSync(home, { recursive: true, force: true }))
+  const asked = join(home, 'chrome-asked')
+  const chrome = join(home, 'realness-chrome')
+  writeFileSync(chrome, `#!/bin/sh\necho "$@" >> ${asked}\nexit 1\n`, {
+    mode: 0o755
+  })
+  symlinkSync(harness_pi, join(home, '.pi'))
+  const run = await read(['https://example.invalid/', '--fresh'], fake, {
+    REALNESS_HOME: home,
+    REALNESS_CHROME_BIN: chrome
+  })
+  assert.equal(run.code, 3, run.err)
+  assert.deepEqual(
+    fake.asked.filter(request => request.op === 'read'),
+    []
+  )
+  assert.ok(existsSync(asked), 'the actor never asked its own Chrome')
+})
+
+it('a scout run refuses a page off its source list, and never loads it', async t => {
+  const fake = await door()
+  t.after(fake.close)
+  const run = await read(['https://other.test/jobs', '--brief'], fake, {
+    REALNESS_READ_ALLOWED: JSON.stringify(['https://board.test/jobs'])
+  })
+  assert.equal(run.code, 4)
+  assert.match(
+    run.err,
+    /https:\/\/other\.test\/jobs is not on this source's list/
+  )
+  assert.match(run.err, /https:\/\/board\.test\/jobs/)
+  assert.deepEqual(fake.asked, [])
+})
+
+it('a scout run reads a page on its source list', async t => {
+  const fake = await door()
+  t.after(fake.close)
+  const { home, url } = await cached_page(t)
+  const run = await read([url, '--brief'], fake, {
+    REALNESS_HOME: home,
+    REALNESS_READ_ALLOWED: JSON.stringify([url.replace(/\/jobs$/, '/')])
+  })
+  assert.equal(run.code, 0, run.err)
+  assert.match(run.out, /<h1>Jobs<\/h1>/)
 })

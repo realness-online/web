@@ -26,6 +26,7 @@ const SCANNED = [
 ]
 const SKIP = new Set(['node_modules', 'dist', '.vite', 'coverage', 'fixtures'])
 const NOT_REPO = new Set([
+  'specs/halo/code-stamp.spec.js: apps/realness/node_modules/thing/index.js',
   'specs/halo/infer.spec.js: lib/page.js',
   'specs/tools/frontend-output.spec.js: frontend/firebase.json',
   'specs/tools/frontend.spec.js: lib/sign-on/src/browser/flow.js'

@@ -34,3 +34,22 @@ it('guest-setup.sh removes the unpacked squashfs after the rootfs', () =>
     'mv rootfs.ext4.new rootfs.ext4',
     'rm -rf squashfs-root ubuntu-24.04.squashfs'
   ))
+
+it('template-build.sh removes its tree and a half-built image on any exit', () => {
+  const script = read('template-build.sh')
+  const finish = script.slice(script.indexOf('finish() {'))
+  assert.match(script, /trap finish EXIT/)
+  assert.ok(
+    finish.indexOf('cleanup_mounts') <
+      finish.indexOf('rm -rf --one-file-system "$TREE" "$IMG.new"')
+  )
+})
+
+it('template-build.sh frees old scratch, then stops when space is low', () => {
+  const script = read('template-build.sh')
+  const sweep = script.indexOf('rm -rf --one-file-system "$TREE" "$IMG.new"')
+  const check = script.indexOf('[ "$free_gib" -ge "$MIN_FREE_GIB" ]')
+  assert.ok(script.indexOf('cleanup_mounts\n') < sweep)
+  assert.ok(sweep < check)
+  assert.ok(check < script.indexOf('tar xzf'))
+})

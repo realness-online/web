@@ -246,6 +246,73 @@ it('a plan with no digest section still runs', async () => {
   await rm(root, { recursive: true })
 })
 
+it('a source still being decided stops the run before pi starts', async () => {
+  const root = await scratch()
+  await writeFile(
+    join(root, SCOUTS, 'Realness/Sources.md'),
+    '# Sources\n\n## 1. Words\n\nRead things.\n'
+  )
+  let spawned = false
+  await assert.rejects(
+    run_scout({
+      scout: 'realness',
+      source: 'words',
+      vault_dir: join(root, 'vault'),
+      person: '/+1',
+      date: '2026-11-05',
+      spawn_pi: async () => {
+        spawned = true
+      }
+    }),
+    /Words names no page, command, or vault path/
+  )
+  assert.equal(spawned, false, 'pi never starts on an undecided source')
+  await rm(root, { recursive: true })
+})
+
+it('a source that names no page gets a brief that says so', async () => {
+  const root = await scratch()
+  await writeFile(
+    join(root, SCOUTS, 'Realness/Sources.md'),
+    '# Sources\n\n## 1. Audit\n\nRun `npm audit --json`.\n'
+  )
+  let brief = ''
+  await run_scout({
+    scout: 'realness',
+    source: 'audit',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-05',
+    spawn_pi: async text => {
+      brief = text
+    }
+  })
+  assert.match(brief, /This source names no page/)
+  assert.doesNotMatch(brief, /on each URL below/)
+  await rm(root, { recursive: true })
+})
+
+it('a run that writes an empty page is a problem, not a silent zero', async () => {
+  const root = await scratch()
+  const result = await run_scout({
+    scout: 'realness',
+    vault_dir: join(root, 'vault'),
+    person: '/+1',
+    date: '2026-11-05',
+    spawn_pi: async (_brief, run_dir) => {
+      await writeFile(
+        join(run_dir, 'finds.html'),
+        '<section itemscope itemtype="/finds"></section>\n'
+      )
+      return 0
+    }
+  })
+  assert.deepEqual(result.problems, [
+    { item: 0, problem: 'the run wrote an empty page' }
+  ])
+  await rm(root, { recursive: true })
+})
+
 it('a run that writes no finds is reported, and the page keeps what it had', async () => {
   const root = await scratch()
   await seed(root, 'https://example.com/old')
@@ -298,14 +365,10 @@ it('a run reads one source, and its row names it', async () => {
   assert.doesNotMatch(brief, /workatastartup/)
   assert.match(
     brief,
-    /Run `realness-read --site <site> --brief <url>` on each URL below[\s\S]*- https:\/\/vuejobs\.com\/jobs/,
+    /Run `realness-read --brief <url>` on each\s+page below[\s\S]*- https:\/\/vuejobs\.com\/jobs/,
     'the brief names the URL to read'
   )
-  assert.match(brief, /That is\s+your one read/)
-  assert.match(
-    brief,
-    /Opening a posting, a company page, or a search is a failed run/
-  )
+  assert.match(brief, /Read only the pages above\. Any other page ends the run/)
   const runs = read_items(
     await readFile(
       join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html'),
@@ -619,7 +682,7 @@ it('the brief carries the profile, the sources, the open nodes, and the leads to
   assert.match(brief, /example\.com\/old/)
   assert.match(brief, /c4: draft outreach/)
   assert.match(brief, /Projects\/Scouts\/Realness\/Runs\/\S+\/finds\.html/)
-  assert.match(brief, /That is\s+your one read/)
+  assert.match(brief, /This source names no page/)
   assert.match(brief, /Writing it ends the run/)
   await rm(root, { recursive: true })
 })

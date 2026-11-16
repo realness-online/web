@@ -22,7 +22,9 @@ import { run_scout } from '../src/scouts/run.js'
 import { STAGES_PAGE } from '../src/scouts/stages.js'
 import { gzipSync as gzip_sync } from 'node:zlib'
 import { find_scout, scout_pages } from '../src/scouts/scout.js'
-import { source_sections } from '../src/scouts/sources.js'
+import { reads_inside, source_sections } from '../src/scouts/sources.js'
+
+export { reads_inside }
 import { box_ready } from '../src/scouts/preflight.js'
 import { person } from '../src/harness/settings.js'
 import { readFileSync as read_file_sync } from 'node:fs'
@@ -70,45 +72,27 @@ const command_of = event =>
     .slice(0, SHOWN)
 
 /**
- * Whether a URL is one the source named, or a page under it. The site and the
- * path hold, so a run reads its own board and that board's pages; the query
- * does not, so a search API takes the words a run chooses. A URL written with a
- * `<...>` placeholder stands for every page it names.
- * @param {string} url
- * @param {string} allowed one source URL
+ * The ways a run fetches a page that the source list cannot refuse. A list, a
+ * note, or a saved log fetches none; `realness-read` refuses an outside page
+ * itself, so the run goes on.
  */
-export const reads_inside = (url, allowed) => {
-  const placeholder = allowed.indexOf('<')
-  const named = placeholder === -1 ? allowed : allowed.slice(0, placeholder)
-  let here
-  let there
-  try {
-    here = new URL(url)
-    there = new URL(named)
-  } catch {
-    return false
-  }
-  if (here.origin !== there.origin) return false
-  if (placeholder !== -1) return here.pathname.startsWith(there.pathname)
-  const path = there.pathname.replace(/\/+$/, '')
-  if (here.pathname === path) return true
-  return here.pathname.startsWith(`${path}/`)
-}
+const FETCHERS = /\b(web-md|curl|wget|agent-browser)\b/
 
 /**
- * The URL a command reads that the source never named, or '' when it keeps to
- * the source. A run reads its own pages and no other.
+ * The URL a fetching command reads that the source never named, or '' when it
+ * keeps to the source. A run reads its own pages and no other; it may list and
+ * grep what it already read.
  * @param {string} command
  * @param {string[]} allowed
  */
-export const read_outside = (command, allowed) => {
-  const urls = command.match(/https?:\/\/[^\s)'"`]+/g) ?? []
-  return (
-    urls
-      .map(url => url.replace(/[.,;:]+$/, ''))
-      .find(url => !allowed.some(one => reads_inside(url, one))) ?? ''
-  )
-}
+export const read_outside = (command, allowed) =>
+  command
+    .split(/\|\||&&|[|;\n]/)
+    .filter(part => FETCHERS.test(part))
+    .flatMap(part => part.match(/https?:\/\/[^\s)'"`\\]+/g) ?? [])
+    .map(url => url.replace(/[.,;:]+$/, ''))
+    .filter(url => URL.canParse(url))
+    .find(url => !allowed.some(one => reads_inside(url, one))) ?? ''
 
 /** How much of a command a step line shows. */
 const SHOWN = 120
@@ -172,7 +156,8 @@ export const local_pi =
           stdio: ['ignore', 'pipe', 'pipe'],
           env: {
             ...process.env,
-            PATH: `${resolve(dirname(file_url_to_path(import.meta.url)), 'bin')}:${process.env.PATH}`
+            PATH: `${resolve(dirname(file_url_to_path(import.meta.url)), 'bin')}:${process.env.PATH}`,
+            REALNESS_READ_ALLOWED: JSON.stringify(allowed)
           }
         }
       )
@@ -191,7 +176,10 @@ export const local_pi =
           return
         }
         if (event.type === 'tool_execution_start' && !ended) {
-          const outside = read_outside(command_of(event), allowed)
+          const outside = read_outside(
+            String(event.args?.command ?? ''),
+            allowed
+          )
           if (outside) {
             ended = {
               end: 'outside',

@@ -38,6 +38,46 @@ it('strangers are denied everything private', () => {
   assert.equal(can(stranger, 'list', 'people/'), false)
 })
 
+it('p3: anyone reads a plan in the vault, and nobody lists the folder', () => {
+  for (const who of [stranger, scott, other])
+    assert.equal(
+      can(who, 'get', `people/${A}/harness/vault/Projects/realness.md`),
+      true
+    )
+  assert.equal(
+    can(
+      stranger,
+      'get',
+      `people/${A}/harness/vault/Projects/realness-serve-plans/index.md`
+    ),
+    true
+  )
+  assert.equal(
+    can(stranger, 'list', `people/${A}/harness/vault/Projects/`),
+    false
+  )
+  assert.equal(
+    can(stranger, 'write', `people/${A}/harness/vault/Projects/a.md`),
+    false
+  )
+  assert.equal(
+    can(stranger, 'delete', `people/${A}/harness/vault/Projects/a.md`),
+    false
+  )
+  assert.equal(
+    can(stranger, 'get', `people/${A}/harness/vault/Projects`),
+    false
+  )
+  assert.equal(
+    can(stranger, 'get', `people/${A}/harness/vault/Areas/a.md`),
+    false
+  )
+  assert.equal(
+    can(stranger, 'get', `people/${A}/harness/vault/Sessions/a.html`),
+    false
+  )
+})
+
 it('unknown actions, subjects, and roots deny', () => {
   assert.equal(can(scott, 'read', `people/${A}/x`), false)
   assert.equal(can(scott, 'admin', `people/${A}/x`), false)

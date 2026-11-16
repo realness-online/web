@@ -4,10 +4,6 @@
     itemtype="https://schema.org/CollectionPage"
     aria-label="Artifacts">
     <header aria-label="Artifacts">
-      <hgroup>
-        <h1><router-link to="/">Realness</router-link></h1>
-        <p>Artifacts</p>
-      </hgroup>
       <nav aria-label="Related">
         <router-link to="/planning">Plans</router-link>
         <router-link to="/vault#">Vault</router-link>

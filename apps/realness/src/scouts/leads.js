@@ -92,16 +92,29 @@ const kept = lead => ({
  * so one bad record does not lose the run.
  * @param {string} html
  */
+const WHY_MIN_CHARS = 20
+
+/** A page with no leads says in a sentence why it has none. */
+const said_why = html =>
+  (/<body[^>]*>([\s\S]*?)<\/body>/i.exec(html)?.[1] ?? html)
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z#0-9]+;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim().length >= WHY_MIN_CHARS
+
 export const read_leads = html => {
   /** @type {Lead[]} */
   const leads = []
   /** @type {{ item: number, problem: string }[]} */
   const problems = []
-  read_items(html, 'find').forEach((value, index) => {
+  const items = read_items(html, 'find')
+  items.forEach((value, index) => {
     const problem = lead_problem(value)
     if (problem) problems.push({ item: index + 1, problem })
     else leads.push(kept(value))
   })
+  if (html.trim() && !items.length && !said_why(html))
+    problems.push({ item: 0, problem: 'the run wrote an empty page' })
   return { leads: highest_per_url(leads), problems }
 }
 

@@ -3,19 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@earendil-works/pi-coding-agent": "file:./tarballs/earendil-works-pi-coding-agent-1.5.0-9d70c9e98b7a.tgz"
+    "@earendil-works/pi-coding-agent": "file:./tarballs/earendil-works-pi-coding-agent-1.5.2-b6f23b1c48c0.tgz"
   },
   "overrides": {
-    "@earendil-works/chord": "file:./tarballs/earendil-works-chord-1.5.0-e632f45d5466.tgz",
-    "@earendil-works/pi-agent-core": "file:./tarballs/earendil-works-pi-agent-core-1.5.0-14e8fe8d78f8.tgz",
-    "@earendil-works/pi-ai": "file:./tarballs/earendil-works-pi-ai-1.5.0-817480745c93.tgz",
-    "@earendil-works/pi-codemode": "file:./tarballs/earendil-works-pi-codemode-1.5.0-3cb049675ec0.tgz",
-    "@earendil-works/pi-coding-agent": "file:./tarballs/earendil-works-pi-coding-agent-1.5.0-9d70c9e98b7a.tgz",
-    "@earendil-works/pi-durable": "file:./tarballs/earendil-works-pi-durable-1.5.0-c5e04fdaf228.tgz",
-    "@earendil-works/pi-env": "file:./tarballs/earendil-works-pi-env-1.5.0-2fe1fc7104a3.tgz",
-    "@earendil-works/pi-mcp": "file:./tarballs/earendil-works-pi-mcp-1.5.0-0d4470dc8c07.tgz",
-    "@earendil-works/pi-schema": "file:./tarballs/earendil-works-pi-schema-1.5.0-456d0c6d3dad.tgz",
-    "@earendil-works/pi-telemetry": "file:./tarballs/earendil-works-pi-telemetry-1.5.0-556ded715767.tgz",
-    "@earendil-works/pi-tui": "file:./tarballs/earendil-works-pi-tui-1.5.0-e7a2aaac355e.tgz"
+    "@earendil-works/chord": "file:./tarballs/earendil-works-chord-1.5.2-ba04ff65854e.tgz",
+    "@earendil-works/pi-agent-core": "file:./tarballs/earendil-works-pi-agent-core-1.5.2-ae1ffb2b628f.tgz",
+    "@earendil-works/pi-ai": "file:./tarballs/earendil-works-pi-ai-1.5.2-10936455c64c.tgz",
+    "@earendil-works/pi-codemode": "file:./tarballs/earendil-works-pi-codemode-1.5.2-ac81bf4f4f01.tgz",
+    "@earendil-works/pi-coding-agent": "file:./tarballs/earendil-works-pi-coding-agent-1.5.2-b6f23b1c48c0.tgz",
+    "@earendil-works/pi-durable": "file:./tarballs/earendil-works-pi-durable-1.5.2-915648ed07c4.tgz",
+    "@earendil-works/pi-env": "file:./tarballs/earendil-works-pi-env-1.5.2-de14969176ca.tgz",
+    "@earendil-works/pi-mcp": "file:./tarballs/earendil-works-pi-mcp-1.5.2-eabe928c8829.tgz",
+    "@earendil-works/pi-schema": "file:./tarballs/earendil-works-pi-schema-1.5.2-5f351297ff74.tgz",
+    "@earendil-works/pi-telemetry": "file:./tarballs/earendil-works-pi-telemetry-1.5.2-0d29dbee830c.tgz",
+    "@earendil-works/pi-tui": "file:./tarballs/earendil-works-pi-tui-1.5.2-2fdd7609ee61.tgz"
   }
 }

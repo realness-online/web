@@ -93,6 +93,8 @@ code.
 
 - Confirm requirements before writing code; pause multi-step work until asked.
 - Use the scripts each project defines, such as `npm run check` and `npm test`.
+- Use `codemode` for three or more tool calls, calls that feed each other, or
+  output to filter. Use a single tool call for one step.
 - Write unit tests that fit the feature touched.
 - `console.log` while debugging is fine; strip it before commit.
 - Commit messages carry no agent credit. Claude Code and Cursor append

@@ -38,6 +38,7 @@ it('reads a plan: title, area, diagram, and node states', () => {
     path: 'Projects/realness-hosting.md',
     title: 'Hosting',
     area: 'Realness',
+    scout: false,
     diagram:
       'flowchart LR\n  h1["h1 one"] --> h2["h2 two"]\n  class h1 active;\n  class h2 blocked;\n',
     nodes: { open: 1, done: 1, active: ['h1'], blocked: ['h2'] }
@@ -47,6 +48,11 @@ it('reads a plan: title, area, diagram, and node states', () => {
 it('names a folder plan by its folder and skips notes that are not plans', () => {
   const folder = plan_summary('Projects/realness-leads/index.md', PLAN)
   assert.equal(folder?.area, 'Realness')
+  assert.equal(folder?.scout, false)
+  assert.equal(
+    plan_summary('Projects/realness-leads/index.md', PLAN, true)?.scout,
+    true
+  )
   assert.equal(plan_summary('Projects/notes.md', '# Not a plan\n'), null)
   assert.equal(plan_summary('Areas/Blog/post.md', PLAN), null)
   assert.equal(plan_summary('Projects/deep/inner/index.md', PLAN), null)

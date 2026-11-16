@@ -250,7 +250,16 @@ export const vault_door = ({ dir, index, owner, artifacts }) => {
         return db
           .prepare("SELECT path, text FROM note WHERE path LIKE 'Projects/%'")
           .all()
-          .map(row => plan_summary(String(row.path), String(row.text)))
+          .map(row => {
+            const path = String(row.path)
+            const folder = path.split('/')[1] ?? ''
+            const scout = Boolean(
+              dir &&
+              path.endsWith('/index.md') &&
+              exists_sync(join(dir, 'Projects', folder, 'scout.html'))
+            )
+            return plan_summary(path, String(row.text), scout)
+          })
           .filter(plan => plan !== null)
           .sort((a, b) => a.title.localeCompare(b.title))
       } finally {

@@ -21,6 +21,7 @@ import { chat_handlers } from './chat.js'
 import { startup_handlers } from './startup.js'
 import * as vsock from './vsock.js'
 import { HTTP } from '#root/lib/http.js'
+import { halo_code } from '#root/lib/code-stamp.js'
 
 const BASE64_BLOCK = 4
 const MAX_PATHS = 100
@@ -159,8 +160,10 @@ const health = store => {
   return {
     ok: true,
     runtime: store.runtime,
+    code: halo_code(),
     seed: {
       built: seed.built,
+      code: seed.code ?? null,
       matches: seed.matches,
       mismatches: seed.mismatches,
       machine_id: seed.record?.machine_id ?? null,

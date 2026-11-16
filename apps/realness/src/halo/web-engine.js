@@ -225,8 +225,12 @@ const title_of = html =>
     .replace(/\s+/g, ' ')
     .trim()
 
+/** A feed or an API answers JSON; its body is the page. */
+const json_type = type => /(?:^|\/|\+)json/i.test(type)
+
 const static_shortfall = reply => {
   if (reply.status >= HTTP.BAD_REQUEST) return `HTTP ${reply.status}`
+  if (json_type(reply.type)) return reply.body.trim() ? null : 'empty'
   if (!/html|xml|text\/plain/i.test(reply.type)) return 'not html'
   return shortfall(reply.body)
 }
@@ -795,7 +799,10 @@ export class WebEngine {
         if (GONE.has(reply.status)) gone = reply.status
         const why = static_shortfall(reply)
         attempts.push({ method: 'static', outcome: why ?? 'ok' })
-        if (!why) got = html_read('static', reply.body)
+        if (!why)
+          got = json_type(reply.type)
+            ? { method: 'static', kind: 'json', body: reply.body, title: '' }
+            : html_read('static', reply.body)
       } catch (error) {
         attempts.push({ method: 'static', outcome: error.message })
         if (/private address|credentials|only http/.test(error.message))

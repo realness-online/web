@@ -289,8 +289,7 @@
     <working-border :active="status === 'working'" />
     <key-panel />
   </teleport>
-  <router-view v-if="route.meta.note" />
-  <support-layout v-else />
+  <support-layout />
   <sync @active="on_active" @refreshed="on_sync_refreshed" />
   <footer
     v-if="!route.meta.session && !route.meta.note"

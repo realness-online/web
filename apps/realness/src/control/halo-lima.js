@@ -25,6 +25,8 @@ import { store_of } from '#root/src/can/store.js'
 import { local_person } from '#root/src/harness/settings.js'
 import { out_path } from '#root/src/settings/output.js'
 import { local_runtime, runtime_matches } from './local-runtime.js'
+import { actor_code, same_code } from '#root/lib/code-stamp.js'
+import { build } from './dev.js'
 
 /**
  * Everything dev-stack.sh leaves in the VM: the halo, its sync and port
@@ -149,12 +151,30 @@ export const down = async (
   return { stopped: true, deleted: mode === 'delete' }
 }
 
-export const restart = async (lima, config, name) => {
+/**
+ * Whether the image actors start from holds older harness code than this Mac.
+ * A halo that reports no image label counts as old.
+ * @param {{ seed?: { code?: string | null } } | null} health
+ * @param {string} mac the Mac's actor label
+ */
+export const image_stale = (health, mac) =>
+  !same_code(health?.seed?.code ?? null, mac)
+
+export const restart = async (
+  lima,
+  config,
+  name,
+  { label = actor_code } = {}
+) => {
   const health = await probeHealth(config.api)
   if (health?.actors?.running)
     throw new Error(
       `${health.actors.running} actor(s) running; stop them before restarting the local halo`
     )
+  if (image_stale(health, label())) {
+    step('the image holds old actor code; rebuilding it')
+    await build(lima)
+  }
   await down(lima, config, name)
   await register(lima, config)
   return serve(lima, config, name)

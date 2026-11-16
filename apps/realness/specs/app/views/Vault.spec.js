@@ -17,7 +17,8 @@ vi.mock('@/utils/serverless', async () => {
 })
 
 vi.mock('@/utils/markdown', () => ({
-  markdown_html: text => (text.startsWith('<') ? text : `<h1>${text}</h1>`)
+  markdown_html: text => (text.startsWith('<') ? text : `<h1>${text}</h1>`),
+  highlight_code: async html => html
 }))
 
 import Vault from '@/views/Vault.vue'
@@ -62,6 +63,19 @@ const at_page = () =>
   mount(Vault, { global: { stubs: { 'router-link': router_link_stub } } })
 
 describe('@/views/Vault', () => {
+  it('stays in the app for a plan that also has a published copy', async () => {
+    const replace = vi.fn()
+    vi.stubGlobal('location', {
+      hash: '#/+16282281824/plans/1785887078791',
+      replace
+    })
+    respond()
+    const page = at_page()
+    await flush_promises()
+    expect(replace).not.toHaveBeenCalled()
+    expect(page.get('section[itemprop="articleBody"] h1').text()).toBe('Plan')
+  })
+
   it('opens an itemid link through the route that asks can', async () => {
     await signed_in()
     at('#/+16282281824/plans/1785887078791')
@@ -72,8 +86,6 @@ describe('@/views/Vault', () => {
       '/v1/vault/item?itemid=%2F%2B16282281824%2Fplans%2F1785887078791',
       { headers: { authorization: 'Bearer token' } }
     )
-    expect(page.get('header h1').text()).toBe('Realness')
-    expect(page.get('header p').text()).toBe('Vault')
     expect(page.get('section[itemprop="articleBody"] h1').text()).toBe('Plan')
   })
 
@@ -86,13 +98,16 @@ describe('@/views/Vault', () => {
     expect(page.get('p[role="status"]').text()).toBe('That note is not here.')
   })
 
-  it('asks the owner to sign in for an itemid link', async () => {
+  it('opens a plan link for a stranger, who sends no token', async () => {
     at('#/+16282281824/plans/1785887078791')
     const fetch = respond()
     const page = mount(Vault)
     await flush_promises()
-    expect(page.text()).toContain('Sign in to open this link.')
-    expect(fetch).not.toHaveBeenCalled()
+    expect(fetch).toHaveBeenCalledWith(
+      '/v1/vault/item?itemid=%2F%2B16282281824%2Fplans%2F1785887078791',
+      { headers: {} }
+    )
+    expect(page.get('section[itemprop="articleBody"] h1').text()).toBe('Plan')
   })
 
   it('names a missing note instead of failing', async () => {
@@ -134,7 +149,7 @@ describe('@/views/Vault', () => {
     })
     const page = at_page()
     await flush_promises()
-    const nav = page.get('nav[aria-label="Related"]')
+    const nav = page.get('article nav[aria-label="Related"]')
     const links = nav.findAll('a')
     expect(links.map(link => link.text())).toEqual(['Hosting', 'Away'])
     expect(links[1].attributes('href')).toBe('../../work/away.md')

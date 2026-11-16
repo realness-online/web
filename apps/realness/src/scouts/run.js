@@ -18,7 +18,12 @@ import { with_lock } from './lock.js'
 import { load_runs, run_item, save_runs, with_run } from './runs.js'
 import { STAGES_PAGE, pi_stages, read_stages } from './stages.js'
 import { scout_pages, find_scout } from './scout.js'
-import { find_source, source_sections, source_urls } from './sources.js'
+import {
+  find_source,
+  source_problem,
+  source_sections,
+  source_urls
+} from './sources.js'
 import { scout_prompt } from './prompt.js'
 import { scout_nodes } from './nodes.js'
 import { dead_source } from './source.js'
@@ -104,9 +109,12 @@ export const run_scout = async ({
         join(scout_vault, 'Sources.md'),
         'the sources'
       )
-      const one = source
-        ? find_source(source_sections(sources_doc), source)
-        : null
+      const sections = source_sections(sources_doc)
+      const one = source ? find_source(sections, source) : null
+      const undecided = (one ? [one] : sections).find(page =>
+        source_problem(page)
+      )
+      if (undecided) throw new Error(source_problem(undecided))
       const sources = one ? one.text : sources_doc
       const page_path = finds_path(scout_vault)
       const seen = (await load_finds(page_path)).map(find => find.url)

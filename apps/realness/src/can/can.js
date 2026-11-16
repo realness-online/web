@@ -55,6 +55,20 @@ const subject = who => {
   return {}
 }
 
+/** Plans are public: an admin reveals them, as the published plans site does. */
+const PLANS_FOLDER = ['harness', 'vault', 'Projects']
+
+/**
+ * A path under the person's vault plans folder. Reads only, and the folder
+ * itself is never listed.
+ * @param {string} action
+ * @param {string[]} rest the path below `people/+A/`
+ */
+const is_plan = (action, rest) =>
+  action === 'get' &&
+  rest.length > PLANS_FOLDER.length &&
+  PLANS_FOLDER.every((part, at) => rest[at] === part)
+
 /** Anyone, signed in or not, may read this. */
 const is_public = (action, [first, ...inside]) => {
   if (action === 'list') return PUBLIC_FOLDERS.has(first)
@@ -134,6 +148,7 @@ const people_allowed = (action, owner, rest, me, grants) => {
   if (PERSONAL_FOLDERS.has(rest[0])) return false
   if (me.phone === owner) return true
   if (is_public(action, rest)) return true
+  if (is_plan(action, rest)) return true
   if (me.owner !== owner) return false
   return granted(action, owner, ['people', owner, ...rest], me, grants)
 }

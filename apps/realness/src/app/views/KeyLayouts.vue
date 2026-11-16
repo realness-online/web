@@ -4,10 +4,6 @@
     itemtype="https://schema.org/WebPage"
     aria-label="Key layouts">
     <header aria-label="Key layouts">
-      <hgroup>
-        <h1><router-link to="/">Realness</router-link></h1>
-        <p>Keys</p>
-      </hgroup>
       <nav aria-label="Related">
         <router-link to="/planning">Plans</router-link>
         <router-link to="/planning/tools">Tools</router-link>

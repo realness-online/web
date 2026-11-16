@@ -93,6 +93,7 @@ export const HOME_FOLDERS = ['apps', 'artifacts', 'vault', 'work']
 /** The starter's identity, written last so it never hashes itself. */
 export { STARTER_FILE as STARTER } from '#root/src/files/starter.js'
 import { STARTER_FILE as STARTER } from '#root/src/files/starter.js'
+import { actor_code } from '#root/lib/code-stamp.js'
 
 /**
  * Scratch from a test run inside .pi; it is never part of the harness.
@@ -242,6 +243,7 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
   rm_sync(stage, { recursive: true, force: true })
   mkdir_sync(stage, { recursive: true })
   write_file_sync(join(stage, '.pi-version'), `${pi_version}\n`)
+  write_file_sync(join(stage, '.code-stamp'), `${actor_code(root)}\n`)
   for (const path of INCLUDE)
     if (exists_sync(join(root, path)))
       copy(join(root, path), join(stage, path), root)

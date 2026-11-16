@@ -17,19 +17,26 @@ const sleep = ms =>
     setTimeout(done, ms)
   })
 
+/**
+ * Where a Chrome's DevTools answer: `host:port` as given, or a bare host on
+ * the default port.
+ * @param {string} address
+ */
+export const devtools_at = address =>
+  /:\d+$/.test(address) ? address : `${address}:${DEVTOOLS_PORT}`
+
 const devtools = async (address, seconds = 5) => {
   const deadline = Date.now() + seconds * MS_PER_SECOND
   for (;;) {
     try {
-      const reply = await fetch(
-        `http://${address}:${DEVTOOLS_PORT}/json/version`,
-        { signal: AbortSignal.timeout(MS_PER_SECOND) }
-      )
+      const reply = await fetch(`http://${devtools_at(address)}/json/version`, {
+        signal: AbortSignal.timeout(MS_PER_SECOND)
+      })
       if (reply.ok) return await reply.json()
     } catch {}
     if (Date.now() > deadline)
       throw new Error(
-        `no DevTools on ${address}:${DEVTOOLS_PORT} after ${seconds}s`
+        `no DevTools on ${devtools_at(address)} after ${seconds}s`
       )
     await sleep(POLL_MS)
   }

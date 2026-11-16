@@ -31,6 +31,7 @@ const port = Number(
   process.argv.find(one => one.startsWith('--remote-debugging-port=')).split('=')[1]
 )
 const dir = process.argv[2]
+require('node:fs').writeFileSync(join(dir, 'tmpdir'), process.env.TMPDIR ?? '')
 const server = createServer((request, reply) => {
   reply.setHeader('content-type', 'application/json')
   reply.end(JSON.stringify({ webSocketDebuggerUrl: \`ws://127.0.0.1:\${port}/\` }))
@@ -265,4 +266,20 @@ it('a return takes no site', async t => {
   assert.equal(run.code, 1)
   assert.match(run.err, /usage: realness chrome \[lease \[site\]\|return\]/)
   assert.deepEqual(fake.asked, [])
+})
+
+it('a lease gives Chrome a writable temp folder of its own', async t => {
+  const fake = await door({})
+  t.after(fake.close)
+  const dir = mkdtempSync(out_path('chrome-tmp-'))
+  t.after(() => {
+    stop_lease(dir)
+    rmSync(dir, { recursive: true, force: true })
+  })
+  shell_for(dir)
+  const run = await chrome([], fake, dir)
+  assert.equal(run.code, 0, run.err)
+  const temp = readFileSync(join(dir, 'tmpdir'), 'utf8')
+  assert.ok(temp.startsWith(dir), `TMPDIR was '${temp}'`)
+  assert.ok(existsSync(temp), 'the temp folder does not exist')
 })

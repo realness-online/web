@@ -1,10 +1,6 @@
 <template>
   <article itemscope itemtype="https://schema.org/Dataset" aria-label="Ways in">
     <header aria-label="Ways in">
-      <hgroup>
-        <h1><router-link to="/">Realness</router-link></h1>
-        <p>Ways in</p>
-      </hgroup>
       <nav aria-label="Related">
         <router-link to="/planning">Plans</router-link>
         <router-link to="/planning/maps/modules">Modules</router-link>
@@ -284,43 +280,6 @@
       align-items: baseline;
       justify-content: space-between;
       padding-block: calc(var(--base-line) * 0.5);
-
-      hgroup {
-        display: flex;
-        align-items: baseline;
-        gap: calc(var(--base-line) * 0.5);
-      }
-
-      h1 {
-        margin: 0;
-        font-size: 1rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-
-        a {
-          color: var(--text);
-          text-decoration: none;
-        }
-      }
-
-      p {
-        margin: 0;
-        color: var(--muted-text);
-        font-size: 0.75rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-      }
-
-      nav {
-        display: flex;
-        gap: calc(var(--base-line) * 0.5);
-        font-size: 0.75rem;
-
-        a {
-          color: var(--accent);
-          text-decoration: none;
-        }
-      }
     }
 
     > p[role='status'] {

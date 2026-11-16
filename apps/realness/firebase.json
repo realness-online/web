@@ -20,6 +20,11 @@
           "source": "/privacy",
           "destination": "/terms#privacy-policy",
           "type": 301
+        },
+        {
+          "source": "/pricing",
+          "destination": "/pricing/endorse",
+          "type": 301
         }
       ],
       "rewrites": [
@@ -82,6 +87,15 @@
             {
               "key": "Cache-Control",
               "value": "no-cache"
+            }
+          ]
+        },
+        {
+          "source": "/documentation.md",
+          "headers": [
+            {
+              "key": "Link",
+              "value": "<https://realness.online/docs>; rel=\"canonical\""
             }
           ]
         },

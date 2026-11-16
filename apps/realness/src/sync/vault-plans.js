@@ -19,7 +19,7 @@ const AREAS = {
 const PLAN_PATH = /^Projects\/(?:[^/]+\.md|[^/]+\/index\.md)$/
 
 /**
- * @typedef {{ itemid: string, path: string, title: string, area: string, diagram: string | null, nodes: { open: number, done: number, active: string[], blocked: string[] } }} PlanSummary
+ * @typedef {{ itemid: string, path: string, title: string, area: string, scout: boolean, diagram: string | null, nodes: { open: number, done: number, active: string[], blocked: string[] } }} PlanSummary
  */
 
 /**
@@ -53,9 +53,10 @@ const in_state = (diagram, state) =>
  * One plan's summary, or null when the note is not a plan.
  * @param {string} path vault path
  * @param {string} raw the note's whole text
+ * @param {boolean} [scout] whether a `scout.html` sits beside the plan
  * @returns {PlanSummary | null}
  */
-export const plan_summary = (path, raw) => {
+export const plan_summary = (path, raw, scout = false) => {
   if (!PLAN_PATH.test(path)) return null
   const { data, body } = read_frontmatter(raw)
   const itemid = data.itemid ? String(data.itemid) : ''
@@ -75,6 +76,7 @@ export const plan_summary = (path, raw) => {
     path,
     title: /^# (.+)$/m.exec(body)?.[1].trim() ?? path,
     area: area_of(path),
+    scout,
     diagram,
     nodes: {
       open: rows.length - done,

@@ -1,5 +1,6 @@
 section[itemprop='content'],
-[itemtype$='/Message'] > section[itemprop='text'] {
+[itemtype$='/Message'] > section[itemprop='text'],
+section[itemprop='articleBody'] {
   min-width: 0;
   max-width: 100%;
   user-select: text;
@@ -124,5 +125,101 @@ section[itemprop='content'],
     &:hover {
       color: var(--emphasis);
     }
+  }
+}
+
+section[itemprop='articleBody'] pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+
+  span {
+    color: var(--shiki-light);
+  }
+}
+
+strong,
+b {
+  font-weight: 800;
+  color: var(--emphasis);
+}
+
+section[itemprop='articleBody'] > details:not(:has(figure)) {
+  > summary {
+    display: flex;
+    gap: var(--base-line);
+    align-items: baseline;
+    cursor: pointer;
+
+    &::before {
+      content: '▸';
+      transition: rotate 0.15s;
+    }
+
+    & span {
+      margin-inline-start: auto;
+      opacity: 0.6;
+    }
+
+    & time {
+      opacity: 0.6;
+    }
+  }
+
+  &[open] > summary::before {
+    rotate: 90deg;
+  }
+
+  & h4 {
+    display: flex;
+    gap: var(--base-line);
+    align-items: baseline;
+
+    & span {
+      opacity: 0.6;
+    }
+  }
+
+  & table {
+    inline-size: 100%;
+    margin-inline: 0;
+  }
+
+  & tr {
+    display: grid;
+    grid-template-columns: 2ch 1fr;
+    column-gap: var(--base-line);
+    border-block-end: 1px solid var(--rule);
+  }
+
+  & thead {
+    display: none;
+  }
+
+  & th,
+  & td {
+    border: 0;
+    padding-block-start: calc(var(--base-line) * 0.25);
+    padding-block-end: calc(var(--base-line) * 0.5);
+    font-size: 0.875em;
+    line-height: 1.6;
+  }
+
+  & tr > :last-child {
+    grid-column: 2;
+  }
+
+  & td:first-child {
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+
+  & tbody + tbody {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  section[itemprop='articleBody'] pre span {
+    color: var(--shiki-dark);
   }
 }

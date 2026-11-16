@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Pricing shows up in search** - Each tier, Endorse, Teams, and
+  Enterprise, is its own page that Google can index, and `/pricing` sends
+  search engines to Endorse.
+- **Docs is the one copy search sees** - `documentation.md` points search
+  engines to `/docs` and leaves the sitemap.
+- **Search can follow the home page and Privacy links** - robots.txt lets
+  Google read `/?from=...` links and the `/privacy` redirect.
 - **A parked VM leaves the watch within a minute** - The watch reads machine
   and disk state every minute and service health every five, while the paid
   billing export stays on its hourly read.

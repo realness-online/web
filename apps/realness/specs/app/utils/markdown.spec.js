@@ -4,6 +4,7 @@ import {
   documentation_html_parts,
   inline_documentation_icons,
   markdown_html,
+  highlight_code,
   changelog_html,
   strip_changelog_unreleased,
   INSTALL_GUIDE_MARKER,
@@ -92,5 +93,15 @@ describe('markdown', () => {
     expect(parts.after).not.toContain('id="a-realness-of-your-own"')
     expect(parts.realness).toContain('id="a-realness-of-your-own"')
     expect(parts.realness).toContain('Deploy your own.')
+  })
+
+  it('colors a fenced code block and leaves mermaid as text', async () => {
+    const html = markdown_html(
+      '```js\nconst a = 1\n```\n\n```mermaid\nflowchart LR\n```'
+    )
+    const drawn = await highlight_code(html)
+    expect(drawn).toContain('<pre class="shiki')
+    expect(drawn).toContain('--shiki-light')
+    expect(drawn).toContain('<pre><code class="language-mermaid">')
   })
 })

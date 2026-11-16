@@ -1,11 +1,13 @@
 User-agent: *
 Disallow: /
 Allow: /$
+Allow: /?
 Allow: /about
 Allow: /docs
 Allow: /pricing
 Allow: /license
 Allow: /terms
+Allow: /privacy
 Allow: /prints
 Allow: /llms.txt
 Allow: /documentation.md

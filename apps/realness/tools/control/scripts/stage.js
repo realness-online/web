@@ -10,6 +10,7 @@ import {
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { RELEASE_FILE, stamp_of } from '#root/lib/release.js'
+import { halo_code } from '#root/lib/code-stamp.js'
 import { out_root } from '#root/src/settings/output.js'
 import {
   actor_folders,
@@ -80,6 +81,7 @@ CMD ["node", "server/${service}/bin/${service}-service.js"${args}]
  * @param {string} stage
  */
 export const stage_halo = stage => {
+  write_file_sync(join(stage, '.code-stamp'), `${halo_code()}\n`)
   for (const file of halo_files) {
     mkdir_sync(join(stage, dirname(file)), { recursive: true })
     copy_file_sync(join(root, file), join(stage, file))

@@ -2,28 +2,15 @@ import {
   createWebHistory as create_web_history,
   createRouter as create_router
 } from 'vue-router'
-import { watch } from 'vue'
 import { current_user, me } from '@/utils/serverless'
 import { valid_name } from '@/utils/valid-name'
 import Thoughts from '@/views/Thoughts'
 import { after_sign_on } from '@/utils/after-sign-on'
 import { cli_request } from '@/utils/cli-hand-off'
+import { settled_user } from '@/utils/settled-user'
 
 /** Signed in and named: nothing left for the sign-on page to do. */
 const signed_on = () => !!current_user.value && valid_name(me.value?.name)
-
-/** The signed-in user once Firebase has restored the session; null if none.
-    A page load starts at undefined, which means not known yet. */
-const settled_user = () => {
-  if (current_user.value !== undefined) return current_user.value
-  return new Promise(resolve => {
-    const stop = watch(current_user, user => {
-      if (user === undefined) return
-      stop()
-      resolve(user)
-    })
-  })
-}
 
 /** Signed out: sign on first, then come back. */
 const signed_in_first = async to =>
@@ -119,10 +106,15 @@ const routes = [
     beforeEnter: signed_in_first
   },
   {
-    path: '/planning',
-    component: () => import('@/views/Planning'),
+    path: '/blog/:slug',
+    component: () => import('@/views/Article'),
     meta: { note: true },
     beforeEnter: signed_in_first
+  },
+  {
+    path: '/planning',
+    component: () => import('@/views/Planning'),
+    meta: { note: true }
   },
   {
     path: '/vault',

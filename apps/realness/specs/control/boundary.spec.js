@@ -61,7 +61,7 @@ it('the halo does not know the control plane exists', async () => {
     for (const line of source.split('\n')) {
       const code = line.trim()
       if (/^(\*|\/\/|#)/.test(code)) continue
-      if (/\bcontrol\/|\bnode_modules\b|\bnpm\b|\brequire\(/.test(code))
+      if (/\bcontrol\/|\bnode_modules\b|(?<!\.)\bnpm\b|\brequire\(/.test(code))
         offences.push(`${relative(root, path)}: ${code}`)
     }
   }

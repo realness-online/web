@@ -1056,7 +1056,8 @@ export const sync_service = ({
     if (path.startsWith('v1/vault/') && method === 'GET') {
       const who = await who_is(request)
       if (!vault) throw new Status(HTTP.NOT_FOUND)
-      if (!vault.allows(who)) throw new Status(HTTP.NOT_FOUND)
+      const public_plans = path === 'v1/vault/plans'
+      if (!public_plans && !vault.allows(who)) throw new Status(HTTP.NOT_FOUND)
       if (path === 'v1/vault/events') {
         events.listen(response)
         return who

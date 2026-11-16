@@ -64,6 +64,7 @@
       @toggle="more_open = $event.target.open">
       <summary aria-label="More">...</summary>
       <menu>
+        <router-link to="/planning" replace>Planning</router-link>
         <router-link
           to="/pricing"
           replace

@@ -2,9 +2,7 @@
   import SiteNav from '@/components/site-nav'
   import AsWorkspace from '@/components/chat/as-workspace.vue'
   import { use_home_view } from '@/use/home-view'
-  import { useRoute as use_route } from 'vue-router'
   import { onMounted as mounted, onUnmounted as unmounted, watch } from 'vue'
-  const route = use_route()
   const { shows } = use_home_view()
   const mark_hidden = () =>
     document.documentElement.toggleAttribute(
@@ -23,7 +21,7 @@
     aria-label="Current page"
     tabindex="-1"
     :inert="!shows.thoughts || undefined">
-    <site-nav v-if="route.meta.support" />
+    <site-nav />
     <router-view />
   </section>
   <as-workspace />

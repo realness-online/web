@@ -71,6 +71,17 @@ The CLI guide covers screenshot workflows. This workspace limits them:
 
 Write screenshots under `artifacts/<project>`, never beside the code.
 
+## Token budget
+
+Each tool call and each snapshot costs tokens. Spend them once.
+
+- Batch known steps in one call, and end with one `eval` that prints only
+  the answer:
+  `agent-browser batch --bail "open <url>" "fill @e2 <text>" "click @e3" "eval <js>"`
+- Scope a snapshot: `snapshot -i -c`, add `-s <selector>` for one region.
+- After the first snapshot, use `snapshot --delta` to get only the changes.
+- Snapshot only when the next step needs refs you do not have.
+
 ## Observability Dashboard
 
 The dashboard runs independently of browser sessions on port 4848 and can also be opened through a proxied or forwarded URL such as `https://dashboard.agent-browser.localhost`. Agents should stay on the dashboard origin: session tabs, status, and stream traffic are proxied internally, so session ports do not need to be exposed.

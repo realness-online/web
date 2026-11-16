@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { it } from 'node:test'
 import {
   find_source,
+  source_problem,
   source_sections,
   source_urls
 } from '#root/src/scouts/sources.js'
@@ -67,6 +68,33 @@ it('a section names its URLs once, in order, without trailing punctuation', () =
     source_urls('see https://a.test/x, https://b.test/y. and https://a.test/x'),
     ['https://a.test/x', 'https://b.test/y']
   )
+})
+
+it('a source is ready when it names its pages, its command, or the vault', () => {
+  const ready = [
+    '## 1. Board\n\nhttps://a.test/jobs\n',
+    '## 2. Audit\n\nRun `npm audit --json` in `apps/realness`.\n',
+    '## 3. Known\n\n`Realness/Companies/` lists what was tried.\n',
+    '## 4. Board\n\n    realness-read --site yc https://a.test/\n'
+  ]
+  for (const text of ready)
+    assert.equal(source_problem(source_sections(text)[0]), '')
+})
+
+it('a source still being decided is refused, and says which one and why', () => {
+  const cases = [
+    [
+      '## 1. Words\n\nRead things.\n',
+      /Words names no page, command, or vault path/
+    ],
+    ['## 2. Empty\n', /Empty says nothing to read/],
+    [
+      '## 3. Feeds\n\n- `.../rss/search?q=one`\n',
+      /Feeds leaves a URL half-written/
+    ]
+  ]
+  for (const [text, expected] of cases)
+    assert.match(source_problem(source_sections(text)[0]), expected)
 })
 
 it('a Sources page with no sections is one unnamed source', () => {

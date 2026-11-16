@@ -1,10 +1,5 @@
 <template>
-  <header aria-label="Vault">
-    <hgroup>
-      <h1><router-link to="/">Realness</router-link></h1>
-      <p>Vault</p>
-    </hgroup>
-  </header>
+  <header aria-label="Vault"></header>
   <p v-if="error" role="status">{{ error }}</p>
   <p v-else-if="loading" role="status">Loading</p>
   <NoteArticle
@@ -18,14 +13,13 @@
   import {
     onMounted as on_mounted,
     onUnmounted as on_unmounted,
-    ref,
-    watch
+    ref
   } from 'vue'
   import NoteArticle from '@/components/note/as-article.vue'
-  import { current_user } from '@/utils/serverless'
-  import { markdown_html } from '@/utils/markdown'
-  import { published_url } from '@/utils/published-url'
+  import { settled_token } from '@/utils/settled-user'
+  import { highlight_code, markdown_html } from '@/utils/markdown'
   import { watch_vault } from '@/utils/vault-events'
+  import '@/style/mermaid.css'
   import '#root/tools/publish/renderer/static/scripts/diagrams.css'
 
   const NOT_FOUND = 404
@@ -35,18 +29,6 @@
   const note_path = ref('')
   const error = ref('')
   const loading = ref(false)
-
-  const settled_user = () => {
-    if (current_user.value !== undefined)
-      return Promise.resolve(current_user.value)
-    return new Promise(resolve => {
-      const stop = watch(current_user, user => {
-        if (user === undefined) return
-        stop()
-        resolve(user)
-      })
-    })
-  }
 
   const value_of_hash = () => {
     try {
@@ -69,14 +51,9 @@
       error.value = 'That note is not here.'
       return
     }
-    const user = await settled_user()
-    if (!user) {
-      error.value = 'Sign in to open this link.'
-      return
-    }
     loading.value = true
     try {
-      const token = (await current_user.value?.getIdToken()) ?? null
+      const token = await settled_token()
       const response = await fetch(
         `/v1/vault/item?itemid=${encodeURIComponent(value)}`,
         {
@@ -92,13 +69,8 @@
         return
       }
       const note = await response.json()
-      const published = await published_url(note.itemid)
-      if (published) {
-        location.replace(published)
-        return
-      }
       note_path.value = note.path
-      html.value = markdown_html(note.text)
+      html.value = await highlight_code(markdown_html(note.text))
       related.value = Array.isArray(note.related) ? note.related : []
       links.value = note.links ?? {}
     } finally {
@@ -106,7 +78,7 @@
     }
   }
 
-  const token_for = async () => (await current_user.value?.getIdToken()) ?? null
+  const token_for = settled_token
 
   let stop_watching = () => {}
 
@@ -136,32 +108,6 @@
     padding: calc(var(--base-line) * 0.5) var(--base-line);
     background: var(--surface);
 
-    hgroup {
-      display: flex;
-      align-items: baseline;
-      gap: calc(var(--base-line) * 0.5);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-
-      a {
-        color: var(--text);
-        text-decoration: none;
-      }
-    }
-
-    p {
-      margin: 0;
-      color: var(--muted-text);
-      font-size: 0.75rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
     ~ p[role='status'] {
       padding-block: calc(var(--base-line) * 3);
       text-align: center;
@@ -172,22 +118,6 @@
     max-inline-size: 72rem;
     margin-inline: auto;
     padding-inline: var(--base-line);
-
-    > nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: calc(var(--base-line) * 0.5);
-      font-size: 0.75rem;
-
-      a {
-        color: var(--accent);
-        text-decoration: none;
-
-        &:hover {
-          color: var(--emphasis);
-        }
-      }
-    }
 
     > section {
       display: grid;

@@ -1,20 +1,20 @@
 {
-  "version": "1.5.0",
-  "source_commit": "b36be911294bd7d638f5f0d5bb6fe7c78bc4b5ff",
+  "version": "1.5.2",
+  "source_commit": "9725f1326d5055b9db458724b57a42846ab33277",
   "source_dirty": false,
-  "upstream_tag": "v1.5.0",
-  "upstream_commit": "f9a26365568127461c47a07a37dcb42c140a3ac5",
+  "upstream_tag": "v1.5.2",
+  "upstream_commit": "b4afdddf44e059c67ccf5097e5317d913521b470",
   "archives": {
-    "tarballs/earendil-works-chord-1.5.0-e632f45d5466.tgz": "9cfee13fd8b6f4879014533dd4afa136c216687540043c75474f072a549886cf",
-    "tarballs/earendil-works-pi-agent-core-1.5.0-14e8fe8d78f8.tgz": "fc89b4a36ff2cd53bf739265ccc9a82ffecbb587724d1cb34c38c47c1f49716d",
-    "tarballs/earendil-works-pi-ai-1.5.0-817480745c93.tgz": "4714dcb147bc0f547e3b44c76ec0c787d343d35bba0f489496148f6fbed7b488",
-    "tarballs/earendil-works-pi-codemode-1.5.0-3cb049675ec0.tgz": "400dc754a86e85cdf5e75674d2d249a67f43579a96c322457d32dd3cdd78c6e7",
-    "tarballs/earendil-works-pi-coding-agent-1.5.0-9d70c9e98b7a.tgz": "a46e196f826e8b34a07c29567c2936b402604d1f6c64b143b14d2a3b78ccbb08",
-    "tarballs/earendil-works-pi-durable-1.5.0-c5e04fdaf228.tgz": "7e95b160ebebb7059dd5f5502419b85d52f1e0432a9e914e608364ae9b2b2a69",
-    "tarballs/earendil-works-pi-env-1.5.0-2fe1fc7104a3.tgz": "e405804e13c413974fc0738baa77f9c953e87e035c4262ca7597d73cc4172e75",
-    "tarballs/earendil-works-pi-mcp-1.5.0-0d4470dc8c07.tgz": "fd779a9d59de4c986f0b94442490898837cfcc7f0a82f9e3171a85a8fa2f6f4c",
-    "tarballs/earendil-works-pi-schema-1.5.0-456d0c6d3dad.tgz": "861f76dd844e90b6a5067dc2d82a29fd31c32cde8f3cb030cd8199ed9406b78f",
-    "tarballs/earendil-works-pi-telemetry-1.5.0-556ded715767.tgz": "a1c34782a58668353435dd03cff600bd0ef7ea0fd91aed74835e21648f431408",
-    "tarballs/earendil-works-pi-tui-1.5.0-e7a2aaac355e.tgz": "327d398a3f2b288588345ca72a2b2d7a8b2942f1702a14be657cd745535ba762"
+    "tarballs/earendil-works-chord-1.5.2-ba04ff65854e.tgz": "ba04ff65854e017912dafab4ba70caec38a2c815cf0d215972cb872426a210e8",
+    "tarballs/earendil-works-pi-agent-core-1.5.2-ae1ffb2b628f.tgz": "ae1ffb2b628f191e708fbbefc6f6639de75d9da46ef23eed5fb7aebcb1a4b66d",
+    "tarballs/earendil-works-pi-ai-1.5.2-10936455c64c.tgz": "10936455c64c34f164e97540f04d86d1f1dbaaeae437ee2c2228bd60159de813",
+    "tarballs/earendil-works-pi-codemode-1.5.2-ac81bf4f4f01.tgz": "ac81bf4f4f01ede1a534d6d0fca1ab13afd66506c00904e9d5a07f590ae302e0",
+    "tarballs/earendil-works-pi-coding-agent-1.5.2-b6f23b1c48c0.tgz": "b6f23b1c48c0739ae2f296d6d61dba9a375a25b8d36cb22c87873fe9797e2a66",
+    "tarballs/earendil-works-pi-durable-1.5.2-915648ed07c4.tgz": "915648ed07c48ca4a2cf8bde97e9b1693a0127cb1332225b6883bf0d5f6f9082",
+    "tarballs/earendil-works-pi-env-1.5.2-de14969176ca.tgz": "de14969176ca5943022dbb8d4f51055419ffc5393042bcdc8279e9df3239d5be",
+    "tarballs/earendil-works-pi-mcp-1.5.2-eabe928c8829.tgz": "eabe928c88299e3ac53ed65d4df49612d9ed5fe3801066f7211db0db63b189c7",
+    "tarballs/earendil-works-pi-schema-1.5.2-5f351297ff74.tgz": "5f351297ff74bec1ed4c6a974475ae41f194e023c14f0cf61a427e4fa17cf76a",
+    "tarballs/earendil-works-pi-telemetry-1.5.2-0d29dbee830c.tgz": "0d29dbee830c74af7115035c7cb326c1e9da2f690a3f6f95620597092da9f9ee",
+    "tarballs/earendil-works-pi-tui-1.5.2-2fdd7609ee61.tgz": "2fdd7609ee61e7c275a528e32d62093c2c298d3f9254ad3048451df2063e6bda"
   }
 }

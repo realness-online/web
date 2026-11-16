@@ -13,3 +13,28 @@ nav.profile-list {
     }
   }
 }
+
+nav[aria-label='Related'],
+nav[aria-label='Sections'] {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(var(--base-line) / 2) var(--base-line);
+  margin: 0;
+  padding: calc(var(--base-line) / 2) var(--base-line);
+  border-block-end: 1px solid var(--code-surface);
+
+  & > a {
+    color: var(--accent);
+    font-size: 0.875rem;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--emphasis);
+    }
+
+    &[aria-current='page'] {
+      color: var(--text);
+    }
+  }
+}

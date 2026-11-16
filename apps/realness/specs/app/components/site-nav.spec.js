@@ -71,6 +71,7 @@ describe('@/components/site-nav', () => {
     ])
     const more = wrapper.get('details[data-nav-more] menu')
     expect(more.findAll('a').map(link => link.text())).toEqual([
+      'Planning',
       'Pricing',
       'Prints',
       'Legal'

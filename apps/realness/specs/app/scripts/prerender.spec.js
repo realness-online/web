@@ -102,10 +102,26 @@ describe('prerender main', () => {
 
     const sitemap = readFileSync(path.join(dist_dir, 'sitemap.xml'), 'utf8')
     expect(sitemap).toContain('2026-01-02')
-    expect(sitemap).toContain('/documentation.md')
+    expect(sitemap).not.toContain('/documentation.md')
     expect(readFileSync(path.join(dist_dir, 'documentation.md'), 'utf8')).toBe(
       '# Docs\n'
     )
     expect(existsSync(path.join(dist_dir, 'index.html'))).toBe(true)
+  })
+
+  it('renders each pricing tier as an indexable page', async () => {
+    build()
+    await run()
+    const sitemap = readFileSync(path.join(dist_dir, 'sitemap.xml'), 'utf8')
+    for (const tier of ['endorse', 'teams', 'enterprise']) {
+      const html = page_html(`pricing/${tier}`)
+      expect(html).toContain(`<p>/pricing/${tier}</p>`)
+      expect(html).toContain('index, follow')
+      expect(html).toContain(
+        `<link rel="canonical" href="https://realness.online/pricing/${tier}" />`
+      )
+      expect(sitemap).toContain(`/pricing/${tier}</loc>`)
+    }
+    expect(sitemap).not.toContain('/pricing</loc>')
   })
 })

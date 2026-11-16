@@ -36,7 +36,15 @@ before(async () => {
     origins: ['https://realness.example'],
     vault: {
       allows: () => true,
-      plans: () => [],
+      plans: () => [
+        {
+          itemid: '/+1555/plans/1',
+          title: 'A',
+          area: 'Realness',
+          diagram: null,
+          nodes: { open: 1, done: 0, active: [], blocked: [] }
+        }
+      ],
       articles: () => [],
       shared: ({ itemid }) =>
         itemid === '/+1555/plans/1'
@@ -776,7 +784,7 @@ it('m2: a rewrite at the same path gets a new versioned URL', async () => {
   )
 })
 
-it('x9: an itemid opens for its owner through can, and never for a stranger', async () => {
+it('x9: an itemid opens only where can allows, for a stranger as for the owner', async () => {
   const owner = await call(
     'GET',
     'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1',
@@ -789,15 +797,42 @@ it('x9: an itemid opens for its owner through can, and never for a stranger', as
     'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1',
     { headers: as(B) }
   )
-  assert.equal(stranger.status, 404)
+  assert.equal(stranger.status, 200)
   const anon = await call('GET', 'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1')
-  assert.equal(anon.status, 404)
+  assert.equal(anon.status, 200)
   const unknown = await call(
     'GET',
     'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F9',
     { headers: as(A) }
   )
   assert.equal(unknown.status, 404)
+})
+
+it('p3: anyone lists the plans and opens one, and still cannot list the vault', async () => {
+  const list = await call('GET', 'v1/vault/plans')
+  assert.equal(list.status, 200)
+  assert.equal((await list.json()).plans.length, 1)
+  const plan = await call('GET', 'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1')
+  assert.equal(plan.status, 200)
+  await status('PUT', `people/${A}/harness/vault/Projects/a.md`, {
+    headers: as(A),
+    body: 'plan text'
+  })
+  const other = await call('GET', `people/${A}/harness/vault/Projects/a.md`, {
+    headers: as(B)
+  })
+  assert.equal(other.status, 200)
+  assert.equal(await other.text(), 'plan text')
+  const private_file = await call(
+    'GET',
+    `people/${A}/harness/vault/Areas/Realness/profile.md`,
+    { headers: as(B) }
+  )
+  assert.equal(private_file.status, 403)
+  const listed = await call('GET', `people/${A}/harness/vault/Projects/`, {
+    headers: as(B)
+  })
+  assert.equal(listed.status, 403)
 })
 
 it('x9: a stored key opens nothing at all', async () => {

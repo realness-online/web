@@ -148,7 +148,7 @@ describe('scout --run', () => {
     await writeFile(join(folder, 'Profile.md'), '# profile\n')
     await writeFile(
       join(folder, 'Sources.md'),
-      '# sources\n\n## 1. Alpha\n\nread a\n\n## 2. Beta\n\nread b\n\n## 3. Gamma\n\nread c\n'
+      '# sources\n\n## 1. Alpha\n\nread a https://a.test/\n\n## 2. Beta\n\nread b https://b.test/\n\n## 3. Gamma\n\nread c https://c.test/\n'
     )
     await writeFile(
       join(root, 'package.json'),
@@ -264,25 +264,23 @@ const end = (id, name, text, args) => ({
 describe('the pages a run may read', () => {
   it('is the source URL and the pages under it', () => {
     const allowed = ['https://board.test/jobs', 'https://api.test/search']
-    expect(read_outside('realness-read https://board.test/jobs', allowed)).toBe(
-      ''
-    )
-    expect(read_outside('read https://board.test/jobs?page=2', allowed)).toBe(
+    expect(read_outside('curl https://board.test/jobs', allowed)).toBe('')
+    expect(read_outside('curl https://board.test/jobs?page=2', allowed)).toBe(
       ''
     )
     expect(
-      read_outside('read https://board.test/jobs/acme-engineer', allowed)
+      read_outside('curl https://board.test/jobs/acme-engineer', allowed)
     ).toBe('')
-    expect(read_outside('read https://api.test/search?q=rust', allowed)).toBe(
+    expect(read_outside('curl https://api.test/search?q=rust', allowed)).toBe(
       ''
     )
-    expect(read_outside('read https://api.test/search.', allowed)).toBe('')
+    expect(read_outside('curl https://api.test/search.', allowed)).toBe('')
     expect(read_outside('ls /vault', allowed)).toBe('')
   })
 
   it('a page beside the source, or a listing next to another, is outside', () => {
     expect(
-      read_outside('read https://board.test/other/jobs', [
+      read_outside('curl https://board.test/other/jobs', [
         'https://board.test/jobs'
       ])
     ).toBe('https://board.test/other/jobs')
@@ -321,8 +319,44 @@ describe('the pages a run may read', () => {
     ).toBe(false)
   })
 
+  it('a list or a saved log fetches nothing, so it is not a read', () => {
+    const allowed = ['https://board.test/jobs']
+    expect(
+      read_outside(
+        'grep -oP \'href="https://other.test/jobs/\\d+"\' saved.log',
+        allowed
+      )
+    ).toBe('')
+    expect(
+      read_outside('curl -s https://other.test/jobs > page.html', allowed)
+    ).toBe('https://other.test/jobs')
+  })
+
+  it('a pattern in a filter is not a page read', () => {
+    expect(
+      read_outside(
+        `curl -sL "https://x.test/a" | grep -oP 'href="https://[^"]*'`,
+        ['https://x.test/a']
+      )
+    ).toBe('')
+    expect(
+      read_outside(
+        `curl -sL "https://x.test/a" | grep -oP 'href="https://www\\.'`,
+        ['https://x.test/a']
+      )
+    ).toBe('')
+  })
+
+  it('a fetch after a pipe is still a page read', () => {
+    expect(
+      read_outside('cat list | xargs curl https://other.test/b', [
+        'https://x.test/a'
+      ])
+    ).toBe('https://other.test/b')
+  })
+
   it('a source that names no page allows no page', () => {
-    expect(read_outside('read https://any.test/x', [])).toBe(
+    expect(read_outside('curl https://any.test/x', [])).toBe(
       'https://any.test/x'
     )
   })
@@ -374,12 +408,12 @@ describe('a run ends on its own events', () => {
     await rm(dir, { recursive: true })
   })
 
-  it('a read outside the source ends the run at once and says which page', async () => {
+  it('a page fetched outside the source ends the run at once and says which page', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'pi-events-'))
     const bin = await fake_pi(dir, [
-      start('1', { command: 'read https://board.test/jobs' }),
+      start('1', { command: 'realness-read https://board.test/jobs' }),
       end('1', 'bash', 'jobs'),
-      start('2', { command: 'read https://other.test/jobs?page=4' }),
+      start('2', { command: 'curl https://other.test/jobs?page=4' }),
       end('2', 'bash', 'more jobs')
     ])
     const code = await local_pi(bin)('brief', dir, null, [
@@ -389,6 +423,29 @@ describe('a run ends on its own events', () => {
     expect(await readFile(join(dir, 'pi.log'), 'utf8')).toMatch(
       /a read outside the source: https:\/\/other\.test\/jobs\?page=4/
     )
+    await rm(dir, { recursive: true })
+  })
+
+  it('realness-read refuses an outside page itself, so the run goes on', () => {
+    expect(
+      read_outside('realness-read --brief https://other.test/jobs', [
+        'https://board.test/jobs'
+      ])
+    ).toBe('')
+  })
+
+  it('pi gets the source list, so realness-read can refuse an outside page', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pi-env-'))
+    const bin = join(dir, 'fake-pi.cjs')
+    await writeFile(
+      bin,
+      `#!/usr/bin/env node\nrequire('node:fs').writeFileSync(${JSON.stringify(join(dir, 'allowed'))}, process.env.REALNESS_READ_ALLOWED ?? '')\n`
+    )
+    await chmod(bin, 0o755)
+    await local_pi(bin)('brief', dir, null, ['https://board.test/jobs'])
+    expect(JSON.parse(await readFile(join(dir, 'allowed'), 'utf8'))).toEqual([
+      'https://board.test/jobs'
+    ])
     await rm(dir, { recursive: true })
   })
 

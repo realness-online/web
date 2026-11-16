@@ -166,3 +166,11 @@ it('down with --vm also stops the Lima VM', async t => {
   assert.deepEqual(stopped, { stopped: true, deleted: false })
   assert.ok(lima.asked.some(([verb]) => verb === 'stop'))
 })
+
+it('restart rebuilds the image only when its actor label differs from the Mac', async () => {
+  const { image_stale } = await import('../../src/control/halo-lima.js')
+  assert.equal(image_stale({ seed: { code: 'abc' } }, 'abc'), false)
+  assert.equal(image_stale({ seed: { code: 'old' } }, 'abc'), true)
+  assert.equal(image_stale({ seed: {} }, 'abc'), true)
+  assert.equal(image_stale(null, 'abc'), true)
+})

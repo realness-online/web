@@ -24,6 +24,7 @@ import { box_cookies, find_scout_code, scout_read } from './realness-scout.js'
 
 const HERE = dirname(file_url_to_path(import.meta.url))
 const BOX_LIB = '/usr/local/lib/realness'
+const EXIT_NOT_ALLOWED = 4
 /** This checkout's app source: mounted read-only in a box, beside this file on a Mac. */
 const LIB =
   process.env.REALNESS_LIB ??
@@ -70,6 +71,17 @@ const site = values['--site'] ?? null
 const brief = argv.includes('--brief')
 const fresh = argv.includes('--fresh')
 const on_box = exists_sync(door_path())
+
+if (process.env.REALNESS_READ_ALLOWED) {
+  const allowed = JSON.parse(process.env.REALNESS_READ_ALLOWED)
+  const { reads_inside } = await import(`${LIB}/src/scouts/sources.js`)
+  if (!allowed.some(one => reads_inside(url, one))) {
+    process.stderr.write(
+      `realness-read: ${url} is not on this source's list. Read only these:\n${allowed.map(one => `  ${one}`).join('\n') || '  (no pages)'}\n`
+    )
+    process.exit(EXIT_NOT_ALLOWED)
+  }
+}
 
 /**
  * Print a reply the way the caller asked for it.
@@ -164,7 +176,7 @@ const read_site = async slug => {
         const devtools = await lease()
         leased = true
         const { render_page } = await import(`${LIB}/src/halo/render.js`)
-        return render_page(new URL(devtools).hostname, target, {
+        return render_page(new URL(devtools).host, target, {
           wait: 'content'
         })
       }
@@ -244,27 +256,36 @@ const browser_render = shortfall => target =>
     }
   })
 
-/** A plain read on this Mac: the halo's engine, with its cache in artifacts. */
+/** Render a page in this actor's own Chrome, then give the Chrome back. */
+const actor_render = async target => {
+  const devtools = await lease()
+  try {
+    const { render_page } = await import(`${LIB}/src/halo/render.js`)
+    return await render_page(new URL(devtools).host, target, {
+      wait: 'content'
+    })
+  } finally {
+    await give_back()
+  }
+}
+
+/**
+ * A plain read where it runs: the web engine, with its cache in artifacts.
+ * An actor renders in its own Chrome; a Mac in agent-browser.
+ */
 const read_here = async () => {
   const { COMMON_CRAWL, WebEngine, shortfall } = await import(
     `${LIB}/src/halo/web-engine.js`
   )
+  const browser = has_agent_browser() ? browser_render(shortfall) : null
+  const render = on_box ? actor_render : browser
   const engine = new WebEngine({
     root: join(HOME, 'artifacts', 'realness-read'),
-    render: has_agent_browser() ? browser_render(shortfall) : null,
+    render,
     firecrawl_key: process.env.FIRECRAWL_API_KEY ?? null,
     common_crawl: COMMON_CRAWL
   })
   return { ok: true, ...(await engine.read(url, { fresh })) }
-}
-
-const read_box = async () => {
-  const reply = await ask(
-    { op: 'read', url, fresh, ...(brief && { brief: true }) },
-    { timeout_ms: 0 }
-  )
-  if (!reply.ok) throw new Error(reply.error ?? 'no reply from the halo')
-  return reply
 }
 
 if (site && !on_box)
@@ -279,7 +300,7 @@ if (site)
   }
 
 try {
-  await emit(on_box ? await read_box() : await read_here())
+  await emit(await read_here())
 } catch (error) {
   fail(error.message)
 }

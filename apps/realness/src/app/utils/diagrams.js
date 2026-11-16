@@ -55,3 +55,18 @@ export const mark_diagrams = container => {
     pre.textContent = code.textContent
   }
 }
+
+/**
+ * p1: the old index hides the page until its covers are drawn, so raw Mermaid
+ * text never shows. Mark the page pending, then ready once the covers draw.
+ * @param {Document} document
+ */
+export const hide_until_drawn = (document = globalThis.document) => {
+  if (document && 'diagrams' in document.documentElement.dataset) return
+  if (document) document.documentElement.dataset.diagrams = 'pending'
+}
+
+/** @param {Document} document */
+export const reveal_diagrams = (document = globalThis.document) => {
+  if (document) document.documentElement.dataset.diagrams = 'ready'
+}

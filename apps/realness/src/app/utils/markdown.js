@@ -54,6 +54,41 @@ export const documentation_html = (content = documentation_md) =>
  */
 export const markdown_html = content => documentation_html(content)
 
+const CODE_BLOCK =
+  /<pre><code class="language-([\w-]+)">([\s\S]*?)<\/code><\/pre>/g
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" }
+
+/** The text shiki reads, from the entities marked escaped. */
+const plain = code =>
+  code.replace(/&(amp|lt|gt|quot|#39);/g, (_, name) => ENTITIES[name])
+
+/**
+ * Fenced code keeps its colors: a note's blocks become themed spans, the way
+ * the published plans page drew them. Mermaid stays text for diagrams.js.
+ * @param {string} html
+ * @returns {Promise<string>}
+ */
+export const highlight_code = async html => {
+  const blocks = [...html.matchAll(CODE_BLOCK)].filter(
+    ([, language]) => language !== 'mermaid'
+  )
+  if (!blocks.length) return html
+  const { codeToHtml } = await import('shiki')
+  const drawn = await Promise.all(
+    blocks.map(([, language, code]) =>
+      codeToHtml(plain(code), {
+        lang: language,
+        themes: { light: 'one-light', dark: 'one-dark-pro' },
+        defaultColor: false
+      })
+    )
+  )
+  return blocks.reduce(
+    (out, block, at) => out.replace(block[0], () => drawn[at]),
+    html
+  )
+}
+
 /** @param {string} text */
 const humanize_dates = text =>
   text.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (_, y, m, d) =>

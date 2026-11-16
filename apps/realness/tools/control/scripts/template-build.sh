@@ -7,6 +7,7 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 TREE="${TREE:-$ROOT/template-tree}"
 IMG="${IMG:-$ROOT/template.ext4}"
 SIZE="${SIZE:-4G}"
+MIN_FREE_GIB="${MIN_FREE_GIB:-7}"
 STAGE="${STAGE:-full}"
 HARNESS_TAR="${HARNESS_TAR:-$OUT/realness-harness.tar.gz}"
 GUEST_SRC="${GUEST_SRC:-$REPO/server/halo/guest}"
@@ -32,6 +33,19 @@ mkdir -p "$RUN"
 exec > >(tee "$RUN/build.log") 2>&1
 
 log() { printf '\n==> %s\n' "$*"; }
+
+cleanup_mounts() {
+  for dir in dev/pts dev sys proc; do
+    mountpoint -q "$TREE/$dir" && umount "$TREE/$dir" || true
+  done
+}
+cleanup_mounts
+rm -rf --one-file-system "$TREE" "$IMG.new"
+free_gib=$(df -BG --output=avail "$ROOT" | tail -1 | tr -dc 0-9)
+[ "$free_gib" -ge "$MIN_FREE_GIB" ] || {
+  echo "only ${free_gib}G free in $ROOT; a build needs ${MIN_FREE_GIB}G" >&2
+  exit 1
+}
 
 log "stage=$STAGE, tree=$TREE, image=$IMG ($SIZE)"
 
@@ -94,12 +108,11 @@ for dir in proc sys dev dev/pts; do
   mkdir -p "$TREE/$dir"
   mountpoint -q "$TREE/$dir" || mount --bind "/$dir" "$TREE/$dir"
 done
-cleanup_mounts() {
-  for dir in dev/pts dev sys proc; do
-    mountpoint -q "$TREE/$dir" && umount "$TREE/$dir" || true
-  done
+finish() {
+  cleanup_mounts
+  rm -rf --one-file-system "$TREE" "$IMG.new"
 }
-trap cleanup_mounts EXIT
+trap finish EXIT
 
 CHROME_PACKAGES=(
   libasound2t64 libatk-bridge2.0-0t64 libatk1.0-0t64 libatspi2.0-0t64 libcairo2
@@ -246,6 +259,11 @@ tar xzf "$HARNESS_TAR" -C "$TREE/realness"
 mkdir -p "$TREE/usr/local/share/realness-starter"
 tar xzf "$HARNESS_TAR" -C "$TREE/usr/local/share/realness-starter"
 chmod -R a+rX "$TREE/usr/local/share/realness-starter"
+
+log "code stamp"
+[ -f "$TREE/realness/.code-stamp" ] || { echo "the harness carries no .code-stamp" >&2; exit 1; }
+install -m 0644 "$TREE/realness/.code-stamp" "$TREE/etc/realness-code"
+printf '  %s\n' "$(cat "$TREE/etc/realness-code")"
 
 log "harness pi-packages"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
@@ -401,6 +419,7 @@ rm -f "$IMG.new"
 truncate -s "$SIZE" "$IMG.new"
 mkfs.ext4 -q -F -d "$TREE" "$IMG.new"
 e2fsck -fn "$IMG.new" > /dev/null && mv "$IMG.new" "$IMG"
+cp "$TREE/etc/realness-code" "$ROOT/template-code"
 
 log "done"
 rm -rf "$TREE"

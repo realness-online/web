@@ -46,6 +46,74 @@ export const source_urls = text => [
 ]
 
 /**
+ * The page patterns a section names, like `https://news.google.com/rss/articles/<id>`:
+ * a run may read any page that fits one.
+ * @param {string} text
+ * @returns {string[]}
+ */
+export const source_patterns = text => [
+  ...new Set(
+    String(text ?? '').match(/https?:\/\/[^\s)`"']*<[^>\s]+>[^\s)`"']*/g) ?? []
+  )
+]
+
+/**
+ * Whether a URL is one the source named, or a page under it. The site and the
+ * path hold, so a run reads its own board and that board's pages; the query
+ * does not, so a search API takes the words a run chooses. A URL written with a
+ * `<...>` placeholder stands for every page it names.
+ * @param {string} url
+ * @param {string} allowed one source URL
+ */
+export const reads_inside = (url, allowed) => {
+  const placeholder = allowed.indexOf('<')
+  const named = placeholder === -1 ? allowed : allowed.slice(0, placeholder)
+  let here
+  let there
+  try {
+    here = new URL(url)
+    there = new URL(named)
+  } catch {
+    return false
+  }
+  if (here.origin !== there.origin) return false
+  if (placeholder !== -1) return here.pathname.startsWith(there.pathname)
+  const path = there.pathname.replace(/\/+$/, '')
+  if (here.pathname === path) return true
+  return here.pathname.startsWith(`${path}/`)
+}
+
+/** A command a section tells the run to run, rather than a page to read. */
+const NAMES_COMMAND = /```|\n {4}\S|`[^`]*(?:realness-read|npm |node |git )/
+
+/** A section that reads the vault, not the web. */
+const NAMES_VAULT = /\bvault\b|Realness\/Companies/i
+
+/** A URL the writer left half-written, like `.../rss/search?q=`. */
+const ELIDED = /(?:^|[\s`(])\.\.\.\/|`\.\.\./
+
+/**
+ * Why a source is not ready to run, or '' when it says what it reads. A run
+ * starts on a source that names its pages, its command, or the vault; a source
+ * still being decided stops the run before pi starts.
+ * @param {Source} one
+ * @returns {string}
+ */
+export const source_problem = one => {
+  const body = one.text.replace(/^##.*$/m, '').trim()
+  if (!body) return `${one.title} says nothing to read`
+  if (ELIDED.test(body))
+    return `${one.title} leaves a URL half-written; write every URL in full`
+  if (
+    !source_urls(body).length &&
+    !NAMES_COMMAND.test(body) &&
+    !NAMES_VAULT.test(body)
+  )
+    return `${one.title} names no page, command, or vault path`
+  return ''
+}
+
+/**
  * The one source a run reads, by key.
  * @param {Source[]} sections
  * @param {string} key

@@ -219,6 +219,14 @@
     {
       "file": "src/scouts/seen.js",
       "exports": ["finds_page"]
+    },
+    {
+      "file": "src/halo/render.js",
+      "exports": ["render_page"]
+    },
+    {
+      "file": "src/scouts/preflight.js",
+      "exports": ["FREE_BYTES"]
     }
   ],
   "regression": {
@@ -227,115 +235,13 @@
         "mode": "type-aware",
         "semantic_schema_version": 2,
         "capabilities": ["symbol-use", "api-surface"],
-        "project_config_hash": "sha256:140d16b0417bbee2c86ffcadc1044a6c6e7ed2aab9f977c0dce4f23f259fde57",
-        "backend_family": "typescript-go",
-        "completeness": "partial"
-      },
-      "totalIssues": 5,
-      "unusedFiles": 0,
-      "unusedExports": 5,
-      "unusedTypes": 0,
-      "unusedDependencies": 0,
-      "unusedDevDependencies": 0,
-      "unusedOptionalDependencies": 0,
-      "unusedEnumMembers": 0,
-      "unusedClassMembers": 0,
-      "unresolvedImports": 0,
-      "unlistedDependencies": 0,
-      "duplicateExports": 0,
-      "circularDependencies": 0,
-      "reExportCycles": 0,
-      "typeOnlyDependencies": 0,
-      "testOnlyDependencies": 0,
-      "devDependenciesInProduction": 0,
-      "boundaryViolations": 0,
-      "boundaryCoverageViolations": 0,
-      "boundaryCallViolations": 0,
-      "policyViolations": 0
-    }
-  },
-  "regression": {
-    "baseline": {
-      "analysisIdentity": {
-        "mode": "type-aware",
-        "semantic_schema_version": 2,
-        "capabilities": ["symbol-use", "api-surface"],
-        "project_config_hash": "sha256:d44fa48159ac4f44b065e99ccf80f616fee2f7151f27e5d05dc8fa0dcab6e1bc",
+        "project_config_hash": "sha256:479962bdd7c23853c656927e352b6257d1e8a8eeaa35db2a4e070533214cbbcf",
         "backend_family": "typescript-go",
         "completeness": "partial"
       },
       "totalIssues": 0,
       "unusedFiles": 0,
       "unusedExports": 0,
-      "unusedTypes": 0,
-      "unusedDependencies": 0,
-      "unusedDevDependencies": 0,
-      "unusedOptionalDependencies": 0,
-      "unusedEnumMembers": 0,
-      "unusedClassMembers": 0,
-      "unresolvedImports": 0,
-      "unlistedDependencies": 0,
-      "duplicateExports": 0,
-      "circularDependencies": 0,
-      "reExportCycles": 0,
-      "typeOnlyDependencies": 0,
-      "testOnlyDependencies": 0,
-      "devDependenciesInProduction": 0,
-      "boundaryViolations": 0,
-      "boundaryCoverageViolations": 0,
-      "boundaryCallViolations": 0,
-      "policyViolations": 0
-    }
-  },
-  "regression": {
-    "baseline": {
-      "analysisIdentity": {
-        "mode": "type-aware",
-        "semantic_schema_version": 2,
-        "capabilities": ["symbol-use", "api-surface"],
-        "project_config_hash": "sha256:fdfd11292be49c78e35024ea2b71aff910492db8f069b972be1b68612a1879b6",
-        "backend_family": "typescript-go",
-        "completeness": "partial"
-      },
-      "totalIssues": 2,
-      "unusedFiles": 0,
-      "unusedExports": 2,
-      "unusedTypes": 0,
-      "unusedDependencies": 0,
-      "unusedDevDependencies": 0,
-      "unusedOptionalDependencies": 0,
-      "unusedEnumMembers": 0,
-      "unusedClassMembers": 0,
-      "unresolvedImports": 0,
-      "unlistedDependencies": 0,
-      "duplicateExports": 0,
-      "circularDependencies": 0,
-      "reExportCycles": 0,
-      "typeOnlyDependencies": 0,
-      "testOnlyDependencies": 0,
-      "devDependenciesInProduction": 0,
-      "boundaryViolations": 0,
-      "boundaryCoverageViolations": 0,
-      "boundaryCallViolations": 0,
-      "policyViolations": 0
-    }
-  },
-  "regression": {
-    "baseline":     {
-      "analysisIdentity": {
-        "mode": "type-aware",
-        "semantic_schema_version": 2,
-        "capabilities": [
-          "symbol-use",
-          "api-surface"
-        ],
-        "project_config_hash": "sha256:71ba8d0cf1783e7dbdb95c173ab812424079975cb02d3a6c96d0646e8242bcd7",
-        "backend_family": "typescript-go",
-        "completeness": "partial"
-      },
-      "totalIssues": 2,
-      "unusedFiles": 1,
-      "unusedExports": 1,
       "unusedTypes": 0,
       "unusedDependencies": 0,
       "unusedDevDependencies": 0,

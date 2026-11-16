@@ -53,6 +53,10 @@ before(async () => {
       return res
         .writeHead(200, { 'content-type': 'application/json' })
         .end('[{"id":"CC-TEST"}]')
+    if (req.url === '/feed.json')
+      return res
+        .writeHead(200, { 'content-type': 'application/json' })
+        .end(JSON.stringify({ releases: [{ version: '1.17.0' }] }))
     if (req.url.startsWith('/cc/CC-TEST-index?')) {
       const wanted = new URL(req.url, 'http://x').searchParams.get('url')
       if (!wanted?.endsWith('/crawled')) return res.writeHead(404).end('{}')
@@ -193,6 +197,14 @@ it('the first reader fetches; the second reads the shared copy without fetching'
     [report.reads, report.hits, report.hit_rate, report.actors],
     [2, 1, 0.5, 2]
   )
+})
+
+it('a JSON feed is a page: its body is what the reader gets', async () => {
+  const web = engine({ dir: 'json' })
+  const page = await web.read(`${base}/feed.json`)
+  assert.deepEqual([page.source, page.kind], ['static', 'json'])
+  assert.match(page.body, /1\.17\.0/)
+  assert.equal(hits['/feed.json'], 1)
 })
 
 it('an expired copy with an ETag is revalidated, not fetched again', async () => {
