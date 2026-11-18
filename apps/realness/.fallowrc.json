@@ -58,6 +58,10 @@
     "**/docs/generated/**"
   ],
   "ignoreDependencies": [
+    "@img/sharp-darwin-arm64",
+    "@img/sharp-libvips-darwin-arm64",
+    "@img/sharp-libvips-linux-arm64",
+    "@img/sharp-linux-arm64",
     "stylus",
     "vue-eslint-parser",
     "eslint-plugin-compat",
@@ -235,7 +239,7 @@
         "mode": "type-aware",
         "semantic_schema_version": 2,
         "capabilities": ["symbol-use", "api-surface"],
-        "project_config_hash": "sha256:479962bdd7c23853c656927e352b6257d1e8a8eeaa35db2a4e070533214cbbcf",
+        "project_config_hash": "sha256:91454505f5e92ce300a55fcd4d4592b1ce1f21a86d6bcce3b2eaba911b133126",
         "backend_family": "typescript-go",
         "completeness": "partial"
       },

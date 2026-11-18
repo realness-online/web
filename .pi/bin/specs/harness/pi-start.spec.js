@@ -26,6 +26,10 @@ const fixture = () => {
   mkdir_sync(join(home, '.pi/agent'), { recursive: true })
   write_file_sync(join(home, '.pi/agent/auth.json'), 'Existing private user state\n')
   copy_file_sync(join(import.meta.dirname, '../../pi'), join(root, '.pi/bin/pi'))
+  copy_file_sync(
+    join(import.meta.dirname, '../../harness/apply-patches.js'),
+    join(root, '.pi/bin/harness/apply-patches.js')
+  )
   write_file_sync(
     join(root, '.pi/bin/harness/session-location.js'),
     'process.stdout.write(process.argv[2] + "/vault/Sessions")\n'

@@ -49,6 +49,7 @@ scripts/service-account*
 /public/512.png
 /public/*.mov
 *.wasm
+!src/app/terminal/*.wasm
 /tracer/tracer
 /tracer/pkg/
 /tracer/target/

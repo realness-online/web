@@ -1,12 +1,18 @@
 <template>
-  <header aria-label="Vault"></header>
-  <p v-if="error" role="status">{{ error }}</p>
-  <p v-else-if="loading" role="status">Loading</p>
-  <NoteArticle
-    v-else-if="html"
-    :html="html"
-    :related="related"
-    :links="links" />
+  <Planning v-if="!note_wanted" />
+  <template v-else>
+    <header aria-label="Vault"></header>
+    <p v-if="error" role="status">{{ error }}</p>
+    <p v-else-if="loading" role="status">Loading</p>
+    <NoteArticle
+      v-else-if="html"
+      :html="html"
+      :related="related"
+      :links="links" />
+    <footer v-if="html" aria-label="Note file">
+      <code>{{ note_path }}</code>
+    </footer>
+  </template>
 </template>
 
 <script setup>
@@ -16,6 +22,7 @@
     ref
   } from 'vue'
   import NoteArticle from '@/components/note/as-article.vue'
+  import Planning from '@/views/Planning.vue'
   import { settled_token } from '@/utils/settled-user'
   import { highlight_code, markdown_html } from '@/utils/markdown'
   import { watch_vault } from '@/utils/vault-events'
@@ -38,15 +45,15 @@
     }
   }
 
+  const note_wanted = ref(value_of_hash() !== '')
+
   const load = async () => {
     const value = value_of_hash()
+    note_wanted.value = value !== ''
     html.value = ''
     related.value = []
     error.value = ''
-    if (!value) {
-      error.value = 'No note in the link.'
-      return
-    }
+    if (!note_wanted.value) return
     if (!value.startsWith('/')) {
       error.value = 'That note is not here.'
       return
@@ -114,6 +121,17 @@
     }
   }
 
+  footer[aria-label='Note file'] {
+    max-inline-size: 72rem;
+    margin-inline: auto;
+    padding: var(--base-line);
+
+    > code {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+  }
+
   article[itemtype$='/Article'][aria-label='Note'] {
     max-inline-size: 72rem;
     margin-inline: auto;
@@ -131,8 +149,56 @@
         grid-column: 2;
       }
 
-      > :is(pre, table, figure) {
+      > :is(pre, figure) {
         grid-column: 1 / -1;
+      }
+
+      > table {
+        grid-column: 2 / -1;
+        inline-size: fit-content;
+        min-inline-size: unquote('min(65ch, 100%)');
+        margin-block: var(--base-line);
+        border-collapse: collapse;
+        text-align: start;
+
+        th,
+        td {
+          padding: calc(var(--base-line) / 3) calc(var(--base-line) / 2);
+          border-block-end: 1px solid var(--muted-text);
+          text-align: start;
+          vertical-align: baseline;
+        }
+
+        th:first-child,
+        td:first-child {
+          padding-inline-start: 0;
+          white-space: nowrap;
+        }
+
+        th:last-child,
+        td:last-child {
+          padding-inline-end: 0;
+          white-space: nowrap;
+        }
+
+        th {
+          font-size: 0.875em;
+          font-weight: 400;
+          color: var(--muted-text);
+        }
+
+        td:first-child {
+          font-family: 'Monaco', 'Menlo', monospace;
+          font-size: 0.875em;
+        }
+
+        tbody tr:last-child td {
+          border-block-end: 0;
+        }
+
+        del {
+          text-decoration: none;
+        }
       }
 
       p {

@@ -46,7 +46,13 @@ import {
 } from '#root/src/sign-on/node/recovery-pass.js'
 import { skipped } from '#root/src/files/skip.js'
 import { org_route, RouteStatus } from './org-routes.js'
-import { members_key, orgs_of, read_org, read_org_along } from './orgs.js'
+import {
+  granted_orgs,
+  members_key,
+  orgs_of,
+  read_org,
+  read_org_along
+} from './orgs.js'
 import { read_members } from '#root/src/can/members.js'
 import { admins as admin_list } from './admins.js'
 import { keeper } from './trash.js'
@@ -286,10 +292,10 @@ const harness_org_allowed = ({ action, org, path, who }) => {
 
 /**
  * Whether this caller may take this action on this path.
- * @param {{ action: string, grants: object[], org: { founder: string | null, members: string[] } | null, path: string, who: Caller | null }} request
+ * @param {{ action: string, grants: { action: string, grantee: string, path: string }[], member_of: string[], org: { founder: string | null, members: string[] } | null, path: string, who: Caller | null }} request
  * @returns {boolean}
  */
-const caller_allowed = ({ action, grants, org, path, who }) => {
+const caller_allowed = ({ action, grants, member_of, org, path, who }) => {
   if (who?.harness && path.startsWith('orgs/'))
     return harness_org_allowed({ action, org, path, who })
   if (who?.harness) return harness_path(path, who.harness, who.paths)
@@ -303,7 +309,28 @@ const caller_allowed = ({ action, grants, org, path, who }) => {
       path.startsWith(`people/${who.phone}/work/site/`) &&
       can(who, action, path, grants)
     )
-  return can(who, action, path, grants, org)
+  return can({ ...who, member_of }, action, path, grants, org)
+}
+
+/**
+ * o2: grants reach a person through the orgs they are in, so the caller needs
+ * the owner's grants read even when the caller is not that owner's harness.
+ * @param {{ rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, storage: SyncStorage }} sync
+ * @param {string} owner
+ * @param {Caller | null} who
+ * @param {string} path
+ * @returns {Promise<{ grants: import('#root/src/can/can.js').Grant[], member_of: string[] }>}
+ */
+const caller_grants = async ({ rights, storage }, owner, who, path) => {
+  if (!path.startsWith('people/') || !owner)
+    return { grants: [], member_of: [] }
+  const found = /** @type {import('#root/src/can/can.js').Grant[]} */ (
+    (await rights.grants(owner)).grants
+  )
+  return {
+    grants: found,
+    member_of: await granted_orgs(storage, found, who?.phone)
+  }
 }
 
 /** A members page must read cleanly; the org's top page keeps the writer as founder. */
@@ -820,13 +847,15 @@ const answer_item = async ({
     )
   })
   if (!found) throw new Status(HTTP.NOT_FOUND)
-  const [top, owner] = found.storage.split('/')
-  const grants =
-    who?.instance && top === 'people' && owner
-      ? (await rights.grants(owner)).grants
-      : []
+  const [, owner] = found.storage.split('/')
+  const { grants, member_of } = await caller_grants(
+    { rights, storage },
+    owner,
+    who,
+    found.storage
+  )
   const org = await org_of(storage, found.storage, owner)
-  if (!can(who, 'get', found.storage, grants, org))
+  if (!can({ ...who, member_of }, 'get', found.storage, grants, org))
     throw new Status(HTTP.NOT_FOUND)
   response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
   response.end(JSON.stringify(found))
@@ -870,10 +899,14 @@ const answer_record = async (
     ADMIN_FOLDERS.has(top) && caller?.phone
       ? { ...caller, admin: await admins.has(caller.phone) }
       : caller
-  const grants =
-    who?.instance && owner ? (await rights.grants(owner)).grants : []
+  const { grants, member_of } = await caller_grants(
+    { rights, storage },
+    owner,
+    who,
+    path
+  )
   const org = await org_of(storage, path, owner)
-  if (!caller_allowed({ action, grants, org, path, who }))
+  if (!caller_allowed({ action, grants, member_of, org, path, who }))
     throw new Status(HTTP.FORBIDDEN)
 
   if (!caller && action === 'list') response.setHeader('cache-control', SHORT)
@@ -916,6 +949,49 @@ const answer_record = async (
  * @property {(path: string) => Promise<Record<string, { version: string, size: number, updated: string }>>} walk_meta
  * @property {(scope: string, version: string) => Promise<string[]>} find
  */
+
+/** Files the vault serves to anyone: blog posters and the pages articles frame. */
+const VAULT_FILES = [
+  {
+    prefix: 'v1/poster/',
+    read: 'poster',
+    headers: {
+      'content-type': 'image/svg+xml; charset=utf-8',
+      'cache-control': SHORT,
+      'access-control-allow-origin': '*'
+    }
+  },
+  {
+    prefix: 'v1/blog-page/',
+    read: 'blog_page',
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': SHORT
+    }
+  }
+]
+
+/**
+ * A vault file open to anyone. False when the path names no such route.
+ * @param {ReturnType<typeof import('./vault.js').vault_door> | null | undefined} vault
+ * @param {string} path
+ * @param {import('node:http').ServerResponse} response
+ * @returns {Promise<boolean>}
+ */
+const answer_vault_file = async (vault, path, response) => {
+  const route = VAULT_FILES.find(({ prefix }) => path.startsWith(prefix))
+  if (!route) return false
+  const name = path.slice(route.prefix.length)
+  const body = vault
+    ? await (route.read === 'poster'
+        ? vault.poster(name)
+        : vault.blog_page(name))
+    : null
+  if (body === null) throw new Status(HTTP.NOT_FOUND)
+  response.writeHead(HTTP.OK, route.headers)
+  response.end(body)
+  return true
+}
 
 /**
  * The sync service.
@@ -1053,11 +1129,12 @@ export const sync_service = ({
       await answer_item({ vault, storage, rights, request, response, who })
       return who
     }
+    if (method === 'GET' && (await answer_vault_file(vault, path, response)))
+      return null
     if (path.startsWith('v1/vault/') && method === 'GET') {
       const who = await who_is(request)
       if (!vault) throw new Status(HTTP.NOT_FOUND)
-      const public_plans = path === 'v1/vault/plans'
-      if (!public_plans && !vault.allows(who)) throw new Status(HTTP.NOT_FOUND)
+      if (!vault.allows(who)) throw new Status(HTTP.NOT_FOUND)
       if (path === 'v1/vault/events') {
         events.listen(response)
         return who

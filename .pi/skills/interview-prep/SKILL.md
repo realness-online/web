@@ -7,11 +7,11 @@ metadata:
 
 # Interview Prep
 
-Prepares a target company/role end-to-end: research, fit, behavioral prep, technical prep, and process tracking. All notes live in the vault under `Projects/realness-leads/` (`vault/Projects/realness-leads/`) -- see `references/process-and-tracker.md` for the exact layout.
+Prepares a target company/role end-to-end: research, fit, behavioral prep, technical prep, and process tracking. All notes live in the vault under `Archive/Projects/realness-leads/` (`vault/Archive/Projects/realness-leads/`) -- see `references/process-and-tracker.md` for the exact layout.
 
 ## Workflow
 
-1. **Capture the target.** Get company name, role, and how it came up (referral, job post, cold interest). Create `Projects/realness-leads/Companies/<company-slug>.md` from `assets/company-note-template.md` if it doesn't exist. Add a row to `Projects/realness-leads/tracker.md`.
+1. **Capture the target.** Get company name, role, and how it came up (referral, job post, cold interest). Create `Archive/Projects/realness-leads/Companies/<company-slug>.md` from `assets/company-note-template.md` if it doesn't exist. Add a row to `Archive/Projects/realness-leads/tracker.md`.
 
 2. **Research the company.** Read `references/research.md`. Use WebSearch/WebFetch to fill in product, stage, recent news, tech stack, competitors, culture signals. Write findings into the company note.
 

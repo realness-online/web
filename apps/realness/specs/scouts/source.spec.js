@@ -95,3 +95,16 @@ it('a clean log still writes the run', async () => {
   assert.match(await readFile(result.path, 'utf8'), /Acme/)
   await rm(root, { recursive: true })
 })
+
+it('a refused story is one page lost; a refused source page ends the run', () => {
+  const named = [
+    'https://news.test/rss/search?q=x',
+    'https://news.test/rss/articles/<id>'
+  ]
+  const story =
+    'realness-read: could not read https://news.test/rss/articles/abc: chrome: HTTP 403'
+  const feed =
+    'realness-read: could not read https://news.test/rss/search?q=x: chrome: HTTP 403'
+  assert.equal(dead_source(story, named), null)
+  assert.match(dead_source(feed, named), /HTTP 403/)
+})

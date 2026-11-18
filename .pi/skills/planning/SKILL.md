@@ -184,33 +184,53 @@ One order, every time. Text above the nodes does not get read.
 
 <DAG>
 
+## Summary
+<for a reader outside the plan>
+
 ## Nodes
 <table>
 
 ## Notes
-<who it is for, context, depends on>
+<context, depends on>
 
-### Decisions
-### Open questions
-
+### Decisions, ### Open questions
 **Legend:** ...
 ```
 
-- The DAG and the node table come first, directly under the title.
-- `## Nodes` and `## Notes` are the only `##` headings, plus an optional
-  `## Syncs` between them: the folders a task on this plan may touch, one
+- The DAG comes first, directly under the title. `## Summary` follows it,
+  then the node table.
+- `## Summary`, `## Nodes`, and `## Notes` are the only `##` headings, plus an
+  optional `## Syncs` after Nodes: the folders a task on this plan may touch, one
   per bullet. Everything else goes in one `## Notes` section, below the nodes.
 - Every other heading is `###` or lower: node groups inside Nodes;
   decisions, open questions, definitions, gates, and verification inside Notes.
   Rendered plans style `###` as Realness's h3.
 - Every table id appears in the DAG, and every DAG id in the table.
-- Explanatory graphics beside the work DAG sit between the DAG and `## Nodes`,
+- Explanatory graphics beside the work DAG sit between the DAG and `## Summary`,
   each with a caption. They are not checked for size.
 - A caption for a diagram stays beside its fence. The first diagram has none;
   the title carries it.
 - Multiple diagrams: first is the work DAG, the rest follow with their captions,
-  all above `## Nodes`.
+  all above `## Summary`.
 - Nothing sits above the DAG except the title.
+
+### Summary - for a reader outside the plan
+
+The reader has never seen the project. They read this section and nothing
+else. Six lines at most, in this order:
+
+- **What changes.** One sentence: who gets what when the plan is done.
+- **Why.** One sentence: the problem a person has today.
+- **Where it stands.** One line: what is done, what is in work, what is next.
+- **Words.** Each project term the plan uses, with a few words of meaning.
+
+Write it in whole, plain words. No node ids, file paths, commands,
+abbreviations, or nicknames. Name a screen by what a person sees on it.
+
+Test it: a person outside the project reads the Summary and says what the
+plan is for. If they cannot, rewrite the Summary.
+
+Update "Where it stands" when a gate passes.
 
 **Put the DAG in a plan file.** `<plans>/<plan>.md`, or a companion
 `<plans>/<plan>.plan.md` if that file should stay pure spec. Read `<plans>` from
@@ -239,16 +259,16 @@ Write ideas, not explanations: one idea per line, seven to ten words where
 possible. The reader knows what to do; no instructions addressed to them, no
 hedges, no reasoning they did not ask for.
 
-The opening line of Notes names who it is for and what the plan owns. One
-sentence names the target customer, one says the job the plan does. A third
-says what it does not own when a neighbour plan could be mistaken for it. Every
-node is judged against that scope.
+The Summary names who the plan is for and the job it does. The opening line of
+Notes says what the plan owns, and what it does not own when a neighbour plan
+could be mistaken for it. Every node is judged against that scope.
 
 Carries: decisions and what was rejected, one line each. Open questions, as
 questions. What to do next and how to judge it. What the code cannot say -
 gotchas that bite, why the thing exists at all.
 
-**Budgets.** A plan is the DAG, the table, then about a page of Notes. When the
+**Budgets.** A plan is the DAG, the Summary, the table, then about a page of
+Notes. When the
 Notes outweigh the nodes, the plan is carrying a second job or an archive.
 
 - Decisions: about twenty lines. Each passes "does this change a decision?"
@@ -283,8 +303,8 @@ Trim words on the way out of a session, not later. Say what you cut. See the
 `readable` skill for the sentence-level pass.
 
 Read the plan top to bottom before Gate 1 and again after Gate 2: a reader with
-no context must say its purpose after the first line of Notes. If they cannot,
-the scope line is wrong, not the reader.
+no context must say its purpose after the Summary. If they cannot, the Summary
+is wrong, not the reader.
 
 ### 4. Gate 1 - approve the shape
 
@@ -378,4 +398,5 @@ Summarize what ran. Ask whether it meets the plan. Done is your call. Record
 - Independent nodes still run one at a time.
 - Header links: front matter `related:` (`title`, `href`) renders as the header nav. Eight at most, one-to-three-word titles, the links a reader opens first.
 - Other links: a `## Links` section at the end, grouped by kind (Watch, Read, GitHub, Demos, Local). The header doesn't repeat them.
-- After plan edits: run `npm run plans`, then confirm the change at http://127.0.0.1:4323 (`npm run vault:serve`).
+- After plan edits: run `npm run vault`, then confirm the change at https://haight.realness.online/planning.
+- Open a plan: `https://haight.realness.online/vault#<itemid>`; itemid is in its frontmatter.

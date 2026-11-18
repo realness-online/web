@@ -67,6 +67,7 @@
     "deploy:proxy": "bash server/proxy/scripts/deploy.sh",
     "serve:halo": "node server/halo/main.js serve",
     "start:sync": "node server/sync/bin/sync-service.js",
+    "start:sync:watch": "node --watch server/sync/bin/sync-service.js",
     "start:redirect": "node tools/control/bin/http-redirect.js",
     "dev:sync": "node server/sync/bin/sync-service.js --dev",
     "start:proxy": "node server/proxy/bin/proxy-service.js",
@@ -217,5 +218,11 @@
   ],
   "allowScripts": {
     "canvas@3.2.3": true
+  },
+  "optionalDependencies": {
+    "@img/sharp-darwin-arm64": "0.35.4",
+    "@img/sharp-libvips-darwin-arm64": "1.3.3",
+    "@img/sharp-libvips-linux-arm64": "1.3.3",
+    "@img/sharp-linux-arm64": "0.35.4"
   }
 }

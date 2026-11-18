@@ -1,6 +1,7 @@
 <script setup>
   import { use_chat } from '@/use/chat'
   import { use_home_view } from '@/use/home-view'
+  import AsChatFooter from '@/components/chat/as-chat-footer.vue'
   import AsConnectionFeedback from '@/components/chat/as-connection-feedback.vue'
   import AsConversation from '@/components/chat/as-conversation.vue'
   import { info } from '@/utils/preference'
@@ -112,6 +113,20 @@
   }
 
   const failed = computed(() => Boolean(chat.connection_problem.value))
+  const shown_footer = computed(() => chat.footer.value)
+  /** Chat alone has no Pi actor, so the page's own plan names the row. */
+  const page_plan = ref('')
+  watch(
+    () => [shows.value.chat, route?.fullPath],
+    async () => {
+      await next_tick()
+      page_plan.value = route ? page_context(route).title : ''
+    },
+    { immediate: true }
+  )
+  const plan = computed(() => shown_footer.value?.plan || page_plan.value)
+  const branch = computed(() => shown_footer.value?.branch ?? null)
+  const footer_parts = computed(() => shown_footer.value?.parts ?? [])
   const status_line = computed(() =>
     failed.value || chat.status.value === 'Starting...' ? '' : chat.status.value
   )
@@ -151,6 +166,11 @@
     </header>
     <as-conversation ref="talk" :chat="chat" />
     <aside aria-label="Status">
+      <as-chat-footer
+        :plan="plan"
+        :branch="branch"
+        :branch_level="shown_footer?.branch_level"
+        :parts="footer_parts" />
       <section
         v-if="chat.taken.value"
         data-taken
@@ -232,7 +252,7 @@
       border-radius: base-line;
       background: var(--code-surface);
       overflow: auto;
-      &:not(:has(> section, > p:not(:empty), > #fps)) {
+      &:not(:has(> section, > p:not(:empty), > footer, > #fps)) {
         min-block-size: 0;
         padding-block: 0;
       }
@@ -274,7 +294,7 @@
     }
   }
   @media (orientation: landscape), (max-width: (display-begins / 2)) {
-    aside#chat-panel > aside:not(:has(> section, > p:not(:empty), > #fps)) {
+    aside#chat-panel > aside:not(:has(> section, > p:not(:empty), > footer, > #fps)) {
       display: none;
     }
     aside#chat-panel > aside {
@@ -284,7 +304,7 @@
       flex: 0 0 auto;
       block-size: 'calc(%s + 2px)' % (base-line * 2);
       min-block-size: 'calc(%s + 2px)' % (base-line * 2);
-      &:has(> p:not(:empty)), &:has(> section) {
+      &:has(> p:not(:empty)), &:has(> section), &:has(> footer) {
         block-size: auto;
         min-block-size: base-line * 3;
       }

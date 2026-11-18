@@ -13,7 +13,6 @@ const ROUTING = {
 }
 /** The house model thinks briefly unless the caller asks for more. */
 const REASONING = { effort: 'low' }
-const TIMEOUT_MS = 120_000
 const LIMIT = LIMIT_MIB * MIB
 
 /**
@@ -44,8 +43,7 @@ export const call_upstream = (
         !body.reasoning &&
         !body.reasoning_effort && { reasoning: REASONING }),
       usage: { include: true }
-    }),
-    signal: AbortSignal.timeout(TIMEOUT_MS)
+    })
   })
 
 /** @param {AsyncIterable<Uint8Array>} request */

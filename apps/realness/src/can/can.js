@@ -6,10 +6,13 @@ import { has_escape, unsafe_part } from '#root/lib/path-parts.js'
  *         `{ instance: "/+A/harnesses/<id>" }` for a harness instance,
  *         `{ halo_name: "realness-1" }` for a halo holding a record pass,
  *         `{ gate: "realness-1" }` for the gate that may wake that halo.
+ *         `member_of` on who lists the orgs the caller is in, for grants
+ *         naming an org.
  * action  "get", "list", "write", or "delete".
  * path    a storage key: `people/+A/...`, `subscriptions/+A/...`, `usage/+A/...`, `billing/+A/...`,
  *         `loops/<id>/...`, or `halos/<name>/...`.
- * grants  triples read from the owner's rights page (see rights.js).
+ * grants  triples read from the owner's rights page (see rights.js). A grantee is
+ *         `/+A/harnesses/<id>` for a harness, `/+name` for an org, or `commons`.
  * org     for `orgs/+name/...` and `commons/+name/...`: `{ founder, members }` from that org's
  *         members page (see members.js), or null when it has none.
  *
@@ -54,20 +57,6 @@ const subject = who => {
     return { gate: who.gate }
   return {}
 }
-
-/** Plans are public: an admin reveals them, as the published plans site does. */
-const PLANS_FOLDER = ['harness', 'vault', 'Projects']
-
-/**
- * A path under the person's vault plans folder. Reads only, and the folder
- * itself is never listed.
- * @param {string} action
- * @param {string[]} rest the path below `people/+A/`
- */
-const is_plan = (action, rest) =>
-  action === 'get' &&
-  rest.length > PLANS_FOLDER.length &&
-  PLANS_FOLDER.every((part, at) => rest[at] === part)
 
 /** Anyone, signed in or not, may read this. */
 const is_public = (action, [first, ...inside]) => {
@@ -125,18 +114,50 @@ const halos_allowed = (action, owner, rest, me) => {
   return action === 'write' && (request || file === 'lifecycle.html')
 }
 
-/** A grant covers this path, from a harness the same person owns. */
+/** A grantee naming an org, `/+name`, or the commons, `commons`. */
+const ORG_GRANTEE = /^\/\+[a-z][a-z0-9-]{0,62}$/
+const COMMONS = 'commons'
+
+/**
+ * One permission read from a rights page.
+ * @typedef {{ action: string, grantee: string, path: string }} Grant
+ */
+
+/**
+ * The org a grantee names, `commons` for anyone, or null.
+ * @param {string} grantee
+ * @returns {string | null}
+ */
+export const grantee_org = grantee => {
+  if (grantee === COMMONS) return COMMONS
+  return ORG_GRANTEE.test(grantee ?? '') ? grantee.slice(1) : null
+}
+
+/**
+ * A grant covers this path for the harness the owner runs, for a member of
+ * the org it names, or for anyone when it names the commons. Writing what the
+ * commons was granted needs a signed-in person.
+ * @param {string} action
+ * @param {string} owner
+ * @param {string[]} parts
+ * @param {{ owner?: string, id?: string, phone?: string, member_of: string[] }} me
+ * @param {Grant[]} grants
+ */
 const granted = (action, owner, parts, me, grants) => {
-  if (parts[2] === 'harnesses' && parts[3] === me.id) return true
+  const own_harness = Boolean(me.id) && me.owner === owner
+  if (own_harness && parts[2] === 'harnesses' && parts[3] === me.id) return true
   if (parts.slice(2).join('/') === 'rights.html') return false
   const key = parts.join('/')
-  const instance = `/${me.owner}/harnesses/${me.id}`
-  return (Array.isArray(grants) ? grants : []).some(
-    grant =>
-      grant?.grantee === instance &&
-      GRANTED[grant.action]?.has(action) &&
-      covers(grant, owner, key)
-  )
+  const instance = own_harness ? `/${me.owner}/harnesses/${me.id}` : null
+  return (Array.isArray(grants) ? grants : []).some(grant => {
+    if (!GRANTED[grant?.action]?.has(action) || !covers(grant, owner, key))
+      return false
+    if (instance && grant.grantee === instance) return true
+    const org = grantee_org(grant.grantee)
+    if (org === COMMONS) return action !== 'write' || Boolean(me.phone)
+    if (!me.phone && !me.owner) return false
+    return typeof org === 'string' && me.member_of.includes(org)
+  })
 }
 
 /** st2: stored under a person, reached only as `usage/+A/...` and the like. */
@@ -148,8 +169,6 @@ const people_allowed = (action, owner, rest, me, grants) => {
   if (PERSONAL_FOLDERS.has(rest[0])) return false
   if (me.phone === owner) return true
   if (is_public(action, rest)) return true
-  if (is_plan(action, rest)) return true
-  if (me.owner !== owner) return false
   return granted(action, owner, ['people', owner, ...rest], me, grants)
 }
 
@@ -194,12 +213,17 @@ const trash_allowed = (action, kind, rest, me, org) => {
   return kind === 'orgs' && ORG.test(owner ?? '') && org?.founder === me.phone
 }
 
-/** @param {{ founder: string | null, members: string[] } | null} [org] */
+/**
+ * @param {{ founder: string | null, members: string[] } | null} [org] the path's org
+ */
 export const can = (who, action, path, grants = [], org = null) => {
   if (!ACTIONS.has(action)) return false
   const parts = segments(path)
   if (!parts) return false
-  const me = subject(who)
+  const me = {
+    ...subject(who),
+    member_of: Array.isArray(who?.member_of) ? who.member_of : []
+  }
   const [root, owner, ...rest] = parts
 
   if (root === 'subscriptions') return Boolean(owner) && me.phone === owner

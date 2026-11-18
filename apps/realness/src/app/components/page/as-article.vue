@@ -13,6 +13,7 @@
   } from 'vue'
   import { draw_diagrams, mark_diagrams } from '@/utils/diagrams'
   import '@/style/mermaid.css'
+  import '#root/tools/publish/renderer/static/scripts/diagrams.css'
 
   const props = defineProps({
     html: { type: String, required: true },

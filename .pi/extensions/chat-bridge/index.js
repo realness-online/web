@@ -82,6 +82,9 @@ const HANDOVER_PATH = '/realness/.handover/log.json'
 
 const model_name = model => (model ? `${model.provider}/${model.id}` : 'none')
 
+/** Event footer-filter emits with the footer's values. */
+const FOOTER_EVENT = 'footer:parts'
+
 const PRINT_REASON = 'This is a chat turn. The browser never sees tool output; write this text in your reply instead.'
 
 export function bridge(pi, { socket_path, chat_prompt = null, handover_path = HANDOVER_PATH }) {
@@ -101,6 +104,13 @@ export function bridge(pi, { socket_path, chat_prompt = null, handover_path = HA
 
   pi.on('session_start', (_event, context) => {
     ctx = context
+  })
+
+  /** The footer as Pi last drew it; null until its first draw. */
+  let footer = null
+  pi.events.on(FOOTER_EVENT, parts => {
+    footer = { type: 'footer', ...parts }
+    broadcast(footer)
   })
 
   /** Sockets waiting on the new-session command. */
@@ -285,6 +295,7 @@ export function bridge(pi, { socket_path, chat_prompt = null, handover_path = HA
         if (!ctx) return fail('Pi is still starting')
         send(socket, { type: 'history', messages: history_of(ctx.sessionManager?.getBranch?.()) })
         if (!ctx.isIdle()) send(socket, { type: 'working', on: true })
+        if (footer) send(socket, footer)
         watchers.add(socket)
         return
       }

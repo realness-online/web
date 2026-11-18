@@ -16,6 +16,9 @@ import { key_layouts, key_page } from './vault-keys.js'
 import { map_prose, modules_data, ways_in_data } from './vault-maps.js'
 import { page_files, tool_page } from './vault-pages.js'
 import { plan_summary } from './vault-plans.js'
+import { blog_page } from './blog-pages.js'
+import { project_root } from '#root/src/settings/layout.js'
+import { poster_svg } from './vault-posters.js'
 
 const LIMIT_MAX = 25
 /** Notes a search returns when the caller does not say. */
@@ -197,6 +200,24 @@ const tool_readers = ({ dir, artifacts }) => ({
 })
 
 /**
+ * @param {string | null | undefined} dir vault folder
+ * @returns {Promise<import('./vault-pages.js').ToolPage[]>}
+ */
+const tool_pages = async dir => {
+  if (!dir || !exists_sync(dir)) return []
+  const paths = await page_files(dir)
+  const pages = await Promise.all(
+    paths.map(async path => {
+      const text = await read_file(join(dir, path), 'utf8').catch(() => null)
+      return text === null ? null : tool_page(path, text)
+    })
+  )
+  return pages
+    .filter(page => page !== null)
+    .sort((a, b) => a.title.localeCompare(b.title))
+}
+
+/**
  * The vault door sync serves at `/v1/vault/`; `ready` is false until all three are set.
  * @param {{ dir: string | null, index: string | null, owner: string | null, artifacts?: string | null }} config
  */
@@ -289,24 +310,28 @@ export const vault_door = ({ dir, index, owner, artifacts }) => {
       }
     },
     /**
+     * A page an article frames, when the blog app publishes it by that name.
+     * @param {unknown} name
+     * @returns {Promise<string | null>}
+     */
+    blog_page(name) {
+      return dir ? blog_page(project_root, dir, name) : Promise.resolve(null)
+    },
+    /**
+     * One blog poster's SVG, or null when the vault has no such poster.
+     * @param {unknown} name
+     * @returns {Promise<string | null>}
+     */
+    poster(name) {
+      return dir ? poster_svg(dir, name) : Promise.resolve(null)
+    },
+    /**
      * Every tool page in the vault, by title. Read from disk, since the note
      * index holds markdown alone.
      * @returns {Promise<import('./vault-pages.js').ToolPage[]>}
      */
-    async pages() {
-      if (!dir || !exists_sync(dir)) return []
-      const paths = await page_files(dir)
-      const pages = await Promise.all(
-        paths.map(async path => {
-          const text = await read_file(join(dir, path), 'utf8').catch(
-            () => null
-          )
-          return text === null ? null : tool_page(path, text)
-        })
-      )
-      return pages
-        .filter(page => page !== null)
-        .sort((a, b) => a.title.localeCompare(b.title))
+    pages() {
+      return tool_pages(dir)
     },
     ...tool_readers({ dir, artifacts }),
     /**

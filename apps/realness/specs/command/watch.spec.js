@@ -27,6 +27,9 @@ import {
   local_light_lines,
   local_panel_lines,
   halo_panel_lines,
+  mix_bar,
+  model_bar_rows,
+  sync_fresh_lines,
   with_machines,
   interval_for,
   panel,
@@ -35,6 +38,7 @@ import {
   sync_lines
 } from '../../src/command/watch-terminal.js'
 import { in_place, watch } from '../../src/command/watch-loop.js'
+import { size_class, stack } from '../../src/command/watch-layout.js'
 import { sync_records } from '../../src/command/command.js'
 
 const phone = '+15555550123'
@@ -383,8 +387,8 @@ it("the wide dashboard shows today's calls in the model tile", () => {
     height: 40,
     on: false
   })
-  assert.match(text, /MODEL SPEND/)
-  assert.match(text, /CALLS 2 calls  0 errors \(0\.0%\)/)
+  assert.match(text, /╭─ model /)
+  assert.match(text, /calls 2 calls  0 errors \(0\.0%\)/)
 })
 
 it('the frame holds the panels, interval, and controls', () => {
@@ -481,7 +485,7 @@ it('a failed panel prints its error and the time of the last read', () => {
     on: false,
     details: true
   })
-  assert.match(text, /FAILED boom/)
+  assert.match(text, /failed boom/)
   assert.match(text, /last read 16:59:00Z/)
 })
 
@@ -539,11 +543,11 @@ it('daily spend reaches the frame through the ledger and health snapshot', async
   const text = frame({
     snapshot,
     on: false,
-    width: 100,
+    width: 130,
     height: 60,
     details: true
   })
-  assert.match(text, /TODAY \$2\.00  MONTH \$3\.00/)
+  assert.match(text, /today \$2\.00  month \$3\.00/)
   assert.ok(!text.includes('tok today'))
   assert.match(text, /10-01 to 10-03; daily/)
   assert.ok(
@@ -607,15 +611,15 @@ it('the watch report sums every person and reaches the frame', async () => {
   const text = frame({
     snapshot,
     on: false,
-    width: 100,
+    width: 130,
     height: 60,
     details: true
   })
   assert.match(text, /MODEL CALLS - today, all people/)
   assert.match(text, /2 calls  1 error \(50\.0%\)  p50 100ms  p95 900ms/)
-  assert.match(text, /model m  2 calls  1 errors  p95 900ms/)
+  assert.match(text, /model m {2}██████ 2 calls 1 err ████ 900ms/)
   const compact = frame({ snapshot, on: false, width: 100, height: 40 })
-  assert.match(compact, /cloud: model calls: 2 calls  1 error/)
+  assert.match(compact, /cloud: model: 1 error today/)
 })
 
 it('a failed watch report is visible, not a zero', async () => {
@@ -718,7 +722,7 @@ it('missing billing data never presents a zero-dollar cloud total', () => {
     100,
     false
   ).join('\n')
-  assert.match(text, /UNAVAILABLE/)
+  assert.match(text, /unavailable/)
   assert.ok(!text.includes('$0.00'))
   const bill = {
     total: 5.47,
@@ -733,7 +737,7 @@ it('missing billing data never presents a zero-dollar cloud total', () => {
     100,
     false
   ).join('\n')
-  assert.match(present, /MONTH \$5.47/)
+  assert.match(present, /month \$5.47/)
   assert.match(present, /Firebase Hosting/)
   assert.doesNotMatch(present, /behind/)
 })
@@ -747,7 +751,7 @@ it('billing details show times in local time', () => {
   }
   const text = frame({
     snapshot: { panels: { billing: { status: 'ok', exports: [bill] } } },
-    width: 100,
+    width: 130,
     height: 60,
     on: false,
     details: true
@@ -778,7 +782,7 @@ it('sync shows a summary and wraps full problem paths', () => {
     false,
     20
   )
-  assert.equal(lines[0], '1/2 folders readable; 0 without a local sync record')
+  assert.equal(lines[0], '1/2 readable')
   assert.equal(lines.slice(1).join(''), `Cannot read: ${folder}`)
 })
 
@@ -863,10 +867,10 @@ it('main view shows charts and cloud power state without diagnostic noise', () =
     on: false,
     now: Date.parse('2026-10-11T18:00:00Z')
   })
-  assert.match(text, /MONTH \$37.11/)
+  assert.match(text, /month \$37.11/)
   assert.doesNotMatch(text, /behind/)
-  assert.match(text, /Compute Engine \$36.32 #/)
-  assert.match(text, /chat-ui +\S+ RUNNING/)
+  assert.match(text, /Compute Engine \$36.32 █/)
+  assert.match(text, /chat-ui +\S+ running/)
   assert.match(text, /20 GB retained/)
   for (const noise of [
     'realness.billing.export',
@@ -911,7 +915,13 @@ it('details keep deleted machine reports separate from empty cloud inventory', (
       }
     }
   }
-  const text = frame({ snapshot, details: true, on: false, height: 60 })
+  const text = frame({
+    snapshot,
+    details: true,
+    on: false,
+    width: 130,
+    height: 60
+  })
   assert.match(text, /Cloud inventory: 0 machines, 0 disks/)
   assert.match(text, /AGENT REPORT HISTORY/)
   assert.match(text, /realness-demo  last agent report 27m ago/)
@@ -947,7 +957,7 @@ it('stopped cloud machines still show retained disk costs', () => {
     false
   ).join('\n')
   assert.match(text, /0 running cloud machines  1 stopped/)
-  assert.match(text, /chat-ui  STOPPED/)
+  assert.match(text, /chat-ui  stopped/)
   assert.match(text, /30 GB retained - storage charges continue/)
   assert.match(text, /1 disks are unattached/)
 })
@@ -964,11 +974,11 @@ it('cost bars preserve small costs and negative credits', () => {
   assert.ok(lines.every(line => line.length <= 40))
   assert.match(
     lines.find(line => line.startsWith('Storage')),
-    /\$0.01 #/
+    /\$0.01 ▏·/
   )
   assert.match(
     lines.find(line => line.startsWith('Credits')),
-    /\$-2.00 -/
+    /\$-2.00 █/
   )
 })
 
@@ -1115,7 +1125,10 @@ it('a resize redraws at the new width without reading services again', async () 
   controller.abort()
   await loop
   assert.equal(reads, 1)
-  const resized = stdout.written[1].replace(/\x1b\[[0-9;]*[A-Za-z]/g, '')
+  const resized = stdout.written
+    .filter(text => text.includes('REALNESS SERVICE WATCH'))
+    .at(-1)
+    .replace(/\x1b\[[0-9;]*[A-Za-z]/g, '')
   assert.ok(resized.split('\n').every(line => [...line].length <= 30))
   assert.equal(stdout.listenerCount('resize'), 0)
 })
@@ -1281,7 +1294,7 @@ it('a narrow halo panel keeps the actor labels and drops the age', () => {
 
 it('a local halo that was not read says how to start one', () => {
   const lines = local_panel_lines(null, false, 200)
-  assert.match(lines[0], /UNAVAILABLE/)
+  assert.match(lines[0], /unavailable/)
   assert.match(lines[1], /run npm run local/)
 })
 
@@ -1293,7 +1306,7 @@ it('with no local halo reading, nothing local is drawn', () => {
   assert.doesNotMatch(health_lights(panels, false, 200).join(' '), /local/)
 })
 
-it('a tall dashboard gives the local halo its own tile above the cloud tiles', () => {
+it('a tall dashboard gives the local halo its own tile', () => {
   const panels = {
     halos: { status: 'ok', rows: [] },
     services: { status: 'ok', rows: [] },
@@ -1311,7 +1324,7 @@ it('a tall dashboard gives the local halo its own tile above the cloud tiles', (
     height: 40,
     on: false
   })
-  assert.match(text, /LOCAL/)
+  assert.match(text, /╭─ local /)
   assert.match(text, /127\.0\.0\.1:18080/)
   assert.match(text, /local: halo up at 127\.0\.0\.1:18080/)
   assert.match(text, /cloud: 0 services ready/)
@@ -1335,7 +1348,7 @@ it('a short dashboard drops the local tile rather than overflow the window', () 
     height: 18,
     on: false
   })
-  assert.doesNotMatch(text, /LOCAL/)
+  assert.doesNotMatch(text, /╭─ local /)
   assert.match(local_panel_lines(panels.local, false, 200)[1], /no actors yet/)
   const no_seed = {
     status: 'ok',
@@ -1349,4 +1362,852 @@ it('a short dashboard drops the local tile rather than overflow the window', () 
     local_panel_lines(no_seed, false, 200)[0],
     /not in this checkout/
   )
+})
+
+const layout_now = Date.parse('2026-10-11T18:00:00Z')
+const layout_days = Array.from(
+  { length: 11 },
+  (_, at) => `2026-10-${String(at + 1).padStart(2, '0')}`
+)
+const layout_snapshot = {
+  panels: {
+    billing: {
+      status: 'ok',
+      exports: [
+        {
+          total: 37.11,
+          daily: layout_days.map((date, at) => ({
+            date,
+            cost: 1 + ((at * 7) % 5)
+          })),
+          rows: [
+            { service: 'Compute Engine', net: 30.32 },
+            { service: 'Cloud Run', net: 4.79 }
+          ]
+        }
+      ]
+    },
+    halos: { status: 'ok', rows: [] },
+    services: { status: 'ok', rows: [] },
+    sync: {
+      status: 'ok',
+      rows: [{ folder: 'practice/', listing: true, last_sync: null }]
+    },
+    publish: { status: 'ok', rows: [{ phone, sites: 2 }] },
+    cost: { rows: [{ phone, day: { cost: 0 }, month: { cost: 0 } }] },
+    model: {
+      status: 'ok',
+      totals: {
+        calls: 12,
+        errors: 0,
+        error_rate: 0,
+        p50_ms: 900,
+        p95_ms: 4000,
+        cache_hit_rate: 0.5,
+        cost: 0.4
+      },
+      by_model: [
+        { name: 'sonnet', calls: 12, errors: 0, p95_ms: 4000, cost: 0.4 }
+      ],
+      by_client: []
+    },
+    traffic: {
+      people: 70,
+      deeper: 12,
+      outside: 5,
+      previous: 50,
+      newest: new Date(layout_now).toISOString(),
+      daily: layout_days.map((date, at) => ({ date, people: 3 + at }))
+    }
+  }
+}
+
+/** The plain rows between the head and the controls, each checked for width. */
+const layout_rows = (width, height, offset = 0) => {
+  const lines = frame({
+    snapshot: layout_snapshot,
+    width,
+    height,
+    offset,
+    on: false,
+    now: layout_now
+  })
+    .trimEnd()
+    .split('\n')
+  assert.equal(lines.length, height)
+  const rows = lines.slice(1, -1)
+  for (const row of rows) assert.equal([...row].length, width)
+  return { rows, text: lines.join('\n'), controls: lines.at(-1) }
+}
+const boxes_across = row => row.match(/╭─/g)?.length ?? 0
+
+it('terminal size picks small, medium, tall, or wide', () => {
+  assert.equal(size_class(80, 24), 'small')
+  assert.equal(size_class(200, 17), 'small')
+  assert.equal(size_class(120, 40), 'medium')
+  assert.equal(size_class(160, 100), 'tall')
+  assert.equal(size_class(179, 50), 'medium')
+  assert.equal(size_class(180, 50), 'wide')
+  assert.equal(size_class(300, 80), 'wide')
+})
+
+it('a column keeps its order, shows only whole boxes, and grows only what can grow', () => {
+  const lines = count => Array.from({ length: count }, () => 'x')
+  const boxes = [
+    { name: 'chart', title: 'chart', lines: lines(2), max: 6 },
+    { name: 'extra', title: 'extra', lines: lines(4) },
+    { name: 'must', title: 'must', lines: lines(1) }
+  ]
+  boxes[0].grow = extra => lines(2 + extra)
+  const short = stack(boxes, 8, ['must', 'chart', 'extra'])
+  assert.deepEqual(
+    short.map(box => [box.name, box.height]),
+    [
+      ['chart', 5],
+      ['must', 3]
+    ]
+  )
+  const roomy = stack(boxes, 20, ['must', 'chart', 'extra'])
+  assert.deepEqual(
+    roomy.map(box => [box.name, box.height]),
+    [
+      ['chart', 6],
+      ['extra', 6],
+      ['must', 3]
+    ]
+  )
+  assert.equal(roomy[0].lines.length, 4)
+  assert.deepEqual(stack(boxes, 2, ['must']), [])
+})
+
+it('a small terminal stacks its boxes in one column that scrolls', () => {
+  const top = layout_rows(80, 24)
+  assert.match(top.rows[0], /^╭─ cloud-billing ─+╮$/)
+  assert.ok(top.rows.every(row => boxes_across(row) <= 1))
+  assert.match(top.controls, /rows 1-22\/\d+ {2}j\/k scroll/)
+  assert.doesNotMatch(top.text, /daily-cost|daily-traffic|publish/)
+  const down = layout_rows(80, 24, 1)
+  assert.equal(down.rows[0], top.rows[1])
+  assert.match(down.controls, /rows 2-23\//)
+})
+
+it('a medium terminal caps the chart and fills the rows it frees', () => {
+  const { rows, text } = layout_rows(120, 40)
+  assert.match(rows[0], /^╭─ cloud-spend .*╮╭─ cloud-health .*╮$/)
+  assert.ok(rows.every(row => boxes_across(row) <= 2))
+  assert.equal(
+    layout_rows(170, 60).rows.findIndex(row => row.startsWith('╰')),
+    15
+  )
+  assert.match(text, /╭─ daily-cost /)
+  assert.match(text, /10-11 █+·* \$1\.00/)
+  assert.match(text, /╭─ model /)
+  assert.match(text, /╭─ sync /)
+  assert.equal(text.match(/╭─/g).length, text.match(/╰─/g).length)
+})
+
+it('a tall terminal puts the chart across the top, two columns below', () => {
+  const { rows, text } = layout_rows(160, 100)
+  const chart_rows = rows.findIndex(row => row.startsWith('╰')) + 1
+  assert.equal(chart_rows, 16)
+  for (const row of rows.slice(0, chart_rows))
+    assert.doesNotMatch(row, /╮╭|││|╯╰/)
+  assert.match(rows[chart_rows], /^╭─ budget ─+╮╭─ cloud-health ─+╮$/)
+  for (const title of ['daily-cost', 'daily-traffic', 'sync', 'publish'])
+    assert.match(text, new RegExp(`╭─ ${title} `))
+  assert.match(text, /10-11 █+ 13 people/)
+})
+
+it('a wide terminal draws three columns', () => {
+  const { rows, text } = layout_rows(300, 80)
+  assert.match(
+    rows[0],
+    /^╭─ cloud-spend .*╮╭─ site-traffic .*╮╭─ cloud-health .*╮$/
+  )
+  assert.ok(rows.every(row => boxes_across(row) <= 3))
+  assert.match(text, /╭─ publish ─+╮/)
+  assert.match(text, new RegExp(`${phone.replace('+', '\\+')} {2}sites 2`))
+  assert.equal(size_class(179, 90), 'tall')
+})
+
+it('a large terminal shows the details as boxes and offers no second page', () => {
+  const large = frame({
+    snapshot: layout_snapshot,
+    width: 300,
+    height: 80,
+    on: false,
+    details: true,
+    now: layout_now
+  })
+  assert.match(large, /╭─ model /)
+  assert.match(large, /╭─ cloud-machines /)
+  assert.match(large, /No local sync record: practice\//)
+  assert.doesNotMatch(large, /d details|d costs|BILLING DETAILS/)
+  const medium = layout_rows(120, 40)
+  assert.match(medium.controls, /d details/)
+  assert.doesNotMatch(medium.text, /practice\//)
+})
+
+it('each thing has one name and one box', () => {
+  const snapshot = {
+    panels: {
+      ...layout_snapshot.panels,
+      sign_on: { status: 'ok', rows: [{ phone, expires_at: null }] },
+      services: {
+        status: 'ok',
+        rows: [{ name: 'realness-sync', found: true, ready: true }]
+      },
+      resources: {
+        status: 'ok',
+        inventories: [
+          {
+            project: 'realness',
+            instances: [
+              { name: 'chat-ui', status: 'RUNNING', machine: 'n2-standard-4' }
+            ],
+            disks: [{ name: 'boot', size_gb: 20, attached: ['chat-ui'] }]
+          }
+        ]
+      },
+      local: {
+        status: 'ok',
+        url: 'http://127.0.0.1:18080/v1/health',
+        state: 'running',
+        seed: 'built',
+        actors: { running: 1, idle: 0, stopped: 2 }
+      }
+    }
+  }
+  const text = frame({
+    snapshot,
+    width: 300,
+    height: 80,
+    on: false,
+    now: layout_now
+  })
+  const names = [
+    'model',
+    'local',
+    'cloud-health',
+    'cloud-machines',
+    'cloud-halos',
+    'status',
+    'sync',
+    'publish',
+    'sign-on'
+  ]
+  for (const name of names)
+    assert.equal(text.match(new RegExp(`╭─ ${name} `, 'g'))?.length, 1, name)
+  for (const gone of [
+    'model-spend',
+    'model-calls',
+    'model-ledger',
+    'local-halo',
+    'cloud-resources',
+    'agent-reports',
+    'billing-details',
+    'cloud-services'
+  ])
+    assert.doesNotMatch(text, new RegExp(gone))
+  assert.match(text, /n2-standard-4/)
+  assert.match(text, /realness-sync {2}ready/)
+  assert.match(text, /model sonnet {2}██████ 12 calls/)
+  assert.doesNotMatch(text, /cloud: model calls/)
+})
+
+const healthy_panels = {
+  billing: { status: 'ok', exports: [] },
+  resources: { status: 'ok', inventories: [] },
+  halos: { status: 'ok', rows: [{ name: 'chat-ui', state: 'running' }] },
+  services: {
+    status: 'ok',
+    rows: ['sync', 'proxy', 'gate'].map(name => ({
+      name: `realness-${name}`,
+      found: true,
+      ready: true
+    }))
+  },
+  local: { status: 'ok', url: 'http://127.0.0.1:18080/v1/health' },
+  sync: { status: 'ok', rows: [{ folder: 'vault/', listing: true }] },
+  cost: { status: 'ok', rows: [] },
+  model: { status: 'ok', totals: { calls: 0 } },
+  traffic: { people: 1, deeper: 0, outside: 0, daily: [] }
+}
+
+/** The head row, which carries the verdict on every layout. */
+const head_row = (panels, width = 120, height = 40) =>
+  frame({
+    snapshot: { panels },
+    width,
+    height,
+    on: false,
+    now: layout_now
+  })
+    .split('\n')
+    .at(0)
+
+it('the head answers all ok in one line', () => {
+  const healthy = head_row(healthy_panels)
+  assert.match(healthy, /every 60s {2}all ok/)
+  assert.equal(healthy.match(/all ok/g).length, 1)
+  assert.ok([...healthy].length <= 120)
+  assert.equal(
+    head_row({ ...healthy_panels, cost: { status: 'failed' } }),
+    healthy.replace('all ok', '1 down')
+  )
+  assert.match(
+    head_row({
+      ...healthy_panels,
+      halos: { status: 'ok', rows: [{ name: 'chat-ui', state: 'quiet' }] }
+    }),
+    /1 warn/
+  )
+  assert.match(head_row({}), /no data/)
+  assert.match(
+    head_row({ ...healthy_panels, traffic: { status: 'failed' } }, 300, 80),
+    /1 down/
+  )
+})
+
+/** A row inside a box that carries nothing. */
+const blank_body = row => row.includes('│') && row.replace(/[│\s]/g, '') === ''
+
+it('spare rows grow the charts and leave no blank box', () => {
+  const { rows, text } = layout_rows(160, 100)
+  const chart_rows = rows.findIndex(row => row.startsWith('╰')) + 1
+  assert.equal(chart_rows, 16)
+  assert.match(text, /10-11 █+·* \$1\.00/)
+  assert.equal(text.match(/│ \d\d-\d\d █/g).length, 22)
+  assert.equal(rows.at(-1).trim(), '')
+  for (let at = 1; at < rows.length; at++)
+    assert.ok(!(blank_body(rows[at]) && blank_body(rows[at - 1])), rows[at])
+  const split = layout_rows(80, 24)
+  assert.match(split.rows[0], /^╭─ cloud-billing ─+╮$/)
+  assert.match(split.controls, /j\/k scroll/)
+})
+
+it('a growing box shows more of its own data and stops at its cap', () => {
+  const services = Array.from({ length: 9 }, (_, at) => ({
+    service: `svc${at}`,
+    net: 9 - at
+  }))
+  const models = Array.from({ length: 6 }, (_, at) => ({
+    name: `mod${at}`,
+    calls: 6 - at,
+    errors: 0,
+    p95_ms: 100,
+    cost: 0.1
+  }))
+  const panels = {
+    ...layout_snapshot.panels,
+    billing: {
+      status: 'ok',
+      exports: [
+        {
+          total: 45,
+          daily: layout_snapshot.panels.billing.exports[0].daily,
+          rows: services
+        }
+      ]
+    },
+    model: {
+      status: 'ok',
+      totals: {
+        calls: 21,
+        errors: 0,
+        error_rate: 0,
+        p50_ms: 100,
+        p95_ms: 200,
+        cache_hit_rate: 0,
+        cost: 0.6
+      },
+      by_model: models,
+      by_client: []
+    }
+  }
+  const drawn = (width, height) =>
+    frame({ snapshot: { panels }, width, height, on: false, now: layout_now })
+  const medium = drawn(120, 40)
+  const large = drawn(160, 100)
+  const named = (text, pattern) =>
+    text.match(new RegExp(pattern, 'g'))?.length ?? 0
+  assert.equal(named(medium, '│ svc\\d '), 5)
+  assert.match(medium, /Other/)
+  assert.equal(named(medium, 'model mod\\d '), 1)
+  assert.equal(named(large, '│ svc\\d '), 9)
+  assert.equal(named(large, 'model mod\\d '), 6)
+  for (const text of [medium, large])
+    assert.ok(!text.split('\n').some(blank_body))
+})
+
+it('a halo draws its actor mix and a disk draws its size', () => {
+  const halos = {
+    status: 'ok',
+    rows: [
+      {
+        name: 'chat-ui',
+        state: 'running',
+        age_s: 40,
+        actors: { running: 1, idle: 2, stopped: 1 }
+      },
+      { name: 'parked', state: 'parked', age_s: 400, actors: null }
+    ]
+  }
+  const lines = halo_panel_lines(halos, false, 60)
+  assert.match(lines[0], /^chat-ui {2}1 run 2 idle 1 stop {2}40s ago$/)
+  assert.match(lines[1], /^██▓▓▓▓·· {2}mem .*disk /)
+  assert.match(lines[2], /^parked {2}parked {2}6m ago$/)
+  assert.equal(mix_bar({ running: 0, idle: 0, stopped: 0 }, 4, false), '····')
+  assert.equal(mix_bar({ running: 3 }, 4, true), '\x1b[32m████\x1b[0m')
+  const panels = {
+    resources: {
+      status: 'ok',
+      inventories: [
+        {
+          project: 'p',
+          instances: [{ name: 'chat-ui', status: 'RUNNING', machine: 'n2' }],
+          disks: [
+            { name: 'boot', size_gb: 20, attached: ['chat-ui'] },
+            { name: 'old', size_gb: 10, attached: [] }
+          ]
+        }
+      ]
+    }
+  }
+  const text = frame({
+    snapshot: { panels },
+    width: 160,
+    height: 100,
+    on: false,
+    now: layout_now
+  })
+  assert.match(text, /boot {2}████████ 20 GB {2}chat-ui/)
+  assert.match(text, /old {2}████···· 10 GB {2}unattached/)
+})
+
+it('a model row draws its calls and its latency', () => {
+  const panels = {
+    cost: { rows: [{ phone, day: { cost: 0 }, month: { cost: 0 } }] },
+    model: {
+      status: 'ok',
+      totals: {
+        calls: 10,
+        errors: 1,
+        error_rate: 0.1,
+        p50_ms: 100,
+        p95_ms: 4000,
+        cache_hit_rate: 0,
+        cost: 0.6
+      },
+      by_model: [
+        { name: 'mod0', calls: 6, errors: 0, p95_ms: 4000, cost: 0.3 },
+        { name: 'mod1', calls: 3, errors: 1, p95_ms: 2000, cost: 0.2 },
+        { name: 'mod2', calls: 1, errors: 0, p95_ms: 100, cost: 0.1 }
+      ],
+      by_client: []
+    }
+  }
+  const text = frame({
+    snapshot: { panels },
+    width: 160,
+    height: 100,
+    on: false,
+    now: layout_now
+  })
+  assert.match(text, /model mod0 {2}██████ 6 calls ████ 4000ms/)
+  assert.match(text, /model mod1 {2}███··· 3 calls 1 err ██·· 2000ms/)
+  assert.match(text, /model mod2 {2}█····· 1 call ▏··· 100ms/)
+  const colored = frame({
+    snapshot: { panels },
+    width: 160,
+    height: 100,
+    on: true,
+    now: layout_now
+  })
+  assert.match(colored, /\x1b\[32m██████\x1b\[0m 6 calls/)
+  assert.match(colored, /\x1b\[31m████\x1b\[0m 4000ms/)
+  assert.match(colored, /\x1b\[33m██··\x1b\[0m 2000ms/)
+  assert.match(colored, /\x1b\[32m▏···\x1b\[0m 100ms/)
+  const rows = model_bar_rows('model', panels.model.by_model, 60, false)
+  assert.match(rows[0], /^model mod0 +██████ 6 calls ████ 4000ms$/)
+  assert.match(rows[1], /^model mod1 +███··· 3 calls 1 err ██·· 2000ms$/)
+  assert.match(rows[2], /^model mod2 +█····· 1 call ▏··· 100ms$/)
+  assert.match(
+    model_bar_rows('model', panels.model.by_model, 36, false)[0],
+    /^model mod0 {2}6 calls p95 4000ms \$0\.30$/
+  )
+})
+
+it('a sync row draws how fresh its last sync is', () => {
+  const rows = [
+    {
+      folder: 'vault/',
+      listing: true,
+      newest: new Date(layout_now - 60_000).toISOString()
+    },
+    {
+      folder: 'practice/',
+      listing: true,
+      newest: new Date(layout_now - 3 * 86_400_000).toISOString()
+    },
+    { folder: 'archive/', listing: true, last_sync: null }
+  ]
+  const plain = sync_fresh_lines(rows, false, layout_now)
+  assert.match(plain[0], /^vault\/ {2}██████ 1m ago$/)
+  assert.match(plain[1], /^practice\/ {2}······ 3d ago$/)
+  assert.match(plain[2], /^archive\/ {2}······ never$/)
+  const colored = sync_fresh_lines(rows, true, layout_now)
+  assert.match(colored[0], /\x1b\[32m██████\x1b\[0m 1m ago/)
+  assert.match(colored[1], /\x1b\[31m······\x1b\[0m 3d ago/)
+  const text = frame({
+    snapshot: { panels: { sync: { status: 'ok', rows } } },
+    width: 160,
+    height: 100,
+    on: false,
+    now: layout_now
+  })
+  assert.match(text, /╭─ sync /)
+  assert.match(text, /vault\/ {2}██████ 1m ago/)
+  assert.match(text, /No local sync record: archive\//)
+  const medium = frame({
+    snapshot: { panels: { sync: { status: 'ok', rows } } },
+    width: 120,
+    height: 40,
+    on: false,
+    now: layout_now
+  })
+  assert.doesNotMatch(medium, /1m ago/)
+})
+
+it('a medium screen gets one detail row per box', () => {
+  const panels = {
+    billing: { status: 'ok', exports: [] },
+    services: {
+      status: 'ok',
+      rows: ['svc-a', 'svc-b', 'svc-c'].map(name => ({
+        name,
+        found: true,
+        ready: true
+      }))
+    },
+    resources: {
+      status: 'ok',
+      inventories: [
+        {
+          project: 'p',
+          instances: [
+            { name: 'chat-ui', status: 'RUNNING', machine: 'n2-standard-4' },
+            { name: 'other', status: 'TERMINATED', machine: 'e2-small' }
+          ],
+          disks: [
+            { name: 'boot', size_gb: 50, attached: ['chat-ui'] },
+            { name: 'old', size_gb: 10, attached: [] }
+          ]
+        }
+      ]
+    },
+    sync: {
+      status: 'ok',
+      rows: [
+        {
+          folder: 'vault/',
+          listing: true,
+          newest: new Date(layout_now - 60_000).toISOString(),
+          last_sync: new Date(layout_now - 60_000).toISOString()
+        },
+        {
+          folder: 'practice/',
+          listing: true,
+          newest: new Date(layout_now - 3 * 86_400_000).toISOString(),
+          last_sync: new Date(layout_now - 3 * 86_400_000).toISOString()
+        }
+      ]
+    },
+    cost: { rows: [{ phone, day: { cost: 0 }, month: { cost: 0 } }] },
+    model: {
+      status: 'ok',
+      totals: {
+        calls: 10,
+        errors: 0,
+        error_rate: 0,
+        p50_ms: 100,
+        p95_ms: 400,
+        cache_hit_rate: 0,
+        cost: 0.5
+      },
+      by_model: [
+        { name: 'mod0', calls: 6, errors: 0, p95_ms: 400, cost: 0.3 },
+        { name: 'mod1', calls: 3, errors: 0, p95_ms: 300, cost: 0.2 },
+        { name: 'mod2', calls: 1, errors: 0, p95_ms: 100, cost: 0.1 }
+      ],
+      by_client: []
+    }
+  }
+  const count = (text, pattern) =>
+    text.match(new RegExp(pattern, 'g'))?.length ?? 0
+  const medium = frame({
+    snapshot: { panels },
+    width: 120,
+    height: 50,
+    on: false,
+    now: layout_now
+  })
+  const large = frame({
+    snapshot: { panels },
+    width: 160,
+    height: 100,
+    on: false,
+    now: layout_now
+  })
+  assert.equal(size_class(120, 50), 'medium')
+  assert.equal(count(medium, 'svc-'), 1)
+  assert.equal(count(medium, 'n2-standard-4'), 1)
+  assert.equal(count(medium, 'e2-small'), 0)
+  assert.equal(count(medium, 'model mod\\d '), 1)
+  assert.match(medium, /calls 10 calls {2}0 errors/)
+  assert.equal(count(medium, 'vault/'), 0)
+  assert.equal(count(large, 'svc-'), 3)
+  assert.equal(count(large, 'model mod\\d '), 3)
+  assert.equal(count(large, 'vault/'), 1)
+})
+
+it('health and money read first; detail boxes sit quiet', () => {
+  const panels = {
+    ...layout_snapshot.panels,
+    local: {
+      status: 'ok',
+      url: 'http://127.0.0.1:18080/v1/health',
+      state: 'running',
+      seed: 'built',
+      actors: { running: 1, idle: 0, stopped: 2 }
+    }
+  }
+  const draw = (width, height, on) =>
+    frame({ snapshot: { panels }, width, height, on, now: layout_now })
+  for (const [width, height] of [
+    [120, 40],
+    [160, 100],
+    [300, 80]
+  ]) {
+    const plain = draw(width, height, false)
+    const order = ['cloud-health', 'status', 'local'].map(name =>
+      plain.indexOf(`╭─ ${name} `)
+    )
+    assert.ok(
+      order.every(at => at > 0),
+      `${width}x${height}`
+    )
+    assert.deepEqual(
+      order,
+      order.toSorted((a, b) => a - b)
+    )
+    const colored = draw(width, height, true)
+    const dim = '\x1b[90m'
+    const clay = '\x1b[38;2;163;65;69m'
+    for (const name of ['sync', 'publish', 'daily-cost'])
+      assert.ok(colored.includes(`${dim}╭─ \x1b[0m${dim}${name}`), name)
+    for (const name of ['cloud-health', 'budget', 'status'])
+      assert.ok(colored.includes(`${clay}╭─ \x1b[0m`), name)
+    assert.ok(!colored.includes(`${dim}╭─ \x1b[0m${dim}cloud-health`))
+    assert.ok(!colored.includes(`${dim}╭─ \x1b[0m${dim}budget`))
+  }
+})
+
+it('every dashboard chart is Braille and every bar is a block', () => {
+  const panels = {
+    ...layout_snapshot.panels,
+    cost: {
+      rows: [
+        {
+          phone,
+          day: { cost: 0.4, calls: 2, used: 9000 },
+          month: { cost: 6.2, calls: 30, used: 240000 },
+          daily: layout_days.map((date, at) => ({
+            date,
+            cost: at / 10,
+            used: at * 1000
+          }))
+        }
+      ]
+    }
+  }
+  const box_rows = (text, title) => {
+    const at = text.indexOf(`╭─ ${title} `)
+    const lines = text.split('\n')
+    const col = text.slice(0, at).split('\n').at(-1).length
+    const width =
+      lines
+        .find(row => row.includes(`╭─ ${title} `))
+        .slice(col)
+        .indexOf('╮') + 1
+    const column = lines.map(row => row.slice(col, col + width))
+    const from = column.findIndex(row => row.startsWith(`╭─ ${title} `))
+    const body = []
+    for (const row of column.slice(from + 1)) {
+      if (row.startsWith('╰')) break
+      body.push(row)
+    }
+    return body
+  }
+  const braille_rows = (text, title) =>
+    box_rows(text, title).filter(row => /[\u2801-\u28ff]/.test(row)).length
+  for (const [width, height] of [
+    [120, 40],
+    [160, 100],
+    [300, 80]
+  ]) {
+    const text = frame({
+      snapshot: { panels },
+      width,
+      height,
+      on: false,
+      now: layout_now
+    })
+    assert.doesNotMatch(text, /[▁▂▃▄▅▆▇]/, `${width}x${height}`)
+    assert.doesNotMatch(text, /#/, `${width}x${height}`)
+    assert.match(text, /Compute Engine \$30\.32 █+/)
+    assert.ok(braille_rows(text, 'site-traffic') >= 2, 'traffic')
+    assert.ok(braille_rows(text, 'model') >= 2, 'model')
+  }
+  const tall = frame({
+    snapshot: { panels },
+    width: 160,
+    height: 100,
+    on: false,
+    now: layout_now
+  })
+  assert.equal(braille_rows(tall, 'site-traffic'), 8)
+})
+
+it('labels are lowercase and no row is clipped', () => {
+  const panels = {
+    ...layout_snapshot.panels,
+    services: {
+      status: 'ok',
+      rows: [
+        { name: 'realness-sync', found: true, ready: false },
+        { name: 'realness-gate', found: false }
+      ]
+    },
+    resources: {
+      status: 'ok',
+      inventories: [
+        {
+          project: 'realness-online',
+          instances: [
+            { name: 'chat-ui', status: 'RUNNING', machine: 'n2-standard-4' },
+            { name: 'parked-one', status: 'TERMINATED', machine: 'e2-small' }
+          ],
+          disks: [
+            { name: 'boot-disk', size_gb: 50, attached: ['chat-ui'] },
+            { name: 'old-disk', size_gb: 10, attached: [] }
+          ]
+        }
+      ]
+    },
+    sync: {
+      status: 'ok',
+      rows: [
+        {
+          folder: 'vault/',
+          listing: true,
+          last_sync: new Date(layout_now - 60_000).toISOString()
+        },
+        { folder: 'harness/', listing: false, error: 'not a folder' }
+      ]
+    },
+    model: {
+      status: 'ok',
+      totals: {
+        calls: 10,
+        errors: 1,
+        error_rate: 0.1,
+        p50_ms: 100,
+        p95_ms: 4000,
+        cache_hit_rate: 0.5,
+        cost: 0.6
+      },
+      by_model: [
+        {
+          name: 'claude-sonnet-long-name',
+          calls: 6,
+          errors: 0,
+          p95_ms: 4000,
+          cost: 0.3
+        }
+      ],
+      by_client: []
+    },
+    publish: { status: 'ok', rows: [{ phone, sites: 2 }] },
+    sign_on: { status: 'ok', rows: [{ phone, expires_at: null }] }
+  }
+  for (const [width, height] of [
+    [80, 24],
+    [120, 40],
+    [160, 100],
+    [300, 80]
+  ]) {
+    const text = frame({
+      snapshot: { panels },
+      width,
+      height,
+      on: false,
+      now: layout_now
+    })
+    const body = text.trimEnd().split('\n').slice(1).join('\n')
+    const label = `${width}x${height}`
+    assert.deepEqual(body.match(/\b[A-Z]{3,}\b/g), null, label)
+    assert.equal(body.match(/…/g), null, label)
+    assert.equal(body.match(/undefined/g), null, label)
+  }
+})
+
+it('the footer marks the active interval and a read in flight', () => {
+  const footer_of = options =>
+    frame({
+      snapshot: { panels: healthy_panels },
+      width: 120,
+      height: 40,
+      on: false,
+      now: layout_now,
+      ...options
+    })
+      .trimEnd()
+      .split('\n')
+      .at(-1)
+  assert.match(footer_of({ interval_ms: 15_000 }), /u 15s\* {2}m 60s {2}h 5m/)
+  assert.match(footer_of({ interval_ms: 60_000 }), /u 15s {2}m 60s\* {2}h 5m/)
+  assert.match(footer_of({ interval_ms: 300_000 }), /u 15s {2}m 60s {2}h 5m\*/)
+  assert.match(
+    footer_of({ interval_ms: 60_000, reading: true }),
+    /h 5m {2}reading/
+  )
+  assert.doesNotMatch(footer_of({ interval_ms: 60_000 }), /reading/)
+})
+
+it('the loop shows a read in flight before the read returns', async () => {
+  const written = []
+  const controller = new AbortController()
+  let reads = 0
+  const loop = watch({
+    interval_ms: 60_000,
+    stdout: { write: text => written.push(text), columns: 120, rows: 40 },
+    stdin: {
+      isTTY: true,
+      setRawMode: () => {},
+      resume: () => {},
+      off: () => {},
+      on: () => {}
+    },
+    signal: controller.signal,
+    read: async () => {
+      reads++
+      controller.abort()
+      return { checked: '2026-10-09T17:00:00.000Z', panels: {} }
+    }
+  })
+  await loop
+  assert.equal(reads, 1)
+  assert.match(written[0], /reading/)
+  assert.doesNotMatch(written.at(-1), /reading/)
 })

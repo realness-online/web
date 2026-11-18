@@ -9,6 +9,7 @@
  */
 import { gunzipSync as gunzip_sync } from 'node:zlib'
 import { read_members } from '#root/src/can/members.js'
+import { grantee_org } from '#root/src/can/can.js'
 
 export const members_key = name => `orgs/${name}/members.html`
 
@@ -18,7 +19,10 @@ export const text_of = body =>
     'utf8'
   )
 
-/** `{ founder, members }`, `null` if the org has no page, or nobody if bad. */
+/**
+ * `{ founder, members }`, `null` if the org has no page, or nobody if bad.
+ * @returns {Promise<{ founder: string | null, members: string[] } | null>}
+ */
 export const read_org = async (storage, name) => {
   const page = await storage.get(members_key(name))
   if (!page) return null
@@ -35,6 +39,27 @@ export const orgs_of = async (storage, phone) => {
   const names = folders.map(name => name.replace(/\/$/, ''))
   const orgs = await Promise.all(names.map(name => read_org(storage, name)))
   return names.filter((_, i) => orgs[i]?.members.includes(phone))
+}
+
+/**
+ * o2: the orgs named by grants that hold this person. Reading them fresh on
+ * every request is what ends a removed member's reads.
+ * @param {object} storage
+ * @param {import('#root/src/can/can.js').Grant[]} grants triples from the owner's rights page
+ * @param {string | undefined} phone
+ * @returns {Promise<string[]>} org names, as in `+family`
+ */
+export const granted_orgs = async (storage, grants, phone) => {
+  if (!phone) return []
+  /** @type {Set<string>} */
+  const names = new Set()
+  for (const { grantee } of Array.isArray(grants) ? grants : []) {
+    const name = grantee_org(grantee)
+    if (name?.startsWith('+')) names.add(name)
+  }
+  const found = [...names]
+  const orgs = await Promise.all(found.map(name => read_org(storage, name)))
+  return found.filter((_, at) => orgs[at]?.members.includes(phone))
 }
 
 /**

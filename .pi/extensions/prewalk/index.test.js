@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { after, test } from 'node:test'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import prewalk, { is_spec_run, plan_named, plan_of, route, takes_over } from './index.js'
+import prewalk, { is_spec_run, plan_name, plan_named, plan_of, route, takes_over } from './index.js'
 
 const scratch = new URL('../../../artifacts/', import.meta.url).pathname
 mkdirSync(scratch, { recursive: true })
@@ -35,12 +35,16 @@ const harness = name => {
   const handlers = {}
   const commands = {}
   const notes = []
+  const statuses = {}
   const ctx = {
     cwd: dir,
     model: FRONTIER,
     sessionManager: { getSessionId: () => `session-${name}` },
     modelRegistry: { find: (provider, id) => [FRONTIER, CHEAP].find(m => m.provider === provider && m.id === id) },
-    ui: { notify: (text, level) => notes.push({ text, level }) }
+    ui: {
+      notify: (text, level) => notes.push({ text, level }),
+      setStatus: (key, text) => (statuses[key] = text)
+    }
   }
   const pi = {
     on: (event, handler) => (handlers[event] = handler),
@@ -52,6 +56,7 @@ const harness = name => {
   const api = {
     ctx,
     notes,
+    statuses,
     log,
     write: shape => {
       writeFileSync(file, plan_text(shape))
@@ -362,4 +367,11 @@ test('the session moves to the approved plan it works, and says so', async () =>
   h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   await h.turn()
   assert.equal(h.ctx.model, CHEAP)
+})
+
+test('the bound plan is named in a status the footer shows', () => {
+  const h = harness('status')
+  h.write({ gate: '- Gate 1: approved' })
+  assert.equal(h.statuses.plan, 'p')
+  assert.equal(plan_name('realness-scouts/index.md'), 'realness-scouts')
 })

@@ -82,38 +82,6 @@ export const meter = (fraction, width) => {
   return `${FULL.repeat(whole)}${part}${EMPTY.repeat(cells - whole - (part ? 1 : 0))}`
 }
 
-const SPARKS = '▁▂▃▄▅▆▇█'
-
-/**
- * One-row trend in eighth-height blocks from a zero baseline, stretched or
- * resampled to exactly `width` cells.
- * @param {number[]} values
- * @param {number} width
- */
-export const sparkline = (values, width) => {
-  if (!values.length) return ''
-  const room = Number.isFinite(width) ? Math.max(1, width) : values.length
-  const points =
-    values.length > room
-      ? resample(values, room)
-      : Array.from(
-          { length: room },
-          (_, at) => values[Math.floor((at * values.length) / room)]
-        )
-  const low = Math.min(0, ...points)
-  const span = Math.max(...points) - low
-  return points
-    .map(
-      value =>
-        SPARKS[
-          span === 0
-            ? 0
-            : Math.round(((value - low) / span) * (SPARKS.length - 1))
-        ]
-    )
-    .join('')
-}
-
 const visible = text => [...strip_vt(text)].length
 
 const cut = (text, width) =>

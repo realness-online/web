@@ -2,7 +2,20 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import footer_filter, { DEFAULT_HIDDEN, filter_provider, hidden_keys } from './index.js'
+import footer_filter, {
+  billing_label,
+  context_label,
+  fit,
+  DEFAULT_HIDDEN,
+  filter_provider,
+  footer_parts,
+  hidden_keys,
+  model_label,
+  place_label,
+  paint_place,
+  branch_level,
+  usage_label
+} from './index.js'
 
 const scratch = join(process.cwd(), 'artifacts/footer-filter')
 
@@ -42,26 +55,141 @@ describe('filter_provider', () => {
   })
 })
 
+describe('labels', () => {
+  it('shortens the Claude usage warning', () => {
+    assert.deepEqual(usage_label("You've used 77% of your weekly limit · resets 10am"), {
+      text: 'wk 77%',
+      level: 'dim'
+    })
+    assert.deepEqual(usage_label("You've used 91% of your session limit"), { text: '5h 91%', level: 'warning' })
+    assert.deepEqual(usage_label("You've hit your weekly limit"), { text: 'limit hit', level: 'error' })
+    assert.equal(usage_label(undefined), null)
+  })
+
+  it('shows context fill against the window', () => {
+    assert.deepEqual(context_label({ percent: 7.94, contextWindow: 1_000_000 }), { text: '7.9%/1.0M', level: 'dim' })
+    assert.equal(context_label({ percent: 95, contextWindow: 200_000 }).text, '95.0%/200k')
+    assert.equal(context_label({ percent: 95, contextWindow: 200_000 }).level, 'error')
+  })
+
+  it('puts the thinking level of the latest answer left of its model', () => {
+    const entries = [
+      { type: 'message', message: { role: 'assistant', model: 'house', responseModel: 'opus', thinkingLevel: 'high' } },
+      { type: 'message', message: { role: 'user' } }
+    ]
+    assert.equal(model_label(entries, { id: 'house', reasoning: true }, 'low'), 'high · opus')
+    assert.equal(model_label([], { id: 'opus', reasoning: true }, 'low'), 'low · opus')
+    assert.equal(model_label([], { id: 'plain' }, 'off'), 'plain')
+  })
+
+  it('shows a model or thinking change made after the latest answer', () => {
+    const answer = { type: 'message', message: { role: 'assistant', model: 'opus', thinkingLevel: 'high' } }
+    const opus = { id: 'opus', reasoning: true }
+    assert.equal(model_label([answer, { type: 'thinking_level_change' }], opus, 'low'), 'low · opus')
+    assert.equal(
+      model_label([answer, { type: 'model_change' }], { id: 'sonnet', reasoning: true }, 'high'),
+      'high · sonnet'
+    )
+  })
+
+  it('names subscription or credits', () => {
+    const registry = { isUsingOAuth: model => model.id === 'opus' }
+    assert.equal(billing_label(registry, { id: 'opus' }), 'sub')
+    assert.equal(billing_label(registry, { id: 'kimi' }), 'credits')
+  })
+
+  it('cuts the start of the place when the line is narrow, keeping its end', () => {
+    const right = [{ text: 'low · opus' }, { text: 'wk 77%' }]
+    const line = fit('realness-chat-plan-label (main)', right, 34)
+    assert.equal(line.left, '…-label (main)')
+    assert.equal(line.left.length + line.gap.length + 'low · opus  wk 77%'.length, 34)
+    assert.equal(fit('realness-scouts', right, 80).left, 'realness-scouts')
+  })
+
+  it('paints the plan dim and the branch by git status', () => {
+    const paint = (level, text) => `<${level}>${text}`
+    const shown = { plan: 'realness-scouts', branch: 'main', branch_level: 'warning' }
+    assert.equal(paint_place('realness-scouts (main)', shown, paint), '<dim>realness-scouts <warning>(main)')
+    assert.equal(paint_place('…scouts (main)', shown, paint), '<dim>…scouts <warning>(main)')
+    assert.equal(paint_place('(m…', shown, paint), '<warning>(m…')
+    assert.equal(paint_place('', shown, paint), '')
+    assert.equal(paint_place('realness-scouts', { ...shown, branch: null }, paint), '<dim>realness-scouts')
+  })
+
+  it('shows the plan and branch, never the folder', () => {
+    assert.equal(place_label(undefined, 'main'), '(main)')
+    assert.equal(place_label('realness-one-network', 'main'), 'realness-one-network (main)')
+    assert.equal(place_label(undefined, null), '')
+  })
+
+  it('colors the branch by git status', () => {
+    assert.equal(branch_level(''), 'success')
+    assert.equal(branch_level(' M a.js\n'), 'warning')
+    assert.equal(branch_level(null), 'dim')
+  })
+
+  it('gives the footer as plain values', () => {
+    const shown = footer_parts({
+      entries: [],
+      model: { id: 'opus' },
+      thinking: 'low',
+      registry: { isUsingOAuth: () => true },
+      context: { percent: 7.9, contextWindow: 1_000_000 },
+      statuses: new Map([
+        ['plan', 'realness-one-network'],
+        ['claude-oauth-issue', "You've used 77% of your weekly limit"]
+      ]),
+      branch: 'main',
+      porcelain: ' M a.js\n'
+    })
+    assert.deepEqual(shown, {
+      plan: 'realness-one-network',
+      branch: 'main',
+      branch_level: 'warning',
+      parts: [
+        { text: 'opus', level: 'dim' },
+        { text: 'sub', level: 'dim' },
+        { text: '7.9%/1.0M', level: 'dim' },
+        { text: 'wk 77%', level: 'dim' }
+      ]
+    })
+    const bare = footer_parts({ entries: [], statuses: new Map(), branch: null, porcelain: null })
+    assert.equal(bare.plan, '')
+    assert.equal(bare.branch, null)
+  })
+})
+
 describe('extension', () => {
-  it('filters through setFooter and restores the built-in footer', async () => {
-    const data = provider()
-    const calls = []
+  it('renders one line with usage and moves other statuses below', async () => {
+    const data = { ...provider(), getGitBranch: () => 'main', onBranchChange: () => () => {} }
     let start
-    footer_filter({ on: (name, handler) => name === 'session_start' && (start = handler) })
+    let footer
+    const told = []
+    footer_filter({
+      events: { emit: (name, parts) => told.push([name, parts.plan]) },
+      on: (name, handler) => name === 'session_start' && (start = handler),
+      getThinkingLevel: () => 'low'
+    })
     await start(
       {},
       {
         hasUI: true,
-        ui: {
-          setFooter: factory => {
-            calls.push(Boolean(factory))
-            factory?.(null, null, data)
-          }
-        }
+        model: { id: 'opus', reasoning: true },
+        modelRegistry: { isUsingOAuth: () => true },
+        getContextUsage: () => ({ percent: 7.9, contextWindow: 1_000_000 }),
+        sessionManager: { getCwd: () => '/srv/app', getBranch: () => [] },
+        ui: { setFooter: factory => (footer = factory({ requestRender() {} }, { fg: (_level, text) => text }, data)) }
       }
     )
     data.setExtensionStatus('claude-oauth-ready', '✓')
-    assert.deepEqual(calls, [true, false])
-    assert.equal(data.statuses.size, 0)
+    data.setExtensionStatus('claude-oauth-issue', "You've used 77% of your weekly limit · resets 10am")
+    data.setExtensionStatus('rewind', 'saved')
+    data.setExtensionStatus('plan', 'realness-one-network')
+    const [line, second] = footer.render(80)
+    assert.match(line, /^realness-one-network \(main\) +low · opus  sub  7\.9%\/1\.0M  wk 77%$/)
+    assert.equal(second, 'saved')
+    assert.match(footer.render(50)[0], /^…etwork \(main\)  low · opus  sub  7\.9%\/1\.0M  wk 77%$/)
+    footer.render(80)
+    assert.deepEqual(told, [['footer:parts', 'realness-one-network']])
   })
 })

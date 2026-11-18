@@ -1,0 +1,15 @@
+--- a/.pi/agent/npm/node_modules/pi-claude-oauth-adapter/extensions/index.ts
++++ b/.pi/agent/npm/node_modules/pi-claude-oauth-adapter/extensions/index.ts
+@@ -1331,8 +1331,10 @@
+                 if (footerStatus) {
+                   log("custom_stream_quota_resolved", { message: footerStatus.message, severity: footerStatus.severity });
+                   applyFooterStatusToCurrentContext(footerStatus);
+-                  outer.push(createAnthropicErrorEvent(anthropicModel, footerStatus.message));
+-                  continue;
++                  if (footerStatus.severity === "error") {
++                    outer.push(createAnthropicErrorEvent(anthropicModel, footerStatus.message));
++                    continue;
++                  }
+                 }
+               }
+ 

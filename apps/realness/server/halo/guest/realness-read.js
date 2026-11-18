@@ -15,7 +15,11 @@
  * `--brief` prints the page's body alone, and `--json` the whole reply.
  */
 import { execFileSync as exec_file_sync, spawn } from 'node:child_process'
-import { existsSync as exists_sync } from 'node:fs'
+import {
+  existsSync as exists_sync,
+  readFileSync as read_file_sync,
+  writeFileSync as write_file_sync
+} from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { login_of } from './realness-cookies.js'
@@ -72,15 +76,44 @@ const brief = argv.includes('--brief')
 const fresh = argv.includes('--fresh')
 const on_box = exists_sync(door_path())
 
-if (process.env.REALNESS_READ_ALLOWED) {
-  const allowed = JSON.parse(process.env.REALNESS_READ_ALLOWED)
-  const { reads_inside } = await import(`${LIB}/src/scouts/sources.js`)
-  if (!allowed.some(one => reads_inside(url, one))) {
+/** The file a run's hop origins grow in: one origin per line, beside its log. */
+const HOPS_FILE = process.env.REALNESS_READ_HOPS_FILE ?? ''
+
+/** The named pages and the origins a run has already followed a link to. */
+const allowed_now = () => {
+  const named = process.env.REALNESS_READ_ALLOWED
+    ? JSON.parse(process.env.REALNESS_READ_ALLOWED)
+    : []
+  const hops =
+    HOPS_FILE && exists_sync(HOPS_FILE)
+      ? JSON.parse(read_file_sync(HOPS_FILE, 'utf8'))
+      : []
+  return { named, hops }
+}
+
+if (process.env.REALNESS_READ_ALLOWED || HOPS_FILE) {
+  const { named, hops } = allowed_now()
+  const { reads_inside, hops_inside } = await import(
+    `${LIB}/src/scouts/sources.js`
+  )
+  if (!named.some(one => reads_inside(url, one)) && !hops_inside(url, hops)) {
     process.stderr.write(
-      `realness-read: ${url} is not on this source's list. Read only these:\n${allowed.map(one => `  ${one}`).join('\n') || '  (no pages)'}\n`
+      `realness-read: ${url} is not on this source's list. Read only these:\n${named.map(one => `  ${one}`).join('\n') || '  (no pages)'}\n`
     )
     process.exit(EXIT_NOT_ALLOWED)
   }
+}
+
+/** Add the origins a page links to, so a run may follow its links. */
+const remember_hops = async reply => {
+  if (!HOPS_FILE) return
+  const { origins_on } = await import(`${LIB}/src/scouts/sources.js`)
+  const found = origins_on(reply.body ?? '')
+  if (!found.length) return
+  const { hops } = allowed_now()
+  const next = [...new Set([...hops, ...found])]
+  if (next.length === hops.length) return
+  write_file_sync(HOPS_FILE, JSON.stringify(next))
 }
 
 /**
@@ -88,6 +121,7 @@ if (process.env.REALNESS_READ_ALLOWED) {
  * @param {{ source: string, kind: string, body: string, title?: string, via?: string, crawled?: string, site?: string }} reply
  */
 const emit = async reply => {
+  await remember_hops(reply)
   if (brief) return process.stdout.write(`${reply.body ?? ''}\n`)
   if (argv.includes('--json'))
     return process.stdout.write(JSON.stringify(reply))

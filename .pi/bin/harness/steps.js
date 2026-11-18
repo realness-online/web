@@ -25,6 +25,7 @@ export const steps = {
     },
     { name: 'ds-store', area: 'harness', run: 'node .pi/bin/checks/ds-store.js' },
     { name: 'pi-version', area: 'harness', run: 'node .pi/bin/checks/pi-version.js' },
+    { name: 'patches', area: 'harness', run: 'node .pi/bin/harness/apply-patches.js --check' },
     { name: 'doc-scripts', area: 'harness', run: 'node .pi/bin/checks/doc-scripts.js' },
     { name: 'format', area: 'harness', run: 'node .pi/bin/checks/format.js' },
     { name: 'dead-code', area: 'harness', run: 'apps/realness/node_modules/.bin/fallow dead-code --fail-on-issues' },

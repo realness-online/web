@@ -11,10 +11,10 @@
 
 ## Vault layout
 
-Company and tracker notes live under `Projects/realness-leads/` in the vault (`vault/Projects/realness-leads/`):
+Company and tracker notes live under `Archive/Archive/Projects/realness-leads/` in the vault (`vault/Archive/Archive/Projects/realness-leads/`):
 
 ```
-Projects/realness-leads/
+Archive/Projects/realness-leads/
   :feed.md              -- dataview feed, follow existing vault convention
   tracker.md            -- master table, one row per company
   Story Bank.md         -- reusable STAR stories (see fit-and-story-bank.md)

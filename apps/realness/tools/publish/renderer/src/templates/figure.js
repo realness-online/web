@@ -14,7 +14,7 @@ export const poster =
    * @param {string} title
    * @param {'h1'|'h2'} [heading]
    * @param {string|null} [href]
-   * @param {{close_href?: string}} [options]
+   * @param {{close_href?: string, pick?: boolean}} [options]
    */
   (data, title, heading = 'h2', href = null, options = {}) => {
     const size = data.img ? poster_sizes[data.img] : undefined
@@ -29,6 +29,9 @@ export const poster =
     const headline = href
       ? `<a itemprop="url" href="${escape_html(href)}">${escape_html(title)}</a>`
       : escape_html(title)
+    const pick = options.pick
+      ? `<button type="button" class="pick-poster" aria-label="${data.img ? 'Change poster' : 'Add a poster'}"></button>`
+      : ''
     const close = options.close_href
       ? `<a class="back-link" href="${escape_html(options.close_href)}" aria-label="${escape_html(site.back_label || 'Back to articles')}">x</a>`
       : ''
@@ -37,6 +40,7 @@ export const poster =
         <figcaption>
           <${heading} itemprop="headline">${headline}${data.draft ? ' <mark class="draft">draft</mark>' : ''}</${heading}>
           ${data.date ? `<time itemprop="datePublished" datetime="${escape_html(data.date)}">${escape_html(format_date(data.date))}</time>` : ''}
+          ${pick}
           ${close}
         </figcaption>
       </figure>`

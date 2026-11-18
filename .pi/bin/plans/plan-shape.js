@@ -94,9 +94,11 @@ const check = async (name, text) => {
   const nodes_at = find(text, /^## Nodes\b/m)
   const notes_at = find(text, /^## Notes\b/m)
   if (nodes_at && notes_at && nodes_at > notes_at) bad('nodes then notes', '## Nodes after ## Notes')
+  const summary_at = find(text, /^## Summary\b/m)
+  if (summary_at && nodes_at && summary_at > nodes_at) bad('summary then nodes', '## Summary after ## Nodes')
   const others = lines
     .map((l, i) => (/^## /.test(l) ? { line: i + 1, text: l } : null))
-    .filter(h => h && !/^## (Nodes|Syncs|Notes)\b/.test(h.text))
+    .filter(h => h && !/^## (Summary|Nodes|Syncs|Notes)\b/.test(h.text))
   if (others.length && nodes_at)
     bad('no other ## headings', `use ### or lower: ${others.map(h => `line ${h.line}: ${h.text}`).join('; ')}`)
 

@@ -2,8 +2,8 @@
   <article itemscope itemtype="https://schema.org/Dataset" aria-label="Ways in">
     <header aria-label="Ways in">
       <nav aria-label="Related">
-        <router-link to="/planning">Plans</router-link>
-        <router-link to="/planning/maps/modules">Modules</router-link>
+        <router-link to="/vault">Vault</router-link>
+        <router-link to="/vault/maps/modules">Modules</router-link>
       </nav>
     </header>
     <p v-if="error" role="status">{{ error }}</p>

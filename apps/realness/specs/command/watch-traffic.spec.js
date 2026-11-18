@@ -60,21 +60,20 @@ it('traffic tile shows change, trend, and a stale archive', () => {
     newest: '2026-10-13T12:00:00Z'
   }
   const lines = traffic_lines(traffic, 44, false, now)
-  assert.equal(lines.length, 4)
+  assert.equal(lines.length, 5)
   assert.equal(traffic_lines(traffic, 30, false, now)[0], '120 people  ↑20%')
   assert.equal(lines[0], '7d 120 people  ↑20%  9 deeper  4 referred')
-  assert.equal(
-    lines[1],
-    `${'▂'.repeat(11)}${'▅'.repeat(11)}${'▄'.repeat(11)}${'█'.repeat(11)}`
-  )
-  assert.equal(lines[2], 'archive 72h old')
-  assert.equal(lines[3], '10-10 to 10-13; people per day')
+  for (const row of lines.slice(1, 3))
+    assert.match(row, /^[\u2800-\u28ff]{44}$/)
+  assert.notEqual(lines[1], lines[2])
+  assert.equal(lines[3], 'archive 72h old')
+  assert.equal(lines[4], '10-10 to 10-13; people per day')
   const wide = traffic_lines(traffic, 90, false, now)
   assert.equal(
     wide[0],
     '7d 120 people  ↑20%  9 went deeper  4 from other sites'
   )
-  assert.equal(wide[2], 'archive 72h old')
+  assert.equal(wide[3], 'archive 72h old')
   const fresh = traffic_lines(
     { ...traffic, newest: '2026-10-16T11:00:00Z' },
     40,
@@ -112,7 +111,7 @@ it('dashboard places site traffic in the left column', () => {
     on: false,
     now
   })
-  assert.match(text, /╭─ SITE TRAFFIC {2}homepage ─+╮│/)
+  assert.match(text, /╭─ site-traffic {2}homepage ─+╮[│╰╭]/)
   assert.match(text, /│ 7d 7 people {2}1 went deeper {2}0 from other sites +│/)
 })
 

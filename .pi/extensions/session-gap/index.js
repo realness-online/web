@@ -58,6 +58,12 @@ export const gap_note = (entries, file) => {
 /** @param {import("@earendil-works/pi-coding-agent").ExtensionAPI} pi */
 export default function (pi) {
   let held = null
+  let switching = null
+
+  pi.on('session_shutdown', () => {
+    if (switching !== null) clearTimeout(switching)
+    switching = null
+  })
 
   const start = async (ctx, message) => {
     const entries = ctx.sessionManager.getBranch()
@@ -88,12 +94,14 @@ export default function (pi) {
     const idle = idle_ms(ctx.sessionManager.getBranch())
     if (idle === null || idle < GAP_MS) return { action: 'continue' }
     held = event.images?.length ? [{ type: 'text', text: event.text }, ...event.images] : event.text
-    setTimeout(() => {
+    const notify = ctx.ui?.notify?.bind(ctx.ui)
+    switching = setTimeout(() => {
+      switching = null
       try {
         pi.sendUserMessage('/gap-new', { expandPromptTemplates: true })
       } catch (error) {
         held = null
-        ctx.ui?.notify?.(`session-gap: ${error.message}`, 'error')
+        if (notify) notify(`session-gap: ${error.message}`, 'error')
       }
     }, 0)
     return { action: 'handled' }

@@ -83,6 +83,44 @@ export const reads_inside = (url, allowed) => {
   return here.pathname.startsWith(`${path}/`)
 }
 
+/**
+ * The origins a page links to, each once. A run may follow a link from a page
+ * it read to the host that link names, and no further: a story leads to its
+ * publisher, and the publisher's newsroom and leadership pages follow.
+ * @param {string} page the page as markdown or HTML
+ * @returns {string[]}
+ */
+export const origins_on = page => [
+  ...new Set(
+    [
+      ...(String(page ?? '').match(/\]\((https?:\/\/[^)\s]+)\)/g) ?? []).map(
+        one => one.slice(2, -1)
+      ),
+      ...(String(page ?? '').match(/href="(https?:\/\/[^"\s]+)"/g) ?? []).map(
+        one => one.slice('href="'.length, -1)
+      )
+    ]
+      .map(url => {
+        try {
+          return new URL(url).origin
+        } catch {
+          return ''
+        }
+      })
+      .filter(Boolean)
+  )
+]
+
+/** Whether a URL sits on an origin a page linked to. */
+export const hops_inside = (url, hops) =>
+  hops.some(one => {
+    try {
+      return new URL(url).origin === one
+    } catch {
+      return false
+    }
+  })
+
 /** A command a section tells the run to run, rather than a page to read. */
 const NAMES_COMMAND = /```|\n {4}\S|`[^`]*(?:realness-read|npm |node |git )/
 

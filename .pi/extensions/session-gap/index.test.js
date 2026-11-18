@@ -92,3 +92,65 @@ test('print mode never switches, since they cannot run the follow-up', async () 
   stale.ctx.mode = 'print'
   assert.deepEqual(await stale.handlers.input({ text: 'x', source: 'interactive' }, stale.ctx), { action: 'continue' })
 })
+
+test('session shutdown clears a pending switch', async () => {
+  const cleared = []
+  const real_set = globalThis.setTimeout
+  const real_clear = globalThis.clearTimeout
+  globalThis.setTimeout = () => 42
+  globalThis.clearTimeout = id => cleared.push(id)
+  try {
+    const old = [user('a', 0), reply('b', 1)]
+    old[1].timestamp = new Date(Date.now() - GAP_MS - 1000).toISOString()
+    const { handlers, ctx } = harness(old)
+    await handlers.input({ text: 'next', source: 'interactive' }, ctx)
+    handlers.session_shutdown()
+    assert.deepEqual(cleared, [42])
+  } finally {
+    globalThis.setTimeout = real_set
+    globalThis.clearTimeout = real_clear
+  }
+})
+
+test('a context that goes stale before the timer cannot crash pi', async () => {
+  const scheduled = []
+  const notified = []
+  const real_set = globalThis.setTimeout
+  globalThis.setTimeout = fn => {
+    scheduled.push(fn)
+    return 7
+  }
+  try {
+    const old = [user('a', 0), reply('b', 1)]
+    old[1].timestamp = new Date(Date.now() - GAP_MS - 1000).toISOString()
+    const handlers = {}
+    const pi = {
+      on: (name, fn) => {
+        handlers[name] = fn
+      },
+      registerCommand: () => {},
+      sendUserMessage: () => {
+        throw new Error('stale pi')
+      }
+    }
+    let stale = false
+    const ctx = {
+      mode: 'tui',
+      sessionManager: {
+        getBranch: () => old,
+        getSessionFile: () => '/s/old.jsonl'
+      },
+      get ui() {
+        if (stale) throw new Error('stale ctx')
+        return { notify: (...args) => notified.push(args) }
+      }
+    }
+    gap(pi)
+    await handlers.input({ text: 'next', source: 'interactive' }, ctx)
+    stale = true
+    assert.doesNotThrow(() => scheduled[0]())
+    assert.equal(notified.length, 1)
+  } finally {
+    globalThis.setTimeout = real_set
+  }
+})

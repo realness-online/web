@@ -5,8 +5,8 @@
     aria-label="Commands">
     <header aria-label="Commands">
       <nav aria-label="Related">
-        <router-link to="/planning">Plans</router-link>
-        <router-link to="/planning/tools">Tools</router-link>
+        <router-link to="/vault">Vault</router-link>
+        <router-link to="/vault/tools">Tools</router-link>
       </nav>
     </header>
     <p v-if="error" role="status">{{ error }}</p>

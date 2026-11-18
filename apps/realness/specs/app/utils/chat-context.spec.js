@@ -47,4 +47,10 @@ describe('page context', () => {
       '<section aria-label="Current page"><article aria-label="Plans"><header><h1>Realness</h1><p>Planning</p></header></article></section>'
     expect(page_context({ path: '/planning' }).title).toBe('Plans')
   })
+
+  it('names a note by its heading, not the generic Note label', () => {
+    document.body.innerHTML =
+      '<section aria-label="Current page"><article aria-label="Note"><section itemprop="articleBody"><h1>Pi footer in chat</h1><p>Body</p></section></article></section>'
+    expect(page_context({ path: '/vault' }).title).toBe('Pi footer in chat')
+  })
 })

@@ -15,7 +15,6 @@ const QUIET_MS = 2 * MS_PER_MINUTE
 const DEFAULT_COLUMNS = 100
 const DEFAULT_ROWS = 30
 const SCROLL_STEP = 5
-const BOX_SIDES = 4
 
 const DEFAULT_INTERVAL_MS = 60_000
 
@@ -110,6 +109,7 @@ export const watch = async ({
   let message = null
   let offset = 0
   let details = false
+  let reading = false
 
   const draw = () => {
     const columns = stdout.columns ?? DEFAULT_COLUMNS
@@ -118,8 +118,7 @@ export const watch = async ({
       offset,
       Math.max(
         0,
-        frame_rows(snapshot, columns - BOX_SIDES, on, details).length -
-          body_capacity(rows)
+        frame_rows(snapshot, columns, on, details).length - body_capacity(rows)
       )
     )
     const text = frame({
@@ -131,19 +130,23 @@ export const watch = async ({
       on,
       message,
       offset,
-      details
+      details,
+      reading
     })
     stdout.write(clear ? in_place(text) : text)
   }
   const stop_resize = on_resize(stdout, draw)
 
   const once = async () => {
+    reading = true
+    draw()
     try {
       snapshot = await read_snapshot()
       message = null
     } catch (error) {
       message = `read failed: ${error.message}`
     }
+    reading = false
     draw()
   }
 

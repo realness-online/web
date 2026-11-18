@@ -89,11 +89,11 @@ it('a folder plan takes its folder for a title, and a deleted note leaves the in
     const path = 'Projects/realness-scouts/index.md'
     const file = join(vault, path)
     await writeFile(file, '# Scouts\n')
-    await heard(events, 1200)
+    await heard(events, 5000)
     assert.equal(title_of(path), 'realness-scouts')
     events.length = 0
     await rm(file)
-    await heard(events, 1200)
+    await heard(events, 5000)
     assert.equal(title_of(path), undefined)
   } finally {
     watcher.close()

@@ -16,7 +16,12 @@ const MODELS = [
 function fake_pi() {
   const handlers = {}
   const commands = {}
+  const listeners = {}
   const pi = {
+    events: {
+      on: (name, listener) => (listeners[name] = listener),
+      emit: (name, data) => listeners[name]?.(data)
+    },
     sent: [],
     options: [],
     calls: [],
@@ -223,6 +228,33 @@ test('stop aborts a working Pi and says so when idle', async () => {
   assert.deepEqual(await command(path, 'stop'), [{ type: 'done', text: 'Stopped' }])
   assert.deepEqual(pi.calls, [['abort']])
   close()
+})
+
+test('a watcher gets the footer on connect and on each change', async () => {
+  const { pi, path, close } = setup()
+  const shown = { plan: 'realness-one-network', branch: 'main', branch_level: 'success', parts: [] }
+  pi.events.emit('footer:parts', shown)
+  const watcher = []
+  const socket = connect(path, () => socket.write(JSON.stringify({ watch: true }) + '\n'))
+  socket.setEncoding('utf8')
+  socket.on('data', chunk =>
+    watcher.push(
+      ...chunk
+        .trim()
+        .split('\n')
+        .map(line => JSON.parse(line))
+    )
+  )
+  try {
+    await new Promise(resolve => setTimeout(resolve, 50))
+    assert.deepEqual(watcher.at(-1), { type: 'footer', ...shown })
+    pi.events.emit('footer:parts', { ...shown, plan: '' })
+    await new Promise(resolve => setTimeout(resolve, 50))
+    assert.deepEqual(watcher.at(-1), { type: 'footer', ...shown, plan: '' })
+  } finally {
+    socket.destroy()
+    close()
+  }
 })
 
 test('new starts a fresh session and clears every watcher', async () => {

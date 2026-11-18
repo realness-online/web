@@ -83,6 +83,7 @@ it('one command works from another directory and leaves npm start as the harness
     '18080'
   )
   const sync = plan.services.find(service => service.name === 'sync')
+  assert.deepEqual(sync.args, ['run', 'start:sync:watch'])
   assert.equal(sync.env.STORE, 'disk')
   assert.equal(sync.env.SYNC_DIR, sync_dir())
   const proxy = plan.services.find(service => service.name === 'proxy')

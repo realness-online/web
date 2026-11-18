@@ -126,7 +126,7 @@ BASE_PACKAGES=(
   systemd systemd-sysv
   udev kmod
   iproute2 socat
-  ca-certificates curl git ripgrep fd-find jq unzip
+  ca-certificates curl git ripgrep fd-find jq unzip patch
   less
   neovim emacs-nox
 )

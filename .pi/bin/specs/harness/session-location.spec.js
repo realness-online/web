@@ -21,7 +21,13 @@ it('launcher preserves old history until configured, then passes the vault locat
     mkdir_sync(join(root, '.pi/bin/harness'), { recursive: true })
     mkdir_sync(join(root, 'apps'))
     symlink_sync(resolve(import.meta.dirname, '../../../../apps/realness'), join(root, 'apps/realness'))
-    for (const file of ['pi', 'harness/session-location.js', 'lib/harness-settings.js', 'lib/product.js'])
+    for (const file of [
+      'pi',
+      'harness/session-location.js',
+      'harness/apply-patches.js',
+      'lib/harness-settings.js',
+      'lib/product.js'
+    ])
       copy_file_sync(join(import.meta.dirname, '../..', file), join(root, '.pi/bin', file))
     write_file_sync(join(root, 'package.json'), JSON.stringify({ type: 'module' }))
     mkdir_sync(join(root, 'previous'))

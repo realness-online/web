@@ -100,6 +100,9 @@ fi
 # model catalog). pi reads any non-empty PI_OFFLINE as on, so unset it here.
 if [[ -n "${PI_ONLINE:-}" ]]; then unset PI_OFFLINE; else export PI_OFFLINE=1; fi
 
+# Packages the harness installs live outside git; .pi/patches holds their fixes.
+node "$root/.pi/bin/harness/apply-patches.js" || exit 1
+
 # A selected development fork affects only new launches. Otherwise a checkout
 # runs its pinned package. Hosted actors retain their preinstalled PATH route.
 # Both fork routes write compressed sessions and supply a read-only decoder.

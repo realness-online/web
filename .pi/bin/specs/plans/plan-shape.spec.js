@@ -54,6 +54,13 @@ const plan = ({ dag = DAG.plain, legend = null }) =>
     ...(legend === null ? [] : [legend, ''])
   ].join('\n')
 
+it('a summary sits between the DAG and the nodes', async () => {
+  const summary = '## Summary\n\nPeople can open the phone book with a key.\n\n'
+  const body = plan({})
+  assert.match(await check('summary-first', body.replace('## Nodes', `${summary}## Nodes`)), /1 plans, 0 failed/)
+  assert.match(await check('summary-late', body.replace('## Notes', `${summary}## Notes`)), /summary then nodes/)
+})
+
 it('a plan that marks no state needs no legend', async () => {
   assert.match(await check('unmarked', plan({})), /1 plans, 0 failed/)
 })

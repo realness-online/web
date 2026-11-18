@@ -349,9 +349,18 @@ const check_limit = async (actor, status) => {
  */
 /** Apply streamed actor records to the current chat view. */
 const make_record_handler =
-  ({ actor, messages, working, status, startup, waiting_state }) =>
+  ({ actor, messages, working, status, footer, startup, waiting_state }) =>
   (record, streaming) => {
     let reply = streaming
+    if (record.type === 'footer') {
+      footer.value = {
+        plan: record.plan,
+        branch: record.branch,
+        branch_level: record.branch_level,
+        parts: record.parts
+      }
+      return reply
+    }
     if (record.type === 'history') {
       startup.ready()
       void waiting_state.deliver()
@@ -545,6 +554,12 @@ export const use_chat = (
   )
   const draft = ref('')
   const status = ref('')
+  /** The footer's values as Pi last drew them; empty until the bridge sends them. */
+  const footer = ref(
+    /** @type {{ plan: string, branch: string | null, branch_level: string, parts: Array<{ text: string, level: string }> } | null} */ (
+      null
+    )
+  )
   const working = ref(false)
   const taken = ref(false)
   const stop_owner = watch_owner(value => {
@@ -570,6 +585,7 @@ export const use_chat = (
     messages,
     working,
     status,
+    footer,
     startup,
     waiting_state
   })
@@ -661,6 +677,7 @@ export const use_chat = (
     messages,
     draft,
     status,
+    footer,
     working,
     taken,
     take_back,

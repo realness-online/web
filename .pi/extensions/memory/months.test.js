@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { test } from 'node:test'
 import { indexSessions, recall, stats } from './index-db.js'
@@ -82,6 +82,24 @@ test('m0: a past month seals; a new device recalls it with no sessions', async (
     first,
     'fewer sessions never reseal'
   )
+  rmSync(root, { recursive: true, force: true })
+})
+
+test('m0: a month with an empty or forked session stays sealed', async () => {
+  const root = scratch()
+  const sessions = join(root, 'sessions')
+  session(sessions, '2026-09-02T00-00-00-000Z_a.jsonl', 'a', 'first anchor')
+  session(sessions, '2026-09-04T00-00-00-000Z_f.jsonl', 'a', 'first anchor')
+  writeFileSync(
+    join(sessions, '2026-09-03T00-00-00-000Z_e.jsonl'),
+    `${JSON.stringify({ type: 'session', version: 3, id: 'e', cwd: '/r' })}\n`
+  )
+  await indexSessions({ root: sessions, path: join(root, 'memory.db'), now })
+  const sealed = join(root, 'memory', 'turns', '2026-09.turns.html.gz')
+  const first = statSync(sealed).mtimeMs
+  await new Promise(done => setTimeout(done, 20))
+  await indexSessions({ root: sessions, path: join(root, 'memory.db'), now })
+  assert.equal(statSync(sealed).mtimeMs, first)
   rmSync(root, { recursive: true, force: true })
 })
 

@@ -12,11 +12,10 @@ import { existsSync as exists_sync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { highlight, plate, footnote, strip_tags } from './markdown.js'
 import { title_case } from './text.js'
+import { LEADING_H1, render_article, title_of } from './render.js'
 
 /** Search results show about this many characters of a description. */
 const DESCRIPTION_CHARS = 160
-
-const LEADING_H1 = /^\s*<h1[^>]*>([\s\S]*?)<\/h1>/
 
 /** Notes a plan links by a relative `.md` address inside its own folder. */
 const linked_notes = async (file, html) => {
@@ -68,7 +67,7 @@ const build_linked = async (
       const url = note_url(itemid, href)
       await write_route(
         url,
-        shell(title, article_body({}, title, page.html, page.notes, ''), {
+        shell(title, article_body({}, title, page.html, page.notes), {
           url,
           description: strip_tags(page.html).slice(0, DESCRIPTION_CHARS).trim(),
           type: 'article'
@@ -89,13 +88,6 @@ const article_slug = (file, directory) => {
 }
 
 const path_of = href => href.replace(/\/+$/, '') || '/'
-
-/** Front matter's title, else the page's own heading, else its slug. */
-const title_of = (data, named, slug) => {
-  if (data.title) return title_case(data.title)
-  if (named) return named
-  return title_case((slug.split('/').pop() ?? '').replace(/-/g, ' '))
-}
 
 /** @param {import('./types.js').Article} article */
 const created_at = article => new Date(article.created ?? 0).getTime() || 0
@@ -213,28 +205,22 @@ const build_article = async (ctx, file) => {
   const { shell, article_body } = ctx.templates
   const { raster_og_image } = ctx.images
   const src = await read_file(file, 'utf8')
-  const { frontmatter: data } = await parse(src)
   const slug = article_slug(file, ctx.articles_directory)
-  let body = await render(src)
-  const heading = !data.title && body.match(LEADING_H1)
-  if (heading) body = body.replace(LEADING_H1, '')
-  const title = title_of(data, heading ? strip_tags(heading[1]) : null, slug)
+  const rendered = await render_article(src, slug)
+  const { data, title, notes } = rendered
   const draft = is_draft(data)
   if (draft && !ctx.drafts) return { slug, title, date: data.date, draft }
   if (data.itemid && !/^\/\+\d+\/[a-z][a-z-]*\/\d+$/.test(data.itemid))
     throw new Error(`unsafe itemid: ${data.itemid}`)
-  const plated = footnote(plate(await highlight(body)))
   const linked =
-    ctx.plans && data.itemid ? await linked_notes(file, plated.html) : []
-  const html = link_notes(plated.html, data.itemid, linked)
-  const { notes } = plated
-  const article = article_body(
-    data,
-    title,
-    html,
-    notes,
-    ctx.templates.related_nav(ctx.groups.get(`/blog/${slug}`), `/blog/${slug}`)
-  )
+    ctx.plans && data.itemid ? await linked_notes(file, rendered.html) : []
+  const html = link_notes(rendered.html, data.itemid, linked)
+  const article = article_body(data, title, html, notes, {
+    related: ctx.templates.related_nav(
+      ctx.groups.get(`/blog/${slug}`),
+      `/blog/${slug}`
+    )
+  })
   const description =
     data.description || strip_tags(html).slice(0, DESCRIPTION_CHARS).trim()
   const og_image_path = await raster_og_image(data.img)

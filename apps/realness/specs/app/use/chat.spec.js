@@ -22,6 +22,27 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers())
 
 describe('chat watch', () => {
+  it('holds the footer the bridge sends, empty until then', async () => {
+    watch_chat.mockResolvedValueOnce([
+      {
+        type: 'footer',
+        plan: 'realness-one-network',
+        branch: 'main',
+        branch_level: 'warning',
+        parts: [{ text: 'opus', level: 'dim' }]
+      }
+    ])
+    const chat = use_chat(ref('actor-1'))
+    expect(chat.footer.value).toBe(null)
+    await chat.watch()
+    expect(chat.footer.value).toEqual({
+      plan: 'realness-one-network',
+      branch: 'main',
+      branch_level: 'warning',
+      parts: [{ text: 'opus', level: 'dim' }]
+    })
+    chat.stop()
+  })
   it('shows Starting while the bridge opens, then clears it when history arrives', async () => {
     let open_bridge
     watch_chat.mockImplementationOnce(

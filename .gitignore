@@ -1,29 +1,36 @@
 # Personal to one checkout; never shared. Full boundary is decided at G2.
 /.pi/person.local.html
 /AGENTS.md
-/.pi/agent/
-node_modules/
-/.auto/
-.ruff_cache/
 
 /vault/
+/orgs/
 /work/
-/skills/
-/examples/
 /apps/*
 !/apps/realness/
 /artifacts/
-/.npm/
-/.bash_history
+
 /.agents/
 /.claude/
 /.cursor/
 .DS_Store
-/.pi/agent/
-!/.pi/agent/
+node_modules/
+
+# The harness installs here; only the files that decide what it loads stay tracked.
 /.pi/agent/*
 !/.pi/agent/themes/
 !/.pi/agent/APPEND_SYSTEM.md
+!/.pi/agent/settings.json
+!/.pi/agent/npm/
+/.pi/agent/npm/*
+!/.pi/agent/npm/package.json
+
+# The pi fork unpacks here; the tarballs are build output.
+/.pi/runtime/*
+!/.pi/runtime/.gitignore
+!/.pi/runtime/README.md
+!/.pi/runtime/package.json
+!/.pi/runtime/package-lock.json
+!/.pi/runtime/release.json
 
 # temp file written by .auto/warnings.sh
 apps/realness/.oxlintrc.tmp.json

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import register, { as_skill_command, skill_names } from './index.js'
 
 const commands = [
-  { name: 'skill:planning', source: 'skill' },
+  { name: 'skill:planning', source: 'skill', description: 'Plan work as a graph' },
   { name: 'skill:critic', source: 'skill' },
   { name: 'skill:memory', source: 'skill' },
   { name: 'memory', source: 'extension' }
@@ -42,4 +42,17 @@ test('each skill gets a short command that sends the full one', async () => {
   assert.deepEqual(Object.keys(registered), ['planning', 'critic'])
   await registered.planning.handler('a garden plan')
   assert.deepEqual(sent, [['/skill:planning a garden plan', { expandPromptTemplates: true }]])
+})
+
+test('a short command carries the skill description', () => {
+  const handlers = {}
+  const registered = {}
+  register({
+    on: (event, handler) => (handlers[event] = handler),
+    getCommands: () => commands,
+    registerCommand: (name, options) => (registered[name] = options),
+    sendUserMessage: () => {}
+  })
+  handlers.session_start()
+  assert.equal(registered.planning.description, 'Plan work as a graph')
 })

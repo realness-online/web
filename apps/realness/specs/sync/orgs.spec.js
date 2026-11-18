@@ -270,3 +270,103 @@ it('only the founder publishes, and never the members page or secrets', async ()
   })
   assert.equal(by_harness.status, 401)
 })
+
+it('o2: a grant naming an org reaches its members, and no one else', async () => {
+  const GRANTED = '+granted'
+  const private_folder = `people/${me}/harness/vault/Sessions/`
+  const file = `${private_folder}a.html`
+  const grant = (grantee, type) => `
+    <li itemscope itemtype="https://schema.org/DigitalDocumentPermission">
+      <meta itemprop="grantee" content="${grantee}">
+      <meta itemprop="permissionType" content="https://schema.org/${type}Permission">
+      <a itemprop="about" href="/${me}/harness/vault/Sessions/">Sessions</a>
+    </li>`
+  assert.equal(
+    await status(
+      'PUT',
+      `orgs/${GRANTED}/members.html`,
+      me,
+      members(me, daughter)
+    ),
+    200
+  )
+  assert.equal(
+    await status(
+      'PUT',
+      `people/${me}/rights.html`,
+      me,
+      `<ul>${grant(`/${GRANTED}`, 'Read')}</ul>`
+    ),
+    200
+  )
+  assert.equal(await status('PUT', file, me, 'secret'), 200)
+  assert.equal(await status('GET', file, daughter), 200)
+  assert.equal(await status('GET', private_folder, daughter), 200)
+  assert.equal(await status('GET', file, partner), 403)
+  assert.equal(await status('GET', private_folder, partner), 403)
+  assert.equal(await status('GET', file, null), 403)
+  assert.equal(
+    await status('PUT', `${private_folder}b.html`, daughter, 'x'),
+    403
+  )
+})
+
+it('o2: a write grant to an org lets a member write there', async () => {
+  const GRANTED = '+granted'
+  const folder = `people/${me}/harness/vault/Sessions/`
+  const grant = (grantee, type) => `
+    <li itemscope itemtype="https://schema.org/DigitalDocumentPermission">
+      <meta itemprop="grantee" content="${grantee}">
+      <meta itemprop="permissionType" content="https://schema.org/${type}Permission">
+      <a itemprop="about" href="/${me}/harness/vault/Sessions/">Sessions</a>
+    </li>`
+  assert.equal(
+    await status(
+      'PUT',
+      `people/${me}/rights.html`,
+      me,
+      `<ul>${grant(`/${GRANTED}`, 'Write')}</ul>`
+    ),
+    200
+  )
+  assert.equal(
+    await status('PUT', `${folder}draft.html`, daughter, 'draft'),
+    200
+  )
+  assert.equal(await status('GET', `${folder}draft.html`, me), 200)
+  assert.equal(await status('PUT', `${folder}other.html`, partner, 'x'), 403)
+})
+
+it('o2: removing a member ends their granted reads', async () => {
+  const GRANTED = '+granted'
+  const file = `people/${me}/harness/vault/Sessions/a.html`
+  assert.equal(await status('GET', file, daughter), 200)
+  assert.equal(
+    await status('PUT', `orgs/${GRANTED}/members.html`, me, members(me)),
+    200
+  )
+  assert.equal(await status('GET', file, daughter), 403)
+})
+
+it('o2: a grant naming the commons reaches anyone', async () => {
+  const file = `people/${me}/harness/vault/Sessions/a.html`
+  const grant = (grantee, type) => `
+    <li itemscope itemtype="https://schema.org/DigitalDocumentPermission">
+      <meta itemprop="grantee" content="${grantee}">
+      <meta itemprop="permissionType" content="https://schema.org/${type}Permission">
+      <a itemprop="about" href="/${me}/harness/vault/Sessions/">Sessions</a>
+    </li>`
+  assert.equal(
+    await status(
+      'PUT',
+      `people/${me}/rights.html`,
+      me,
+      `<ul>${grant('commons', 'Read')}</ul>`
+    ),
+    200
+  )
+  assert.equal(await status('GET', file, null), 200)
+  assert.equal(await status('GET', file, partner), 200)
+  assert.equal(await status('PUT', file, null, 'x'), 403)
+  assert.equal(await status('PUT', file, partner, 'x'), 403)
+})

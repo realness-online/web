@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { it } from 'node:test'
 import {
   find_source,
+  hops_inside,
+  origins_on,
   source_problem,
   source_sections,
   source_urls
@@ -99,4 +101,24 @@ it('a source still being decided is refused, and says which one and why', () => 
 
 it('a Sources page with no sections is one unnamed source', () => {
   assert.deepEqual(source_sections('# Sources\n\nRead things.\n'), [])
+})
+
+it('the origins a page links to, each once', () => {
+  const page =
+    '[a](https://company.test/news) [b](https://company.test/about) <a href="https://other.test/x">c</a>'
+  assert.deepEqual(origins_on(page), [
+    'https://company.test',
+    'https://other.test'
+  ])
+})
+
+it('a page on an origin the run read a link from is a hop inside', () => {
+  assert.equal(
+    hops_inside('https://company.test/leadership', ['https://company.test']),
+    true
+  )
+  assert.equal(
+    hops_inside('https://elsewhere.test/leadership', ['https://company.test']),
+    false
+  )
 })

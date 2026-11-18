@@ -16,9 +16,9 @@ import {
   pack,
   panel_box,
   side_by_side,
-  sparkline,
   widest
 } from './watch-graph.js'
+import { size_class, stack } from './watch-layout.js'
 
 const DEFAULT_WIDTH = 100
 const DEFAULT_HEIGHT = 30
@@ -31,20 +31,44 @@ const METER_LABEL = 24
 const GRAPH_ROWS = 4
 const FAST_MS = 15_000
 const SLOW_MS = 300_000
+const INTERVALS = [
+  ['u', '15s', FAST_MS],
+  ['m', '60s', MS_PER_MINUTE],
+  ['h', '5m', SLOW_MS]
+]
 const ESC = '\x1b['
 const RESET = `${ESC}0m`
 const BOX_SIDES = 4
-const DASH_WIDTH = 90
-const DASH_HEIGHT = 18
+const SPEND_MAX = 16
+const DAILY_ROWS = 7
+const DAILY_MAX = 12
+const MIX_CELLS = 8
+const SYNC_FRESH_CELLS = 6
+const SYNC_OLD_MS = 3_600_000
+const SYNC_STALE_MS = 86_400_000
+const MS_PER_DAY = 86_400_000
+const MODEL_CALLS_CELLS = 6
+const MODEL_LATENCY_CELLS = 4
+const LATENCY_FAST_MS = 1000
+const LATENCY_SLOW_MS = 3000
+const DISK_CELLS = 8
+const BOX_BORDERS = 2
+const TREND_ROWS = 2
+const TREND_MAX = 8
+const EIGHTHS = 8
+const MEDIUM_TIER = 1
+const COST_ROWS = 6
+const COST_MAX = 12
+const MODEL_ROWS = 3
+const MODEL_MAX = 8
+const WIDE_COLUMNS = 3
 const RIGHT_MAX_SHARE = 0.42
 const RIGHT_MIN = 30
-const COST_SHARE = 0.4
 const MACHINE_METER = 6
 const NAME_MIN = 4
 const GB = 1_073_741_824
 const BUDGET_WARN_SHARE = 0.8
 const BUDGET_OVER_SHARE = 0.95
-const SPEND_ROWS = 3
 const FULL_SHARE = 0.9
 const WARN_SHARE = 0.75
 const MILLION = 1_000_000
@@ -52,7 +76,6 @@ const THOUSAND = 1000
 const HALO_METER = 6
 const ONE_DECIMAL_BELOW = 10
 const DAYS_FALLBACK = 30
-const FIXED_SPEND_ROWS = 4
 const HEX = 16
 const { palette } = load_theme(
   file_u_r_l_to_path(new URL('../../themes/realness', import.meta.url)),
@@ -134,7 +157,7 @@ const SECONDS_PER_HOUR = 3600
 /** A service's state word; `missing` says how to show one never deployed. */
 const service_state = (service, missing) => {
   if (!service.found) return missing
-  return service.ready ? 'ready' : 'NOT READY'
+  return service.ready ? 'ready' : 'not ready'
 }
 
 const age = seconds => {
@@ -174,8 +197,36 @@ const wrap = (text, width) => {
   return rows.length ? rows : ['']
 }
 
-/** Relative bars show cost drivers; the dollar values remain exact to cents. */
-export const cost_bars = (rows, width = DEFAULT_WIDTH) => {
+/**
+ * A row of Braille trend lines, or one empty row when there is nothing to plot
+ * or no finite width to plot it in.
+ * @param {number[]} values
+ * @param {number} width
+ * @param {number} rows
+ * @param {boolean} on
+ */
+const trend = (values, width, rows, on) =>
+  values.length && Number.isFinite(width)
+    ? braille_line(values, Math.max(1, width), rows).map(row =>
+        paint(row, 'running', on)
+      )
+    : ['']
+
+/**
+ * Relative bars show cost drivers; the dollar values remain exact to cents.
+ * The smallest cost still draws a sliver, and a credit draws in its own color
+ * beside its negative amount.
+ * @param {{ service: string, net: number }[]} rows
+ * @param {number} [width]
+ * @param {number} [lines] rows to fill, the folded Other row included
+ * @param {boolean} [on]
+ */
+export const cost_bars = (
+  rows,
+  width = DEFAULT_WIDTH,
+  lines = COST_ROWS,
+  on = false
+) => {
   const sums = new Map()
   for (const row of rows)
     sums.set(row.service, (sums.get(row.service) ?? 0) + row.net)
@@ -183,11 +234,12 @@ export const cost_bars = (rows, width = DEFAULT_WIDTH) => {
     .filter(([, cost]) => cost !== 0)
     .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
   if (!costs.length) return ['No net charges recorded']
-  const shown = costs.slice(0, 5)
-  if (costs.length > 5)
+  const folded = costs.length > lines
+  const shown = costs.slice(0, folded ? Math.max(1, lines - 1) : lines)
+  if (folded)
     shown.push([
       'Other',
-      costs.slice(5).reduce((sum, [, cost]) => sum + cost, 0)
+      costs.slice(shown.length).reduce((sum, [, cost]) => sum + cost, 0)
     ])
   const label_width = Math.min(
     Math.max(...shown.map(([label]) => label.length)),
@@ -196,9 +248,10 @@ export const cost_bars = (rows, width = DEFAULT_WIDTH) => {
   const money_width = Math.max(...shown.map(([, cost]) => usd(cost).length))
   const bar_width = Math.max(1, width - label_width - money_width - 3)
   const maximum = Math.max(...shown.map(([, cost]) => Math.abs(cost)))
+  const sliver = 1 / (bar_width * EIGHTHS)
   return shown.map(
     ([label, cost]) =>
-      `${fit(label, label_width).padEnd(label_width)} ${usd(cost).padStart(money_width)} ${cost === 0 ? '' : (cost < 0 ? '-' : '#').repeat(Math.max(1, Math.round((Math.abs(cost) / maximum) * bar_width)))}`
+      `${fit(label, label_width).padEnd(label_width)} ${usd(cost).padStart(money_width)} ${paint(meter(Math.max(sliver, Math.abs(cost) / maximum), bar_width), cost < 0 ? 'sleeping' : 'running', on)}`
   )
 }
 
@@ -209,10 +262,10 @@ export const billing_lines = (
   now = Date.now()
 ) => {
   if (result?.status !== 'ok')
-    return [paint('UNAVAILABLE - cloud bill not included', 'failed', on)]
+    return [paint('unavailable - cloud bill not included', 'failed', on)]
   const exports = result.exports ?? []
   if (!exports.length)
-    return [paint('UNAVAILABLE - no billing export data', 'failed', on)]
+    return [paint('unavailable - no billing export data', 'failed', on)]
   const total = exports.reduce((sum, bill) => sum + bill.total, 0)
   const days = new Map()
   for (const bill of exports)
@@ -222,7 +275,7 @@ export const billing_lines = (
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, cost]) => ({ date, cost }))
   return [
-    `MONTH ${usd(total)}  cloud charges after credits`,
+    `month ${usd(total)}  cloud charges after credits`,
     ...spend_numbers(daily),
     ...spend_line(daily, width, on),
     '',
@@ -236,7 +289,7 @@ export const billing_lines = (
 
 export const resource_lines = (result, width = DEFAULT_WIDTH, on = true) => {
   if (result?.status !== 'ok')
-    return [paint('UNAVAILABLE - cloud machine and disk state', 'failed', on)]
+    return [paint('unavailable - cloud machine and disk state', 'failed', on)]
   const inventories = result.inventories ?? []
   const instances = inventories.flatMap(item => item.instances)
   const disks = inventories.flatMap(item => item.disks)
@@ -252,7 +305,7 @@ export const resource_lines = (result, width = DEFAULT_WIDTH, on = true) => {
       : `${running} running cloud machines  ${stopped} stopped`
   ]
   for (const row of instances) {
-    const state = row.status === 'TERMINATED' ? 'STOPPED' : row.status
+    const state = row.status === 'RUNNING' ? 'running' : 'stopped'
     lines.push(
       ...wrap(`${row.name}  ${state}`, width).map(line =>
         paint(line, row.status === 'TERMINATED' ? 'sleeping' : 'idle', on)
@@ -274,12 +327,12 @@ export const resource_lines = (result, width = DEFAULT_WIDTH, on = true) => {
 const service_lines = (result, width = DEFAULT_WIDTH, on = true) => {
   if (result?.status !== 'ok')
     return [
-      paint('UNAVAILABLE - cloud service status', 'failed', on),
+      paint('unavailable - cloud service status', 'failed', on),
       ...wrap(result?.error ?? 'no service source', width)
     ]
   return (result.rows ?? []).flatMap(row =>
     wrap(
-      `${row.name}  ${service_state(row, 'MISSING')}  ${row.project}`,
+      `${row.name}  ${service_state(row, 'missing')}${row.project ? `  ${row.project}` : ''}`,
       width
     ).map(line =>
       paint(line, row.found && row.ready ? 'running' : 'failed', on)
@@ -307,9 +360,9 @@ const spend_numbers = (daily = []) => {
   const costs = daily.map(day => day.cost)
   const peak = daily.reduce((top, day) => (day.cost > top.cost ? day : top))
   const cells = [
-    ['LATEST', usd(costs.at(-1))],
-    ['AVG/DAY', usd(costs.reduce((sum, cost) => sum + cost, 0) / costs.length)],
-    ['PEAK', `${usd(peak.cost)} ${peak.date.slice(5)}`]
+    ['latest', usd(costs.at(-1))],
+    ['avg/day', usd(costs.reduce((sum, cost) => sum + cost, 0) / costs.length)],
+    ['peak', `${usd(peak.cost)} ${peak.date.slice(5)}`]
   ]
   return [cells.map(([label, value]) => `${label} ${value}`).join('   ')]
 }
@@ -400,7 +453,7 @@ export const spend_chart = (daily = [], width = 80) => {
 const spend_lines = (rows = [], width = 80) =>
   rows.length
     ? rows.flatMap(row => [
-        `${row.phone.slice(0, 5)}...${row.phone.slice(-PHONE_TAIL)}  TODAY ${usd(row.day.cost)}  MONTH ${usd(row.month.cost)}`,
+        `${row.phone.slice(0, 5)}...${row.phone.slice(-PHONE_TAIL)}  today ${usd(row.day.cost)}  month ${usd(row.month.cost)}`,
         ...(row.daily?.some(day => day.cost !== 0)
           ? spend_chart(row.daily, width)
           : [
@@ -414,45 +467,143 @@ const spend_lines = (rows = [], width = 80) =>
 const percent = value => `${(Number(value) * PERCENT).toFixed(1)}%`
 const millis = value => `${Math.round(value)}ms`
 
-const model_summary = report => {
+/**
+ * The model totals, longest wording first, so a narrow box drops detail
+ * instead of clipping it.
+ * @param {any} report
+ * @param {string} [prefix]
+ */
+const model_summary_rows = (report, prefix = '') => {
   const totals = report?.totals
-  if (!totals?.calls) return 'no model calls today'
+  if (!totals?.calls) return [`${prefix}no model calls today`]
   const errors = `${totals.errors} ${totals.errors === 1 ? 'error' : 'errors'} (${percent(totals.error_rate)})`
-  return `${totals.calls} calls  ${errors}  p50 ${millis(totals.p50_ms)}  p95 ${millis(totals.p95_ms)}  cache ${percent(totals.cache_hit_rate)}  ${usd(totals.cost)}`
+  const calls = `${prefix}${totals.calls} calls  ${errors}`
+  return [
+    `${calls}  p50 ${millis(totals.p50_ms)}  p95 ${millis(totals.p95_ms)}  cache ${percent(totals.cache_hit_rate)}  ${usd(totals.cost)}`,
+    `${calls}  p50 ${millis(totals.p50_ms)}  p95 ${millis(totals.p95_ms)}  ${usd(totals.cost)}`,
+    `${calls}  p95 ${millis(totals.p95_ms)}  ${usd(totals.cost)}`,
+    `${calls}  ${usd(totals.cost)}`,
+    calls
+  ]
+}
+
+/**
+ * One row per model or client: a calls bar with the exact count, then a
+ * latency bar with its p95. Cost stays in the totals line and the ledger.
+ * @param {string} label
+ * @param {{ name: string, calls?: number, errors?: number, p95_ms?: number, cost?: number }[]} rows
+ * @param {number} width
+ * @param {boolean} on
+ * @param {number} limit
+ */
+export const model_bar_rows = (
+  label,
+  rows = [],
+  width = DEFAULT_WIDTH,
+  on = true,
+  limit = MODEL_ROWS
+) => {
+  const shown = rows.slice(0, limit)
+  if (!shown.length) return []
+  const most = Math.max(1, ...shown.map(row => row.calls ?? 0))
+  const slowest = Math.max(1, ...shown.map(row => row.p95_ms ?? 0))
+  const names = Math.max(...shown.map(row => `${label} ${row.name}`.length))
+  return shown.map(row => {
+    const calls = row.calls ?? 0
+    const slow = row.p95_ms ?? 0
+    let state = 'running'
+    if (slow > LATENCY_SLOW_MS) state = 'failed'
+    else if (slow > LATENCY_FAST_MS) state = 'idle'
+    const head = `${label} ${row.name}`.padEnd(names)
+    const errors = row.errors
+      ? ` ${row.errors} ${row.errors === 1 ? 'err' : 'errs'}`
+      : ''
+    return fit_first(
+      [
+        `${head}  ${paint(meter(calls / most, MODEL_CALLS_CELLS), 'running', on)} ${calls} ${calls === 1 ? 'call' : 'calls'}${errors} ${paint(meter(slow / slowest, MODEL_LATENCY_CELLS), state, on)} ${millis(slow)}`,
+        `${head}  ${calls} ${calls === 1 ? 'call' : 'calls'}${errors} p95 ${millis(slow)} ${usd(row.cost)}`,
+        `${head}  ${calls} ${calls === 1 ? 'call' : 'calls'}${errors}`,
+        head
+      ],
+      width
+    )
+  })
 }
 
 /** Today's calls across people, plus the busiest models and clients. */
-const model_lines = (report, on = true, width = DEFAULT_WIDTH) => {
+const model_lines = (
+  report,
+  on = true,
+  width = DEFAULT_WIDTH,
+  limit = MODEL_ROWS
+) => {
   if (report?.status === 'failed')
-    return [paint(`FAILED ${report.error}`, 'failed', on)]
+    return [paint(`failed ${report.error}`, 'failed', on)]
   if (!report?.totals) return ['no model report']
   const lines = [
     paint(
-      model_summary(report),
+      fit_first(model_summary_rows(report), width),
       report.totals.errors ? 'failed' : 'running',
       on
     )
   ]
-  const group = (label, rows = []) =>
-    rows
-      .slice(0, 3)
-      .map(row =>
-        clip(
-          `${label} ${row.name}  ${row.calls} calls  ${row.errors} errors  p95 ${millis(row.p95_ms)}  ${usd(row.cost)}`,
-          width
-        )
-      )
-  lines.push(...group('model', report.by_model))
-  lines.push(...group('client', report.by_client))
+  lines.push(...model_bar_rows('model', report.by_model, width, on, limit))
+  lines.push(...model_bar_rows('client', report.by_client, width, on, limit))
   return lines
+}
+
+/** An age in whole days once it passes one. */
+const fresh_age = millis => {
+  const seconds = Math.floor(millis / MS_PER_SECOND)
+  if (seconds < SECONDS_PER_MINUTE) return `${seconds}s ago`
+  if (seconds < SECONDS_PER_HOUR)
+    return `${Math.floor(seconds / SECONDS_PER_MINUTE)}m ago`
+  if (millis < MS_PER_DAY)
+    return `${Math.floor(seconds / SECONDS_PER_HOUR)}h ago`
+  return `${Math.floor(millis / MS_PER_DAY)}d ago`
+}
+
+/**
+ * One row per folder: a bar for how fresh its newest sync is against the
+ * stalest folder, then that age. A folder with no record keeps an empty bar.
+ * @param {{ folder: string, newest?: string | null, last_sync?: string | null }[]} rows
+ * @param {boolean} [on]
+ * @param {number} [now]
+ */
+export const sync_fresh_lines = (rows = [], on = true, now = Date.now()) => {
+  const dated = rows.map(row => {
+    const at = Date.parse(row.newest ?? row.last_sync ?? '')
+    return {
+      folder: row.folder,
+      waited: Number.isFinite(at) ? Math.max(0, now - at) : null
+    }
+  })
+  const stalest = Math.max(1, ...dated.map(entry => entry.waited ?? 0))
+  return dated.map(({ folder, waited }) => {
+    if (waited === null)
+      return `${folder}  ${'·'.repeat(SYNC_FRESH_CELLS)} never`
+    let state = 'running'
+    if (waited > SYNC_STALE_MS) state = 'failed'
+    else if (waited > SYNC_OLD_MS) state = 'idle'
+    const bar = paint(meter(1 - waited / stalest, SYNC_FRESH_CELLS), state, on)
+    return `${folder}  ${bar} ${fresh_age(waited)}`
+  })
 }
 
 export const sync_lines = (rows = [], on = true, width = DEFAULT_WIDTH) => {
   if (!rows.length) return ['no folders configured']
   const unread = rows.filter(row => !row.listing)
   const missing = rows.filter(row => row.listing && !row.last_sync)
+  const read = `${rows.length - unread.length}/${rows.length} readable`
   const lines = [
-    `${rows.length - unread.length}/${rows.length} folders readable; ${missing.length} without a local sync record`
+    fit_first(
+      [
+        `${read} folders; ${missing.length} without a local sync record`,
+        `${read}; ${missing.length} without a record`,
+        read
+      ],
+      width
+    )
   ]
   for (const row of unread)
     lines.push(
@@ -484,7 +635,7 @@ const publish_lines = (rows = []) =>
 const error_lines = (panel_result, on = true) =>
   panel_result?.status === 'failed'
     ? [
-        paint(`FAILED ${panel_result.error}`, 'failed', on),
+        paint(`failed ${panel_result.error}`, 'failed', on),
         paint(
           `last read ${panel_result.at?.slice(ISO_TIME_START, ISO_SECOND) ?? '-'}Z`,
           'unknown',
@@ -495,14 +646,33 @@ const error_lines = (panel_result, on = true) =>
 
 /** Ordered monitor rows, shared by rendering and scroll bounds. */
 /** Every panel with its full rows, for the scrollable detail view. */
-const detail_rows = (panels, width, on, now) => {
-  const rows = []
-  const section = (title, lines) =>
-    rows.push(
-      paint(title, 'unknown', on),
-      ...lines.map(line => clip(line, width)),
-      ''
-    )
+const detail_rows = (panels, width, on, now) => [
+  ...detail_sections(panels, width, on).flatMap(({ title, lines }) => [
+    paint(title, 'unknown', on),
+    ...lines.map(line => clip(line, width)),
+    ''
+  ]),
+  ...sign_lines(panels, on)
+]
+
+/** Sign-on and publish rows, errors first. */
+const sign_lines = (panels, on) => [
+  ...error_lines(panels.sign_on, on),
+  ...error_lines(panels.publish, on),
+  ...sign_on_lines(panels.sign_on),
+  ...publish_lines(panels.publish?.rows)
+]
+
+/**
+ * Every detail section with its full rows; a large dashboard draws each as a
+ * box, and smaller terminals page through them.
+ * @param {any} panels
+ * @param {number} width
+ * @param {boolean} on
+ */
+const detail_sections = (panels, width, on) => {
+  const sections = []
+  const section = (title, lines) => sections.push({ title, lines })
   const { billing } = panels
   const scope = (billing?.exports ?? []).flatMap(bill => [
     ...wrap(`Export: ${bill.table}`, width),
@@ -563,13 +733,7 @@ const detail_rows = (panels, width, on, now) => {
       sync_lines(panels.sync?.rows, on, width)
     )
   )
-  rows.push(
-    ...error_lines(panels.sign_on, on),
-    ...error_lines(panels.publish, on),
-    ...sign_on_lines(panels.sign_on),
-    ...publish_lines(panels.publish?.rows)
-  )
-  return rows
+  return sections
 }
 
 /** The local halo's own detail: where it listens, its seed, and its actors. */
@@ -621,7 +785,7 @@ const cloud_service_lines = panels => {
   const problems = services.filter(row => !row.found || !row.ready)
   if (!problems.length) return [{ text: `${services.length} services ready` }]
   return problems.map(row => ({
-    text: `${row.name}: ${row.found ? 'NOT READY' : 'MISSING'} in ${row.project}`,
+    text: `${row.name}: ${row.found ? 'not ready' : 'missing'}${row.project ? ` in ${row.project}` : ''}`,
     state: 'failed'
   }))
 }
@@ -688,7 +852,7 @@ const status_lines = (panels, width, on) => {
     status.push('model call stats unavailable - see details')
   else if (panels.model?.totals?.errors)
     status.push({
-      text: `model calls: ${model_summary(panels.model)}`,
+      text: `model: ${panels.model.totals.errors} ${panels.model.totals.errors === 1 ? 'error' : 'errors'} today`,
       state: 'failed'
     })
   if (panels.traffic?.refresh?.state === 'failed')
@@ -710,34 +874,30 @@ export const frame_rows = (
   now = Date.now()
 ) => {
   const panels = snapshot?.panels ?? {}
+  const inner = Math.max(1, width - BOX_SIDES)
   const rows = []
   const section = (title, lines) =>
-    rows.push(
-      paint(title, 'unknown', on),
-      ...lines.map(line => clip(line, width)),
-      ''
-    )
-  if (details) return detail_rows(panels, width, on, now)
-  section('CLOUD BILLING', billing_lines(panels.billing, width, on, now))
+    rows.push(...tile(title, lines, width, lines.length + 2, on))
+  if (details) return detail_rows(panels, inner, on, now)
+  section('cloud-billing', billing_lines(panels.billing, inner, on, now))
   const checked = Date.parse(panels.resources?.checked ?? '')
   const resource_age = Number.isFinite(checked)
     ? `  read ${age(Math.max(0, Math.floor((now - checked) / MS_PER_SECOND)))} ago`
     : ''
   section(
-    `CLOUD MACHINES${resource_age}`,
-    resource_lines(panels.resources, width, on)
+    `cloud-machines${resource_age}`,
+    resource_lines(panels.resources, inner, on)
   )
-  const status = status_lines(panels, width, on)
-  section('STATUS', status)
+  section('status', status_lines(panels, inner, on))
   if (panels.model?.status === 'ok' && panels.model.totals?.calls)
     section(
-      'MODEL CALLS - today, all people',
-      model_lines(panels.model, on, width)
+      'model-calls  today, all people',
+      model_lines(panels.model, on, inner)
     )
   const model_cost = panels.cost?.rows ?? []
   if (model_cost.some(row => row.month.cost !== 0))
-    section('MODEL SPEND - separate from cloud', [
-      `TODAY ${usd(model_cost.reduce((sum, row) => sum + row.day.cost, 0))}  MONTH ${usd(model_cost.reduce((sum, row) => sum + row.month.cost, 0))}`
+    section('model-spend  separate from cloud', [
+      `today ${usd(model_cost.reduce((sum, row) => sum + row.day.cost, 0))}  month ${usd(model_cost.reduce((sum, row) => sum + row.month.cost, 0))}`
     ])
   return rows
 }
@@ -754,6 +914,7 @@ export const frame_rows = (
  * @param {string | null} [options.message] the last read failure, or null
  * @param {number} [options.offset]
  * @param {boolean} [options.details]
+ * @param {boolean} [options.reading] a read is in flight
  */
 export const frame = ({
   snapshot,
@@ -764,41 +925,41 @@ export const frame = ({
   on = true,
   message = null,
   offset = 0,
-  details = false
+  details = false,
+  reading = false
 }) => {
-  const head = `${paint('REALNESS SERVICE WATCH', 'title', on)}  ${details ? 'details' : 'costs'}  every ${Math.round(interval_ms / MS_PER_SECOND)}s${message ? `  ${paint(message, 'idle', on)}` : ''}`
-  if (!details && width >= DASH_WIDTH && height >= DASH_HEIGHT)
-    return `${[
-      fit(head, width),
-      ...dashboard(
-        /** @type {any} */ (snapshot)?.panels ?? {},
-        width,
-        height - 2,
-        on,
-        now
-      ),
-      fit(
-        paint(
-          '^C quit  r refresh  d details  u 15s  m 60s  h 5m',
-          'unknown',
-          on
-        ),
-        width
-      )
-    ].join('\n')}\n`
-  const inner = Math.max(1, width - BOX_SIDES)
-  const rows = frame_rows(snapshot, inner, on, details, now)
+  const large = ['tall', 'wide'].includes(size_class(width, height))
+  const paged = details && !large
+  const head = `${paint('REALNESS SERVICE WATCH', 'title', on)}  ${paged ? 'details' : 'costs'}  every ${Math.round(interval_ms / MS_PER_SECOND)}s  ${health_verdict(/** @type {any} */ (snapshot)?.panels ?? {}, on)}${message ? `  ${paint(message, 'idle', on)}` : ''}`
+  const size = paged ? 'small' : size_class(width, height)
   const capacity = body_capacity(height)
+  const rows =
+    size === 'small' ? frame_rows(snapshot, width, on, paged, now) : []
   const start = Math.min(offset, Math.max(0, rows.length - capacity))
-  const body = rows.slice(start, start + capacity)
+  const body =
+    size === 'small'
+      ? rows.slice(start, start + capacity)
+      : dashboard({
+          panels: /** @type {any} */ (snapshot)?.panels ?? {},
+          width,
+          height: capacity,
+          on,
+          now,
+          size
+        })
   while (body.length < capacity) body.push('')
   const position =
     rows.length > capacity
       ? `rows ${start + 1}-${start + body.length}/${rows.length}  j/k scroll`
       : ''
   const footer =
-    `^C quit  r refresh  d ${details ? 'costs' : 'details'}  u 15s  m 60s  h 5m  ${position}`.trimEnd()
-  return `${box({ head, footer, body, width, on }).join('\n')}\n`
+    `^C quit  r refresh  ${large ? '' : `d ${paged ? 'costs' : 'details'}  `}${interval_keys(interval_ms)}  ${reading ? 'reading  ' : ''}${position}`.trimEnd()
+  if (paged) return `${box({ head, footer, body, width, on }).join('\n')}\n`
+  return `${[
+    fit(head, width),
+    ...body,
+    fit(paint(footer, 'unknown', on), width)
+  ].join('\n')}\n`
 }
 
 /**
@@ -817,6 +978,23 @@ const tile = (title, lines, width, height, on) =>
     height,
     edge: text => paint(text, 'border', on),
     label: text => paint(text, 'title', on)
+  })
+
+/**
+ * A box for detail that should not compete with health and money: its border
+ * and title are dim, its rows keep their own color.
+ * @param {{ title: string, lines: string[], height: number }} box
+ * @param {number} width
+ * @param {boolean} on
+ */
+const quiet_tile = (box, width, on) =>
+  panel_box({
+    title: box.title,
+    lines: box.lines,
+    width,
+    height: box.height,
+    edge: text => paint(text, 'unknown', on),
+    label: text => paint(text, 'unknown', on)
   })
 
 /** Merged daily cloud cost across billing exports, oldest first. */
@@ -873,9 +1051,36 @@ export const with_machines = (halos, resources) => {
   }
 }
 
+/**
+ * Running, idle, and stopped actors as one stacked bar.
+ * @param {{ running?: number, idle?: number, stopped?: number }} actors
+ * @param {number} [width]
+ * @param {boolean} [on]
+ */
+export const mix_bar = (actors, width = MIX_CELLS, on = true) => {
+  /** @type {[string, number, string][]} */
+  const parts = [
+    ['running', actors.running ?? 0, '█'],
+    ['idle', actors.idle ?? 0, '▓'],
+    ['stopped', actors.stopped ?? 0, '·']
+  ]
+  const total = parts.reduce((sum, [, count]) => sum + count, 0)
+  if (!total) return paint('·'.repeat(width), 'unknown', on)
+  let left = width
+  return parts
+    .map(([state, count, glyph], at) => {
+      const cells =
+        at === parts.length - 1 ? left : Math.round((count / total) * width)
+      const taken = Math.max(0, Math.min(left, cells))
+      left -= taken
+      return count ? paint(glyph.repeat(taken), state, on) : ''
+    })
+    .join('')
+}
+
 /** Two rows per synced halo record: actors and age, then memory and disk. */
 export const halo_panel_lines = (halos, on, width = DEFAULT_WIDTH) => {
-  if (halos?.status === 'failed') return [paint('UNAVAILABLE', 'failed', on)]
+  if (halos?.status === 'failed') return [paint('unavailable', 'failed', on)]
   const rows = halos?.rows ?? []
   if (!rows.length) return ['no halo records']
   return rows.flatMap(row => {
@@ -885,20 +1090,25 @@ export const halo_panel_lines = (halos, on, width = DEFAULT_WIDTH) => {
         ? 'no report'
         : `${age(row.age_s)} ago`
     const { actors } = row
+    const mix = actors ? mix_bar(actors, MIX_CELLS, on) : ''
+    const counts = actors
+      ? `${actors.running} run ${actors.idle} idle ${actors.stopped} stop`
+      : row.state
     return [
       fit_first(
         actors
           ? [
-              `${name}  ${actors.running} run ${actors.idle} idle ${actors.stopped} stop  ${seen}`,
-              `${name}  ${actors.running} run ${actors.idle} idle ${actors.stopped} stop`,
+              `${name}  ${counts}  ${seen}`,
+              `${name}  ${counts}`,
               `${name} ${seen}`
             ]
-          : [`${name}  ${row.state}  ${seen}`, `${name} ${seen}`],
+          : [`${name}  ${counts}  ${seen}`, `${name} ${seen}`],
         width
       ),
       actors
         ? fit_first(
             [
+              `${mix}  ${usage('mem', row.mem_free, row.mem_total, on)}  ${usage('disk', row.volume_free, row.volume_size, on)}`,
               `${usage('mem', row.mem_free, row.mem_total, on)}  ${usage('disk', row.volume_free, row.volume_size, on)}`,
               `${usage('mem', row.mem_free, row.mem_total, on, false)}  ${usage('disk', row.volume_free, row.volume_size, on, false)}`
             ],
@@ -921,7 +1131,7 @@ const local_of = panels => (panels.local?.status === 'ok' ? panels.local : null)
 export const local_panel_lines = (local, on = true, width = DEFAULT_WIDTH) => {
   if (!local)
     return [
-      paint('UNAVAILABLE', 'failed', on),
+      paint('unavailable', 'failed', on),
       'the local halo did not answer; run npm run local'
     ]
   const host = local.url ? new URL(local.url).host : 'not in this checkout'
@@ -952,9 +1162,6 @@ const tokens = count => {
 }
 
 const LIGHT = '●'
-const MIN_TILE = 3
-/** The local tile holds a light, the halo's two rows, and its border. */
-const LOCAL_MAX_HEIGHT = 5
 const PERCENT = 100
 const STALE_TRAFFIC_MS = 86_400_000
 const SERVICES = ['sync', 'proxy', 'gate']
@@ -992,6 +1199,16 @@ const LIGHT_WORDS = {
   failed: 'down',
   unknown: '?'
 }
+/** Reads whose failure the head counts; lights already carry the rest. */
+const VERDICT_READS = [
+  'billing',
+  'resources',
+  'cost',
+  'model',
+  'traffic',
+  'plans'
+]
+const VERDICT_WARN = ['idle', 'quiet', 'unknown']
 
 /** One colored light per cloud piece; local pieces light up in their own tile. */
 export const health_lights = (panels, on = true, width = DEFAULT_WIDTH) => {
@@ -1013,6 +1230,31 @@ export const health_lights = (panels, on = true, width = DEFAULT_WIDTH) => {
 }
 
 /**
+ * One line that answers "is everything all right?": down first, then
+ * warnings, then all ok.
+ * @param {any} panels
+ * @param {boolean} [on]
+ */
+const health_verdict = (panels = {}, on = true) => {
+  if (!Object.keys(panels).length) return paint('no data', 'unknown', on)
+  const { local } = panels
+  const { status: local_status } = local ?? {}
+  const lights = [
+    halo_light(panels.halos),
+    ...SERVICES.map(name => service_light(panels.services, name)),
+    ...(local
+      ? [local_status === 'ok' ? 'running' : 'failed', sync_light(panels.sync)]
+      : [])
+  ]
+  const failed = VERDICT_READS.filter(name => panels[name]?.status === 'failed')
+  const down = lights.filter(state => state === 'failed').length + failed.length
+  const warn = lights.filter(state => VERDICT_WARN.includes(state)).length
+  if (down) return paint(`${down} down`, 'failed', on)
+  if (warn) return paint(`${warn} warn`, 'idle', on)
+  return paint('all ok', 'running', on)
+}
+
+/**
  * Human page views this week against last week, a daily trend, and how the
  * local archive stands: quiet when Cloud Logging has no newer requests, or
  * not refreshing when the last gcloud read failed.
@@ -1020,11 +1262,18 @@ export const health_lights = (panels, on = true, width = DEFAULT_WIDTH) => {
  * @param {number} width
  * @param {boolean} on
  * @param {number} now
+ * @param {number} [rows] chart rows
  */
-export const traffic_lines = (traffic, width, on = true, now = Date.now()) => {
+export const traffic_lines = (
+  traffic,
+  width,
+  on = true,
+  now = Date.now(),
+  rows = TREND_ROWS
+) => {
   if (!traffic) return [paint('no archive; npm run traffic', 'unknown', on)]
   if (traffic.status === 'failed')
-    return [paint(traffic.error ?? 'UNAVAILABLE', 'unknown', on)]
+    return [paint(traffic.error ?? 'unavailable', 'unknown', on)]
   let change = ''
   if (traffic.previous)
     change = `  ${traffic.people >= traffic.previous ? '↑' : '↓'}${Math.abs(Math.round(((traffic.people - traffic.previous) / traffic.previous) * PERCENT))}%`
@@ -1049,12 +1298,10 @@ export const traffic_lines = (traffic, width, on = true, now = Date.now()) => {
       ],
       width
     ),
-    paint(
-      sparkline(
-        (traffic.daily ?? []).map(day => day.people),
-        width
-      ),
-      'running',
+    ...trend(
+      (traffic.daily ?? []).map(day => day.people),
+      width,
+      rows,
       on
     ),
     ...notes,
@@ -1105,7 +1352,7 @@ const model_panel_lines = (cost, width, on) => {
     ? model_values
     : [...used_daily].sort(([a], [b]) => a.localeCompare(b)).map(([, n]) => n)
   return cost?.status === 'failed'
-    ? [paint('UNAVAILABLE', 'failed', on)]
+    ? [paint('unavailable', 'failed', on)]
     : [
         fit_first(
           [
@@ -1117,9 +1364,10 @@ const model_panel_lines = (cost, width, on) => {
           ],
           width
         ),
-        total('month', 'calls') > 0 || model_values.some(value => value !== 0)
-          ? paint(sparkline(chart, width), 'running', on)
-          : paint('no model use this month', 'unknown', on)
+        ...(total('month', 'calls') > 0 ||
+        model_values.some(value => value !== 0)
+          ? trend(chart, width, TREND_ROWS, on)
+          : [paint('no model use this month', 'unknown', on)])
       ]
 }
 
@@ -1143,17 +1391,17 @@ const machine_panel = (resources, on) => {
       ? [
           ...instances.map(row => {
             const up = row.status === 'RUNNING'
-            return `${row.name.padEnd(name_width)} ${paint(meter(up ? 1 : 0, MACHINE_METER), up ? 'running' : 'sleeping', on)} ${paint(up ? 'RUNNING' : 'STOPPED', up ? 'running' : 'sleeping', on)}`
+            return `${row.name.padEnd(name_width)} ${paint(meter(up ? 1 : 0, MACHINE_METER), up ? 'running' : 'sleeping', on)} ${paint(up ? 'running' : 'stopped', up ? 'running' : 'sleeping', on)}`
           }),
           disks.length
             ? `${disks.length} disks / ${disks.reduce((sum, disk) => sum + disk.size_gb, 0)} GB retained${disks.some(disk => !disk.attached.length) ? ` · ${disks.filter(disk => !disk.attached.length).length} unattached` : ''}`
             : 'no persistent disks'
         ]
-      : [paint('UNAVAILABLE', 'failed', on)]
+      : [paint('unavailable', 'failed', on)]
   return {
     title: instances.length
-      ? `CLOUD MACHINES  ${running}/${instances.length} running`
-      : 'CLOUD MACHINES',
+      ? `cloud-machines  ${running}/${instances.length} running`
+      : 'cloud-machines',
     lines: machine_lines
   }
 }
@@ -1217,145 +1465,343 @@ export const budget_panel_lines = (panels, width, on) => {
   ]
 }
 
-/** Spend graph and cost table on the left; machines, models, status right. */
-const dashboard = (panels, width, height, on, now) => {
-  const right = Math.max(
+/**
+ * One row per day, newest first, with a bar scaled to the largest day shown.
+ * @param {{ date: string, value: number }[]} days oldest first
+ * @param {(value: number) => string} label
+ * @param {number} width
+ * @param {boolean} on
+ */
+const day_bars = (days, label, width, on, count = DAILY_ROWS) => {
+  const recent = days.slice(-count).toReversed()
+  const peak = Math.max(0, ...recent.map(day => day.value))
+  const cells = Math.max(METER_MIN, Math.min(METER_MAX, width - METER_LABEL))
+  return recent.map(
+    day =>
+      `${day.date.slice(5)} ${paint(meter(peak ? Math.max(0, day.value) / peak : 0, cells), 'running', on)} ${label(day.value)}`
+  )
+}
+
+const service_rows = (services, inner) =>
+  services.flatMap(row =>
+    wrap(
+      `${row.name}  ${service_state(row, 'missing')}${row.project ? `  ${row.project}` : ''}`,
+      inner
+    )
+  )
+
+/** Each disk's size against the largest one, dim when nothing holds it. */
+const inventory_lines = (inventories, on = true) => {
+  const disks = inventories.flatMap(inventory => inventory.disks)
+  const largest = Math.max(1, ...disks.map(disk => disk.size_gb))
+  return inventories.flatMap(inventory => [
+    ...inventory.instances.map(row => `${row.name}  ${row.machine}`),
+    ...inventory.disks.map(row => {
+      const bar = paint(
+        meter(row.size_gb / largest, DISK_CELLS),
+        row.attached.length ? 'running' : 'unknown',
+        on
+      )
+      return `${row.name}  ${bar} ${row.size_gb} GB  ${row.attached.length ? row.attached.join(', ') : 'unattached'}`
+    })
+  ])
+}
+
+/**
+ * Every dashboard box by name. Each takes the width inside its border and
+ * returns its title and rows, or null when it has nothing to show. A large
+ * terminal gets the detail rows inside the box that owns them; a medium
+ * one gets a single detail row per box.
+ * @param {any} panels
+ * @param {boolean} on
+ * @param {number} now
+ * @param {number} tier detail rows each box may add
+ */
+const box_makers = (panels, on, now, tier) => {
+  const { billing } = panels
+  const exports = billing?.status === 'ok' ? (billing.exports ?? []) : []
+  const daily = daily_cloud(exports)
+  const total = exports.reduce((sum, bill) => sum + bill.total, 0)
+  const forecast = projection(total, daily)
+  const cloud = with_machines(panels.halos, panels.resources)
+  const machines = machine_panel(panels.resources, on)
+  const inventories =
+    panels.resources?.status === 'ok'
+      ? (panels.resources.inventories ?? [])
+      : []
+  const visits = panels.traffic?.daily ?? []
+  const cost_days = daily.map(day => ({ date: day.date, value: day.cost }))
+  const visit_days = visits.map(day => ({
+    date: day.date,
+    value: day.people
+  }))
+  const days_box = (title, rows, label, count) =>
+    rows.length
+      ? {
+          title,
+          lines: day_bars(rows, label, count, on),
+          grow: extra => day_bars(rows, label, count, on, DAILY_ROWS + extra),
+          max: Math.min(rows.length, DAILY_MAX) + 2
+        }
+      : null
+  return {
+    'cloud-spend': inner => {
+      const errors = error_lines(billing, on)
+      if (!exports.length)
+        return {
+          title: 'cloud-spend',
+          lines: [...errors, ...billing_lines(billing, inner, on, now)]
+        }
+      const chart = extra => [
+        ...spend_numbers(daily),
+        ...spend_line(daily, inner, on, GRAPH_ROWS + extra)
+      ]
+      return {
+        title: `cloud-spend  month ${usd(total)}${forecast === null ? '' : `  → ${usd(forecast)}`}`,
+        lines: [...errors, ...chart(0)],
+        grow: chart,
+        max: SPEND_MAX
+      }
+    },
+    budget: inner => ({
+      title: 'budget',
+      lines: budget_panel_lines(panels, inner, on)
+    }),
+    'site-traffic': inner => {
+      const drawn = rows => traffic_lines(panels.traffic, inner, on, now, rows)
+      const box = { title: 'site-traffic  homepage', lines: drawn(TREND_ROWS) }
+      if (!visits.length) return box
+      return {
+        ...box,
+        grow: extra => drawn(TREND_ROWS + extra),
+        max: box.lines.length + TREND_MAX - TREND_ROWS + BOX_BORDERS
+      }
+    },
+    'largest-costs': inner => {
+      if (!exports.length) return null
+      const rows = exports.flatMap(bill => bill.rows)
+      const bars = lines => cost_bars(rows, inner, lines, on)
+      const services = new Set(rows.map(row => row.service)).size
+      return {
+        title: 'largest-costs',
+        lines: bars(COST_ROWS),
+        grow: extra => bars(COST_ROWS + extra),
+        max: Math.min(services, COST_MAX) + BOX_BORDERS
+      }
+    },
+    'daily-cost': inner => days_box('daily-cost', cost_days, usd, inner),
+    'daily-traffic': inner =>
+      days_box(
+        'daily-traffic',
+        visit_days,
+        people => `${people} people`,
+        inner
+      ),
+    local: inner =>
+      panels.local
+        ? {
+            title: 'local',
+            lines: [
+              ...local_light_lines(panels, on),
+              ...local_panel_lines(local_of(panels), on, inner)
+            ]
+          }
+        : null,
+    'cloud-health': inner => ({
+      title: 'cloud-health',
+      lines: [
+        ...health_lights({ ...panels, halos: cloud }, on, inner),
+        ...service_rows(panels.services?.rows ?? [], inner).slice(0, tier)
+      ]
+    }),
+    'cloud-machines': () => ({
+      ...machines,
+      lines: [
+        ...machines.lines,
+        ...inventory_lines(inventories, on).slice(0, tier)
+      ]
+    }),
+    'cloud-halos': inner => ({
+      title: `cloud-halos  ${(cloud?.rows ?? []).length}`,
+      lines: halo_panel_lines(cloud, on, inner)
+    }),
+    model: inner => {
+      const model_box = limit => {
+        const calls = panels.model?.totals?.calls
+        const call_rows = calls
+          ? [
+              paint(
+                fit_first(model_summary_rows(panels.model, 'calls '), inner),
+                panels.model.totals.errors ? 'failed' : 'running',
+                on
+              )
+            ]
+          : []
+        const detail =
+          tier && panels.model
+            ? model_lines(panels.model, on, inner, limit).slice(1)
+            : []
+        return [
+          ...model_panel_lines(panels.cost, inner, on),
+          ...call_rows,
+          ...detail
+        ]
+      }
+      const box = {
+        title: 'model',
+        lines: model_box(Math.min(tier, MODEL_ROWS))
+      }
+      if (tier !== Infinity) return box
+      return {
+        ...box,
+        grow: extra => model_box(MODEL_ROWS + extra),
+        max: model_box(MODEL_MAX).length + BOX_BORDERS
+      }
+    },
+    status: inner => ({
+      title: 'status',
+      lines: status_lines(panels, inner, on)
+    }),
+    sync: inner => {
+      if (!panels.sync) return null
+      const rows = panels.sync.rows ?? []
+      const [summary = '', ...problems] = sync_lines(rows, on, inner)
+      return {
+        title: 'sync',
+        lines: [
+          ...error_lines(panels.sync, on),
+          summary,
+          ...(tier === Infinity
+            ? [...sync_fresh_lines(rows, on, now), ...problems]
+            : [])
+        ]
+      }
+    },
+    publish: () =>
+      panels.publish
+        ? {
+            title: 'publish',
+            lines: error_lines(panels.publish, on).concat(
+              publish_lines(panels.publish.rows)
+            )
+          }
+        : null,
+    'sign-on': () =>
+      panels.sign_on
+        ? {
+            title: 'sign-on',
+            lines: error_lines(panels.sign_on, on).concat(
+              sign_on_lines(panels.sign_on)
+            )
+          }
+        : null
+  }
+}
+
+/** Which box gets room first when a column cannot hold them all. */
+const PRIORITY = [
+  'cloud-health',
+  'cloud-spend',
+  'budget',
+  'status',
+  'model',
+  'cloud-machines',
+  'cloud-halos',
+  'site-traffic',
+  'local',
+  'largest-costs',
+  'daily-cost',
+  'daily-traffic',
+  'sync',
+  'publish',
+  'sign-on'
+]
+const MONEY = ['budget', 'site-traffic', 'largest-costs']
+const DAYS = ['daily-cost', 'daily-traffic']
+const MACHINES = [
+  'cloud-health',
+  'status',
+  'local',
+  'cloud-machines',
+  'cloud-halos'
+]
+/** Detail boxes: dim, so health and money read first. */
+const QUIET = new Set([
+  'daily-cost',
+  'daily-traffic',
+  'sync',
+  'publish',
+  'sign-on'
+])
+const SERVICE = ['sync', 'publish', 'sign-on']
+
+/**
+ * The dashboard body for a medium, tall, or wide terminal.
+ * @param {object} options
+ * @param {any} options.panels
+ * @param {number} options.width
+ * @param {number} options.height rows between the head and the controls
+ * @param {boolean} options.on
+ * @param {number} options.now
+ * @param {'medium' | 'tall' | 'wide'} options.size
+ */
+const dashboard = ({ panels, width, height, on, now, size }) => {
+  const tier = size === 'medium' ? MEDIUM_TIER : Infinity
+  const makers = box_makers(panels, on, now, tier)
+  const pick = (names, wide) =>
+    names.flatMap(name => {
+      const box = makers[name](wide - BOX_SIDES)
+      return box ? [{ name, ...box }] : []
+    })
+  const column = (boxes, wide, rows) => {
+    const drawn = stack(boxes, rows, PRIORITY).flatMap(box =>
+      QUIET.has(box.name)
+        ? quiet_tile(box, wide, on)
+        : tile(box.title, box.lines, wide, box.height, on)
+    )
+    while (drawn.length < rows) drawn.push(' '.repeat(wide))
+    return drawn
+  }
+  const side = Math.max(
     RIGHT_MIN,
     Math.min(Math.floor(width * RIGHT_MAX_SHARE), right_natural(panels, on))
   )
-  const left = width - right
-  const { billing } = panels
-  const exports = billing?.status === 'ok' ? (billing.exports ?? []) : []
-  const costs_lines = exports.length
-    ? cost_bars(
-        exports.flatMap(bill => bill.rows),
-        left - BOX_SIDES
-      )
-    : []
-  const costs_height = Math.min(
-    costs_lines.length + 2,
-    Math.floor(height * COST_SHARE)
-  )
-  const budget_view = budget_panel_lines(panels, left - BOX_SIDES, on)
-  const traffic_view = traffic_lines(panels.traffic, left - BOX_SIDES, on, now)
-  const traffic_height = traffic_view.length + 2
-  const spend_height =
-    height -
-    (costs_lines.length ? costs_height : 0) -
-    traffic_height -
-    SPEND_ROWS
-  const daily = daily_cloud(exports)
-  const total = exports.reduce((sum, bill) => sum + bill.total, 0)
-  const spend = exports.length
-    ? [
-        ...spend_numbers(daily),
-        ...spend_line(
-          daily,
-          left - BOX_SIDES,
-          on,
-          Math.max(1, spend_height - FIXED_SPEND_ROWS)
-        )
-      ]
-    : billing_lines(billing, left - BOX_SIDES, on, now)
-  const left_column = [
-    ...tile(
-      exports.length
-        ? `CLOUD SPEND  MONTH ${usd(total)}${projection(total, daily) === null ? '' : `  → ${usd(projection(total, daily))}`}`
-        : 'CLOUD SPEND',
-      spend,
-      left,
-      spend_height,
-      on
-    ),
-    ...tile('BUDGET', budget_view, left, SPEND_ROWS, on),
-    ...tile('SITE TRAFFIC  homepage', traffic_view, left, traffic_height, on),
-    ...(costs_lines.length
-      ? tile('LARGEST COSTS', costs_lines, left, costs_height, on)
-      : [])
-  ]
-
-  const { title: machines_title, lines: machine_lines } = machine_panel(
-    panels.resources,
-    on
-  )
-  const machines_height = Math.min(
-    machine_lines.length + 2,
-    Math.floor(height / 2)
-  )
-  const calls =
-    panels.model?.status === 'ok' && panels.model.totals?.calls
-      ? [
-          paint(
-            `CALLS ${model_summary(panels.model)}`,
-            panels.model.totals.errors ? 'failed' : 'running',
-            on
-          )
-        ]
-      : []
-  const model_lines = [
-    ...model_panel_lines(panels.cost, right - BOX_SIDES, on),
-    ...calls
-  ]
-  const cloud = with_machines(panels.halos, panels.resources)
-  const lights = health_lights(
-    { ...panels, halos: cloud },
-    on,
-    right - BOX_SIDES
-  )
-  const halo_lines = halo_panel_lines(cloud, on, right - BOX_SIDES)
-  const local = local_of(panels)
-  const local_lines = panels.local
-    ? [
-        ...local_light_lines(panels, on),
-        ...local_panel_lines(local, on, right - BOX_SIDES)
-      ]
-    : []
-  const model_height = model_lines.length + 2
-  const health_height = lights.length + 2
-  const local_fits =
-    local_lines.length > 0 &&
-    height - health_height - model_height - MIN_TILE * 2 >=
-      local_lines.length + 2
-  const local_height = local_fits
-    ? Math.min(local_lines.length + 2, LOCAL_MAX_HEIGHT)
-    : 0
-  const fixed = health_height + model_height + local_height
-  const machines_rows = Math.min(
-    machines_height,
-    Math.max(MIN_TILE, height - fixed - MIN_TILE)
-  )
-  let halos_rows = Math.min(
-    halo_lines.length + 2,
-    Math.max(MIN_TILE, height - fixed - machines_rows)
-  )
-  let status_rows = height - fixed - machines_rows - halos_rows
-  if (status_rows < MIN_TILE) {
-    halos_rows += Math.max(0, status_rows)
-    status_rows = 0
+  if (size === 'wide') {
+    const right = Math.min(side, Math.floor(width / WIDE_COLUMNS))
+    const first = Math.ceil((width - right) / 2)
+    const middle = width - right - first
+    return side_by_side([
+      column(
+        pick(['cloud-spend', 'budget', 'largest-costs', 'daily-cost'], first),
+        first,
+        height
+      ),
+      column(
+        pick(['site-traffic', 'daily-traffic', 'model', ...SERVICE], middle),
+        middle,
+        height
+      ),
+      column(pick(MACHINES, right), right, height)
+    ])
   }
-  const right_column = [
-    ...(local_fits ? tile('LOCAL', local_lines, right, local_height, on) : []),
-    ...tile('CLOUD HEALTH', lights, right, health_height, on),
-    ...tile(machines_title, machine_lines, right, machines_rows, on),
-    ...tile(
-      `CLOUD HALOS  ${(cloud?.rows ?? []).length}`,
-      halo_lines,
-      right,
-      halos_rows,
-      on
-    ),
-    ...tile('MODEL SPEND', model_lines, right, model_height, on),
-    ...(status_rows
-      ? tile(
-          'STATUS',
-          status_lines(panels, right - BOX_SIDES, on),
-          right,
-          status_rows,
-          on
-        )
-      : [])
-  ]
-  return side_by_side([left_column, right_column]).slice(0, height)
+  const left = width - side
+  const right_names = [...MACHINES, 'model', ...SERVICE]
+  if (size === 'tall') {
+    const [spend] = pick(['cloud-spend'], width)
+    const natural = spend.lines.length + 2
+    const top = spend.grow ? Math.min(SPEND_MAX, height) : natural
+    return [
+      ...column([{ ...spend, max: top }], width, top),
+      ...side_by_side([
+        column(pick([...MONEY, ...DAYS], left), left, height - top),
+        column(pick(right_names, side), side, height - top)
+      ])
+    ]
+  }
+  return side_by_side([
+    column(pick(['cloud-spend', ...MONEY, ...DAYS], left), left, height),
+    column(pick(right_names, side), side, height)
+  ])
 }
 
 /** Rows left for content once the top and bottom borders are drawn. */
@@ -1414,6 +1860,12 @@ export const read_key = (input = process.stdin, signal = null) => {
 }
 
 /** How long `key` should hold the next redraw, or null to keep the interval. */
+/** The interval keys, the active one marked with a star. */
+const interval_keys = interval_ms =>
+  INTERVALS.map(([key, label, ms]) =>
+    ms === interval_ms ? `${key} ${label}*` : `${key} ${label}`
+  ).join('  ')
+
 export const interval_for = (key, current_ms) => {
   if (key === 'u') return FAST_MS
   if (key === 'm') return MS_PER_MINUTE

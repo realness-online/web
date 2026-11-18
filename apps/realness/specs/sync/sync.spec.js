@@ -35,7 +35,7 @@ before(async () => {
     certs: issuer.certs,
     origins: ['https://realness.example'],
     vault: {
-      allows: () => true,
+      allows: who => (who?.harness ?? who?.phone) === A,
       plans: () => [
         {
           itemid: '/+1555/plans/1',
@@ -784,7 +784,7 @@ it('m2: a rewrite at the same path gets a new versioned URL', async () => {
   )
 })
 
-it('x9: an itemid opens only where can allows, for a stranger as for the owner', async () => {
+it('x9: an itemid opens only where can allows: the owner, and no one else', async () => {
   const owner = await call(
     'GET',
     'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1',
@@ -797,9 +797,9 @@ it('x9: an itemid opens only where can allows, for a stranger as for the owner',
     'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1',
     { headers: as(B) }
   )
-  assert.equal(stranger.status, 200)
+  assert.equal(stranger.status, 404)
   const anon = await call('GET', 'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1')
-  assert.equal(anon.status, 200)
+  assert.equal(anon.status, 404)
   const unknown = await call(
     'GET',
     'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F9',
@@ -808,21 +808,27 @@ it('x9: an itemid opens only where can allows, for a stranger as for the owner',
   assert.equal(unknown.status, 404)
 })
 
-it('p3: anyone lists the plans and opens one, and still cannot list the vault', async () => {
+it('p1: a plan is private to its owner until it is granted', async () => {
   const list = await call('GET', 'v1/vault/plans')
-  assert.equal(list.status, 200)
-  assert.equal((await list.json()).plans.length, 1)
+  assert.equal(list.status, 404)
+  const mine_list = await call('GET', 'v1/vault/plans', { headers: as(A) })
+  assert.equal(mine_list.status, 200)
+  assert.equal((await mine_list.json()).plans.length, 1)
   const plan = await call('GET', 'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1')
-  assert.equal(plan.status, 200)
+  assert.equal(plan.status, 404)
   await status('PUT', `people/${A}/harness/vault/Projects/a.md`, {
     headers: as(A),
     body: 'plan text'
   })
+  const mine = await call('GET', `people/${A}/harness/vault/Projects/a.md`, {
+    headers: as(A)
+  })
+  assert.equal(mine.status, 200)
+  assert.equal(await mine.text(), 'plan text')
   const other = await call('GET', `people/${A}/harness/vault/Projects/a.md`, {
     headers: as(B)
   })
-  assert.equal(other.status, 200)
-  assert.equal(await other.text(), 'plan text')
+  assert.equal(other.status, 403)
   const private_file = await call(
     'GET',
     `people/${A}/harness/vault/Areas/Realness/profile.md`,

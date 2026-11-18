@@ -23,6 +23,10 @@ const fixture = () => {
   mkdir_sync(binaries, { recursive: true })
   mkdir_sync(join(root, '.pi/bin/harness'), { recursive: true })
   copy_file_sync(resolve(import.meta.dirname, '../../pi'), join(root, '.pi/bin/pi'))
+  copy_file_sync(
+    resolve(import.meta.dirname, '../../harness/apply-patches.js'),
+    join(root, '.pi/bin/harness/apply-patches.js')
+  )
   write_file_sync(
     join(root, '.pi/bin/harness/session-location.js'),
     'process.stdout.write(process.argv[2] + "/.pi/agent/sessions")'

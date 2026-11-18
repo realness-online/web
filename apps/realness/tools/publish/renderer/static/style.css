@@ -406,6 +406,13 @@ section[itemprop='articleBody'] {
     grid-column: text;
   }
 
+  > iframe {
+    display: block;
+    inline-size: 100%;
+    border: 0;
+    margin-block-end: var(--base-line);
+  }
+
   > .plate,
   > pre,
   > table,

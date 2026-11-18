@@ -4,7 +4,7 @@
  *
  *     node scripts/scout.js
  *     node scripts/scout.js realness --source vuejobs
- *     node scripts/scout.js realness-leads --run
+ *     node scripts/scout.js Archive/Projects/realness-leads --run
  *
  * `--run` starts one pi per source, all together, on this Mac. A source that
  * fails writes its reason and leaves the others running.
@@ -22,10 +22,16 @@ import { run_scout } from '../src/scouts/run.js'
 import { STAGES_PAGE } from '../src/scouts/stages.js'
 import { gzipSync as gzip_sync } from 'node:zlib'
 import { find_scout, scout_pages } from '../src/scouts/scout.js'
-import { reads_inside, source_sections } from '../src/scouts/sources.js'
+import {
+  hops_inside,
+  reads_inside,
+  source_sections
+} from '../src/scouts/sources.js'
 
 export { reads_inside }
 import { box_ready } from '../src/scouts/preflight.js'
+import { source_refused } from '../src/scouts/source.js'
+import { model_watch } from '../src/scouts/model-watch.js'
 import { person } from '../src/harness/settings.js'
 import { readFileSync as read_file_sync } from 'node:fs'
 import { appendFileSync as append_file_sync } from 'node:fs'
@@ -72,27 +78,34 @@ const command_of = event =>
     .slice(0, SHOWN)
 
 /**
- * The ways a run fetches a page that the source list cannot refuse. A list, a
- * note, or a saved log fetches none; `realness-read` refuses an outside page
- * itself, so the run goes on.
+ * The ways a run fetches a page. A list, a note, or a saved log fetches none.
+ * `realness-read` refuses a page off the source's list and off the origins its
+ * pages link to, so the run goes on; the wrapper only notes the read.
  */
 const FETCHERS = /\b(web-md|curl|wget|agent-browser)\b/
 
 /**
- * The URL a fetching command reads that the source never named, or '' when it
- * keeps to the source. A run reads its own pages and no other; it may list and
- * grep what it already read.
+ * The URL a fetching command reads that the source never named and no read
+ * page linked to, or '' when it keeps to the source. A run reads its own pages
+ * and the origins its pages link to; it may list and grep what it already read.
  * @param {string} command
  * @param {string[]} allowed
+ * @param {string[]} hops origins the pages read so far linked to
  */
-export const read_outside = (command, allowed) =>
+export const read_outside = (command, allowed, hops = []) =>
   command
     .split(/\|\||&&|[|;\n]/)
     .filter(part => FETCHERS.test(part))
     .flatMap(part => part.match(/https?:\/\/[^\s)'"`\\]+/g) ?? [])
     .map(url => url.replace(/[.,;:]+$/, ''))
     .filter(url => URL.canParse(url))
-    .find(url => !allowed.some(one => reads_inside(url, one))) ?? ''
+    .find(
+      url =>
+        !allowed.some(one => reads_inside(url, one)) && !hops_inside(url, hops)
+    ) ?? ''
+
+/** How often the run looks at the model call it is waiting on. */
+const WATCH_MS = 5000
 
 /** How much of a command a step line shows. */
 const SHOWN = 120
@@ -106,9 +119,10 @@ const REFUSED = /HTTP (401|403)\b/
  * model answered with an error, `settled` when pi is done, or null to keep
  * going.
  * @param {string} line
+ * @param {string[]} [named] the pages the source names
  * @returns {{ end: 'finds' | 'settled' } | { end: 'refused' | 'failed', reason: string } | null}
  */
-export const run_event = line => {
+export const run_event = (line, named = []) => {
   let event
   try {
     event = JSON.parse(line)
@@ -124,7 +138,7 @@ export const run_event = line => {
   if (event.type !== 'tool_execution_end') return null
   const text = JSON.stringify(event.result ?? '')
   const refused = text.match(REFUSED)
-  if (refused)
+  if (refused && source_refused(text, named))
     return { end: 'refused', reason: `a read was refused: HTTP ${refused[1]}` }
   const args = JSON.stringify(event.args ?? '')
   if (/finds\.html/.test(args) && /write|edit/i.test(event.toolName ?? ''))
@@ -157,16 +171,34 @@ export const local_pi =
           env: {
             ...process.env,
             PATH: `${resolve(dirname(file_url_to_path(import.meta.url)), 'bin')}:${process.env.PATH}`,
-            REALNESS_READ_ALLOWED: JSON.stringify(allowed)
+            REALNESS_READ_ALLOWED: JSON.stringify(allowed),
+            REALNESS_READ_HOPS_FILE: join(run_dir, 'hops.json')
           }
         }
       )
+      const hops_file = join(run_dir, 'hops.json')
+      const hops_now = () => {
+        try {
+          return JSON.parse(read_file_sync(hops_file, 'utf8'))
+        } catch {
+          return []
+        }
+      }
       let ended = null
       let rest = ''
       const began = Date.now()
       const starts = new Map()
       const steps = []
       const steps_page = join(run_dir, 'steps.html')
+      const elapsed = () =>
+        `${((Date.now() - began) / MS_PER_SECOND).toFixed(1)}s`
+      const watch = model_watch({
+        say: line => {
+          say(`${elapsed()}  ${line}`)
+          log.write(`${line}\n`)
+        }
+      })
+      const ticking = setInterval(() => watch.tick(), WATCH_MS)
       const stages_file = join(run_dir, STAGES_PAGE)
       const note = line => {
         let event
@@ -175,19 +207,17 @@ export const local_pi =
         } catch {
           return
         }
+        watch.event(event)
         if (event.type === 'tool_execution_start' && !ended) {
           const outside = read_outside(
             String(event.args?.command ?? ''),
-            allowed
+            allowed,
+            hops_now()
           )
-          if (outside) {
-            ended = {
-              end: 'outside',
-              reason: `a read outside the source: ${outside}`
-            }
-            log.write(`${ended.reason}\n`)
-            child.kill('SIGTERM')
-          }
+          if (outside)
+            log.write(
+              `a read past the source's list, the reader decides: ${outside}\n`
+            )
         }
         if (
           event.type === 'tool_execution_start' ||
@@ -225,7 +255,7 @@ export const local_pi =
         rest = lines.pop() ?? ''
         for (const line of lines) {
           note(line)
-          const event = run_event(line)
+          const event = run_event(line, allowed)
           if (!event || ended) continue
           ended = event
           if (event.reason) log.write(`${event.reason}\n`)
@@ -234,6 +264,7 @@ export const local_pi =
       })
       child.stderr.pipe(log)
       child.on('close', code => {
+        clearInterval(ticking)
         log.end()
         done(['finds', 'settled'].includes(ended?.end) ? 0 : (code ?? 1))
       })

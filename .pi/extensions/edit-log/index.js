@@ -52,6 +52,17 @@ const open_sync_log = root => {
  * @returns {string | undefined}
  */
 const harness = harness_root
+/**
+ * Tell the person, without letting a ctx that went stale throw.
+ * @param {{ ui: { notify: (message: string, level: "warning") => void } }} ctx
+ * @param {string} message
+ */
+export const notify = (ctx, message) => {
+  try {
+    ctx.ui.notify(message, 'warning')
+  } catch {}
+}
+
 /** @param {ExtensionAPI} pi */
 const editLog = pi => {
   /** @type {ReturnType<typeof openLog> | undefined} */
@@ -76,7 +87,7 @@ const editLog = pi => {
       db ??= openLog(logPath(ctx.cwd))
       record(db, edit)
     } catch (error) {
-      ctx.ui.notify(`edit-log: ${/** @type {Error} */ (error).message}`, 'warning')
+      notify(ctx, `edit-log: ${/** @type {Error} */ (error).message}`)
     }
   }
   pi.on('turn_start', event => {
@@ -185,7 +196,7 @@ const editLog = pi => {
         session
       }
     } catch (error) {
-      ctx.ui.notify(`edit-log: turn-start failed: ${/** @type {Error} */ (error).message}`, 'warning')
+      notify(ctx, `edit-log: turn-start failed: ${/** @type {Error} */ (error).message}`)
     }
   })
   pi.on('session_shutdown', (_event, ctx) => {

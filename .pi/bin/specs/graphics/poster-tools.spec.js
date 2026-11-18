@@ -6,12 +6,10 @@ import {
   rmSync as rm_sync,
   writeFileSync as write_file_sync
 } from 'node:fs'
-import { once } from 'node:events'
 import { join, resolve } from 'node:path'
 import { it } from 'node:test'
 import { kind_of, list_sources, poster_paths_for, slices_of } from '../../lib/sources.js'
 import { chrome_path, data_url_of, frame_problem } from '../../lib/poster-driver.js'
-import { RELOAD_SCRIPT, resolve_file, serve } from '../../plans/plans-serve.js'
 
 const root = resolve(import.meta.dirname, '../../../..')
 
@@ -63,25 +61,6 @@ it('data urls carry the right image type', t => {
   write_file_sync(join(dir, 'b.svg'), 'hi')
   assert.equal(data_url_of(join(dir, 'a.jpg')), 'data:image/jpeg;base64,aGk=')
   assert.equal(data_url_of(join(dir, 'b.svg')), 'data:image/svg+xml;base64,aGk=')
-})
-
-it('plans-serve resolves pages and never leaves its root', async t => {
-  const dir = scratch(t)
-  mkdir_sync(join(dir, 'blog'))
-  write_file_sync(join(dir, 'index.html'), '<h1>home</h1>')
-  write_file_sync(join(dir, 'blog/post.html'), '<h1>post</h1>')
-  assert.equal(await resolve_file(dir, '/'), join(dir, 'index.html'))
-  assert.equal(await resolve_file(dir, '/blog/post?x=1'), join(dir, 'blog/post.html'))
-  assert.equal(await resolve_file(dir, '/../../etc/passwd'), null)
-
-  const server = serve(dir).listen(0, '127.0.0.1')
-  await once(server, 'listening')
-  t.after(() => server.close())
-  const at = `http://127.0.0.1:${server.address().port}`
-  const page = await fetch(`${at}/blog/post`)
-  assert.equal(page.headers.get('content-type'), 'text/html; charset=utf-8')
-  assert.equal(await page.text(), `<h1>post</h1>${RELOAD_SCRIPT}`)
-  assert.equal((await fetch(`${at}/missing`)).status, 404)
 })
 
 it('make-posters and make-animation explain bad input before starting a browser', t => {

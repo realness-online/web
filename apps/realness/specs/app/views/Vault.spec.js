@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import {
   afterEach as after_each,
   describe,
@@ -87,6 +88,26 @@ describe('@/views/Vault', () => {
       { headers: { authorization: 'Bearer token' } }
     )
     expect(page.get('section[itemprop="articleBody"] h1').text()).toBe('Plan')
+  })
+
+  it('shows the note file path, so the file can be found on disk', async () => {
+    at('#/+16282281824/plans/1785887078791')
+    respond({ path: 'Projects/realness-one-network.md' })
+    const page = at_page()
+    await flush_promises()
+    expect(page.get('footer[aria-label="Note file"] code').text()).toBe(
+      'Projects/realness-one-network.md'
+    )
+  })
+
+  it('lets the file path be selected and copied', async () => {
+    const style = readFileSync('src/app/views/Vault.vue', 'utf8')
+    expect(style).toMatch(/> code \{\s*user-select: text;/)
+  })
+
+  it('aligns table headers with their rows', async () => {
+    const style = readFileSync('src/app/views/Vault.vue', 'utf8')
+    expect(style).toMatch(/th,\s*td \{[^}]*text-align: start;/)
   })
 
   it('refuses a stored key, which would skip every right', async () => {

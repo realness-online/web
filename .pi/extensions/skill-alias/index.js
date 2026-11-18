@@ -28,9 +28,10 @@ export const as_skill_command = (text, names) => {
 
 export default pi => {
   pi.on('session_start', () => {
-    for (const name of skill_names(pi.getCommands()))
+    const commands = pi.getCommands()
+    for (const name of skill_names(commands))
       pi.registerCommand(name, {
-        description: `Run the ${name} skill`,
+        description: commands.find(command => command.name === `skill:${name}`)?.description ?? `Run the ${name} skill`,
         handler: async args => {
           pi.sendUserMessage(`/skill:${name}${args ? ` ${args}` : ''}`, { expandPromptTemplates: true })
         }

@@ -38,20 +38,16 @@ it('strangers are denied everything private', () => {
   assert.equal(can(stranger, 'list', 'people/'), false)
 })
 
-it('p3: anyone reads a plan in the vault, and nobody lists the folder', () => {
-  for (const who of [stranger, scott, other])
-    assert.equal(
-      can(who, 'get', `people/${A}/harness/vault/Projects/realness.md`),
-      true
-    )
-  assert.equal(
-    can(
-      stranger,
-      'get',
-      `people/${A}/harness/vault/Projects/realness-serve-plans/index.md`
-    ),
-    true
-  )
+it('p1: a plan is private to its owner, and nobody lists the folder', () => {
+  const file = `people/${A}/harness/vault/Projects/realness.md`
+  const folder = `people/${A}/harness/vault/Projects/realness-serve-plans/index.md`
+  assert.equal(can(scott, 'get', file), true)
+  assert.equal(can(scott, 'get', folder), true)
+  for (const who of [stranger, other]) {
+    assert.equal(can(who, 'get', file), false)
+    assert.equal(can(who, 'get', folder), false)
+    assert.equal(can(who, 'list', `people/${A}/harness/vault/Projects/`), false)
+  }
   assert.equal(
     can(stranger, 'list', `people/${A}/harness/vault/Projects/`),
     false
@@ -546,4 +542,139 @@ it("sy15: the trash is the owner's, or the org founder's, to read and empty", ()
   assert.equal(can(scott, 'write', theirs, [], org), false)
   assert.equal(can(scott, 'list', 'trash/', [], null), false)
   assert.equal(can(scott, 'list', 'trash/people/', [], null), false)
+})
+
+it('o2: a grant naming an org reaches that org and no other', () => {
+  const grants = read_rights(page(grant(`/${FAMILY}`, 'Read', `/${A}/plans/`)))
+  assert.equal(
+    can(
+      { ...other, member_of: [FAMILY] },
+      'get',
+      `people/${A}/plans/p.md`,
+      grants,
+      null
+    ),
+    true
+  )
+  assert.equal(
+    can(
+      { ...other, member_of: [FAMILY] },
+      'list',
+      `people/${A}/plans/`,
+      grants,
+      null
+    ),
+    true
+  )
+  assert.equal(
+    can(
+      { ...other, member_of: [OTHER] },
+      'get',
+      `people/${A}/plans/p.md`,
+      grants,
+      null
+    ),
+    false
+  )
+  assert.equal(can(other, 'get', `people/${A}/plans/p.md`, grants), false)
+  assert.equal(
+    can(
+      { ...other, member_of: [FAMILY] },
+      'write',
+      `people/${A}/plans/p.md`,
+      grants,
+      null
+    ),
+    false
+  )
+  assert.equal(
+    can(
+      { ...other, member_of: [FAMILY] },
+      'get',
+      `people/${A}/vault/x.md`,
+      grants,
+      null
+    ),
+    false
+  )
+  assert.equal(
+    can(
+      { ...stranger, member_of: [FAMILY] },
+      'get',
+      `people/${A}/plans/p.md`,
+      grants,
+      null
+    ),
+    false
+  )
+})
+
+it('o2: a write grant to an org lets its members write', () => {
+  const grants = read_rights(
+    page(grant(`/${FAMILY}`, 'Write', `/${A}/vault/work/`))
+  )
+  assert.equal(
+    can(
+      { ...other, member_of: [FAMILY] },
+      'write',
+      `people/${A}/vault/work/x.md`,
+      grants,
+      null
+    ),
+    true
+  )
+  assert.equal(
+    can(
+      { ...other, member_of: [FAMILY] },
+      'write',
+      `people/${A}/vault/x.md`,
+      grants,
+      null
+    ),
+    false
+  )
+  assert.equal(
+    can(
+      { ...other, member_of: [OTHER] },
+      'write',
+      `people/${A}/vault/work/x.md`,
+      grants,
+      null
+    ),
+    false
+  )
+})
+
+it('o2: a grant naming the commons reaches anyone', () => {
+  const read = read_rights(page(grant('commons', 'Read', `/${A}/plans/`)))
+  for (const who of [stranger, other, scott])
+    assert.equal(can(who, 'get', `people/${A}/plans/p.md`, read), true)
+  const write = read_rights(page(grant('commons', 'Write', `/${A}/vault/`)))
+  assert.equal(can(stranger, 'write', `people/${A}/vault/x.md`, write), false)
+  assert.equal(can(other, 'write', `people/${A}/vault/x.md`, write), true)
+  assert.equal(can(other, 'get', `people/${A}/rights.html`, write), false)
+})
+
+it('o2: an org grantee never matches a harness or the rights page', () => {
+  const grants = read_rights(page(grant(`/${FAMILY}`, 'Write', `/${A}/`)))
+  assert.equal(
+    can(
+      { ...other, member_of: [FAMILY] },
+      'get',
+      `people/${A}/rights.html`,
+      grants,
+      null
+    ),
+    false
+  )
+  assert.equal(
+    can(
+      { ...other, member_of: [FAMILY] },
+      'get',
+      `subscriptions/${A}/sub`,
+      grants,
+      null
+    ),
+    false
+  )
 })

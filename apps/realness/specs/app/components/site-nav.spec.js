@@ -71,7 +71,7 @@ describe('@/components/site-nav', () => {
     ])
     const more = wrapper.get('details[data-nav-more] menu')
     expect(more.findAll('a').map(link => link.text())).toEqual([
-      'Planning',
+      'Vault',
       'Pricing',
       'Prints',
       'Legal'
@@ -142,6 +142,23 @@ describe('@/components/site-nav', () => {
       wrapper.get('a[href="/pricing"]').attributes('aria-current')
     ).toBeUndefined()
     wrapper.unmount()
+  })
+
+  it('marks Vault current on the vault page, but not elsewhere', () => {
+    mock_route.path = '/vault'
+    const current = mount()
+    expect(current.get('a[href="/vault"]').attributes('aria-current')).toBe(
+      'page'
+    )
+    current.unmount()
+    for (const path of ['/planning', '/docs', '/blog']) {
+      mock_route.path = path
+      const wrapper = mount()
+      expect(
+        wrapper.get('a[href="/vault"]').attributes('aria-current')
+      ).toBeUndefined()
+      wrapper.unmount()
+    }
   })
 
   it('types the nav with an absolute itemtype, as microdata requires', () => {

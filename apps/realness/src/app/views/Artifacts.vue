@@ -5,7 +5,7 @@
     aria-label="Artifacts">
     <header aria-label="Artifacts">
       <nav aria-label="Related">
-        <router-link to="/planning">Plans</router-link>
+        <router-link to="/vault">Vault</router-link>
         <router-link to="/vault#">Vault</router-link>
       </nav>
     </header>

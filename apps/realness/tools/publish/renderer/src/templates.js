@@ -51,18 +51,22 @@ export const create_templates = (site, poster_sizes, watch = false) => {
      * @param {string} title
      * @param {string} html
      * @param {string} notes
-     * @param {string} [related]
+     * @param {{ related?: string, back?: string }} [around] related nav, and where the close link goes
      */
-    article_body(data, title, html, notes, related) {
-      return article_body(render_poster)(data, title, html, notes, related)
+    article_body(data, title, html, notes, around) {
+      return article_body(render_poster)(data, title, html, notes, around)
     },
-    /** @param {import('./types.js').Article[]} articles */
-    index_body(articles) {
+    /**
+     * @param {import('./types.js').Article[]} articles
+     * @param {{ pick?: boolean }} [options]
+     */
+    index_body(articles, options = {}) {
       return index_body(
         render_poster,
         site.type === 'plans',
         articles,
-        site.areas
+        site.areas,
+        options.pick === true
       )
     },
     /** @param {import('./types.js').SitemapEntry[]} urls */

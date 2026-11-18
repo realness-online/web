@@ -11,6 +11,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { promisify } from 'node:util'
 import { disk } from '#root/src/can/disk.js'
+import { members_html } from '#root/src/can/members.js'
 import { client } from '#root/src/files/client.js'
 import { dev_issuer } from '#root/src/sync/dev-token.js'
 import {
@@ -38,10 +39,11 @@ const issuer = dev_issuer()
 const git_ceiling = process.env.GIT_CEILING_DIRECTORIES
 let server
 let store
+let storage
 
 before(async () => {
   process.env.GIT_CEILING_DIRECTORIES = dirname(root)
-  const storage = disk(join(root, 'bucket'))
+  storage = disk(join(root, 'bucket'))
   server = sync_service({
     storage,
     rights: rights(storage),
@@ -609,6 +611,48 @@ it('gz2c: an empty workspace syncs its first work file, not apps', async () => {
     'first work file'
   )
   await assert.rejects(owner.cat('can://~/harness/apps/baseline.md'), {
+    status: 404
+  })
+})
+
+it('s2: with .ignore, an org folder syncs to its org; a stranger is refused', async () => {
+  const MEMBER = '+15555550143'
+  const STRANGER = '+15555550144'
+  await storage.put(
+    'orgs/+team/members.html',
+    members_html({ name: '+team', founder: { phone: MEMBER } })
+  )
+  const as = phone =>
+    client({
+      state: join(root, `state-${phone}`),
+      trash: join(root, 'trash'),
+      url: `http://127.0.0.1:${server.address().port}`,
+      token: issuer.token(phone)
+    })
+  const member = as(MEMBER)
+  const desktop = await files(join(root, 's2-member'), {
+    '.ignore': '',
+    'orgs/+team/Projects/p.md': '# P\n'
+  })
+  const report = await sync_harness({ root: desktop, store: member })
+  assert.ok(report.synced['orgs/+team'].pushed.includes('Projects/p.md'))
+  assert.equal(
+    (await member.cat('can://orgs/+team/Projects/p.md')).toString(),
+    '# P\n'
+  )
+  await assert.rejects(member.cat('can://~/harness/orgs/+team/Projects/p.md'), {
+    status: 404
+  })
+  const outsider = await files(join(root, 's2-stranger'), {
+    '.ignore': '',
+    'orgs/+team/Projects/q.md': '# Q\n'
+  })
+  const refused_report = await sync_harness({
+    root: outsider,
+    store: as(STRANGER)
+  })
+  assert.match(refused_report.refused['orgs/+team'], /not a member/)
+  await assert.rejects(member.cat('can://orgs/+team/Projects/q.md'), {
     status: 404
   })
 })

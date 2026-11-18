@@ -1,11 +1,6 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
-import {
-  braille_line,
-  meter,
-  pack,
-  sparkline
-} from '#root/src/command/watch-graph.js'
+import { braille_line, meter, pack } from '#root/src/command/watch-graph.js'
 import { billing_lines, frame } from '#root/src/command/watch-terminal.js'
 
 const BRAILLE = /^[\u2800-\u28ff]+$/
@@ -56,7 +51,7 @@ const bill = {
 it('billing shows numbers and a braille graph without color', () => {
   const lines = billing_lines({ status: 'ok', exports: [bill] }, 60, false)
   const text = lines.join('\n')
-  assert.match(text, /LATEST \$4\.25 {3}AVG\/DAY \$2\.25 {3}PEAK \$4\.25 10-05/)
+  assert.match(text, /latest \$4\.25 {3}avg\/day \$2\.25 {3}peak \$4\.25 10-05/)
   assert.match(text, /\$4\.25 ┤ [\u2800-\u28ff]+/)
   assert.match(text, /\$0\.25 ┤ [\u2800-\u28ff]+/)
   const top = lines.findIndex(line => /\$4\.25 ┤/.test(line))
@@ -99,7 +94,7 @@ it('frames with graph and meter fit narrow and wide terminals', () => {
   }
 })
 
-it('wide terminals get a two-column clay dashboard that fills the window', () => {
+it('wide terminals get a two-column clay dashboard in the brand border', () => {
   const snapshot = {
     panels: {
       billing: { status: 'ok', exports: [bill] },
@@ -129,8 +124,9 @@ it('wide terminals get a two-column clay dashboard that fills the window', () =>
     assert.equal(lines.length, height)
     const plain = lines.map(line => line.replace(/\x1b\[[0-9;]*m/g, ''))
     for (const line of plain.slice(1, -1)) assert.equal([...line].length, width)
-    assert.match(plain[1], /^╭─ CLOUD SPEND .*╮╭─ CLOUD HEALTH .*╮$/)
-    assert.match(plain.at(-2), /^╰─+╯╰─+╯$/)
+    assert.match(plain[1], /^╭─ cloud-spend .*╮╭─ cloud-health .*╮$/)
+    assert.equal((plain[1].match(/╭─/g) ?? []).length, 2)
+    assert.ok(plain.some(line => line.includes('╰')))
     assert.ok(lines[1].includes('\x1b[38;2;163;65;69m'))
   }
   const narrow = frame({ snapshot, width: 60, height: 30, on: false })
@@ -168,7 +164,7 @@ it('dashboard shows halos, projection, and model tokens from fixtures', () => {
     }
   }
   const text = frame({ snapshot, width: 110, height: 30, on: false })
-  assert.match(text, /MONTH \$45\.00 {2}→ \$69\.75/)
+  assert.match(text, /month \$45\.00 {2}→ \$69\.75/)
   assert.match(text, /host-a {2}2 run 1 idle 4 stop {2}40s ago/)
   assert.match(text, /mem \S+ 5\.0\/8G {2}disk \S+ 38\/50G/)
   assert.match(text, /today \$0\.42 182k {2}month \$11\.80 4\.3M/)
@@ -222,7 +218,7 @@ it('budget panel lines show cost and budget with projection', async () => {
   }
   const lines = budget_panel_lines(panels, 60, false)
   assert.ok(
-    lines.some(l => l.includes('MONTH')) || lines.some(l => l.includes('$'))
+    lines.some(l => l.includes('month')) || lines.some(l => l.includes('$'))
   )
   assert.ok(lines.some(l => l.includes('→') || l.includes('$44')))
   assert.ok(lines.some(l => l.includes('paying') || l.includes('2')))

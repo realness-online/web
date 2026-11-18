@@ -28,10 +28,10 @@ const byline = itemid => {
 
 export const article_body =
   poster =>
-  (data, title, html, notes, related = '') =>
+  (data, title, html, notes, { related = '', back = '/' } = {}) =>
     `<article itemscope${data.itemid ? ` itemid="${escape_html(data.itemid)}"` : ''} itemtype="http://schema.org/BlogPosting">
       ${related}
-      ${poster(data, title, 'h1', null, { close_href: '/' })}
+      ${poster(data, title, 'h1', null, { close_href: back })}
       <section itemprop="articleBody">${html}${notes}</section>
       ${byline(data.itemid)}
     </article>`

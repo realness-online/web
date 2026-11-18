@@ -117,12 +117,13 @@ export const seal = (db, { root, folder, files, now = new Date() }) => {
   const select = db.prepare(
     'SELECT turn_id, session_id, session_file, project, ts, text FROM turn WHERE session_file = ?'
   )
+  const has_turns = db.prepare('SELECT 1 FROM turn WHERE session_file = ? LIMIT 1')
   for (const [month, month_files] of by_month) {
     const path = sealed.get(month)
     if (path) {
       const { sessions, rows } = read_month(readFileSync(path))
       const names = new Set(rows.map(row => row.session))
-      const same = month_files.every(file => names.has(portable(root, file)))
+      const same = month_files.every(file => names.has(portable(root, file)) || !has_turns.get(file))
       if (sessions > month_files.length || (sessions === month_files.length && same)) continue
     }
     const rows = month_files.flatMap(

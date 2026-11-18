@@ -1,10 +1,31 @@
 import { escape_html } from '../text.js'
 
-export const index_body = (poster, plans, articles, areas = {}) => {
+/**
+ * @param {ReturnType<typeof import('./figure.js').poster>} poster
+ * @param {boolean} plans
+ * @param {import('../types.js').Article[]} articles
+ * @param {Object<string, string>} [areas]
+ * @param {boolean} [pick] show a poster-less article's poster button
+ */
+export const index_body = (
+  poster,
+  plans,
+  articles,
+  areas = {},
+  pick = false
+) => {
   const area_of = article => (plans ? areas[article.slug] : '') ?? ''
   const index_entry = article => {
     const area = area_of(article)
-    const cover = poster(article, article.title, 'h2', `/blog/${article.slug}`)
+    const cover = poster(
+      article,
+      article.title,
+      'h2',
+      `/blog/${article.slug}`,
+      {
+        pick
+      }
+    )
     const identity = article.itemid
       ? ` itemid="${escape_html(article.itemid)}"`
       : ''

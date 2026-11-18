@@ -408,20 +408,44 @@ describe('a run ends on its own events', () => {
     await rm(dir, { recursive: true })
   })
 
-  it('a page fetched outside the source ends the run at once and says which page', async () => {
+  it('a page fetched outside the source is named in the log and the run goes on', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'pi-events-'))
     const bin = await fake_pi(dir, [
       start('1', { command: 'realness-read https://board.test/jobs' }),
       end('1', 'bash', 'jobs'),
       start('2', { command: 'curl https://other.test/jobs?page=4' }),
-      end('2', 'bash', 'more jobs')
+      end('2', 'bash', 'more jobs'),
+      { type: 'agent_settled' }
     ])
     const code = await local_pi(bin)('brief', dir, null, [
       'https://board.test/jobs'
     ])
-    expect(code).not.toBe(0)
+    expect(code).toBe(0)
     expect(await readFile(join(dir, 'pi.log'), 'utf8')).toMatch(
-      /a read outside the source: https:\/\/other\.test\/jobs\?page=4/
+      /a read past the source's list, the reader decides: https:\/\/other\.test\/jobs\?page=4/
+    )
+    await rm(dir, { recursive: true })
+  })
+
+  it('a page on an origin the run read a link from is not outside', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pi-hops-'))
+    const bin = await fake_pi(dir, [
+      start('1', { command: 'realness-read https://board.test/jobs' }),
+      end('1', 'bash', 'jobs'),
+      start('2', { command: 'curl https://company.test/newsroom' }),
+      end('2', 'bash', 'newsroom'),
+      { type: 'agent_settled' }
+    ])
+    await writeFile(
+      join(dir, 'hops.json'),
+      JSON.stringify(['https://company.test'])
+    )
+    const code = await local_pi(bin)('brief', dir, null, [
+      'https://board.test/jobs'
+    ])
+    expect(code).toBe(0)
+    expect(await readFile(join(dir, 'pi.log'), 'utf8')).not.toMatch(
+      /a read past the source's list/
     )
     await rm(dir, { recursive: true })
   })
@@ -446,6 +470,30 @@ describe('a run ends on its own events', () => {
     expect(JSON.parse(await readFile(join(dir, 'allowed'), 'utf8'))).toEqual([
       'https://board.test/jobs'
     ])
+    await rm(dir, { recursive: true })
+  })
+
+  it('a refused story page is skipped and the run goes on', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'pi-events-'))
+    const bin = await fake_pi(dir, [
+      start('1', {
+        command: 'realness-read https://news.test/rss/articles/abc'
+      }),
+      end(
+        '1',
+        'bash',
+        'realness-read: could not read https://news.test/rss/articles/abc: chrome: HTTP 403'
+      ),
+      { type: 'agent_settled' }
+    ])
+    const code = await local_pi(bin)('brief', dir, null, [
+      'https://news.test/rss/search?q=x',
+      'https://news.test/rss/articles/<id>'
+    ])
+    expect(code).toBe(0)
+    expect(await readFile(join(dir, 'pi.log'), 'utf8')).not.toMatch(
+      /a read was refused/
+    )
     await rm(dir, { recursive: true })
   })
 

@@ -27,6 +27,12 @@ import { product_import } from '../../bin/lib/product.js'
 const { item_html, read_items } = await product_import('items')
 const root = resolve(import.meta.dirname, '../../..')
 
+/** Status key that names the bound plan, which the footer shows. */
+export const PLAN_KEY = 'plan'
+
+/** A plan's name from its path in the plans folder: `a/index.md` and `a.md` are both `a`. */
+export const plan_name = path => path.replace(/\/index\.md$|\.md$/, '')
+
 export const DEFAULT_TARGET = 'openrouter/deepseek/deepseek-v4.1-flash-1017'
 const RUNNER =
   /^(npx )?(node( [\w=-]+)* --test\b|node [^ ]+\.(spec|test)\.js\b|vitest\b|vp test\b|npm test\b|npm( --prefix [^ ]+)? run test\b)/
@@ -212,6 +218,7 @@ export default (
     const moved = file !== plan
     if (moved) state = { approved: false, active: [] }
     plan = file
+    ctx.ui.setStatus(PLAN_KEY, plan_name(relative(plans, file)))
     read_plan(ctx)
     if (moved)
       ctx.ui.notify(

@@ -42,6 +42,7 @@ export const INCLUDE = [
   '.pi/bin',
   '.pi/skills',
   '.pi/prompts',
+  '.pi/patches',
   '.pi/extensions',
   'themes',
   '.pi/agent/themes',

@@ -6,6 +6,24 @@ These are the harness rules. Pi adds them to its system prompt; Cursor and
 Claude Code reach them by link. The root `AGENTS.md` belongs to the person.
 Layout and dependencies: `README.md`.
 
+## Tools
+
+Batch tool calls in one `codemode` script. Each direct call costs a model
+turn and resends the context; one script runs them all and returns only what
+you print.
+
+- Use `codemode` for two or more independent calls, calls that feed each
+  other, or output to filter.
+- Use a direct call for one step alone.
+
+```js
+const [a, b] = await Promise.all([
+  tools.read({ path: 'a.js', offset: 1, limit: 40 }),
+  tools.bash({ command: 'rg -n todo src' })
+])
+return [a, b.output].join('\n')
+```
+
 ## Harness
 
 - Read the root `AGENTS.md` early - personal context, quirks, and learnings.
@@ -93,8 +111,6 @@ code.
 
 - Confirm requirements before writing code; pause multi-step work until asked.
 - Use the scripts each project defines, such as `npm run check` and `npm test`.
-- Use `codemode` for three or more tool calls, calls that feed each other, or
-  output to filter. Use a single tool call for one step.
 - Write unit tests that fit the feature touched.
 - `console.log` while debugging is fine; strip it before commit.
 - Commit messages carry no agent credit. Claude Code and Cursor append

@@ -5,7 +5,7 @@
     aria-label="Tools">
     <header>
       <nav aria-label="Related">
-        <router-link to="/planning">Plans</router-link>
+        <router-link to="/vault">Vault</router-link>
         <router-link to="/blog">Articles</router-link>
       </nav>
     </header>

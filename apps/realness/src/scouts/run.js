@@ -171,7 +171,8 @@ export const run_scout = async ({
     await read_file(log, 'utf8').catch(error => {
       if (error.code === 'ENOENT') return ''
       throw error
-    })
+    }),
+    allowed
   )
   const leads_file = await read_file(join(run_dir, 'finds.html'), 'utf8').catch(
     error => {

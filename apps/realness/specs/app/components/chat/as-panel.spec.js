@@ -38,6 +38,11 @@ const ndjson = (...records) =>
     headers: { 'content-type': 'application/x-ndjson' }
   })
 
+const { mock_route } = vi.hoisted(() => ({
+  mock_route: { current: undefined }
+}))
+vi.mock('vue-router', () => ({ useRoute: () => mock_route.current }))
+
 let calls
 before_each(() => {
   vi.stubEnv('MODE', 'development')
@@ -235,6 +240,22 @@ describe('@/components/chat/as-panel', () => {
     panel.unmount()
     expect(root.hasAttribute('data-chat-open')).toBe(false)
     use_home_view().wide.value = false
+  })
+
+  it('names the plan from the page when no actor sends one', async () => {
+    const section = document.createElement('section')
+    section.setAttribute('aria-label', 'Current page')
+    section.innerHTML = '<article aria-label="Pi footer in chat"></article>'
+    document.body.append(section)
+    mock_route.current = { path: '/plan', hash: '#/plans/1' }
+    home_view.value = 'chat'
+    const panel = open_panel({ actor: null })
+    await flush_promises()
+    expect(
+      panel.get('footer[aria-label="Plan and session"] [data-plan]').text()
+    ).toBe('Pi footer in chat')
+    section.remove()
+    mock_route.current = undefined
   })
 
   it('titles the chat page', async () => {

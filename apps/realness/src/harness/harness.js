@@ -7,7 +7,7 @@
  */
 import { execFile as exec_file } from 'node:child_process'
 import { existsSync as exists_sync } from 'node:fs'
-import { mkdir, readFile as read_file, stat } from 'node:fs/promises'
+import { mkdir, readdir, readFile as read_file, stat } from 'node:fs/promises'
 import {
   basename,
   dirname,
@@ -171,6 +171,31 @@ export const sync_org = async (store, local, path, options) => {
       return { refused: 'not a member of this org' }
     throw error
   }
+}
+
+/** s2: each `orgs/+name` folder on disk syncs to its org, never the harness. */
+const sync_org_folders = async (root, store, options, exclude) => {
+  const names = await readdir(join(root, 'orgs')).catch(() => [])
+  const synced = {}
+  const refusals = {}
+  for (const name of names) {
+    const path = `orgs/${name}`
+    if (!org_path(path) || exclude(path, true)) continue
+    const { report, refused: why } = await sync_org(
+      store,
+      join(root, path),
+      path,
+      {
+        state: options.state,
+        deletes: options.deletes,
+        repair: options.repair,
+        exclude: (file, is_dir) => exclude(`${path}/${file}`, is_dir)
+      }
+    )
+    if (why) refusals[path] = why
+    else synced[path] = report
+  }
+  return { synced, refused: refusals }
 }
 
 /** The repo a path sits in, checked from its nearest existing folder. */
@@ -355,10 +380,11 @@ export const sync_harness = async ({
       exclude(path, is_dir)
   })
   const applied = await settled(HARNESS_DEFERRED, [['', files]])
+  const orgs = await sync_org_folders(root, store, options, exclude)
   return {
     harness: { sessions: history, files, memory, repos },
-    synced: {},
-    refused: {},
+    synced: orgs.synced,
+    refused: orgs.refused,
     applied: [...new Set(applied)].sort()
   }
 }

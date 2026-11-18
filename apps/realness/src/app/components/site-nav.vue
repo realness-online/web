@@ -14,6 +14,7 @@
 
   const route = use_route()
   const pricing_current = computed(() => route?.path?.startsWith('/pricing/'))
+  const vault_current = computed(() => route?.path?.startsWith('/vault'))
   const is_home = computed(() => route?.path === '/')
   const account_label = computed(
     () => (current_user.value && me.value?.name) || 'Account'
@@ -64,7 +65,12 @@
       @toggle="more_open = $event.target.open">
       <summary aria-label="More">...</summary>
       <menu>
-        <router-link to="/planning" replace>Planning</router-link>
+        <router-link
+          to="/vault"
+          replace
+          :aria-current="vault_current ? 'page' : undefined"
+          >Vault</router-link
+        >
         <router-link
           to="/pricing"
           replace

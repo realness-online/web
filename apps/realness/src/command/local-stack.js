@@ -133,7 +133,7 @@ export const local_plan = (env = process.env) => {
       },
       {
         name: 'sync',
-        args: ['run', 'start:sync'],
+        args: ['run', 'start:sync:watch'],
         url: `http://127.0.0.1:${local_settings.sync_port}/health`,
         env: {
           PORT: String(local_settings.sync_port),
