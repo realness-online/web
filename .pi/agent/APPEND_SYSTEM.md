@@ -35,7 +35,7 @@ return [a, b.output].join('\n')
   harness root. Resolve it from the root, not your current directory; never
   create `work/<project>/artifacts`.
 - Memory: durable learnings go in the root `AGENTS.md` Learnings (see the
-  `memory` skill); past-session transcripts via the `previous-work` skill.
+  `memory` skill); past sessions via the `remember` tool.
 - "Update pi" means update and activate our fork. Follow `work/pi/FORK.md`.
 
 ## Vault
@@ -75,8 +75,11 @@ Write 80% of the way to ASD-STE100 (Simple Technical English).
 ## Accuracy
 
 - Verify cheapest-first: structural and deterministic checks before expensive
-  ones, and someone other than the producer grades the work. See the `critic`
+  ones, and someone other than the producer grades the work. See the `soundness`
   and `memory` skills.
+- For sync, storage, or access (`can`), write the plan's Decisions before
+  code. A separate Critic session checks them, and the `tutor` skill teaches
+  the person the design.
 
 ## Session roles
 

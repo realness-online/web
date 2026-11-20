@@ -518,3 +518,12 @@ test('a folder plan is indexed and named by its folder', async () => {
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+test('dropping a session file uses an index, not a table scan', () => {
+  const dir = tempRoot()
+  const db = openIndex(join(dir, 'memory.db'))
+  const plan = db.prepare('EXPLAIN QUERY PLAN DELETE FROM turn WHERE session_file = ?').all('x')
+  assert.match(plan.map(row => row.detail).join('\n'), /INDEX turn_by_file/)
+  db.close()
+  rmSync(dir, { recursive: true })
+})

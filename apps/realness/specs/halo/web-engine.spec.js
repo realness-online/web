@@ -18,6 +18,7 @@ import {
   engine_report,
   is_idle,
   is_private,
+  is_own_host,
   learn,
   robots_allows,
   safe_fetch,
@@ -156,6 +157,22 @@ it('safe_fetch refuses private addresses, by IP, by name, and by redirect', asyn
     safe_fetch(`${base}/redirect-home`, { allow_private: false }),
     /private address/
   )
+})
+
+it('safe_fetch reads an own host at a private address, and only that host', async () => {
+  const port = server.address().port
+  await assert.rejects(
+    safe_fetch(`http://localhost:${port}/page`, {
+      own_hosts: ['realness.online']
+    }),
+    /private address/
+  )
+  const reply = await safe_fetch(`http://localhost:${port}/page`, {
+    own_hosts: ['localhost']
+  })
+  assert.equal(reply.status, 200)
+  assert.equal(is_own_host('haight.realness.online', ['realness.online']), true)
+  assert.equal(is_own_host('evilrealness.online', ['realness.online']), false)
 })
 
 it('robots.txt: longest match for user-agent * wins', () => {

@@ -24,8 +24,12 @@ const age_at = args.indexOf('--age-minutes')
 const grace_ms = (age_at >= 0 ? Number(args[age_at + 1]) : 60) * 60_000
 const cap_at = args.indexOf('--cap-mb')
 const cap = (cap_at >= 0 ? Number(args[cap_at + 1]) : 2000) * 1_000_000
+const stale_at = args.indexOf('--stale-days')
+const stale_ms = (stale_at >= 0 ? Number(args[stale_at + 1]) : 7) * 86_400_000
 
 const twin = /^(.*)-(\d{4})(\.[^.]*)?$/
+const leftover_file = /^pi-bash-.*\.log$|\.tar\.gz$/
+const leftover_dir = /^node-compile-cache$/
 
 const size_of = path => {
   const stat = lstat_sync(path)
@@ -49,22 +53,37 @@ const live = dir => {
   }
 }
 
+/** A `.keep` file marks a folder that is never pruned. */
+const kept = dir => exists_sync(join(dir, '.keep'))
+
 const contains_live = dir =>
   live(dir) ||
+  kept(dir) ||
   readdir_sync(dir, { withFileTypes: true }).some(entry => entry.isDirectory() && contains_live(join(dir, entry.name)))
 
+const newest = path => {
+  const stat = lstat_sync(path)
+  if (!stat.isDirectory()) return stat.mtimeMs
+  let latest = stat.mtimeMs
+  for (const entry of readdir_sync(path, { withFileTypes: true }))
+    latest = Math.max(latest, newest(join(path, entry.name)))
+  return latest
+}
+
 /** Walk artifacts/, collecting whole directories and leaf files to judge. */
-const collect = (dir, dirs, files) => {
+const collect = (dir, dirs, files, stale) => {
   for (const entry of readdir_sync(dir, { withFileTypes: true })) {
     if (entry.isSymbolicLink()) continue
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
-      if (live(path) || exists_sync(join(path, '.git'))) continue
-      if (entry.name === 'node_modules' && !contains_live(path)) dirs.push(path)
+      if (live(path) || kept(path) || exists_sync(join(path, '.git'))) continue
+      if (dir === ROOT && Date.now() - newest(path) >= stale_ms && !contains_live(path)) stale.push(path)
+      else if (leftover_dir.test(entry.name) && !contains_live(path)) dirs.push(path)
+      else if (entry.name === 'node_modules' && !contains_live(path)) dirs.push(path)
       else if (entry.name === 'dist' && exists_sync(join(dir, 'package.json')) && !contains_live(path)) dirs.push(path)
-      else collect(path, dirs, files)
+      else collect(path, dirs, files, stale)
     } else if (entry.isFile()) {
-      if (entry.name === '.DS_Store') dirs.push(path)
+      if (entry.name === '.DS_Store' || leftover_file.test(entry.name)) dirs.push(path)
       else files.push(path)
     }
   }
@@ -93,7 +112,9 @@ const add = (path, why) => {
 
 const dirs = []
 const files = []
-if (exists_sync(ROOT) && !live(ROOT)) collect(ROOT, dirs, files)
+const stale = []
+if (exists_sync(ROOT) && !live(ROOT)) collect(ROOT, dirs, files, stale)
+for (const path of stale) add(path, `untouched ${stale_ms / 86_400_000} days`)
 for (const path of dirs) add(path, 'regenerable')
 for (const path of files) {
   const lower = twin_of(path)
@@ -126,5 +147,14 @@ if (apply) for (const item of items) rm_sync(item.path, { recursive: true, force
 console.log(`${apply ? 'pruned' : 'would prune'} ${items.length} item(s), freed ${total} bytes`)
 const remaining = exists_sync(ROOT) ? size_of(ROOT) : 0
 console.log(`artifacts size: ${remaining} bytes`)
-if (remaining > cap)
-  console.log(`warning: artifacts exceed ${cap / 1_000_000} MB (${(remaining / 1_000_000).toFixed(1)} MB)`)
+if (remaining > cap) {
+  const biggest = readdir_sync(ROOT)
+    .map(name => ({ name, bytes: size_of(join(ROOT, name)) }))
+    .sort((a, b) => b.bytes - a.bytes)
+    .slice(0, 3)
+    .map(({ name, bytes }) => `${name} ${(bytes / 1_000_000).toFixed(0)} MB`)
+    .join(', ')
+  console.log(
+    `warning: artifacts exceed ${cap / 1_000_000} MB (${(remaining / 1_000_000).toFixed(1)} MB); biggest: ${biggest}`
+  )
+}

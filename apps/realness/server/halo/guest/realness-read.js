@@ -317,7 +317,8 @@ const read_here = async () => {
     root: join(HOME, 'artifacts', 'realness-read'),
     render,
     firecrawl_key: process.env.FIRECRAWL_API_KEY ?? null,
-    common_crawl: COMMON_CRAWL
+    common_crawl: COMMON_CRAWL,
+    own_hosts: on_box ? [] : ['realness.online']
   })
   return { ok: true, ...(await engine.read(url, { fresh })) }
 }

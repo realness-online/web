@@ -239,7 +239,7 @@
         "mode": "type-aware",
         "semantic_schema_version": 2,
         "capabilities": ["symbol-use", "api-surface"],
-        "project_config_hash": "sha256:91454505f5e92ce300a55fcd4d4592b1ce1f21a86d6bcce3b2eaba911b133126",
+        "project_config_hash": "sha256:8c52e0beab0e6e578072ec9b2dc5f11a9cafeb67385cffdce298af13afc44960",
         "backend_family": "typescript-go",
         "completeness": "partial"
       },

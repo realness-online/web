@@ -18,24 +18,39 @@ const dir = join(root, 'vault')
 before(async () => {
   await mkdir(dir, { recursive: true })
   const db = new DatabaseSync(index)
-  db.exec('CREATE TABLE note (path TEXT PRIMARY KEY, title TEXT, text TEXT)')
-  db.prepare('INSERT INTO note(path, title, text) VALUES (?, ?, ?)').run(
+  db.exec(
+    'CREATE TABLE note (path TEXT PRIMARY KEY, mtime_ms REAL, title TEXT, text TEXT)'
+  )
+  const insert = db.prepare(
+    'INSERT INTO note(path, mtime_ms, title, text) VALUES (?, ?, ?, ?)'
+  )
+  insert.run(
     'Projects/a.md',
+    1,
     'a',
     '---\nitemid: "/+1555/plans/1"\nkey: "abc_def"\n---\n\n# Body\n'
   )
-  db.prepare('INSERT INTO note(path, title, text) VALUES (?, ?, ?)').run(
+  insert.run(
     'Projects/b.md',
+    3,
     'b',
-    '---\nitemid: "/+1555/plans/2"\nkey: "ghi_jkl"\nrelated:\n  - title: A Plan\n    href: a.md\n  - title: Away\n    href: ../../work/away.md\n---\n\n# B\n\nSee [A Plan](a.md) and [the archive](../Archived/c.md).\n\n```\n[A Plan](a.md)\n```\n'
+    '---\nitemid: "/+1555/plans/2"\nkey: "ghi_jkl"\nrelated:\n  - title: A Plan\n    href: a.md\n  - title: Away\n    href: ../../work/away.md\n  - title: Old\n    href: /vault#/+1555/plans/9\n---\n\n# B\n\nSee [A Plan](a.md) and [the archive](../Archived/c.md).\n\n```\n[A Plan](a.md)\n```\n'
   )
-  db.prepare('INSERT INTO note(path, title, text) VALUES (?, ?, ?)').run(
+  insert.run(
+    'Projects/d.md',
+    2,
+    'd',
+    '---\nitemid: "/+1555/plans/4"\n---\n\n# D\n'
+  )
+  insert.run(
     'Projects/broken.md',
+    3,
     'broken',
     '---\nitemid:\n  - not-an-itemid\n---\n\n# Broken\n'
   )
-  db.prepare('INSERT INTO note(path, title, text) VALUES (?, ?, ?)').run(
+  insert.run(
     'Archived/c.md',
+    4,
     'c',
     '---\nitemid: "/+1555/plans/3"\n---\n\n# C\n'
   )
@@ -82,12 +97,13 @@ it('reads a tool page from disk, which the note index does not hold', async () =
   )
 })
 
-it('one unreadable note is left out of the plans list, and the others still list', () => {
+it('plans list last updated first, and one unreadable note is left out', () => {
   const plans = door.plans()
   assert.deepEqual(
     plans.map(plan => [plan.path, plan.title]),
     [
       ['Projects/b.md', 'B'],
+      ['Projects/d.md', 'D'],
       ['Projects/a.md', 'Body']
     ]
   )
@@ -95,16 +111,17 @@ it('one unreadable note is left out of the plans list, and the others still list
 
 it('a body link answers with the note it names, and a code example stays as written', () => {
   assert.deepEqual(door.shared({ itemid: '/+1555/plans/2' })?.links, {
-    'a.md': '#/+1555/plans/1',
-    '../Archived/c.md': '#/+1555/plans/3'
+    'a.md': '/vault/+1555/plans/1',
+    '../Archived/c.md': '/vault/+1555/plans/3'
   })
   assert.deepEqual(door.shared({ itemid: '/+1555/plans/1' })?.links, {})
 })
 
 it('a related href answers with the note it names, and keeps one it cannot reach', () => {
   assert.deepEqual(door.shared({ itemid: '/+1555/plans/2' })?.related, [
-    { title: 'A Plan', href: '#/+1555/plans/1' },
-    { title: 'Away', href: '../../work/away.md' }
+    { title: 'A Plan', href: '/vault/+1555/plans/1' },
+    { title: 'Away', href: '../../work/away.md' },
+    { title: 'Old', href: '/vault/+1555/plans/9' }
   ])
   assert.deepEqual(door.shared({ itemid: '/+1555/plans/1' })?.related, [])
 })

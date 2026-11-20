@@ -1,4 +1,4 @@
-import { shell } from './templates/shell.js'
+import { layout_of } from './layouts.js'
 import { poster } from './templates/figure.js'
 import { article_body, related_nav } from './templates/article.js'
 import { index_body } from './templates/index.js'
@@ -35,7 +35,7 @@ export const create_templates = (site, poster_sizes, watch = false) => {
      * @param {import('./types.js').PagePreview} [meta]
      */
     shell(title, body, meta) {
-      return shell(settings, title, body, meta, watch)
+      return layout_of(settings, title, body, meta, watch)
     },
     poster: render_poster,
     render_poster,

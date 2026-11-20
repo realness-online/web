@@ -1,5 +1,9 @@
 <template>
-  <article itemscope itemtype="https://schema.org/Article" :aria-label="label">
+  <article
+    itemscope
+    itemtype="https://schema.org/Article"
+    :aria-label="label"
+    @click="open_in_app">
     <nav v-if="related.length" aria-label="Related">
       <a v-for="link in related" :key="link.href" :href="link.href">
         {{ link.title }}
@@ -16,6 +20,7 @@
     ref,
     watch
   } from 'vue'
+  import { useRouter as use_router } from 'vue-router'
   import { draw_diagrams, mark_diagrams } from '@/utils/diagrams'
 
   const props = defineProps({
@@ -26,6 +31,15 @@
   })
 
   const body = ref(null)
+  const router = use_router()
+
+  /** A link to another vault note opens it in the app, without a page load. */
+  const open_in_app = event => {
+    const link = event.target.closest?.('a[href^="/vault/"]')
+    if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return
+    event.preventDefault()
+    router.push(link.getAttribute('href'))
+  }
 
   /** A body link that names another vault note opens that note, by itemid. */
   const resolve_links = () => {

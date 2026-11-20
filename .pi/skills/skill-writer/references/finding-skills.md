@@ -3,12 +3,16 @@
 The Skills CLI (`npx skills`) is the package manager for the open agent
 skills ecosystem. Browse: https://skills.sh/ (leaderboard ranks by installs).
 
-| Command                                   | Does                         |
-| ----------------------------------------- | ---------------------------- |
-| `npx skills find [query]`                 | search by keyword            |
-| `npx skills add <owner/repo@skill> -g -y` | install (global, no prompts) |
-| `npx skills check` / `npx skills update`  | check / apply updates        |
-| `npx skills init <name>`                  | scaffold a new skill         |
+| Command                                  | Does                   |
+| ---------------------------------------- | ---------------------- |
+| `npx skills find [query]`                | search by keyword      |
+| `npx skills add <owner/repo@skill> -y`   | copy into this project |
+| `npx skills check` / `npx skills update` | check / apply updates  |
+| `npx skills init <name>`                 | scaffold a new skill   |
+
+Run installs with no `-g`: global writes to the home directory, and Realness
+keeps its config in the repo. Read the skill before it lands, as with any
+dependency.
 
 ## Workflow
 

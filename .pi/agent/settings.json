@@ -57,5 +57,10 @@
     "{\"source\":\"npm:pi-claude-oauth-adapter\",\"scope\":\"user\"}": "0.2.2",
     "{\"source\":\"npm:pi-mono-usage\",\"scope\":\"user\"}": "0.2.0"
   },
-  "enableSkillCommands": false
+  "enableSkillCommands": false,
+  "hiddenSkills": [
+    "autoresearch-create",
+    "autoresearch-finalize",
+    "autoresearch-hooks"
+  ]
 }

@@ -4,11 +4,18 @@ Apply repository registration and quality checks before completion.
 
 ## Registration checklist (realness)
 
-1. Create/update `skills/<name>/SKILL.md` at the repo root `skills/` folder.
-2. Nothing else to wire: pi, Cursor, and Claude Code all load `skills/`
-   through symlinks (`.pi/agent/skills`, `.cursor/skills`, `.claude/skills`).
-3. Frontmatter must be valid YAML (`name`, `description`); quote the
+1. Create or update `.pi/skills/<name>/SKILL.md`. That folder is the only
+   source: `.cursor/skills` and `.claude/skills` are symlinks to it.
+2. Frontmatter must be valid YAML (`name`, `description`); quote the
    description if it contains a colon.
+3. Add `hidden: true` unless Scott types the skill name himself. The menu holds
+   only what he types; every other skill is agent-loaded.
+4. Add `metadata.check`: one cheap command that proves the skill works, run from
+   the skill folder. A skill with no script points at its spec instead.
+5. Write scripts as `.js` with JSDoc, semicolon-free. No Python unless the task
+   is Python.
+6. Install nothing globally. A skill from the open ecosystem is copied into
+   `.pi/skills/`; review it first, as with any dependency.
 
 ## Validation checklist
 
@@ -41,6 +48,9 @@ for d in .pi/skills/*/; do node .pi/skills/skill-writer/scripts/quick-validate.j
 - deeper eval or quantitative summary only if user requested benchmark mode or risk warrants it
 
 5. Reject shallow handoffs that omit required artifacts.
+
+The checks read shape, not these rules. A skill that names the wrong folder or
+omits `hidden` still passes, so walk this list by hand.
 
 ## Required output
 

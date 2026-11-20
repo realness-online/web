@@ -135,7 +135,7 @@ const count = 2
     const list = [
       { arm: 'none', states, visible: false, rank: 1, better: true, note: '' },
       {
-        arm: 'user-interface',
+        arm: 'user-experience',
         states,
         visible: true,
         rank: 2,
@@ -281,9 +281,9 @@ const count = 2
     }
     const html = report_html('now', 'm', [
       { ...row, task: 'chat', arm: 'none', rank: 2 },
-      { ...row, task: 'chat', arm: 'user-interface', rank: 1 }
+      { ...row, task: 'chat', arm: 'user-experience', rank: 1 }
     ])
-    expect(html.indexOf('user-interface')).toBeLessThan(html.indexOf('>none<'))
+    expect(html.indexOf('user-experience')).toBeLessThan(html.indexOf('>none<'))
     expect(html).toContain('itemtype="https://schema.org/CreativeWork"')
     expect(html).toContain('Clear &lt;b&gt;')
     expect(html).toContain('src="chat-none-390.png"')

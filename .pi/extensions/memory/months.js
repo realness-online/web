@@ -95,6 +95,21 @@ export const sealed_months = folder => {
   return found
 }
 
+/** @type {Map<string, { stamp: string, sessions: number, names: Set<string> }>} */
+const sealed_names = new Map()
+
+/** A sealed month's session count and names, parsed again only when the file changes. */
+const month_names = path => {
+  const { mtimeMs, size } = statSync(path)
+  const stamp = `${mtimeMs}:${size}`
+  const cached = sealed_names.get(path)
+  if (cached?.stamp === stamp) return cached
+  const { sessions, rows } = read_month(readFileSync(path))
+  const entry = { stamp, sessions, names: new Set(rows.map(row => row.session)) }
+  sealed_names.set(path, entry)
+  return entry
+}
+
 const portable = (root, file) => relative(root, file).split(sep).join('/')
 
 /**
@@ -121,8 +136,7 @@ export const seal = (db, { root, folder, files, now = new Date() }) => {
   for (const [month, month_files] of by_month) {
     const path = sealed.get(month)
     if (path) {
-      const { sessions, rows } = read_month(readFileSync(path))
-      const names = new Set(rows.map(row => row.session))
+      const { sessions, names } = month_names(path)
       const same = month_files.every(file => names.has(portable(root, file)) || !has_turns.get(file))
       if (sessions > month_files.length || (sessions === month_files.length && same)) continue
     }

@@ -7,6 +7,8 @@
  *     realness loop scout <name>    run a plan's scout once, in a loop actor
  *     realness loop scout <name> --source <key>
  *                                   run one source of it, and nothing else
+ *     realness loop scout <name> --model <model>
+ *                                   run it on the model this task wants
  *     realness loop scout <name> --probe
  *                                   check the gates and one YC read, run nothing
  *     realness loop scouts          run every active scout, each in its own loop
@@ -16,15 +18,33 @@
  */
 import { ask_ok, exit } from './realness-door.js'
 
-const SOURCE_ARGS = 4
 const PROBE_MS = 300_000
 const REPLY_MS = 30_000
 const KIB = 1024
 const GIB = KIB * KIB * KIB
 
 const USAGE =
-  'usage: realness loop "<goal>" | realness loop report <id> | realness loop scout <name> [--probe] [--source <key>] | realness loop scouts'
+  'usage: realness loop "<goal>" | realness loop report <id> | realness loop scout <name> [--probe] [--source <key>] [--model <model>] | realness loop scouts'
 const args = process.argv.slice(2)
+
+/** The value after a flag, or empty when the flag is absent. */
+const value_of = name => {
+  const at = args.indexOf(name)
+  return at === -1 ? '' : (args[at + 1] ?? '')
+}
+
+/** The words after `scout <name>` this command does not know. */
+const stray_args = () => {
+  const rest = args.slice(2)
+  const known = ['--source', '--model', '--probe']
+  const words = []
+  for (let at = 0; at < rest.length; at += 1) {
+    if (rest[at] === '--probe') continue
+    if (!known.includes(rest[at])) words.push(rest[at])
+    else at += 1
+  }
+  return words
+}
 
 if (args.length === 2 && args[0] === 'report') {
   const reply = await ask_ok(
@@ -33,19 +53,15 @@ if (args.length === 2 && args[0] === 'report') {
     { timeout_ms: 30_000 }
   )
   process.stdout.write(`${JSON.stringify(reply.loop, null, 2)}\n`)
-} else if (
-  args[0] === 'scout' &&
-  (args.length === 2 ||
-    (args.length === SOURCE_ARGS && args[2] === '--source') ||
-    (args.length === 3 && args[2] === '--probe'))
-) {
-  const probe = args[2] === '--probe'
-  const source = args[2] === '--source' ? args[3] : ''
+} else if (args[0] === 'scout' && args.length >= 2 && !stray_args().length) {
+  const probe = args.includes('--probe')
+  const source = value_of('--source')
+  const model = value_of('--model')
   const reply = await ask_ok(
     'realness loop',
     probe
       ? { op: 'scout', scout: args[1], probe }
-      : { op: 'scout', scout: args[1], source },
+      : { op: 'scout', scout: args[1], source, model },
     { timeout_ms: probe ? PROBE_MS : REPLY_MS }
   )
   process.stdout.write(

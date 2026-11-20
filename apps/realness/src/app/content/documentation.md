@@ -265,7 +265,7 @@ Your vault is your own folder of notes, in Markdown. It syncs to your devices an
 
 #### Open a note in the app
 
-- **Signed in** - `/vault#<itemid>` opens any of your notes.
+- **Signed in** - `/vault/<itemid>` opens any of your notes.
 - **Shared** - a published note has a random key. `/vault#<key>` opens it for anyone, with no sign-in. The key does not change when you rename the note.
 - A note that has its own published page opens that page.
 - Diagrams in a note draw on the page.

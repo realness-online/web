@@ -6,7 +6,7 @@
     <header aria-label="Artifacts">
       <nav aria-label="Related">
         <router-link to="/vault">Vault</router-link>
-        <router-link to="/vault#">Vault</router-link>
+        <router-link to="/vault">Vault</router-link>
       </nav>
     </header>
     <p v-if="error" role="status">{{ error }}</p>

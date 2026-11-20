@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { after, test } from 'node:test'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import prewalk, { is_spec_run, plan_name, plan_named, plan_of, route, takes_over } from './index.js'
+import prewalk, { MAX_SWITCHES, is_spec_run, lost, plan_name, plan_named, plan_of, route, takes_over } from './index.js'
 
 const scratch = new URL('../../../artifacts/', import.meta.url).pathname
 mkdirSync(scratch, { recursive: true })
@@ -19,6 +19,7 @@ const plan_text = ({ gate = '', active = '', done = '' }) =>
     '```mermaid',
     'flowchart TD',
     '  a1["a1 one"] --> b2["b2 two"]',
+    '  b2["b2 two"] --> c3["c3 three"]',
     active && `  class ${active} active;`,
     done && `  class ${done} done;`,
     '```',
@@ -73,6 +74,7 @@ const harness = name => {
     turn: (message = { stopReason: 'stop' }) => handlers.turn_end({ entries: [], message }, ctx),
     command: args => commands.prewalk(args, ctx),
     read: () => handlers.tool_result({ toolName: 'read', input: { path: file } }, ctx),
+    says: text => handlers.before_agent_start({ prompt: text }, ctx),
     planning: name =>
       handlers.before_agent_start({ prompt: `<skill name="planning" location="x">\nbody\n</skill>\n\n${name}` }, ctx),
     other: shape => {
@@ -147,6 +149,45 @@ test('a failing spec returns the node to the frontier model and logs it', async 
   const html = readFileSync(h.log, 'utf8')
   assert.match(html, /itemtype="\/prewalk\/escalation"/)
   assert.match(html, /<span itemprop="node">b2<\/span>.*spec failed/)
+})
+
+test('a session stops switching after two, since each one rewrites the cache', async () => {
+  assert.equal(MAX_SWITCHES, 2)
+  const h = harness('cap')
+  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.turn()
+  h.spec(true)
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await h.turn()
+  assert.equal(h.ctx.model, CHEAP)
+  h.spec(false)
+  await h.turn()
+  assert.equal(h.ctx.model, FRONTIER)
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'c3' })
+  await h.turn()
+  assert.equal(h.ctx.model, FRONTIER)
+})
+
+test('Scott saying he is lost brings the frontier model back at once', async () => {
+  const h = harness('lost')
+  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.turn()
+  h.spec(true)
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await h.turn()
+  assert.equal(h.ctx.model, CHEAP)
+  await h.says('I am struggling to understand you')
+  assert.equal(h.ctx.model, FRONTIER)
+  assert.match(readFileSync(h.log, 'utf8'), /<span itemprop="node">b2<\/span>.*Scott is lost/)
+  await h.says('run the spec')
+  assert.equal(h.ctx.model, FRONTIER)
+})
+
+test('only a lost Scott brings the frontier model back', () => {
+  for (const text of ['I am lost', 'i’m confused', 'struggling to understand you', 'makes no sense', 'too much detail'])
+    assert.equal(lost(text), true, text)
+  for (const text of ['Lost uncommitted work: replay its session edits', 'run the spec', 'plan node s1'])
+    assert.equal(lost(text), false, text)
 })
 
 test('a cheap-model error turn returns the session to the frontier model with a notice', async () => {

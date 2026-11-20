@@ -58,6 +58,8 @@
  * @property {string} [url]
  * @property {string} [type]
  * @property {string} [og_image_path]
+ * @property {string} [layout] the shell a note names
+ * @property {string} [head] extra tags for the head
  */
 
 /**

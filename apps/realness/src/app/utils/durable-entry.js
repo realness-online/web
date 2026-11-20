@@ -16,7 +16,6 @@ export {
 export {
   Harness,
   createRegistry,
-  watchEvents,
   defineExtension
 } from '@earendil-works/pi-durable'
 export { createModels, createProvider } from '@earendil-works/pi-ai'

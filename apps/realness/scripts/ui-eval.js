@@ -54,11 +54,11 @@ const BASELINES = new Set(['before', 'current', 'blank'])
 export const arms = [
   { name: 'none', flags: ['--no-skills'] },
   {
-    name: 'user-interface',
+    name: 'user-experience',
     flags: [
       '--no-skills',
       '--skill',
-      path.join(harness, '.pi/skills/user-interface')
+      path.join(harness, '.pi/skills/user-experience')
     ]
   },
   {

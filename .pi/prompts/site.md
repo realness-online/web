@@ -1,5 +1,5 @@
 ---
-description: Start a static site from the example, build it, and publish it
+description: Start or change a static site, then publish it
 argument-hint: '[folder] [what to change]'
 ---
 

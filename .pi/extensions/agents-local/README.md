@@ -20,11 +20,7 @@ On each session (`resources_discover`):
 
 Pi loads `AGENTS.md` itself; this extension adds nothing to the prompt.
 
-### `/insert`
-
-Splices `AGENTS.md` into `README.md` immediately before the last fenced
-code block (the `npm start` command). Queues that combined document for the
-next prompt only - replaces the default personal-context load for that turn.
+After editing `AGENTS.md` mid-session, run `/reload`.
 
 Edit descriptions in the synced table freely. Do not hand-maintain the project
 list - agents-local owns rows; you own the "What it is" column.

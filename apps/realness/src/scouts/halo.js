@@ -99,17 +99,31 @@ export const due_scouts = async (
 /** A run that holds the box longer than this is stopped and retried. */
 const RUN_MINUTES = 15
 
+/** A model name a box may be told to run: one argv word, no shell in it. */
+const MODEL_NAME = /^[a-z0-9][a-z0-9/.:_-]{0,80}$/i
+
+/**
+ * Whether this is a model name a box can be handed, so a caller cannot pass a
+ * flag or an extra word through as a model.
+ * @param {string} model
+ */
+const model_name_ok = model => MODEL_NAME.test(String(model ?? ''))
+
 /**
  * The command a box runs for one source: the same `scout.js --run` the Mac
  * runs, through the box's own wrapper, so the read and the model pass come from
- * the box and the door answers both.
+ * the box and the door answers both. A model the caller recommends is passed on
+ * as `--model`, so a task runs on the model named for it.
  * @param {string} scout
  * @param {string} [source]
+ * @param {string} [model]
  */
-const box_argv = (scout, source = '') =>
-  source
-    ? ['/usr/local/bin/realness-scouts', scout, '--source', source]
-    : ['/usr/local/bin/realness-scouts', scout]
+const box_argv = (scout, source = '', model = '') => [
+  '/usr/local/bin/realness-scouts',
+  scout,
+  ...(source ? ['--source', source] : []),
+  ...(model ? ['--model', model] : [])
+]
 
 /**
  * Run one scout in the owner's box with the same command the Mac runs. The box
@@ -120,10 +134,19 @@ const box_argv = (scout, source = '') =>
  * @param {string} options.actor the owner's box
  * @param {string} options.scout
  * @param {string} [options.source] the one source this run reads
+ * @param {string} [options.model] the model the caller recommends for it
  * @returns {Promise<{ code: number, said: string }>}
  */
-export const run_scout_box = async ({ store, actor, scout, source = '' }) => {
-  const reply = await store.exec(actor, box_argv(scout, source), {
+export const run_scout_box = async ({
+  store,
+  actor,
+  scout,
+  source = '',
+  model = ''
+}) => {
+  if (model && !model_name_ok(model))
+    throw new Error(`not a model name: ${model}`)
+  const reply = await store.exec(actor, box_argv(scout, source, model), {
     cwd: '/',
     timeout: RUN_MINUTES * MS_PER_MINUTE
   })

@@ -6,8 +6,10 @@ description:
   Schema.org microdata; CSS and JavaScript layer on top. realness sets the
   colors, type, and spacing. Use for writing, refactoring, and reviewing code in
   any project. Covers itemid-addressed pages, Realness light/dark styling,
-  and Progressive Web App build and browser checks. Defer motion to
-  motion-systems and client type voice to typography.
+  and Progressive Web App build and browser checks. Also the one check for
+  "is this good?" - cheap checks, simplify, the prose pass, Rust rules, and the
+  hard code review (`/soundness code`). When in doubt, check its soundness.
+  Defer motion to page-motion and type voice to user-experience.
 metadata:
   check: 'node ../../bin/checks/check-skills.js soundness'
   category: Design & Frontend
@@ -19,7 +21,7 @@ metadata:
     - code-review
 ---
 
-# Useless
+# Soundness
 
 How we design and write production-quality software. Load it before the work,
 not after. Rules here are non-negotiable; specialist skills add language and
@@ -28,6 +30,23 @@ domain details.
 `planning` owns work order and approval gates. This skill owns solution
 structure and implementation quality. Baseline naming and syntax live in
 AGENTS.md.
+
+## Modes
+
+| You type                  | It does                                                                                                   |
+| ------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `/soundness`              | Simplify, then the cheap checks, on the current work                                                      |
+| `/soundness code <scope>` | Hard code review in a fresh branch; scope is `session`, `uncommitted`, `commit <sha>`, or `branch <name>` |
+| `/soundness done`         | Leave the review branch with its findings                                                                 |
+
+Nodes get the cheap pass. Every plan gate runs `/soundness code` first.
+
+| Part                                                                                     | Read when                                                          |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [critique/critique.md](critique/critique.md)                                             | Deciding if work is done: cheapest check first, maker never grades |
+| [simplify/simplify.md](simplify/simplify.md)                                             | Every pass, first: tidy recent code, same behavior                 |
+| [readable/readable.md](readable/readable.md)                                             | Prose: plans, notes, copy                                          |
+| [rust-best-practices/rust-best-practices.md](rust-best-practices/rust-best-practices.md) | Writing or reviewing Rust                                          |
 
 ## How to use this skill
 
@@ -244,8 +263,8 @@ standard.
    assets, drafts, privacy, navigation, keyboard.
 6. Confirm you changed only what the task needed.
 
-Apply the `critic` skill: cheapest deterministic checks first, and do not grade
-your own work.
+Apply [critique](critique/critique.md): cheapest deterministic checks first, and
+do not grade your own work.
 
 ## realness
 
@@ -258,9 +277,8 @@ checkout: this skill's values and
 
 ## Integration
 
-- **user-interface**: clarity, affordance, and interaction decisions.
-- **typography**: font pairing and voice; spacing and scale stay realness's.
-- **motion-systems**: all animation decisions - defer entirely.
+- **user-experience**: clarity, affordance, and interaction decisions.
+- **page-motion**: all animation decisions - defer entirely.
 
 Every numbered value in this skill is the default for every project. Start each
 project by linking realness's `palette.css` and `color.css` unchanged, synced

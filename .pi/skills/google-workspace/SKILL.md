@@ -1,6 +1,7 @@
 ---
+hidden: true
 name: google-workspace
-description: Read and act on Scott's Google account - Gmail, Drive, Calendar, Docs, and Sheets - through the Google REST APIs with his own OAuth client. Use when the user asks about Gmail messages, calendar events, Drive files, or a Google Doc or Sheet.
+description: Read and act on Scott's Google account - Gmail, Drive, Calendar, Docs, and Sheets - through the Google REST APIs with his own OAuth client. Use when asked to "check my calendar", "find that Doc", or "what did they email".
 metadata:
   check: 'node scripts/workspace.js accounts'
 ---

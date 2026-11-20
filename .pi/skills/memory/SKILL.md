@@ -1,6 +1,7 @@
 ---
+hidden: true
 name: memory
-description: 'Store and retrieve durable learnings about how realness actually works - success patterns, failure modes, corrections, and next-time hints. Use before doing a task similar to a past one (check AGENTS.md Learnings first), and after a notable outcome or a user correction (append a general learning to AGENTS.md, which is injected into every session). Also runs the critical refinement loop: on a correction or repeated failure, prove it with evidence, note the root cause, and propose a fix to the skill/process at fault rather than mutating it directly.'
+description: 'Store and retrieve durable learnings about how realness actually works - success patterns, failure modes, corrections, and next-time hints. Use when asked to "remember this" or "did we try this before", before a task similar to a past one, and after a correction. Also runs the critical refinement loop: on a correction or repeated failure, prove it with evidence, note the root cause, and propose a fix to the skill/process at fault rather than mutating it directly.'
 metadata:
   check: 'node ../../bin/checks/check-skills.js memory'
 ---
@@ -57,7 +58,9 @@ the candidate says?" Above about 0.8, sharpen that entry instead; a reworded
 ## Read before you act
 
 `AGENTS.md` is already in your system prompt every session - check it
-before acting. If a past entry says a given approach failed, say so and take
+before acting. For past work, call the `remember` tool; for Cursor and Claude
+Code transcripts it does not index, follow
+[previous-work/previous-work.md](previous-work/previous-work.md). If a past entry says a given approach failed, say so and take
 the other route.
 
 ## Critical refinement loop

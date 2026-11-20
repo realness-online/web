@@ -85,6 +85,31 @@ it('a real rebuild removes stale pages and rereads settings and images', async (
   }
 })
 
+it('a note names its own layout and the build follows it', async () => {
+  const f = await fixture()
+  try {
+    await writeFile(
+      join(f.root, 'content/articles/canvas.md'),
+      '---\nlayout: canvas\n---\n\n# Own frame\n\nBody.\n'
+    )
+    await writeFile(
+      join(f.root, 'content/articles/plain.md'),
+      '# Site frame\n\nBody.\n'
+    )
+    await f.build()
+    const canvas = await readFile(join(f.root, 'dist/blog/canvas.html'), 'utf8')
+    const plain = await readFile(join(f.root, 'dist/blog/plain.html'), 'utf8')
+    assert.doesNotMatch(canvas, /\/partials\/header\.fragment/)
+    assert.doesNotMatch(canvas, /\/layouts\/article\.css/)
+    assert.match(canvas, /href="\/palette\.css"/)
+    assert.match(plain, /\/partials\/header\.fragment/)
+    assert.ok(existsSync(join(f.root, 'dist/layouts/article.css')))
+    assert.ok(existsSync(join(f.root, 'dist/layouts/deck.js')))
+  } finally {
+    await rm(f.root, { recursive: true, force: true })
+  }
+})
+
 it('plans mode sorts by modification time and copies the installed Mermaid bundle', async () => {
   const f = await fixture('plans')
   try {

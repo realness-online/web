@@ -228,7 +228,8 @@ const build_article = async (ctx, file) => {
     url: `/blog/${slug}`,
     og_image_path,
     description,
-    type: 'article'
+    type: 'article',
+    layout: data.layout
   })
   await write_route(ctx.output_directory, `/blog/${slug}`, page)
   if (data.itemid) {

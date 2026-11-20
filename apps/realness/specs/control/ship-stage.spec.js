@@ -230,7 +230,7 @@ it('home-only skills stay home', () => {
     'a shared skill ships'
   )
   assert.equal(
-    ships(join('.pi', 'skills', 'vuetify-to-semantic', 'SKILL.md')),
+    ships(join('.pi', 'skills', 'zoom-to-ableton', 'SKILL.md')),
     false
   )
   assert.equal(ships(join('.pi', 'skills', 'realness-read', 'SKILL.md')), true)

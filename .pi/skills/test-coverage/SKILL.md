@@ -1,6 +1,7 @@
 ---
+hidden: true
 name: test-coverage
-description: Write Vitest specs for Vue 3 JavaScript (Vite Plus, happy-dom, @vue/test-utils) and analyze V8 coverage + Fallow health to prioritize test-first refactors. Reference implementation is apps/realness. Use when writing or fixing tests, mocking composables, improving coverage, or after test:coverage or npx fallow fails thresholds.
+description: Write Vitest specs for Vue 3 JavaScript (Vite Plus, happy-dom, @vue/test-utils) and analyze V8 coverage + Fallow health to prioritize test-first refactors. Reference implementation is apps/realness. Use when asked to "write tests for this", "raise coverage", or after test:coverage or npx fallow fails thresholds.
 metadata:
   check: 'node --check scripts/summarize-coverage.js && node --check scripts/prioritize-refactor-risk.js'
 ---

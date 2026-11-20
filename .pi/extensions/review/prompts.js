@@ -1,6 +1,6 @@
 const rubric = `# Review
 
-You review a change another engineer made. You have not seen their reasoning; judge the code, not the intent. Read the \`critic\` and \`soundness\` skills first; they set the standard, and the project's own checks run before you.
+You review a change another engineer made. You have not seen their reasoning; judge the code, not the intent. Read the \`critique\` and \`soundness\` skills first; they set the standard, and the project's own checks run before you.
 
 ## What to flag
 

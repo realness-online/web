@@ -32,7 +32,6 @@ enable_auto_unmount(after_each)
 const PAGE = `<!doctype html><html itemtype="https://schema.org/WebPage"><head><link rel="stylesheet" href="/session-map.css" /></head><body><main>
   <template src="/partials/header.fragment"></template>
   <article><h1 itemprop="name">Sessions are how we recover our work</h1><section itemprop="articleBody"><p>What it does</p><pre class="mermaid">flowchart LR</pre></section></article>
-  <script type="module" src="/scripts/pwa.js"></script>
 </main></body></html>`
 
 const at = hash => vi.stubGlobal('location', { hash })
@@ -71,7 +70,6 @@ describe('@/views/Page', () => {
     )
     const section = page.get('section[itemprop="articleBody"]')
     expect(section.text()).toContain('What it does')
-    expect(section.html()).not.toContain('pwa.js')
     expect(section.find('pre.mermaid').exists()).toBe(true)
     expect(page.find('nav[aria-label="Related"]').text()).toContain('Tools')
     expect(page.get('article').attributes('itemtype')).toBe(
@@ -88,6 +86,20 @@ describe('@/views/Page', () => {
     expect(styles.map(style => style.textContent).join('')).toContain(
       'color: red'
     )
+  })
+
+  it('opens a page that carries a script as its own document', async () => {
+    at('#Projects/realness-presentation/presentation.html')
+    const deck =
+      '<!doctype html><html><head><link rel="stylesheet" href="https://realness.online/palette.css" /></head><body><ol><li class="active"><iframe src="slide.html"></iframe></li></ol><script>addEventListener("keydown", () => {})</script></body></html>'
+    respond(deck)
+    const page = at_page()
+    await flush_promises()
+    const frame = page.get('iframe')
+    expect(frame.attributes('srcdoc')).toContain('<script>')
+    expect(frame.attributes('srcdoc')).toContain('/palette.css')
+    expect(page.find('section[itemprop="articleBody"]').exists()).toBe(false)
+    expect(page.find('nav[aria-label="Related"]').exists()).toBe(false)
   })
 
   it('shows a page whose article has no body section, as the session map has', async () => {

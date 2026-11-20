@@ -71,10 +71,43 @@ export const finds_page = (label, finds) =>
     .map(find => item_html('find', find, { links: ['url'] }))
     .join('')}`
 
+const CSV_COLUMNS = [
+  'found',
+  'score',
+  'org',
+  'title',
+  'reason',
+  'source',
+  'url',
+  'status'
+]
+
+/** @param {string} value */
+const csv_cell = (value = '') =>
+  /[",\n\r]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value
+
+/** The finds as a spreadsheet, best score first, then newest. */
+const finds_csv = finds =>
+  `${[
+    CSV_COLUMNS,
+    ...finds
+      .toReversed()
+      .toSorted((a, b) => Number(b.score) - Number(a.score))
+      .map(find => CSV_COLUMNS.map(column => find[column] ?? ''))
+  ]
+    .map(row => row.map(csv_cell).join(','))
+    .join('\r\n')}\r\n`
+
+/** @param {string} path @param {string} text */
+const write_whole = async (path, text) => {
+  const tmp = `${path}.tmp`
+  await write_file(tmp, text)
+  await rename(tmp, path)
+}
+
 /** Written whole, then moved into place, so a crash never leaves half a page. */
 export const save_finds = async (path, label, finds) => {
   await mkdir(dirname(path), { recursive: true })
-  const tmp = `${path}.tmp`
-  await write_file(tmp, finds_page(label, finds))
-  await rename(tmp, path)
+  await write_whole(path, finds_page(label, finds))
+  await write_whole(path.replace(/\.html$/, '.csv'), finds_csv(finds))
 }

@@ -168,3 +168,41 @@ describe('@/components/site-nav', () => {
     )
   })
 })
+
+describe('vault navigation', () => {
+  beforeEach(() => {
+    mock_current_user.value = null
+    mock_me.value = undefined
+  })
+
+  it('gives the vault its own links', () => {
+    mock_route.path = '/vault/docs'
+    const wrapper = mount()
+    const vault = wrapper.get('menu[data-vault]')
+    expect(vault.findAll('a').map(link => link.text())).toEqual([
+      'Vault',
+      'About',
+      'Docs'
+    ])
+    expect(vault.findAll('a').map(link => link.attributes('href'))).toEqual([
+      '/vault',
+      '/vault/about',
+      '/vault/docs'
+    ])
+    expect(wrapper.find('menu[data-primary]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('keeps the site links on a page outside the vault', () => {
+    mock_route.path = '/about'
+    const wrapper = mount()
+    expect(wrapper.find('menu[data-vault]').exists()).toBe(false)
+    expect(
+      wrapper
+        .get('menu[data-primary]')
+        .findAll('a')
+        .map(link => link.text())
+    ).toEqual(['About', 'Docs'])
+    wrapper.unmount()
+  })
+})

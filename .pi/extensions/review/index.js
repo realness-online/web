@@ -1,11 +1,11 @@
 /**
  * Review Extension
  *
- * `/review` branches the session back before its first message, so a fresh
- * reviewer judges the change without the producer's reasoning. Targets: this
- * session's changes, all uncommitted changes, a commit, or a branch.
- * `/end-review` returns to where you were, with or without a summary of the
- * findings.
+ * `/soundness code` branches the session back before its first message, so a
+ * fresh reviewer judges the change without the producer's reasoning. Targets:
+ * this session's changes, all uncommitted changes, a commit, or a branch.
+ * `/soundness done` returns to where you were, with or without a summary of the
+ * findings. Plain `/soundness` runs the skill.
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
 /** @typedef {import('./prompts.js').ReviewTarget} ReviewTarget */
@@ -18,7 +18,7 @@ const root = resolve(import.meta.dirname, '../../..')
 /** @param {any} ctx */
 const show_widget = ctx => {
   const active = review_origin(ctx.sessionManager.getBranch())
-  ctx.ui.setWidget('review', active ? ['Review branch - /end-review to return'] : undefined)
+  ctx.ui.setWidget('review', active ? ['Review branch - /soundness done to return'] : undefined)
 }
 
 /** @param {ExtensionAPI} pi */
@@ -58,47 +58,56 @@ export default pi => {
     }
   }
 
-  pi.registerCommand('review', {
-    description: 'Review a change in a fresh branch: /review [session | uncommitted | commit <sha> | branch <name>]',
-    handler: async (args, ctx) => {
-      if (review_origin(ctx.sessionManager.getBranch()))
-        return ctx.ui.notify('Already reviewing. /end-review first.', 'warning')
-      await ctx.waitForIdle()
-      const target = await choose_target(ctx, args)
-      if (!target) return
+  /**
+   * @param {string} args
+   * @param {any} ctx
+   */
+  const start_review = async (args, ctx) => {
+    if (review_origin(ctx.sessionManager.getBranch()))
+      return ctx.ui.notify('Already reviewing. /soundness done first.', 'warning')
+    await ctx.waitForIdle()
+    const target = await choose_target(ctx, args)
+    if (!target) return
 
-      if (!ctx.sessionManager.getLeafId()) pi.appendEntry('review-anchor', {})
-      const origin = ctx.sessionManager.getLeafId()
-      const first = ctx.sessionManager
-        .getEntries()
-        .find((/** @type {any} */ entry) => entry.type === 'message' && entry.message.role === 'user')
-      if (first) {
-        const moved = await ctx.navigateTree(first.id, { summarize: false, label: 'code-review' })
-        if (moved.cancelled) return
-        ctx.ui.setEditorText('')
-      }
-      pi.appendEntry('review-session', { origin })
-      show_widget(ctx)
-      pi.sendUserMessage(review_prompt(target))
-    }
-  })
-
-  pi.registerCommand('end-review', {
-    description: 'Leave the review branch and return to the work',
-    handler: async (_args, ctx) => {
-      const origin = review_origin(ctx.sessionManager.getBranch())
-      if (!origin) return ctx.ui.notify('Not in a review branch', 'info')
-      await ctx.waitForIdle()
-      const choice = await ctx.ui.select('Finish review', ['Return and summarize', 'Return only'])
-      if (!choice) return
-      const summarize = choice === 'Return and summarize'
-      const moved = await ctx.navigateTree(
-        origin,
-        summarize ? { summarize, customInstructions: summary_prompt, replaceInstructions: true } : { summarize }
-      )
+    if (!ctx.sessionManager.getLeafId()) pi.appendEntry('review-anchor', {})
+    const origin = ctx.sessionManager.getLeafId()
+    const first = ctx.sessionManager
+      .getEntries()
+      .find((/** @type {any} */ entry) => entry.type === 'message' && entry.message.role === 'user')
+    if (first) {
+      const moved = await ctx.navigateTree(first.id, { summarize: false, label: 'code-review' })
       if (moved.cancelled) return
-      if (summarize && !ctx.ui.getEditorText().trim()) ctx.ui.setEditorText('Act on the review findings')
-      show_widget(ctx)
+      ctx.ui.setEditorText('')
+    }
+    pi.appendEntry('review-session', { origin })
+    show_widget(ctx)
+    pi.sendUserMessage(review_prompt(target))
+  }
+
+  /** @param {any} ctx */
+  const end_review = async ctx => {
+    const origin = review_origin(ctx.sessionManager.getBranch())
+    if (!origin) return ctx.ui.notify('Not in a review branch', 'info')
+    await ctx.waitForIdle()
+    const choice = await ctx.ui.select('Finish review', ['Return and summarize', 'Return only'])
+    if (!choice) return
+    const summarize = choice === 'Return and summarize'
+    const moved = await ctx.navigateTree(
+      origin,
+      summarize ? { summarize, customInstructions: summary_prompt, replaceInstructions: true } : { summarize }
+    )
+    if (moved.cancelled) return
+    if (summarize && !ctx.ui.getEditorText().trim()) ctx.ui.setEditorText('Act on the review findings')
+    show_widget(ctx)
+  }
+
+  pi.registerCommand('soundness', {
+    description: 'Is this good? /soundness [code <session | uncommitted | commit <sha> | branch <name>> | done]',
+    handler: async (args, ctx) => {
+      const [mode = '', ...rest] = args.trim().split(/\s+/)
+      if (mode === 'code') return start_review(rest.join(' '), ctx)
+      if (mode === 'done') return end_review(ctx)
+      pi.sendUserMessage(`/skill:soundness${args.trim() ? ` ${args.trim()}` : ''}`, { expandPromptTemplates: true })
     }
   })
 

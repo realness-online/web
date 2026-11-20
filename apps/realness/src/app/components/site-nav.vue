@@ -54,7 +54,27 @@
     itemtype="https://schema.org/SiteNavigationElement"
     aria-label="Site">
     <as-chat-toggle v-if="current_user" />
-    <menu v-if="!is_home" data-primary>
+    <menu v-if="!is_home && vault_current" data-vault>
+      <router-link
+        to="/vault"
+        replace
+        :aria-current="route.path === '/vault' ? 'page' : undefined"
+        >Vault</router-link
+      >
+      <router-link
+        to="/vault/about"
+        replace
+        :aria-current="route.path === '/vault/about' ? 'page' : undefined"
+        >About</router-link
+      >
+      <router-link
+        to="/vault/docs"
+        replace
+        :aria-current="route.path === '/vault/docs' ? 'page' : undefined"
+        >Docs</router-link
+      >
+    </menu>
+    <menu v-else-if="!is_home" data-primary>
       <router-link to="/about" replace>About</router-link>
       <router-link to="/docs" replace>Docs</router-link>
     </menu>
@@ -65,10 +85,7 @@
       @toggle="more_open = $event.target.open">
       <summary aria-label="More">...</summary>
       <menu>
-        <router-link
-          to="/vault"
-          replace
-          :aria-current="vault_current ? 'page' : undefined"
+        <router-link v-if="!vault_current" to="/vault" replace
           >Vault</router-link
         >
         <router-link

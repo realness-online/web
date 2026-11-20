@@ -34,7 +34,8 @@ export const steps = {
     { name: 'lint-functions', area: 'realness', run: 'npm --prefix apps/realness run check:functions' },
     { name: 'type', area: 'realness', run: 'npm --prefix apps/realness run type' },
     { name: 'type-backend', area: 'realness', run: 'npm --prefix apps/realness run type:backend' },
-    { name: 'dead-code', area: 'realness', run: 'npm --prefix apps/realness run dead-code' }
+    { name: 'dead-code', area: 'realness', run: 'npm --prefix apps/realness run dead-code' },
+    { name: 'layouts', area: 'realness', run: 'npm --prefix apps/realness run check:layouts' }
   ],
   test: [{ name: 'coverage', area: 'repo', run: 'node .pi/bin/checks/coverage.js' }],
   live: [

@@ -224,3 +224,59 @@ it('a root that does not exist yet is quiet and successful', t => {
   assert.equal(result.status, 0, result.stderr)
   assert.match(result.stdout, /would prune 0 item\(s\), freed 0 bytes/)
 })
+
+const age = (path, days) => {
+  const when = new Date(Date.now() - days * 86_400_000)
+  utimesSync(path, when, when)
+}
+
+it('a top-level folder untouched for a week goes whole; a recent one stays', t => {
+  const dir = scratch('stale')
+  t.after(() => rmSync(dir, { recursive: true, force: true }))
+  mkdirSync(join(dir, 'old-build/deep'), { recursive: true })
+  writeFileSync(join(dir, 'old-build/deep/a.txt'), 'a')
+  for (const path of ['old-build/deep/a.txt', 'old-build/deep', 'old-build']) age(join(dir, path), 8)
+  mkdirSync(join(dir, 'busy'))
+  writeFileSync(join(dir, 'busy/b.txt'), 'b')
+  age(join(dir, 'busy'), 8)
+
+  const result = prune({ ARTIFACTS_ROOT: dir })
+  assert.equal(result.status, 0, result.stderr)
+  assert.ok(!existsSync(join(dir, 'old-build')), 'stale folder goes')
+  assert.ok(existsSync(join(dir, 'busy/b.txt')), 'a folder with one recent file stays')
+})
+
+it('a .keep folder is never pruned, even stale or over the cap', t => {
+  const dir = scratch('keep')
+  t.after(() => rmSync(dir, { recursive: true, force: true }))
+  mkdirSync(join(dir, 'sounds/originals'), { recursive: true })
+  writeFileSync(join(dir, 'sounds/originals/.keep'), '')
+  const path = join(dir, 'sounds/originals/kick.snd')
+  writeFileSync(path, '')
+  truncateSync(path, 2_000_000)
+  for (const p of ['sounds/originals/kick.snd', 'sounds/originals/.keep', 'sounds/originals', 'sounds'])
+    age(join(dir, p), 30)
+
+  const result = spawnSync(process.execPath, [script, '--apply', '--quiet', '--cap-mb', '1'], {
+    env: { ...process.env, ARTIFACTS_ROOT: dir },
+    encoding: 'utf8'
+  })
+  assert.equal(result.status, 0, result.stderr)
+  assert.ok(existsSync(path), 'kept')
+  assert.match(result.stdout, /warning: .*biggest: sounds 2 MB/)
+})
+
+it('known leftovers go: bash output logs, bundles, compile caches', t => {
+  const dir = scratch('leftover')
+  t.after(() => rmSync(dir, { recursive: true, force: true }))
+  mkdirSync(join(dir, 'pi/node-compile-cache/v1'), { recursive: true })
+  writeFileSync(join(dir, 'pi/pi-bash-abc.log'), 'out')
+  writeFileSync(join(dir, 'pi/bundle.tar.gz'), 'gz')
+  writeFileSync(join(dir, 'pi/notes.log'), 'mine')
+
+  prune({ ARTIFACTS_ROOT: dir })
+  assert.ok(!existsSync(join(dir, 'pi/pi-bash-abc.log')))
+  assert.ok(!existsSync(join(dir, 'pi/bundle.tar.gz')))
+  assert.ok(!existsSync(join(dir, 'pi/node-compile-cache')))
+  assert.ok(existsSync(join(dir, 'pi/notes.log')), 'other logs stay')
+})

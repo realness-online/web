@@ -87,6 +87,39 @@ it('a halo run hands the source to the box and writes nothing itself', async () 
   await rm(root, { recursive: true })
 })
 
+it('a box runs the model its caller recommends', async () => {
+  const { store, commands } = fake_box()
+  await run_scout_box({
+    store,
+    actor: 'a-1',
+    scout: 'Scouts/SMS',
+    source: 'news',
+    model: 'realness/standard'
+  })
+  assert.deepEqual(commands[0].argv, [
+    '/usr/local/bin/realness-scouts',
+    'Scouts/SMS',
+    '--source',
+    'news',
+    '--model',
+    'realness/standard'
+  ])
+})
+
+it('a model that is not one word is refused before the box runs', async () => {
+  const { store, commands } = fake_box()
+  await assert.rejects(
+    run_scout_box({
+      store,
+      actor: 'a-1',
+      scout: 'Scouts/SMS',
+      model: 'realness/standard --source other'
+    }),
+    /not a model name/
+  )
+  assert.deepEqual(commands, [])
+})
+
 it('a box run that fails reports its exit code and last line', async () => {
   const { store } = fake_box({ code: 1, said: 'not ready: no model' })
   const result = await run_scout_box({

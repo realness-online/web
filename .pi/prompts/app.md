@@ -1,6 +1,6 @@
 ---
-description: Start an app from the microdata example and add a type
-argument-hint: '[folder] [type]'
+description: Start or change a microdata app, then publish it
+argument-hint: '[folder] [what to change]'
 ---
 
 From the harness root, start an app in `${1:-apps/app}` from the app example,
@@ -10,7 +10,8 @@ unless that folder already exists:
     mkdir -p ${1:-apps/app} && tar -C "$from" -cf - --exclude=node_modules --exclude=dist --exclude=.cache . | tar -C ${1:-apps/app} -xf -
     cd ${1:-apps/app} && npm install
 
-Then add `${2:-a type}`.
+Then make this change: ${@:2}. If no change is given, ask for one. A new
+kind of record is a new type; add it as below.
 
 Four axes carry it:
 

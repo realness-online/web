@@ -35,6 +35,49 @@ const read_or_throw = (path, what) =>
   })
 
 /**
+ * Save a run's leads into its plan: new finds join the finds page, repeats
+ * drop, and the lead note and the plan's digest are written. Call it inside
+ * the plan's lock.
+ * @param {{ scout_vault: string, label: string, date: string, source?: string, leads: object[], problems: { item: number, problem: string }[], person: string, now: number, seen?: number }} options
+ */
+export const keep_leads = async ({
+  scout_vault,
+  label,
+  date,
+  source = '',
+  leads,
+  problems,
+  person,
+  now,
+  seen
+}) => {
+  const page_path = finds_path(scout_vault)
+  const finds = await load_finds(page_path)
+  const split = split_fresh(finds, leads)
+  const path = report_path(scout_vault, date, source)
+  await mkdir(dirname(path), { recursive: true })
+  await write_file(
+    path,
+    report_note({
+      label,
+      date,
+      found: leads.length,
+      fresh: split.fresh,
+      repeats: split.repeats,
+      problems,
+      seen: seen ?? finds.length
+    })
+  )
+  await save_finds(
+    page_path,
+    label,
+    with_finds(finds, split.fresh, { person, now })
+  )
+  await save_digest(join(scout_vault, 'index.md'), { date, leads })
+  return split
+}
+
+/**
  * One scout run: read the profile and the finds page, hand pi the brief, read
  * back its finds, write the dated report note, then add the fresh finds to the
  * page. The page moves only after the report is written, so a failed run
@@ -97,7 +140,7 @@ export const run_scout = async ({
   const run_id = source ? `${now}-${source}` : String(now)
   const stamp = `${date}-${run_id}`
   const run_dir = run_folder(scout_vault, stamp)
-  const { brief, page_path, seen, one, allowed } = await staged(
+  const { brief, seen, one, allowed } = await staged(
     'brief',
     'work',
     async () => {
@@ -123,7 +166,6 @@ export const run_scout = async ({
         profile,
         sources,
         source: one,
-        seen,
         nodes: scout_nodes(scout_vault, join(vault_dir, 'Projects')),
         run_dir: join(actor_vault, relative(vault_dir, run_dir)),
         vault_dir: actor_vault,
@@ -189,35 +231,23 @@ export const run_scout = async ({
       problem: `pi exited ${code} after writing its leads`
     })
   if (dead) problems.push({ item: 0, problem: dead })
-  const plan_page = join(scout_vault, 'index.md')
   const path = report_path(scout_vault, date, run.source)
   const write_lock = open('lock', 'wait')
   const { fresh, repeats } = await with_lock(scout_vault, async () => {
     close(write_lock)
-    const split = await staged('write', 'work', async () => {
-      const finds = await load_finds(page_path)
-      const split = split_fresh(finds, leads)
-      await mkdir(dirname(path), { recursive: true })
-      await write_file(
-        path,
-        report_note({
-          label,
-          date,
-          found: leads.length,
-          fresh: split.fresh,
-          repeats: split.repeats,
-          problems,
-          seen: seen.length
-        })
-      )
-      await save_finds(
-        page_path,
+    const split = await staged('write', 'work', () =>
+      keep_leads({
+        scout_vault,
         label,
-        with_finds(finds, split.fresh, { person, now })
-      )
-      await save_digest(plan_page, { date, leads })
-      return split
-    })
+        date,
+        source: run.source,
+        leads,
+        problems,
+        person,
+        now,
+        seen: seen.length
+      })
+    )
     await save_runs(
       runs,
       label,

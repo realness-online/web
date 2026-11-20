@@ -24,6 +24,7 @@ const allowed_fields = new Set([
   'allowed-tools',
   'argument-hint',
   'disable-model-invocation',
+  'hidden',
   'user-invocable',
   'model',
   'context',

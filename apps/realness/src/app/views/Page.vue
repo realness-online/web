@@ -1,17 +1,23 @@
 <template>
-  <header aria-label="Page">
-    <nav aria-label="Related">
-      <router-link to="/vault">Vault</router-link>
-      <router-link to="/vault/tools">Tools</router-link>
-    </nav>
-  </header>
-  <p v-if="error" role="status">{{ error }}</p>
-  <p v-else-if="loading" role="status">Loading</p>
-  <PageArticle
-    v-else
-    :html="html"
-    :itemtype="itemtype"
-    :label="headline || 'Tool page'" />
+  <iframe
+    v-if="own_document"
+    :srcdoc="own_document"
+    :title="headline || 'Page'" />
+  <template v-else>
+    <header aria-label="Page">
+      <nav aria-label="Related">
+        <router-link to="/vault">Vault</router-link>
+        <router-link to="/vault/tools">Tools</router-link>
+      </nav>
+    </header>
+    <p v-if="error" role="status">{{ error }}</p>
+    <p v-else-if="loading" role="status">Loading</p>
+    <PageArticle
+      v-else
+      :html="html"
+      :itemtype="itemtype"
+      :label="headline || 'Tool page'" />
+  </template>
 </template>
 
 <script setup>
@@ -26,6 +32,7 @@
 
   const NOT_FOUND = 404
   const html = ref('')
+  const own_document = ref('')
   const itemtype = ref('https://schema.org/TechArticle')
   const headline = ref('')
   const sheets = []
@@ -45,6 +52,7 @@
   const load = async () => {
     const path = page_path()
     html.value = ''
+    own_document.value = ''
     error.value = ''
     if (!path) {
       error.value = 'No page in the link.'
@@ -73,6 +81,11 @@
         page
           .querySelector('[itemprop="headline"], [itemprop="name"]')
           ?.textContent?.trim() ?? ''
+      if (/<script[\s>]/i.test(text)) {
+        apply_styles([])
+        own_document.value = text
+        return
+      }
       html.value = body_of(page)
       apply_styles(await styles_of(text, path))
     } finally {
@@ -160,6 +173,14 @@
 </script>
 
 <style lang="stylus">
+  iframe {
+    position: fixed;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+  }
+
   header[aria-label='Page'] {
     display: flex;
     align-items: baseline;

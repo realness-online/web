@@ -1,7 +1,4 @@
 <header>
-  <hgroup>
-    <h1><a href="/">Your Name</a></h1>
-    <p>What you do</p>
-  </hgroup>
+  <p><a href="/" rel="home">Your Name</a><small>What you do</small></p>
   <template src="/partials/nav.fragment"></template>
 </header>

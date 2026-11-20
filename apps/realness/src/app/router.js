@@ -119,9 +119,28 @@ const routes = [
     })
   },
   {
-    path: '/vault',
+    path: '/vault/about',
+    component: () => import('@/views/VaultAbout'),
+    meta: { note: true }
+  },
+  {
+    path: '/vault/docs',
+    component: () => import('@/views/VaultDocs'),
+    meta: { note: true }
+  },
+  {
+    path: '/vault/:itemid(\\+.*)',
     component: () => import('@/views/Vault'),
     meta: { note: true }
+  },
+  {
+    path: '/vault',
+    component: () => import('@/views/Vault'),
+    meta: { note: true },
+    beforeEnter: to =>
+      to.hash.startsWith('#/+')
+        ? { path: `/vault${decodeURIComponent(to.hash.slice(1))}`, hash: '' }
+        : true
   },
   {
     path: '/sign-on',

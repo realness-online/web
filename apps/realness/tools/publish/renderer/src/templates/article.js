@@ -19,11 +19,17 @@ export const related_nav = (links, current) => {
   return `<nav aria-label="Related"><ul>${items.join('')}</ul></nav>`
 }
 
-/** The owner's phone from an itemid like /+14155551234/pages/1, shown, not hidden. */
-const byline = itemid => {
+/**
+ * The owner's phone from an itemid like /+14155551234/pages/1, shown, not
+ * hidden, with the name the note gives when it gives one.
+ */
+const byline = (itemid, author) => {
   const phone = /^\/(\+[1-9]\d{6,14})\//.exec(itemid ?? '')?.[1]
   if (!phone) return ''
-  return `<address itemprop="author" itemscope itemtype="http://schema.org/Person"><a itemprop="telephone" href="tel:${phone}">${phone}</a></address>`
+  const name = author
+    ? `<span itemprop="name">${escape_html(author)}</span>`
+    : ''
+  return `<address itemprop="author" itemscope itemtype="http://schema.org/Person">${name}<a itemprop="telephone" href="tel:${phone}">${phone}</a></address>`
 }
 
 export const article_body =
@@ -33,5 +39,5 @@ export const article_body =
       ${related}
       ${poster(data, title, 'h1', null, { close_href: back })}
       <section itemprop="articleBody">${html}${notes}</section>
-      ${byline(data.itemid)}
+      ${byline(data.itemid, data.author)}
     </article>`

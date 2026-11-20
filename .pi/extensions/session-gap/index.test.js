@@ -2,6 +2,10 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import gap, { GAP_MS, gap_note, idle_ms } from './index.js'
 
+test('the gap ends when the one-hour cache ends', () => {
+  assert.equal(GAP_MS, 60 * 60 * 1000)
+})
+
 const at = minutes => new Date(Date.UTC(2026, 9, 7, 12, minutes)).toISOString()
 const user = (text, minutes) => ({ type: 'message', timestamp: at(minutes), message: { role: 'user', content: text } })
 const reply = (text, minutes) => ({

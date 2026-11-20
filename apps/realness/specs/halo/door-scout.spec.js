@@ -137,6 +137,54 @@ it("a scout runs in the owner's box with the command the Mac runs", async () => 
   }
 })
 
+it('a caller tells the box which model its task wants', async () => {
+  const root = mkdtempSync(out_path('door-model-'))
+  const vault = join(root, 'vault')
+  add_scout(vault, 'Realness', 'active')
+  const { door, record, commands } = door_of({ root, vault })
+  const { reply, close } = await send_of(door, record, {
+    op: 'scout',
+    scout: 'Realness',
+    source: 'boards',
+    model: 'realness/standard'
+  })
+  try {
+    assert.equal(reply.model, 'realness/standard')
+    assert.ok(await settle(door), 'the run ends')
+    assert.deepEqual(commands[0].argv, [
+      '/usr/local/bin/realness-scouts',
+      'Scouts/Realness',
+      '--source',
+      'boards',
+      '--model',
+      'realness/standard'
+    ])
+  } finally {
+    await close()
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+it('a model name that is not one word never reaches the box', async () => {
+  const root = mkdtempSync(out_path('door-model-bad-'))
+  const vault = join(root, 'vault')
+  add_scout(vault, 'Realness', 'active')
+  const { door, record, commands } = door_of({ root, vault })
+  const { close } = await send_of(door, record, {
+    op: 'scout',
+    scout: 'Realness',
+    source: 'boards',
+    model: 'realness/standard --source other'
+  })
+  try {
+    assert.ok(await settle(door), 'the run ends')
+    assert.deepEqual(commands, [], 'no box command ran')
+  } finally {
+    await close()
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
 it('the halo leaves the run folder and the leads note to the box', async () => {
   const root = mkdtempSync(out_path('door-merge-'))
   const vault = join(root, 'vault')

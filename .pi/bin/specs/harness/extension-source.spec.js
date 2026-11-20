@@ -33,8 +33,7 @@ it('installed Pi loads the JavaScript extensions and their registrations', async
   const commands = loaded.extensions.flatMap(extension => [...extension.commands.keys()])
   assert.ok(tools.includes('remember'))
   assert.ok(tools.includes('project_tooling'))
-  for (const name of ['remember', 'ptooling', 'prewalk', 'insert', 'files', 'review', 'end-review'])
-    assert.ok(commands.includes(name), name)
+  for (const name of ['remember', 'ptooling', 'prewalk', 'files', 'soundness']) assert.ok(commands.includes(name), name)
   for (const extension of loaded.extensions)
     assert.ok(extension.handlers.size || extension.tools.size || extension.commands.size)
   const tooling = loaded.extensions

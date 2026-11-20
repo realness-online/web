@@ -81,6 +81,12 @@ subskill: itemtype `/tutor/subskill`, itemid `/tutor/<topic-slug>/<subskill-slug
 with `name`, `level`, `target`, `checked` (ISO date), and `notes`
 (misconceptions and what was covered). Never use JSON.
 
+Save every graded answer as its own article in the same page: itemtype
+`/tutor/check`, itemid `/tutor/<topic-slug>/<check-slug>`, with `question`,
+`answer` (Scott's words), `verdict` (right, partly, wrong), `subskill`, and
+`checked`. These checks are labels: they show where an explanation failed to
+transfer, and the tinker plans train from them.
+
 ## Completion
 
 The course ends when every subskill reaches the target: 4 by default, 5 if the

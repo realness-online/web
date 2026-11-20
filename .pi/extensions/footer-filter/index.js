@@ -57,6 +57,15 @@ export const usage_label = text => {
   return { text: `${window} ${percent}%`, level: percent >= 90 ? 'warning' : 'dim' }
 }
 
+/** Weekly usage from Anthropic response headers, e.g. "wk 42%"; null without the header. */
+export const week_label = headers => {
+  const value = headers?.['anthropic-ratelimit-unified-7d-utilization']
+  if (value === undefined || value === '') return null
+  const percent = Math.round(Number(value) * 100)
+  if (!Number.isFinite(percent)) return null
+  return { text: `wk ${percent}%`, level: percent >= 90 ? 'warning' : 'dim' }
+}
+
 /** Token count as 950, 24k, or 1.0M. */
 export const tokens = count =>
   count >= 1_000_000
@@ -105,10 +114,10 @@ export const branch_level = porcelain => (porcelain === null ? 'dim' : porcelain
 
 /**
  * What the footer shows, as plain values a terminal or a browser can draw.
- * @param {{ entries: any[], model: any, thinking: string, registry: any, context: any, statuses: Map<string, string>, branch: string | null, porcelain: string | null }} source
+ * @param {{ entries: any[], model: any, thinking: string, registry: any, context: any, statuses: Map<string, string>, branch: string | null, porcelain: string | null, week?: { text: string, level: string } | null }} source
  * @returns {{ plan: string, branch: string | null, branch_level: string, parts: Array<{ text: string, level: string }> }}
  */
-export const footer_parts = ({ entries, model, thinking, registry, context, statuses, branch, porcelain }) => ({
+export const footer_parts = ({ entries, model, thinking, registry, context, statuses, branch, porcelain, week }) => ({
   plan: statuses.get(PLAN_KEY) ?? '',
   branch: branch ?? null,
   branch_level: branch_level(porcelain),
@@ -116,7 +125,7 @@ export const footer_parts = ({ entries, model, thinking, registry, context, stat
     { text: model_label(entries, model, thinking), level: 'dim' },
     { text: billing_label(registry, model), level: 'dim' },
     context_label(context),
-    usage_label(statuses.get(USAGE_KEY))
+    usage_label(statuses.get(USAGE_KEY)) ?? (model?.provider === 'anthropic' ? week : null)
   ].filter(Boolean)
 })
 
@@ -148,6 +157,13 @@ export default pi => {
   pi.on('thinking_level_select', () => redraw())
   let porcelain = null
   let told = ''
+  let week = null
+  pi.on('after_provider_response', event => {
+    const next = week_label(event.headers)
+    if (!next) return
+    week = next
+    redraw()
+  })
   const refresh = async ctx => {
     porcelain = await git_status(ctx.sessionManager.getCwd())
     redraw()
@@ -175,7 +191,8 @@ export default pi => {
             context: ctx.getContextUsage(),
             statuses,
             branch: provider.getGitBranch(),
-            porcelain
+            porcelain,
+            week
           })
           const next = JSON.stringify(shown)
           if (next !== told) {
@@ -183,7 +200,7 @@ export default pi => {
             pi.events.emit(FOOTER_EVENT, shown)
           }
           const line = fit(place_label(shown.plan, shown.branch), shown.parts, width)
-          const left = paint_place(line.left, shown, theme.fg)
+          const left = paint_place(line.left, shown, (level, text) => theme.fg(level, text))
           const right = line.right.map(paint).join('  ')
           const lines = [left + line.gap + right]
           const others = [...statuses]

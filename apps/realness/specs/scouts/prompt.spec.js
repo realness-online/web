@@ -25,7 +25,7 @@ Search again only on \`https://news.google.com/rss/search?q=<words>\`.
 
 it('a public source reads with no --site and no placeholder in the command', () => {
   const brief = brief_for(NEWS)
-  assert.match(brief, /Run `realness-read --brief <url>`/)
+  assert.match(brief, /Run `realness-read <url>`/)
   assert.doesNotMatch(brief, /--site <site>/)
   assert.doesNotMatch(brief, /--site news/)
 })
@@ -62,4 +62,18 @@ it('a login source keeps its own site slug', () => {
 
 it('the brief tells the agent the reader is ready', () => {
   assert.match(brief_for(NEWS), /`realness-read` is installed and ready/)
+})
+
+it('the brief puts the finds write before the summary', () => {
+  const brief = scout_prompt({
+    label: 'realness-leads',
+    profile: 'p',
+    sources: NEWS,
+    source: { title: 'Calls', text: NEWS },
+    nodes: [],
+    run_dir: '/run',
+    vault_dir: '/vault',
+    folder: 'f'
+  })
+  assert.match(brief, /After you write it, finish with a short summary/)
 })

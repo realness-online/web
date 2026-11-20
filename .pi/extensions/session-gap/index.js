@@ -6,8 +6,8 @@
  * and every turn sends fewer tokens. `/gap-new` does the same by hand.
  */
 
-/** Idle time that starts a new session. */
-export const GAP_MS = 2 * 60 * 60 * 1000
+/** Idle time that starts a new session: the life of Anthropic's long cache. */
+export const GAP_MS = 60 * 60 * 1000
 const CLIP = 400
 
 const clip = text => (text.length > CLIP ? `${text.slice(0, CLIP)}…` : text)
@@ -80,6 +80,7 @@ export default function (pi) {
 
   pi.registerCommand('gap-new', {
     description: 'Start a new session that points back to this one',
+    hidden: true,
     handler: async (_args, ctx) => {
       const message = held
       held = null

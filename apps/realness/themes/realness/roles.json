@@ -78,7 +78,7 @@
     "surface-glass": "basalt-transparent",
     "contrast": "chalk",
     "code-surface": { "mix": ["document-text", 8, "transparent"] },
-    "muted-text": { "mix": ["graphite", 70, "chalk"], "materials": true },
+    "muted-text": { "mix": ["graphite", 35, "chalk"], "materials": true },
     "success-tint": { "tint": "water-fill" },
     "error-tint": { "tint": "clay-fill" },
     "warning-tint": { "tint": "ochre" }

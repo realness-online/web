@@ -32,7 +32,17 @@ const MS_PER_DAY = 86_400_000
 const CHEAP = /deepseek|luna|flash|haiku|mini/i
 const ARTICLE = /<article[^>]*itemscope[^>]*itemtype="\/(sessions|prewalk)\/[a-z_]+"[\s\S]*?<\/article>/g
 const USAGE = /<div itemprop="usage"[^>]*>([\s\S]*?)<div itemprop="cost"/
+const TOOL_CALL = /itemprop="name">(\w+)<\/span><div itemprop="arguments"/g
 const COST = /<div itemprop="cost"[^>]*>([\s\S]*?)<\/div>/
+
+/**
+ * A turn that read little but wrote the cache rewrote what it had cached.
+ * @param {number} read
+ * @param {number} write
+ * @param {number} fresh
+ * @returns {boolean}
+ */
+export const cold_cache = (read, write, fresh) => write > fresh && read < write / 4
 
 /** @param {string} html @param {string} name */
 const value = (html, name) => {
@@ -49,7 +59,8 @@ const numbers = html => {
 /**
  * Every turn a session page records.
  * @param {string} html
- * @returns {{ at: string, provider: string, model: string, input: number, output: number, cache_read: number, cache_write: number, cost: number }[]}
+ * A turn is cold when it wrote the conversation again instead of reading the cache.
+ * @returns {{ at: string, provider: string, model: string, input: number, output: number, cache_read: number, cache_write: number, cost: number, cost_write: number, tools: string[], batched: number, cold: boolean }[]}
  */
 export const turns_from = html =>
   [...html.matchAll(ARTICLE)]
@@ -67,9 +78,23 @@ export const turns_from = html =>
         output: usage.output ?? 0,
         cache_read: usage.cacheRead ?? 0,
         cache_write: usage.cacheWrite ?? 0,
-        cost: Object.values(cost).reduce((sum, part) => sum + part, 0)
+        cost: Object.values(cost).reduce((sum, part) => sum + part, 0),
+        cost_write: cost.cacheWrite ?? 0,
+        tools: [...article.matchAll(TOOL_CALL)].map(([, name]) => name),
+        batched: batched_of(article),
+        cold: cold_cache(usage.cacheRead ?? 0, usage.cacheWrite ?? 0, (usage.input ?? 0) + (usage.output ?? 0))
       }
     })
+
+/**
+ * Tool calls one codemode turn ran, which one turn would have taken otherwise.
+ * @param {string} article
+ * @returns {number}
+ */
+const batched_of = article => {
+  const code = article.match(/itemprop="code">([\s\S]*?)<\/pre>/)?.[1] ?? ''
+  return [...code.matchAll(/tools\.\w+\(/g)].length
+}
 
 /** @param {string} model */
 export const tier_of = model => (CHEAP.test(model) ? 'cheap' : 'frontier')

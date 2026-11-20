@@ -1,6 +1,7 @@
 ---
+hidden: true
 name: chat-parts
-description: Answer in Realness chat with parts - a mermaid diagram or a cardlink card - when a picture or a link card explains better than prose. Use when replying to someone in chat and the answer is a flow, sequence, hierarchy, or comparison of steps, or when it points to one web page worth opening. Plain text stays the default.
+description: Answer in Realness chat with parts - a mermaid diagram or a cardlink card - when a picture or a link card explains better than prose. Use when asked to "draw this", "show me a diagram", or "make a card for this link". Plain text stays the default.
 metadata:
   check: 'node ../../bin/checks/check-skills.js chat-parts'
 ---

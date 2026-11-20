@@ -10,7 +10,7 @@
 export const skill_names = commands => {
   const taken = new Set(commands.filter(command => command.source !== 'skill').map(command => command.name))
   return commands
-    .filter(command => command.source === 'skill' && command.name.startsWith('skill:'))
+    .filter(command => command.source === 'skill' && command.name.startsWith('skill:') && !command.hidden)
     .map(command => command.name.slice('skill:'.length))
     .filter(name => !taken.has(name))
 }

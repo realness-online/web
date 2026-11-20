@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
-import { existsSync } from 'node:fs'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { existsSync as exists_sync } from 'node:fs'
+import {
+  mkdir,
+  mkdtemp,
+  readFile as read_file,
+  rm,
+  writeFile as write_file
+} from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { it } from 'node:test'
@@ -18,7 +24,7 @@ const SCOUTS = 'vault/Projects/Scouts'
 const plan = async (root, name, fields = {}) => {
   const folder = join(root, SCOUTS, name)
   await mkdir(folder, { recursive: true })
-  await writeFile(
+  await write_file(
     join(folder, 'scout.html'),
     scout_page(name, {
       itemid: `/+1/scouts/${name}`,
@@ -37,15 +43,15 @@ const scratch = async () => {
   const root = await mkdtemp(join(tmpdir(), 'scout-run-'))
   await plan(root, 'Realness')
   await plan(root, 'SMS')
-  await writeFile(join(root, SCOUTS, 'Realness/Profile.md'), '# profile\n')
-  await writeFile(join(root, SCOUTS, 'Realness/Sources.md'), '# sources\n')
+  await write_file(join(root, SCOUTS, 'Realness/Profile.md'), '# profile\n')
+  await write_file(join(root, SCOUTS, 'Realness/Sources.md'), '# sources\n')
   return root
 }
 
 /** A pi that answers with the leads given, as a run would write them. */
 const pi_writing = leads => async (brief, run_dir) => {
   assert.match(brief, /# The profile/)
-  await writeFile(
+  await write_file(
     join(run_dir, 'finds.html'),
     leads.map(lead => item_html('find', lead, { links: ['url'] })).join('')
   )
@@ -61,8 +67,8 @@ it('a scout in a plan inside a plan is found by its page alone', async () => {
     minutes: 5,
     per_day: 2
   })
-  await writeFile(join(nested, 'Profile.md'), '# bedroom profile\n')
-  await writeFile(join(nested, 'Sources.md'), '# bedroom sources\n')
+  await write_file(join(nested, 'Profile.md'), '# bedroom profile\n')
+  await write_file(join(nested, 'Sources.md'), '# bedroom sources\n')
   const result = await run_scout({
     scout: 'Scouts/Bedroom/Realness',
     vault_dir: join(root, 'vault'),
@@ -82,8 +88,8 @@ it('a scout in a plan inside a plan is found by its page alone', async () => {
 
 it('a run has no clock: pi gets the brief, its folder, and the stages to time', async () => {
   const root = await scratch()
-  await writeFile(join(root, SCOUTS, 'SMS/Profile.md'), '# sms\n')
-  await writeFile(
+  await write_file(join(root, SCOUTS, 'SMS/Profile.md'), '# sms\n')
+  await write_file(
     join(root, SCOUTS, 'SMS/Sources.md'),
     '# sms\n\nhttps://sms.test/board\n'
   )
@@ -105,8 +111,8 @@ it('a run has no clock: pi gets the brief, its folder, and the stages to time', 
 it('a paused scout does not run', async () => {
   const root = await scratch()
   await plan(root, 'SMS', { status: 'paused' })
-  await writeFile(join(root, SCOUTS, 'SMS/Profile.md'), '# sms\n')
-  await writeFile(join(root, SCOUTS, 'SMS/Sources.md'), '# sms\n')
+  await write_file(join(root, SCOUTS, 'SMS/Profile.md'), '# sms\n')
+  await write_file(join(root, SCOUTS, 'SMS/Sources.md'), '# sms\n')
   let spawned = false
   await assert.rejects(
     run_scout({
@@ -126,12 +132,12 @@ it('a paused scout does not run', async () => {
 
 /** The finds page as the next run reads it. */
 const finds_of = async root =>
-  read_items(await readFile(join(root, FINDS), 'utf8'), 'find')
+  read_items(await read_file(join(root, FINDS), 'utf8'), 'find')
 
 /** A page already holding one find. */
 const seed = (root, url) =>
   mkdir(dirname(join(root, FINDS)), { recursive: true }).then(() =>
-    writeFile(
+    write_file(
       join(root, FINDS),
       item_html('find', { itemid: '/+1/finds/1', url, status: 'passed' })
     )
@@ -157,10 +163,10 @@ it('a run writes the dated note, its run folder, and the finds on the page', asy
     date: '2026-11-05',
     spawn_pi: pi_writing([lead('https://vuejobs.com/jobs/acme', 8)])
   })
-  const note = await readFile(result.path, 'utf8')
+  const note = await read_file(result.path, 'utf8')
   assert.match(note, /## 8\.0 - Acme/)
   const runs = read_items(
-    await readFile(
+    await read_file(
       join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html'),
       'utf8'
     ),
@@ -178,7 +184,7 @@ it('a run writes the dated note, its run folder, and the finds on the page', asy
       '2026-11-05-' + runs[0].itemid.split('/').at(-1)
     )
   )
-  assert.equal(existsSync(join(result.run_dir, 'goal.md')), true)
+  assert.equal(exists_sync(join(result.run_dir, 'goal.md')), true)
   const finds = await finds_of(root)
   assert.deepEqual(
     finds.map(find => [
@@ -194,17 +200,23 @@ it('a run writes the dated note, its run folder, and the finds on the page', asy
 
 it('the second run reports the same lead as already seen', async () => {
   const root = await scratch()
+  const briefs = []
+  const writing = pi_writing([lead('https://vuejobs.com/jobs/acme', 8)])
   const options = {
     scout: 'realness',
     vault_dir: join(root, 'vault'),
     person: '/+1',
-    spawn_pi: pi_writing([lead('https://vuejobs.com/jobs/acme', 8)])
+    spawn_pi: (brief, run_dir) => {
+      briefs.push(brief)
+      return writing(brief, run_dir)
+    }
   }
   await run_scout({ ...options, date: '2026-11-05' })
   const second = await run_scout({ ...options, date: '2026-11-06' })
+  assert.doesNotMatch(briefs[1], /vuejobs\.com\/jobs\/acme/)
   assert.equal(second.fresh.length, 0)
   assert.equal(second.repeats.length, 1)
-  assert.match(await readFile(second.path, 'utf8'), /## Already seen/)
+  assert.match(await read_file(second.path, 'utf8'), /## Already seen/)
   assert.equal((await finds_of(root)).length, 1)
   await rm(root, { recursive: true })
 })
@@ -212,7 +224,7 @@ it('the second run reports the same lead as already seen', async () => {
 it('a run writes its day into the plan digest, and the page keeps the older days', async () => {
   const root = await scratch()
   const index = join(root, SCOUTS, 'Realness/index.md')
-  await writeFile(
+  await write_file(
     index,
     '# Realness\n\n### Finds\n\n<details>\n<summary><strong>Nov 7</strong> <span>1 lead</span></summary>\n<table>\n<tbody>\n<tr><td>9</td><td><a href="https://example.com/old">Old</a></td><td>old reason</td></tr>\n</tbody>\n</table>\n</details>\n'
   )
@@ -223,7 +235,7 @@ it('a run writes its day into the plan digest, and the page keeps the older days
     date: '2026-11-08',
     spawn_pi: pi_writing([lead('https://vuejobs.com/jobs/acme', 8)])
   })
-  const markdown = await readFile(index, 'utf8')
+  const markdown = await read_file(index, 'utf8')
   assert.match(
     markdown,
     /<summary><strong>Nov 8<\/strong> <span>1 lead<\/span><\/summary>/
@@ -248,7 +260,7 @@ it('a plan with no digest section still runs', async () => {
 
 it('a source still being decided stops the run before pi starts', async () => {
   const root = await scratch()
-  await writeFile(
+  await write_file(
     join(root, SCOUTS, 'Realness/Sources.md'),
     '# Sources\n\n## 1. Words\n\nRead things.\n'
   )
@@ -272,7 +284,7 @@ it('a source still being decided stops the run before pi starts', async () => {
 
 it('a source that names no page gets a brief that says so', async () => {
   const root = await scratch()
-  await writeFile(
+  await write_file(
     join(root, SCOUTS, 'Realness/Sources.md'),
     '# Sources\n\n## 1. Audit\n\nRun `npm audit --json`.\n'
   )
@@ -300,7 +312,7 @@ it('a run that writes an empty page is a problem, not a silent zero', async () =
     person: '/+1',
     date: '2026-11-05',
     spawn_pi: async (_brief, run_dir) => {
-      await writeFile(
+      await write_file(
         join(run_dir, 'finds.html'),
         '<section itemscope itemtype="/finds"></section>\n'
       )
@@ -326,7 +338,7 @@ it('a run that writes no finds is reported, and the page keeps what it had', asy
   assert.deepEqual(result.problems, [
     { item: 0, problem: 'the run wrote no finds.html' }
   ])
-  assert.match(await readFile(result.path, 'utf8'), /No new leads\./)
+  assert.match(await read_file(result.path, 'utf8'), /No new leads\./)
   assert.deepEqual(await finds_of(root), [
     { itemid: '/+1/finds/1', url: 'https://example.com/old', status: 'passed' }
   ])
@@ -348,7 +360,7 @@ https://vuejobs.com/jobs
 
 it('a run reads one source, and its row names it', async () => {
   const root = await scratch()
-  await writeFile(join(root, SCOUTS, 'Realness/Sources.md'), SOURCES)
+  await write_file(join(root, SCOUTS, 'Realness/Sources.md'), SOURCES)
   let brief = ''
   const result = await run_scout({
     scout: 'realness',
@@ -365,12 +377,12 @@ it('a run reads one source, and its row names it', async () => {
   assert.doesNotMatch(brief, /workatastartup/)
   assert.match(
     brief,
-    /Run `realness-read --brief <url>` on each\s+page below[\s\S]*- https:\/\/vuejobs\.com\/jobs/,
+    /Run `realness-read <url>` on each\s+page below[\s\S]*- https:\/\/vuejobs\.com\/jobs/,
     'the brief names the URL to read'
   )
   assert.match(brief, /Read only the pages above\. Any other page ends the run/)
   const runs = read_items(
-    await readFile(
+    await read_file(
       join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html'),
       'utf8'
     ),
@@ -384,7 +396,7 @@ it('a run reads one source, and its row names it', async () => {
 
 it('a run is given its source URLs, and no other page is its own', async () => {
   const root = await scratch()
-  await writeFile(join(root, SCOUTS, 'Realness/Sources.md'), SOURCES)
+  await write_file(join(root, SCOUTS, 'Realness/Sources.md'), SOURCES)
   let allowed = []
   await run_scout({
     scout: 'realness',
@@ -402,9 +414,9 @@ it('a run is given its source URLs, and no other page is its own', async () => {
 
 it('two source runs the same day both keep their leads in the digest', async () => {
   const root = await scratch()
-  await writeFile(join(root, SCOUTS, 'Realness/Sources.md'), SOURCES)
+  await write_file(join(root, SCOUTS, 'Realness/Sources.md'), SOURCES)
   const index = join(root, SCOUTS, 'Realness/index.md')
-  await writeFile(
+  await write_file(
     index,
     '# Realness\n\n### Finds\n\n<small>Dimmed: scored below 6.</small>\n'
   )
@@ -426,7 +438,7 @@ it('two source runs the same day both keep their leads in the digest', async () 
       { ...lead('https://example.com/globex', 7), org: 'Globex' }
     ])
   })
-  const markdown = await readFile(index, 'utf8')
+  const markdown = await read_file(index, 'utf8')
   assert.match(markdown, /example\.com\/acme/)
   assert.match(markdown, /example\.com\/globex/)
   assert.equal((markdown.match(/<strong>Nov 5<\/strong>/g) ?? []).length, 1)
@@ -459,7 +471,7 @@ it('runs that finish at once each keep their row and their find', async () => {
     'https://example.com/4'
   ])
   const runs = read_items(
-    await readFile(
+    await read_file(
       join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html'),
       'utf8'
     ),
@@ -479,7 +491,7 @@ it('a run is on its page from the moment pi starts, so nothing chains a second',
     person: '/+1',
     date: '2026-11-05',
     spawn_pi: async () => {
-      during = read_items(await readFile(page, 'utf8'), 'run')
+      during = read_items(await read_file(page, 'utf8'), 'run')
     }
   })
   assert.equal(during.length, 1)
@@ -493,7 +505,7 @@ it('a run is on its page from the moment pi starts, so nothing chains a second',
     }),
     false
   )
-  const after = read_items(await readFile(page, 'utf8'), 'run')
+  const after = read_items(await read_file(page, 'utf8'), 'run')
   assert.equal(after.length, 1)
   assert.notEqual(after[0].ended, '')
   await rm(root, { recursive: true })
@@ -511,9 +523,9 @@ it('a run times each stage and shows what it waited on', async () => {
     date: '2026-11-05',
     clock: () => (at += 1000),
     spawn_pi: async (brief, run_dir) => {
-      during = read_items(await readFile(page, 'utf8'), 'run')
+      during = read_items(await read_file(page, 'utf8'), 'run')
       at += 60000
-      await writeFile(
+      await write_file(
         join(run_dir, 'finds.html'),
         item_html('find', lead('https://example.com/a', 8), { links: ['url'] })
       )
@@ -521,7 +533,7 @@ it('a run times each stage and shows what it waited on', async () => {
   })
   assert.equal(during.length, 1)
   assert.match(during[0].stage, /^pi work since \d{4}-/)
-  const [run] = read_items(await readFile(page, 'utf8'), 'run')
+  const [run] = read_items(await read_file(page, 'utf8'), 'run')
   assert.match(run.stages, /brief work \d{4}-/)
   assert.match(run.stages, /lock wait \d{4}-/)
   assert.match(run.stages, /pi work \d{4}-/)
@@ -550,13 +562,13 @@ it('a run splits pi into read, lease, and score by what pi recorded', async () =
         { at: Date.parse(at(11)), tool: 'realness-chrome' }
       ])
         await append_item(join(run_dir, STAGES_PAGE), 'stage', record)
-      await writeFile(
+      await write_file(
         join(run_dir, 'finds.html'),
         item_html('find', lead('https://example.com/a', 8), { links: ['url'] })
       )
     }
   })
-  const [run] = read_items(await readFile(page, 'utf8'), 'run')
+  const [run] = read_items(await read_file(page, 'utf8'), 'run')
   assert.doesNotMatch(run.stages, /pi work/)
   assert.match(run.stages, /score work \d{4}-/)
   assert.match(run.stages, /read work \d{4}-/)
@@ -606,7 +618,7 @@ it('a failed run keeps its row and its reason', async () => {
     /the run failed: pi exited 1/
   )
   const runs = read_items(
-    await readFile(
+    await read_file(
       join(root, 'vault/Projects/Scouts/Realness/Runs/runs.html'),
       'utf8'
     ),
@@ -660,10 +672,10 @@ it('a scout with no profile stops before pi starts', async () => {
   await rm(root, { recursive: true })
 })
 
-it('the brief carries the profile, the sources, the open nodes, and the leads to skip', async () => {
+it('the brief carries the profile, the sources, and the open nodes, without the seen list', async () => {
   const root = await scratch()
   await seed(root, 'https://example.com/old')
-  await writeFile(
+  await write_file(
     join(root, SCOUTS, 'index.md'),
     '# Scouts\n\n## Nodes\n\n| id | goal | effort |\n| -- | ---- | ------ |\n| c4 | draft outreach | medium |\n'
   )
@@ -679,7 +691,7 @@ it('the brief carries the profile, the sources, the open nodes, and the leads to
   })
   assert.match(brief, /# profile/)
   assert.match(brief, /# sources/)
-  assert.match(brief, /example\.com\/old/)
+  assert.doesNotMatch(brief, /example\.com\/old/)
   assert.match(brief, /c4: draft outreach/)
   assert.match(brief, /Projects\/Scouts\/Realness\/Runs\/\S+\/finds\.html/)
   assert.match(brief, /This source names no page/)
@@ -696,7 +708,7 @@ it('a run directory keeps its own brief, beside the leads', async () => {
     date: '2026-11-05',
     spawn_pi: pi_writing([lead('https://vuejobs.com/jobs/acme', 8)])
   })
-  const brief = await readFile(join(result.run_dir, 'goal.md'), 'utf8')
+  const brief = await read_file(join(result.run_dir, 'goal.md'), 'utf8')
   assert.equal(dirname(join(result.run_dir, 'goal.md')), result.run_dir)
   assert.match(brief, /You are the Realness scout/)
   await rm(root, { recursive: true })
@@ -717,8 +729,8 @@ it('a dry run returns the brief and writes nothing to the vault', async () => {
   })
   assert.match(result.brief, /You are the Realness scout/)
   assert.equal(spawned, false)
-  assert.equal(existsSync(join(root, SCOUTS, 'Realness/Runs')), false)
-  assert.equal(existsSync(join(root, SCOUTS, 'Realness/Leads')), false)
-  assert.equal(existsSync(join(root, FINDS)), false)
+  assert.equal(exists_sync(join(root, SCOUTS, 'Realness/Runs')), false)
+  assert.equal(exists_sync(join(root, SCOUTS, 'Realness/Leads')), false)
+  assert.equal(exists_sync(join(root, FINDS)), false)
   await rm(root, { recursive: true })
 })

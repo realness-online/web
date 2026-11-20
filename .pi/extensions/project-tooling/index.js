@@ -164,6 +164,7 @@ const projectToolingExtension = pi => {
   pi.registerCommand('ptooling', {
     description:
       'Show tooling for a work/ or apps/ project (scripts, scripts/, tools/, .tooling.md). Usage: /ptooling [project|all]. With no argument, clears.',
+    hidden: true,
     handler: async (args, ctx) => {
       const want = (args || '').trim()
       if (!want) {

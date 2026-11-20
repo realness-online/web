@@ -1,6 +1,7 @@
 ---
+hidden: true
 name: logo-finder
-description: Find and install brand SVG logos via SVGL (https://svgl.app/) and Wikimedia Commons fallbacks into any project's static asset folder. Use for company logos, integration rows, social proof, or refreshing a brands directory.
+description: Find and install brand SVG logos via SVGL (https://svgl.app/) and Wikimedia Commons fallbacks into any project's static asset folder. Use when asked to "add the logos", "find this logo", or "build a trust row".
 metadata:
   check: 'bash -n scripts/logo.sh && command -v curl'
 ---

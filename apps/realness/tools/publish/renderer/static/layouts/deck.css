@@ -1,0 +1,43 @@
+body {
+  overflow: hidden;
+}
+
+.deck-position {
+  position: fixed;
+  inset-block-end: var(--base-line);
+  inset-inline-end: var(--base-line);
+  margin: 0;
+  color: var(--contrast);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+}
+
+article[itemtype$='/BlogPosting'] {
+  block-size: 100dvh;
+  display: grid;
+  align-content: center;
+  padding: var(--base-line);
+
+  > header,
+  > figure,
+  > address,
+  > nav {
+    display: none;
+  }
+
+  > section[itemprop='articleBody'] {
+    max-inline-size: var(--wide);
+
+    > [data-slide] {
+      display: none;
+
+      &[data-current] {
+        display: block;
+      }
+    }
+
+    > hr {
+      display: none;
+    }
+  }
+}

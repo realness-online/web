@@ -1,6 +1,7 @@
 ---
+hidden: true
 name: realness-read
-description: Read web pages as compact markdown instead of raw HTML or full browser snapshots. Use when you need to read, research, summarize, or quote content from a URL, compare several pages, or check docs online. A Common Crawl copy is read first, then the site itself; agent-browser or Firecrawl renders the page only when it needs JavaScript. Not for clicking, filling forms, or logging in - use agent-browser for those.
+description: Read web pages as compact markdown instead of raw HTML or full browser snapshots. Use when asked to "read this page", "summarize this link", or "compare these pages". A Common Crawl copy is read first, then the site itself; agent-browser or Firecrawl renders the page only when it needs JavaScript. Not for clicking, filling forms, or logging in - use agent-browser for those.
 metadata:
   check: '{ realness-read || ../../bin/web/realness-read; } 2>&1 | grep -q usage'
 ---

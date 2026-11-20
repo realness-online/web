@@ -1,11 +1,10 @@
 /**
  * Artifacts Prune Extension
  *
- * Pruning happens at check-in: `.pi/bin/hooks/post-commit` runs
- * `.pi/bin/harness/artifacts-prune.js --apply` after each commit. Build outputs
- * live under `artifacts/` too, so nothing is deleted mid-session. Once a run
- * settles, this only says when `artifacts/` is over its cap, so the next commit
- * is expected to free space.
+ * Pruning runs on two events: a session starting, and
+ * `.pi/bin/hooks/post-commit` after each commit. Both run
+ * `.pi/bin/harness/artifacts-prune.js --apply`. Once a run settles, this says
+ * when `artifacts/` is over its cap.
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
 import { execFile } from 'node:child_process'
@@ -45,6 +44,15 @@ export const read_report = stdout => {
 
 export default /** @param {ExtensionAPI} pi */ pi => {
   let told = false
+  pi.on('session_start', async (_event, ctx) => {
+    const root = findHarnessRoot(ctx.cwd)
+    if (!root) return
+    const script = join(root, '.pi/bin/harness/artifacts-prune.js')
+    if (!existsSync(script)) return
+    try {
+      await run(process.execPath, [script, '--apply', '--quiet'], { cwd: root, timeout: 60_000 })
+    } catch {}
+  })
   pi.on('agent_settled', async (_event, ctx) => {
     if (told || !ctx.hasUI) return
     const root = findHarnessRoot(ctx.cwd)
@@ -57,7 +65,7 @@ export default /** @param {ExtensionAPI} pi */ pi => {
       if (!items && !warning) return
       told = true
       ctx.ui.notify(
-        `${warning ?? 'artifacts/ is over its cap'}; the next commit prunes ${items} file(s), ${(bytes / 1_048_576).toFixed(1)} MiB`,
+        `${warning ?? 'artifacts/ is over its cap'}; next session prunes ${items} file(s), ${(bytes / 1_048_576).toFixed(1)} MiB`,
         'warning'
       )
     } catch {}

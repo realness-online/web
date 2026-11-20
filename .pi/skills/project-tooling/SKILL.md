@@ -1,6 +1,7 @@
 ---
+hidden: true
 name: project-tooling
-description: Check a work project's existing scripts and ops helpers before editing, diagnosing, testing, building, or deploying it. Read the project's package.json scripts and scripts/ and tools/ dirs so you use the project's own tooling instead of guessing or reinventing. Use when about to work in apps/realness, work/seeq-app, apps/realness/tools/ops, work/decision-ontology, or any project under work/, or when the user reports a build/test/deploy/log problem in one of these projects.
+description: Check a work project's existing scripts and ops helpers before editing, diagnosing, testing, building, or deploying it. Read the project's package.json scripts and scripts/ and tools/ dirs so you use the project's own tooling instead of guessing or reinventing. Use when asked to "what scripts does this project have", or before work in any project under work/, or on a build, test, deploy, or log problem there.
 metadata:
   check: 'node scripts/find-scripts.js realness-skill-check > /dev/null'
   category: Tooling

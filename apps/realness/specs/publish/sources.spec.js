@@ -198,6 +198,48 @@ it('h5: a Realness poster may sit in several files; none is a copy, and from pin
   }
 })
 
+it('a promoted plan page and its files survive the plan moving to the archive', async () => {
+  const plan = '/+15550001111/plans/1794355291621'
+  const page = `${plan}/presentation.html`
+  const frame = `${plan}/setup.html`
+  const vault = await vault_at('promote', {
+    'Projects/deck/presentation.html': `<html itemid="${page}"></html>\n`,
+    'Projects/deck/setup.html': `<html itemid="${frame}"></html>\n`
+  })
+  try {
+    await write_app(join(vault, 'apps', 'blog'), {
+      id: 'a-0123456789ab',
+      type: 'blog',
+      vault: '../..',
+      sources: [],
+      assets: [],
+      pages: [
+        {
+          id: page,
+          path: 'presentation.html',
+          files: [{ id: frame, path: 'setup.html' }]
+        }
+      ]
+    })
+    await mkdir(join(vault, 'Archive/Projects'), { recursive: true })
+    await rename(
+      join(vault, 'Projects/deck'),
+      join(vault, 'Archive/Projects/deck')
+    )
+    const { pages } = await app_sources(join(vault, 'apps', 'blog'))
+    assert.equal(
+      pages[0].file.endsWith('Archive/Projects/deck/presentation.html'),
+      true
+    )
+    assert.equal(
+      pages[0].files[0].file.endsWith('Archive/Projects/deck/setup.html'),
+      true
+    )
+  } finally {
+    await rm(vault, { recursive: true, force: true })
+  }
+})
+
 it('h4: a --- rule in a note without frontmatter is body, not frontmatter', async () => {
   const body =
     '# Plan\n\nIntro.\n\n---\n\nExploratory branch: `refactor`\n\n---\n\n## Approach\n'

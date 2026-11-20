@@ -184,5 +184,5 @@ export const reviewed = {
     'Keep',
     'Creates the accounts and secrets the deploys need.'
   ],
-  '.pi/skills/hyperframes/scripts/contrast-report.js': ['Keep', 'Hyperframes skill tool.']
+  '.pi/skills/promote/scripts/contrast-report.js': ['Keep', 'Promote skill tool.']
 }

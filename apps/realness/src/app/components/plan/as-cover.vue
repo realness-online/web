@@ -6,7 +6,9 @@
     <figure>
       <figcaption>
         <h3 itemprop="headline">
-          <a itemprop="url" :href="`/vault#${plan.itemid}`">{{ plan.title }}</a>
+          <router-link itemprop="url" :to="`/vault${plan.itemid}`">{{
+            plan.title
+          }}</router-link>
         </h3>
       </figcaption>
       <pre v-if="plan.diagram" class="mermaid">{{ plan.diagram }}</pre>

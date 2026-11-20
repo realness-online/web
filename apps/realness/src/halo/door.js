@@ -67,15 +67,30 @@ const owner_box = (door, owner) => {
 /**
  * Start one scout's run in the owner's box, without waiting for it; its log
  * line lands when the box's pi ends. The box reaches the model through the door,
- * so its rights and limits hold, and the read keeps the box's cookies.
+ * so its rights and limits hold, and the read keeps the box's cookies. The
+ * caller names the model the task wants; the box runs that one.
  */
-const start_scout = async ({ door, id, owner, vault, scout, source = '' }) => {
+const start_scout = async ({
+  door,
+  id,
+  owner,
+  vault,
+  scout,
+  source = '',
+  model = ''
+}) => {
   const key = `${scout}|${source}`
   door.scouting.add(key)
   const box = owner_box(door, owner)
   if (!box) throw new Error('no box to run scouts in')
   await door.store.ensure_running(box.id)
-  return run_scout_box({ store: door.store, actor: box.id, scout, source })
+  return run_scout_box({
+    store: door.store,
+    actor: box.id,
+    scout,
+    source,
+    model
+  })
     .then(
       ({ code, said }) =>
         code
@@ -206,8 +221,9 @@ const OPS = {
       if (page.status !== 'active')
         throw new Error(`${page.path} is ${page.status || 'missing a status'}`)
       const source = String(request.source ?? '')
-      start_scout({ door, id, owner, vault, scout: page.path, source })
-      return { ok: true, scout: page.path, source }
+      const model = String(request.model ?? '')
+      start_scout({ door, id, owner, vault, scout: page.path, source, model })
+      return { ok: true, scout: page.path, source, model }
     }
   },
   scouts: {

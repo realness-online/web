@@ -15,6 +15,15 @@ const { scrollBehavior } = router.options
 describe('@/router', () => {
   const route_for = path => router.options.routes.find(r => r.path === path)
 
+  it('opens a vault note at its own path, and moves an old # link there', async () => {
+    await router.push('/vault/+1555/plans/1')
+    expect(router.currentRoute.value.params.itemid).toBe('+1555/plans/1')
+    await router.push('/vault#/+1555/plans/2')
+    expect(router.currentRoute.value.fullPath).toBe('/vault/+1555/plans/2')
+    await router.push('/vault/about')
+    expect(router.currentRoute.value.params.itemid).toBeUndefined()
+  })
+
   it('makes /sign-on a page of its own', () => {
     expect(route_for('/sign-on').component).toBeTypeOf('function')
     expect(route_for('/sign-on').redirect).toBeUndefined()
@@ -143,5 +152,13 @@ describe('@/router', () => {
     const to = { path: '/about' }
     const position = await scrollBehavior(to, { path: '/docs' }, null)
     expect(position).toEqual({ top: 0 })
+  })
+})
+
+describe('vault routes', () => {
+  it('gives the vault its own About and Docs', () => {
+    const route_for = path => router.options.routes.find(r => r.path === path)
+    expect(route_for('/vault/about').component).toBeTypeOf('function')
+    expect(route_for('/vault/docs').component).toBeTypeOf('function')
   })
 })

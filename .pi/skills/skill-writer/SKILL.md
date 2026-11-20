@@ -1,4 +1,5 @@
 ---
+hidden: true
 name: skill-writer
 description: Create, synthesize, and iteratively improve agent skills following the Agent Skills specification. Use when asked to "create a skill", "write a skill", "synthesize sources into a skill", "improve a skill from positive/negative examples", "update a skill", "maintain skill docs and registration", "find a skill for X", or "is there a skill that can...". Handles source capture, depth gates, authoring, registration, and validation.
 metadata:

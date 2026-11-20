@@ -1,6 +1,7 @@
 ---
+hidden: true
 name: apple-mail
-description: Search and read Scott's local Apple Mail, and extract attachments. Query by sender, recipient, subject, body preview, date, mailbox, unread, flagged, or attachments. Read-only. Use when the user asks about an email, a message from someone, an invoice or attachment in mail, or what is in their inbox.
+description: Search and read Scott's local Apple Mail, and extract attachments. Query by sender, recipient, subject, body preview, date, mailbox, unread, flagged, or attachments. Read-only. Use when asked to "find that email", "what did they send me", or "check my inbox".
 metadata:
   check: 'bash -n apple-mail.sh'
 ---

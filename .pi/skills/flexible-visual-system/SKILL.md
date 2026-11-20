@@ -1,4 +1,5 @@
 ---
+hidden: true
 name: flexible-visual-system
 description:
   Derive a project's visual rules from its existing tokens, palette, type scale,

@@ -165,6 +165,12 @@ const carriers = async (vault, dir = '') => {
   return files
 }
 
+/** A file inside a plan, as `/+A/plans/<created>/<name>`. */
+const is_plan_file = id => {
+  const plan = id.slice(0, id.lastIndexOf('/'))
+  return is_itemid(plan) && as_type(plan) === 'plans'
+}
+
 /**
  * The vault's items: each itemid with the file that carries it. Two files with
  * one itemid are an original and its copy; the older file is the original.
@@ -176,7 +182,7 @@ export const scan_vault = async vault => {
   const found = new Map()
   for (const path of await carriers(vault)) {
     const id = carried_itemid(await head(join(vault, path)))
-    if (!id || !is_itemid(id)) continue
+    if (!id || !(is_itemid(id) || is_plan_file(id))) continue
     const born = (await stat(join(vault, path))).birthtimeMs
     found.set(id, [...(found.get(id) ?? []), { path, born }])
   }
@@ -331,19 +337,22 @@ export const app_sources = async app_dir => {
     reserve(selection.path)
     if (
       !selection.path.endsWith('.html') ||
-      !is_itemid(selection.id) ||
-      as_type(selection.id) !== 'pages'
+      !(
+        (is_itemid(selection.id) && as_type(selection.id) === 'pages') ||
+        is_plan_file(selection.id)
+      )
     )
       throw new Error('page selection needs an HTML path and page itemid')
-    const source = await located(selection.id, 'a page', selection.from)
+    const source = await located(selection.id, 'a page')
     if (!source.path.endsWith('.html'))
       throw new Error(`page is not HTML: ${source.path}`)
     reserve(`${selection.id.slice(1)}/index.html`)
     const files = []
     for (const file of selection.files ?? []) {
-      if (page_files.get(file.path) !== file.from) reserve(file.path)
-      page_files.set(file.path, file.from)
-      files.push({ ...file, file: await source_file(vault, file.from) })
+      const from = file.id ? (await located(file.id, 'a file')).path : file.from
+      if (page_files.get(file.path) !== from) reserve(file.path)
+      page_files.set(file.path, from)
+      files.push({ ...file, from, file: await source_file(vault, from) })
     }
     pages.push({ ...selection, file: source.file, files })
   }

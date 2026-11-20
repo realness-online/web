@@ -14,6 +14,8 @@ import {
   turns_from
 } from '../../prewalk/spend.js'
 
+import { cold_cache } from '../../prewalk/spend.js'
+
 const usage = ({ input = '2', output = '100', read = '4000', write = '1000' } = {}) =>
   `<div itemprop="usage" itemscope><data itemprop="input" value="${input}"></data><data itemprop="output" value="${output}"></data><data itemprop="cacheRead" value="${read}"></data><data itemprop="cacheWrite" value="${write}"></data><data itemprop="totalTokens" value="5102"></data><div itemprop="cost" itemscope><data itemprop="input" value="0.00001"></data><data itemprop="output" value="0.002"></data><data itemprop="cacheRead" value="0.0005"></data></div></div>`
 
@@ -29,6 +31,25 @@ test('a turn keeps its model, tokens, and cost', () => {
   assert.equal(one.cache_write, 1000)
   assert.equal(one.cost, 0.00251)
   assert.equal(one.at, '2026-11-08T10:00:00.000Z')
+})
+
+test('a turn that writes what it had cached is cold', () => {
+  assert.equal(cold_cache(0, 90_000, 2_000), true)
+  assert.equal(cold_cache(80_000, 2_000, 2_000), false)
+  assert.equal(cold_cache(0, 1_000, 2_000), false)
+})
+
+test('a turn lists the tools it called', () => {
+  const call = name => `<span itemprop="name">${name}</span><div itemprop="arguments" itemscope></div>`
+  const html = turn({ model: 'claude-opus-5-5' }).replace('</article>', `${call('codemode')}${call('read')}</article>`)
+  assert.deepEqual(turns_from(html)[0].tools, ['codemode', 'read'])
+})
+
+test('a codemode turn counts the tool calls it batched', () => {
+  const code = 'const [a, b] = await Promise.all([tools.read({ path: "a" }), tools.bash({ command: "ls" })])'
+  const call = `<span itemprop="name">codemode</span><div itemprop="arguments" itemscope><pre itemprop="code">${code}</pre></div>`
+  const html = turn({ model: 'claude-opus-5-5' }).replace('</article>', `${call}</article>`)
+  assert.equal(turns_from(html)[0].batched, 2)
 })
 
 test('a turn that is not a message is not counted', () => {

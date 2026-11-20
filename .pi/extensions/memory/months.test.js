@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { test } from 'node:test'
 import { indexSessions, recall, stats } from './index-db.js'
@@ -116,5 +116,22 @@ test('m0: a late session reseals its month', async () => {
     rows.map(row => row.turn_id),
     ['a-u', 'b-u']
   )
+  rmSync(root, { recursive: true, force: true })
+})
+
+test('m0: an unchanged sealed month is not read again', async () => {
+  const root = scratch()
+  const sessions = join(root, 'sessions')
+  session(sessions, '2026-09-02T00-00-00-000Z_a.jsonl', 'a', 'first anchor')
+  await indexSessions({ root: sessions, path: join(root, 'memory.db'), now })
+  const sealed = join(root, 'memory', 'turns', '2026-09.turns.html.gz')
+  utimesSync(sealed, now, now)
+  await indexSessions({ root: sessions, path: join(root, 'memory.db'), now })
+  const { size } = statSync(sealed)
+  const blank = Buffer.alloc(size, ' ')
+  writeFileSync(sealed, blank)
+  utimesSync(sealed, now, now)
+  await indexSessions({ root: sessions, path: join(root, 'memory.db'), now })
+  assert.deepEqual(readFileSync(sealed), blank)
   rmSync(root, { recursive: true, force: true })
 })

@@ -92,3 +92,26 @@ it('fresh finds join the page as new items; earlier finds keep their status', as
   )
   await rm(dir, { recursive: true })
 })
+
+it('the finds save beside their page as a CSV, best score first and quoted', async () => {
+  const dir = await scratch()
+  const path = join(dir, 'Finds/finds.html')
+  await save_finds(path, 'Realness', [
+    { found: '2026-11-05', score: '9', org: 'Old', url: 'https://a.com/1' },
+    {
+      found: '2026-11-06',
+      score: '8',
+      org: 'A, "B" & Co',
+      title: 'Line\nbreak',
+      url: 'https://b.com/2',
+      status: 'new'
+    }
+  ])
+  assert.equal(
+    await readFile(join(dir, 'Finds/finds.csv'), 'utf8'),
+    'found,score,org,title,reason,source,url,status\r\n' +
+      '2026-11-05,9,Old,,,,https://a.com/1,\r\n' +
+      '2026-11-06,8,"A, ""B"" & Co","Line\nbreak",,,https://b.com/2,new\r\n'
+  )
+  await rm(dir, { recursive: true })
+})

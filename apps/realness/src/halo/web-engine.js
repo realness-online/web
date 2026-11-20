@@ -103,6 +103,13 @@ export const is_private = address => {
   return is_ipv4(address) && PRIVATE.check(address, 'ipv4')
 }
 
+/**
+ * @param {string} host
+ * @param {string[]} own_hosts
+ */
+export const is_own_host = (host, own_hosts) =>
+  own_hosts.some(own => host === own || host.endsWith(`.${own}`))
+
 export const check_url = raw => {
   let url
   try {
@@ -123,6 +130,7 @@ export const safe_fetch = (
   {
     headers = {},
     allow_private = false,
+    own_hosts = /** @type {string[]} */ ([]),
     timeout = FETCH_TIMEOUT_MS,
     redirects = MAX_REDIRECTS
   } = {}
@@ -136,7 +144,10 @@ export const safe_fetch = (
       dns_lookup(host, { ...options, all: true }, (error, addresses) => {
         if (error) return callback(error, '', 0)
         const bad = addresses.find(
-          ({ address }) => !allow_private && is_private(address)
+          ({ address }) =>
+            !allow_private &&
+            !is_own_host(host, own_hosts) &&
+            is_private(address)
         )
         if (bad)
           return callback(
@@ -180,6 +191,7 @@ export const safe_fetch = (
           return safe_fetch(new URL(response.headers.location, url).href, {
             headers,
             allow_private,
+            own_hosts,
             timeout,
             redirects: redirects - 1
           }).then(done, fail)
@@ -414,6 +426,8 @@ export class WebEngine {
   common_crawl
   /** @type {boolean} */
   allow_private
+  /** @type {string[]} */
+  own_hosts
   /** @type {() => number} */
   now
   /** @type {{ default_hours?: number, default_stale_hours?: number, rules: { pattern: string, hours: number, kind: string, stale_hours?: number }[] }} */
@@ -432,6 +446,7 @@ export class WebEngine {
    * @param {{ index: string, data: string } | null} [options.common_crawl]
    *   where to look for a crawled copy before reading the site, or null to skip it
    * @param {boolean} [options.allow_private] tests only
+   * @param {string[]} [options.own_hosts] hosts, and their subdomains, read even at a private address
    * @param {() => number} [options.now]
    * @param {object} [options.times] the cache-time rules, read from disk by default
    */
@@ -441,6 +456,7 @@ export class WebEngine {
     firecrawl_key = null,
     common_crawl = null,
     allow_private = false,
+    own_hosts = /** @type {string[]} */ ([]),
     now = () => Date.now(),
     times = read_json(TIMES_FILE, { default_hours: DEFAULT_HOURS, rules: [] })
   }) {
@@ -450,6 +466,7 @@ export class WebEngine {
       firecrawl_key,
       common_crawl,
       allow_private,
+      own_hosts,
       now,
       times
     })
@@ -570,6 +587,7 @@ export class WebEngine {
     try {
       const reply = await safe_fetch(`${url.origin}/robots.txt`, {
         allow_private: this.allow_private,
+        own_hosts: this.own_hosts,
         timeout: 5000
       })
       if (reply.status === HTTP.OK) text = reply.body.slice(0, PAGE_LIMIT)
@@ -659,6 +677,7 @@ export class WebEngine {
         try {
           const check = await safe_fetch(url, {
             allow_private: this.allow_private,
+            own_hosts: this.own_hosts,
             headers: {
               ...(kept.headers.etag && { 'if-none-match': kept.headers.etag }),
               ...(kept.headers.last_modified && {
@@ -793,7 +812,8 @@ export class WebEngine {
     if (!got)
       try {
         const reply = await safe_fetch(url, {
-          allow_private: this.allow_private
+          allow_private: this.allow_private,
+          own_hosts: this.own_hosts
         })
         ;({ headers } = reply)
         if (GONE.has(reply.status)) gone = reply.status

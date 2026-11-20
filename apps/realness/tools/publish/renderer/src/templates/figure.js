@@ -35,6 +35,11 @@ export const poster =
     const close = options.close_href
       ? `<a class="back-link" href="${escape_html(options.close_href)}" aria-label="${escape_html(site.back_label || 'Back to articles')}">x</a>`
       : ''
+    if (!data.img && !pick)
+      return `<header>
+        <${heading} itemprop="headline">${headline}${data.draft ? ' <mark class="draft">draft</mark>' : ''}</${heading}>
+        ${data.date ? `<time itemprop="datePublished" datetime="${escape_html(data.date)}">${escape_html(format_date(data.date))}</time>` : ''}
+      </header>`
     return `<figure${figure_style}>
         ${data.img ? `<img src="/posters/${escape_html(data.img)}"${img_attrs} alt="" loading="lazy">` : ''}
         <figcaption>

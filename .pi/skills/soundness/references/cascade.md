@@ -31,7 +31,7 @@ realness's instance has exactly one holdout: `Pricing.vue` uses
 `<transition name="slide" mode="out-in">`, with its own style block commented
 `// Vue transition hooks (framework mechanic, not a styling selector)`. That
 comment is the tell - the author flagged it as the exception. Treat any new
-`<Transition>` usage the way `motion-systems` treats animation decisions: a
+`<Transition>` usage the way `page-motion` treats animation decisions: a
 deliberate, justified departure.
 
 ## Spacing lives in the cascade, not the leaf

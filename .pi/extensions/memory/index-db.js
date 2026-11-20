@@ -369,6 +369,7 @@ export const openIndex = (path = DB_PATH) => {
 			text TEXT NOT NULL
 		);
 		CREATE INDEX IF NOT EXISTS turn_by_project ON turn(project, ts);
+		CREATE INDEX IF NOT EXISTS turn_by_file ON turn(session_file);
 		CREATE VIRTUAL TABLE IF NOT EXISTS turn_fts USING fts5(
 			text,
 			content = 'turn',

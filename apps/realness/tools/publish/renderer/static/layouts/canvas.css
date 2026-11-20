@@ -1,0 +1,16 @@
+main {
+  padding: var(--base-line);
+}
+
+article[itemscope] {
+  > header,
+  > figure,
+  > nav,
+  > address {
+    display: none;
+  }
+
+  > section[itemprop='articleBody'] {
+    display: block;
+  }
+}

@@ -595,7 +595,8 @@ describe('chat with the real Durable browser bundle', () => {
     const pi = await import(/* @vite-ignore */ '/pi-durable.browser.js')
     await expect(
       other.commit(
-        [{ type: 'conversation', value: { id: 99 } }],
+        [[{ type: 'conversation', value: { id: 99 } }]],
+        () => {},
         pi.BACKGROUND_CONTEXT
       )
     ).rejects.toMatchObject({ name: 'OwnershipLostError' })
@@ -605,7 +606,8 @@ describe('chat with the real Durable browser bundle', () => {
     const pi = await import(/* @vite-ignore */ '/pi-durable.browser.js')
     const first = await open_log()
     await first.commit(
-      [{ type: 'conversation', value: { id: 7 } }],
+      [[{ type: 'conversation', value: { id: 7 } }]],
+      () => {},
       pi.BACKGROUND_CONTEXT
     )
     await first.close()
@@ -652,33 +654,36 @@ describe('chat with the real Durable browser bundle', () => {
     const reply_id = await other.mintId()
     await other.commit(
       [
-        {
-          type: 'entry',
-          value: {
-            id: user_id,
-            conversationId: 1,
-            kind: 'pi.user',
-            model: [
-              { role: 'user', content: 'From the other tab.', timestamp: 1 }
-            ]
+        [
+          {
+            type: 'entry',
+            value: {
+              id: user_id,
+              conversationId: 1,
+              kind: 'pi.user',
+              model: [
+                { role: 'user', content: 'From the other tab.', timestamp: 1 }
+              ]
+            }
+          },
+          {
+            type: 'entry',
+            value: {
+              id: reply_id,
+              conversationId: 1,
+              kind: 'pi.assistant',
+              model: [
+                {
+                  role: 'assistant',
+                  content: [{ type: 'text', text: 'Read from disk.' }],
+                  timestamp: 2
+                }
+              ]
+            }
           }
-        },
-        {
-          type: 'entry',
-          value: {
-            id: reply_id,
-            conversationId: 1,
-            kind: 'pi.assistant',
-            model: [
-              {
-                role: 'assistant',
-                content: [{ type: 'text', text: 'Read from disk.' }],
-                timestamp: 2
-              }
-            ]
-          }
-        }
+        ]
       ],
+      () => {},
       pi.BACKGROUND_CONTEXT
     )
     listener.postMessage({ committed: DATABASE })

@@ -117,6 +117,7 @@ export function bridge(pi, { socket_path, chat_prompt = null, handover_path = HA
   const renewing = []
   pi.registerCommand(NEW_SESSION_COMMAND, {
     description: 'Start a new session for the browser chat',
+    hidden: true,
     handler: async (_args, command_ctx) => {
       const waiting = renewing.splice(0)
       try {
@@ -140,6 +141,7 @@ export function bridge(pi, { socket_path, chat_prompt = null, handover_path = HA
   const transfers = []
   pi.registerCommand(HANDOVER_COMMAND, {
     description: 'Continue the browser conversation in terminal Pi',
+    hidden: true,
     handler: async (_args, command_ctx) => {
       const waiting = transfers.splice(0)
       if (!waiting.length) return

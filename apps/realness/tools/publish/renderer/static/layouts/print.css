@@ -1,0 +1,77 @@
+@page {
+  size: a4;
+  margin: 18mm;
+}
+
+body {
+  background: white;
+  color: black;
+}
+
+article[itemscope] {
+  max-inline-size: 7.5in;
+  padding-block: var(--base-line);
+  margin-inline: auto;
+
+  > nav,
+  > address {
+    display: none;
+  }
+
+  > figure {
+    display: block;
+    block-size: auto;
+    height: auto;
+
+    img {
+      display: none;
+    }
+
+    figcaption {
+      padding: 0;
+      background: none;
+
+      h1,
+      time,
+      .back-link {
+        color: black;
+        -webkit-text-fill-color: black;
+      }
+
+      .back-link {
+        display: none;
+      }
+    }
+  }
+
+  > section[itemprop='articleBody'] {
+    display: block;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    li,
+    a,
+    strong,
+    em,
+    mark,
+    figcaption {
+      color: black;
+      -webkit-text-fill-color: black;
+      background: none;
+    }
+
+    h2,
+    h3 {
+      break-after: avoid;
+    }
+
+    figure,
+    table,
+    pre {
+      break-inside: avoid;
+    }
+  }
+}

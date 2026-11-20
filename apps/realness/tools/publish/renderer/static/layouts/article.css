@@ -1,0 +1,25 @@
+article[itemtype$='/BlogPosting'] {
+  max-inline-size: var(--max-width);
+  margin-inline: auto;
+  padding-block: calc(var(--base-line) * 2);
+  padding-inline: var(--base-line);
+
+  > section[itemprop='articleBody'] {
+    max-inline-size: var(--measure);
+
+    img,
+    figure,
+    iframe {
+      max-inline-size: 100%;
+    }
+  }
+
+  > figure .back-link {
+    display: none;
+  }
+
+  > address {
+    padding-inline: 0;
+    margin-block-start: calc(var(--base-line) * 2);
+  }
+}

@@ -30,8 +30,8 @@ const seed = () => {
 const settle = ({ has_ui = true, answer = false } = {}) => {
   const asked = []
   const notes = []
-  let handler
-  extension({ on: (_name, fn) => (handler = fn) })
+  const handlers = {}
+  extension({ on: (name, fn) => (handlers[name] = fn) })
   const ctx = {
     cwd: harness,
     hasUI: has_ui,
@@ -40,7 +40,7 @@ const settle = ({ has_ui = true, answer = false } = {}) => {
       notify: (text, level) => notes.push({ text, level })
     }
   }
-  return { asked, notes, run: () => handler({}, ctx) }
+  return { asked, notes, run: () => handlers.agent_settled({}, ctx), start: () => handlers.session_start({}, ctx) }
 }
 
 process.env.ARTIFACTS_ROOT = root
@@ -65,14 +65,22 @@ test('without a UI nothing is said and nothing is removed', async () => {
   assert.ok(existsSync(stale))
 })
 
-test('over the cap it says the next commit prunes, once, and removes nothing', async () => {
+test('over the cap it says next session prunes, once, and removes nothing', async () => {
   seed()
   const { asked, notes, run } = settle()
   await run()
   await run()
   assert.equal(asked.length, 0)
   assert.equal(notes.length, 1)
-  assert.match(notes[0].text, /next commit prunes 1 file\(s\)/)
+  assert.match(notes[0].text, /next session prunes 1 file\(s\)/)
   assert.ok(existsSync(stale))
+  rmSync(root, { recursive: true, force: true })
+})
+
+test('session start prunes what a settled run only reported', async () => {
+  seed()
+  const { start } = settle()
+  await start()
+  assert.ok(!existsSync(stale))
   rmSync(root, { recursive: true, force: true })
 })

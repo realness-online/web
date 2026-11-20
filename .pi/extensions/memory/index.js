@@ -215,16 +215,9 @@ const memoryExtension = pi => {
       }
     }
   })
-  pi.on('session_start', async () => {
-    try {
-      await indexSessions({
-        path: DB_PATH
-      })
-      if (!IN_ACTOR) await indexVault({ path: DB_PATH })
-    } catch {}
-  })
   pi.registerCommand('remember', {
     description: 'Search past sessions. Usage: /remember <words>. Results post to the chat.',
+    hidden: true,
     handler: async (args, ctx) => {
       const query = (args || '').trim()
       if (!query) {

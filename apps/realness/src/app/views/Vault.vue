@@ -17,10 +17,13 @@
 
 <script setup>
   import {
+    computed,
     onMounted as on_mounted,
     onUnmounted as on_unmounted,
-    ref
+    ref,
+    watch
   } from 'vue'
+  import { useRoute as use_route } from 'vue-router'
   import NoteArticle from '@/components/note/as-article.vue'
   import Planning from '@/views/Planning.vue'
   import { settled_token } from '@/utils/settled-user'
@@ -37,27 +40,18 @@
   const error = ref('')
   const loading = ref(false)
 
-  const value_of_hash = () => {
-    try {
-      return decodeURIComponent(location.hash.slice(1))
-    } catch {
-      return ''
-    }
-  }
-
-  const note_wanted = ref(value_of_hash() !== '')
+  const route = use_route()
+  const itemid = computed(() =>
+    route.params.itemid ? `/${route.params.itemid}` : ''
+  )
+  const note_wanted = computed(() => itemid.value !== '')
 
   const load = async () => {
-    const value = value_of_hash()
-    note_wanted.value = value !== ''
+    const { value } = itemid
     html.value = ''
     related.value = []
     error.value = ''
-    if (!note_wanted.value) return
-    if (!value.startsWith('/')) {
-      error.value = 'That note is not here.'
-      return
-    }
+    if (!value) return
     loading.value = true
     try {
       const token = await settled_token()
@@ -87,17 +81,17 @@
 
   const token_for = settled_token
 
+  watch(itemid, load)
+
   let stop_watching = () => {}
 
   on_mounted(async () => {
     load()
-    addEventListener('hashchange', load)
     stop_watching = await watch_vault(changed => {
       if (note_path.value && changed.endsWith(`/${note_path.value}`)) load()
     }, token_for)
   })
   on_unmounted(() => {
-    removeEventListener('hashchange', load)
     stop_watching()
   })
 </script>

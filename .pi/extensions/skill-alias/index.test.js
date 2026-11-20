@@ -5,12 +5,13 @@ import register, { as_skill_command, skill_names } from './index.js'
 const commands = [
   { name: 'skill:planning', source: 'skill', description: 'Plan work as a graph' },
   { name: 'skill:critic', source: 'skill' },
-  { name: 'skill:memory', source: 'skill' },
+  { name: 'skill:memory', source: 'skill', hidden: true },
   { name: 'memory', source: 'extension' }
 ]
 
 test('skill names skip any a real command already holds', () => {
   assert.deepEqual(skill_names(commands), ['planning', 'critic'])
+  assert.ok(!skill_names(commands).includes('memory'), 'a hidden skill gets no short command')
 })
 
 test('a short skill command becomes the full one, arguments kept', () => {

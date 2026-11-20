@@ -49,17 +49,6 @@ const findLocalContextFile = cwd => {
   return existsSync(file) ? file : null
 }
 /**
- * @param {string} filePath
- * @returns {string}
- */
-const readLocalContext = filePath => {
-  try {
-    return readFileSync(filePath, 'utf-8').trim()
-  } catch {
-    return ''
-  }
-}
-/**
  * @param {string} content
  * @returns {Map<string, string>}
  */
@@ -179,83 +168,15 @@ ${syncBlock}\n`
   }
   writeFileSync(localPath, content, 'utf-8')
 }
-/** Splice personal context into README immediately before the last fenced block. */
-/**
- * @param {string} readme
- * @param {string} insert
- * @returns {string}
- */
-const insertBeforeLastCodeBlock = (readme, insert) => {
-  const fence = /^```/gm
-  let lastStart = -1
-  /** @type {RegExpExecArray | null} */
-  let match
-  while ((match = fence.exec(readme)) !== null) lastStart = match.index
-  if (lastStart === -1) return `${readme.trim()}\n\n${insert}\n`
-  return `${readme.slice(0, lastStart).trimEnd()}\n\n${insert}\n\n${readme.slice(lastStart)}`
-}
-/**
- * @param {string} harnessRoot
- * @param {string} localPath
- * @returns {string | null}
- */
-const buildReadmeWithLocal = (harnessRoot, localPath) => {
-  const readmePath = join(harnessRoot, 'README.md')
-  if (!existsSync(readmePath)) return null
-  const local = readLocalContext(localPath)
-  if (!local) return null
-  const readme = readFileSync(readmePath, 'utf-8')
-  const personal = ['## Personal Context', '', `From \`${LOCAL_FILENAME}\`:`, '', local].join('\n')
-  return insertBeforeLastCodeBlock(readme, personal)
-}
 /** @param {ExtensionAPI} pi */
 const agentsLocalExtension = pi => {
   /** @type {string | null} */
   let localFile = null
-  /** @type {string | null} */
-  let pendingInsert = null
   pi.on('resources_discover', async event => {
     localFile = findLocalContextFile(event.cwd)
     if (!localFile) return
     const harnessRoot = findHarnessRoot(event.cwd) ?? dirname(localFile)
     syncWorkSection(harnessRoot, localFile)
-  })
-  pi.registerCommand('insert', {
-    description: 'Splice AGENTS.md into README.md (before the last command block) for the next prompt',
-    handler: async (_args, ctx) => {
-      const harnessRoot = findHarnessRoot(ctx.cwd)
-      if (!harnessRoot) {
-        ctx.ui.notify('insert: harness root not found', 'error')
-        return
-      }
-      const localPath =
-        localFile ?? (existsSync(join(harnessRoot, LOCAL_FILENAME)) ? join(harnessRoot, LOCAL_FILENAME) : null)
-      if (!localPath) {
-        ctx.ui.notify(`insert: no ${LOCAL_FILENAME}`, 'error')
-        return
-      }
-      const combined = buildReadmeWithLocal(harnessRoot, localPath)
-      if (!combined) {
-        ctx.ui.notify('insert: README.md or personal context missing', 'error')
-        return
-      }
-      pendingInsert = combined
-      ctx.ui.notify('insert: README + AGENTS.md queued for next prompt', 'info')
-    }
-  })
-  pi.on('before_agent_start', async event => {
-    let systemPrompt = event.systemPrompt
-    if (pendingInsert) {
-      systemPrompt +=
-        `\n\n## README + Personal Context\n\n` +
-        `Loaded via /insert (AGENTS.md spliced into README before the last command block):\n\n` +
-        pendingInsert
-      pendingInsert = null
-    }
-    if (systemPrompt === event.systemPrompt) return
-    return {
-      systemPrompt
-    }
   })
 }
 export default agentsLocalExtension

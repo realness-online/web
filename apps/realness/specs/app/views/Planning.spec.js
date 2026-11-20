@@ -140,7 +140,7 @@ describe('@/views/Planning', () => {
     expect(covers[0].get('figure > pre.mermaid').text()).toBe('flowchart LR')
     expect(covers[0].get('[itemprop="headline"]').element.tagName).toBe('H3')
     expect(covers[0].get('[itemprop="url"]').attributes('href')).toBe(
-      '/vault#/+1555/plans/1'
+      '/vault/+1555/plans/1'
     )
     expect(covers[0].get('[itemprop="genre"]').text()).toBe('Realness')
     expect(covers[0].attributes('data-area')).toBe('Realness')

@@ -74,7 +74,7 @@ and verification. This skill owns work order and gates, not coding standards.
 
 ````
 ```mermaid
-flowchart LR
+flowchart TD
   a["a research angle"] --> b["b pick sources"]
   b --> d["d assemble"]
   c["c draft section 1"] --> d
@@ -143,7 +143,7 @@ row with `tr:has(del) { opacity: 0.45 }` and GitHub shows it crossed out.
 
 **Explanatory graphics** show how the parts fit. They sit under the work DAG.
 
-- Five to eight boxes. `flowchart LR`.
+- Five to eight boxes. `flowchart TD`: every diagram draws top-down.
 - No node ids in the visible label.
 - A bold name, then a short grey line: `n["**freeze**<br/><small>a snapshot</small>"]`.
 - One `focus` box: the thing the section is about.
@@ -275,6 +275,8 @@ Notes outweigh the nodes, the plan is carrying a second job or an archive.
   Code, a spec, or a sibling plan's job does not.
 - Gotchas: five, the ones that bite a run. Longer ones move to AGENTS.md
   Learnings.
+- Labels, boxes, and Notes say what a thing does in plain words; a code name
+  goes only in the grey second line.
 - Node goals read as outcomes, not mechanisms: "one live run finds YC leads",
   not "wire the probe into the door op".
 - No finished-work list and no where-the-work-sits map. Git holds both; the
@@ -300,7 +302,7 @@ own.
 - Prose explaining a command.
 
 Trim words on the way out of a session, not later. Say what you cut. See the
-`readable` skill for the sentence-level pass.
+prose pass in `soundness` for the sentence level.
 
 Read the plan top to bottom before Gate 1 and again after Gate 2: a reader with
 no context must say its purpose after the Summary. If they cannot, the Summary
@@ -318,7 +320,7 @@ Until then the frontier model works the nodes, which sets the pattern. After
 that, active nodes run cheap, in this session and in later ones, because the
 passing spec is read back from `artifacts/prewalk/escalations.html`. A failed
 spec, or an error from the cheap model, returns that node to the frontier
-model.
+model. So does Scott saying he is lost or confused, at once, mid-node.
 
 ### 5. Worker - execute
 
@@ -333,11 +335,11 @@ node that needs a design decision settles it at a gate before it goes active.
 Plain execution is the default. A node that iterates toward a measurable target
 runs as an autoresearch loop; there are no subagents.
 
-After each node, read the `critic` skill and verify before marking it done.
+After each node, read `soundness` (its critique part) and verify before marking it done.
 
 ### 6. Critic - verify
 
-Apply the `critic` skill after each node or merge point. If a node changes the
+Apply `soundness` after each node or merge point. If a node changes the
 shape of later work, stop and check in before the next gate.
 
 Finishing the work is the goal. Verification serves it.
@@ -353,7 +355,7 @@ Finishing the work is the goal. Verification serves it.
 
 Triggers: a feature genuinely worth showing off, or docs good enough to show.
 Channels are YouTube, TikTok, and `About.vue`; motion graphics preferred (see
-`hyperframes`). Promoter nodes gate on the feature being verified, and the human
+`promote`). Promoter nodes gate on the feature being verified, and the human
 approves before it ships. Most nodes skip this.
 
 ### 8. Gate 2
@@ -372,10 +374,10 @@ Summarize what ran. Ask whether it meets the plan. Done is your call. Record
 ## Related
 
 - `soundness` - default solution architecture and code quality rules.
-- `critic` - the Critic role.
+- `soundness` - the Critic role: checks, critique, and code review.
 - `project-tooling` - read a project's scripts before planning work inside it.
 - `skill-writer` - when a node needs a capability you lack: find an existing skill, or write one.
-- `hyperframes` - motion graphics for the Promoter role.
+- `promote` - motion graphics for the Promoter role.
 
 ## Source
 
@@ -399,4 +401,4 @@ Summarize what ran. Ask whether it meets the plan. Done is your call. Record
 - Header links: front matter `related:` (`title`, `href`) renders as the header nav. Eight at most, one-to-three-word titles, the links a reader opens first.
 - Other links: a `## Links` section at the end, grouped by kind (Watch, Read, GitHub, Demos, Local). The header doesn't repeat them.
 - After plan edits: run `npm run vault`, then confirm the change at https://haight.realness.online/planning.
-- Open a plan: `https://haight.realness.online/vault#<itemid>`; itemid is in its frontmatter.
+- Open a plan: `https://haight.realness.online/vault/<itemid>`; itemid is in its frontmatter.

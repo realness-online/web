@@ -70,8 +70,7 @@ export const EDITORS = {
 
 export const HOME_ONLY = {
   editor: "reads Scott's Neovim and Emacs",
-  'zoom-to-ableton': "carries Scott's effect rack",
-  'vuetify-to-semantic': "carries a client's codebase (seeq-app)"
+  'zoom-to-ableton': "carries Scott's effect rack"
 }
 
 export const UNSHIPPED_PACKAGES = [

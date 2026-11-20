@@ -59,7 +59,7 @@ const links_of = (text, path, itemid_at) => {
   const links = {}
   for (const [, href] of text.matchAll(/\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
     const itemid = itemid_for(href, path, itemid_at)
-    if (itemid) links[href] = `#${itemid}`
+    if (itemid) links[href] = `/vault${itemid}`
   }
   return links
 }
@@ -87,9 +87,9 @@ const related_entries = value =>
 const related_of = (entries, path, itemid_at) =>
   entries.map(entry => {
     const title = String(entry.title ?? '')
-    const clean = String(entry.href ?? '')
+    const clean = String(entry.href ?? '').replace(/^\/vault#\//, '/vault/')
     const itemid = itemid_for(clean, path, itemid_at)
-    return { title, href: itemid ? `#${itemid}` : clean }
+    return { title, href: itemid ? `/vault${itemid}` : clean }
   })
 
 /**
@@ -259,7 +259,7 @@ export const vault_door = ({ dir, index, owner, artifacts }) => {
       }
     },
     /**
-     * Every plan the index holds, by title. A note that is not a plan, or that
+     * Every plan the index holds, last updated first. A note that is not a plan, or that
      * cannot be read as one, is left out, so one broken note never takes the
      * list with it.
      * @returns {import('./vault-plans.js').PlanSummary[]}
@@ -269,7 +269,9 @@ export const vault_door = ({ dir, index, owner, artifacts }) => {
       const db = new DatabaseSync(index, { readOnly: true })
       try {
         return db
-          .prepare("SELECT path, text FROM note WHERE path LIKE 'Projects/%'")
+          .prepare(
+            "SELECT path, text FROM note WHERE path LIKE 'Projects/%' ORDER BY mtime_ms DESC"
+          )
           .all()
           .map(row => {
             const path = String(row.path)
@@ -282,7 +284,6 @@ export const vault_door = ({ dir, index, owner, artifacts }) => {
             return plan_summary(path, String(row.text), scout)
           })
           .filter(plan => plan !== null)
-          .sort((a, b) => a.title.localeCompare(b.title))
       } finally {
         db.close()
       }

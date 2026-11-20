@@ -1,4 +1,5 @@
 ---
+hidden: true
 name: vue-inspect
 description: Inspect live Vue 3 component state via agent-browser eval - no Devtools extension, no console.log. Triggers - "inspect this Vue component", "what's the current value of this ref", "read setupState", "walk the Vue tree", "Vue devtools alternative". Vue 3 Composition API only.
 metadata:

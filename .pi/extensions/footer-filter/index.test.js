@@ -14,7 +14,8 @@ import footer_filter, {
   place_label,
   paint_place,
   branch_level,
-  usage_label
+  usage_label,
+  week_label
 } from './index.js'
 
 const scratch = join(process.cwd(), 'artifacts/footer-filter')
@@ -64,6 +65,29 @@ describe('labels', () => {
     assert.deepEqual(usage_label("You've used 91% of your session limit"), { text: '5h 91%', level: 'warning' })
     assert.deepEqual(usage_label("You've hit your weekly limit"), { text: 'limit hit', level: 'error' })
     assert.equal(usage_label(undefined), null)
+  })
+
+  it('reads weekly usage from Anthropic headers', () => {
+    assert.deepEqual(week_label({ 'anthropic-ratelimit-unified-7d-utilization': '0.42' }), {
+      text: 'wk 42%',
+      level: 'dim'
+    })
+    assert.deepEqual(week_label({ 'anthropic-ratelimit-unified-7d-utilization': '0.95' }), {
+      text: 'wk 95%',
+      level: 'warning'
+    })
+    assert.equal(week_label({}), null)
+    assert.equal(week_label(undefined), null)
+  })
+
+  it('shows weekly usage only on Anthropic models, and the warning first', () => {
+    const week = { text: 'wk 42%', level: 'dim' }
+    const parts = (model, statuses = new Map()) =>
+      footer_parts({ entries: [], model, statuses, branch: null, porcelain: null, week }).parts.map(part => part.text)
+    assert.ok(parts({ provider: 'anthropic', id: 'claude' }).includes('wk 42%'))
+    assert.ok(!parts({ provider: 'openai', id: 'gpt' }).includes('wk 42%'))
+    const warned = new Map([['claude-oauth-issue', "You've used 91% of your session limit"]])
+    assert.ok(parts({ provider: 'anthropic', id: 'claude' }, warned).includes('5h 91%'))
   })
 
   it('shows context fill against the window', () => {
@@ -178,7 +202,19 @@ describe('extension', () => {
         modelRegistry: { isUsingOAuth: () => true },
         getContextUsage: () => ({ percent: 7.9, contextWindow: 1_000_000 }),
         sessionManager: { getCwd: () => '/srv/app', getBranch: () => [] },
-        ui: { setFooter: factory => (footer = factory({ requestRender() {} }, { fg: (_level, text) => text }, data)) }
+        ui: {
+          setFooter: factory =>
+            (footer = factory(
+              { requestRender() {} },
+              {
+                colors: {},
+                fg(_level, text) {
+                  return this.colors && text
+                }
+              },
+              data
+            ))
+        }
       }
     )
     data.setExtensionStatus('claude-oauth-ready', '✓')

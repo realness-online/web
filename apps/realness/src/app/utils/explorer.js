@@ -364,6 +364,34 @@ const reread = async database => {
   }
 }
 
+/**
+ * A conversation watch listener that hands on what each streamed partial adds:
+ * its new text and thinking. A new answer or attempt starts over.
+ * @param {(text: string) => void} on_delta
+ * @param {(text: string) => void} on_thinking
+ */
+export const stream_partials = (on_delta, on_thinking) => {
+  let shown = { text: '', thinking: '' }
+  return call => {
+    if (call.kind !== 'value') return Promise.resolve()
+    const message = call.value.docs?.['pi.live']?.generation?.message
+    const now = {
+      text: parts(message?.content ?? [], 'text'),
+      thinking: parts(message?.content ?? [], 'thinking')
+    }
+    const added = key =>
+      now[key].startsWith(shown[key])
+        ? now[key].slice(shown[key].length)
+        : now[key]
+    const thinking = added('thinking')
+    const text = added('text')
+    if (thinking) on_thinking(thinking)
+    if (text) on_delta(text)
+    shown = now
+    return Promise.resolve()
+  }
+}
+
 /** @param {{ text: string, token: () => Promise<string>, user_id: string, on_delta?: (text: string) => void, on_thinking?: (text: string) => void }} turn */
 const answer = async ({
   text,
@@ -372,16 +400,9 @@ const answer = async ({
   on_delta = () => {},
   on_thinking = () => {}
 }) => {
-  const { pi, harness, root } = await explorer(token, user_id)
-  const stream = await pi.watchEvents(harness, root.id, pi.BACKGROUND_CONTEXT)
-  stream.start(events => {
-    for (const event of events)
-      if (event.type === 'message_update')
-        for (const change of event.changes)
-          if (change.type === 'text_delta') on_delta(change.delta)
-          else if (change.type === 'thinking_delta') on_thinking(change.delta)
-    return Promise.resolve()
-  })
+  const { pi, root } = await explorer(token, user_id)
+  const stream = await root.watch(pi.BACKGROUND_CONTEXT)
+  stream.start(stream_partials(on_delta, on_thinking))
   try {
     const submission = await root.submit(
       { type: 'input', content: text },
@@ -391,12 +412,13 @@ const answer = async ({
   } finally {
     await stream.stop()
   }
-  const view = await root.viewState(pi.BACKGROUND_CONTEXT)
+  const view = await root.watch(pi.BACKGROUND_CONTEXT)
   try {
-    const failed =
-      view.value.docs?.['pi.live']?.failure ??
-      assistant_failure(view.value.entries)
-    if (failed) throw new Error(String(failed.message ?? failed))
+    const run_failure = view.value.docs?.['pi.live']?.runFailure
+    const failed = run_failure
+      ? run_failure.detail || run_failure.reason
+      : assistant_failure(view.value.entries)
+    if (failed) throw new Error(String(failed))
     const latest = view.value.entries.findLast(entry => assistant_text(entry))
     const line = to_lines(
       view.value.entries.flatMap(entry => entry.model ?? [])
@@ -406,7 +428,7 @@ const answer = async ({
       ...(line?.thinking ? { thinking: line.thinking } : {})
     }
   } finally {
-    view.dispose()
+    await view.stop()
   }
 }
 

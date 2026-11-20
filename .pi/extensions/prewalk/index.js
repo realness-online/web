@@ -9,8 +9,9 @@
  * the cheap model takes over: once a node's spec passes, later nodes run cheap.
  * A failing spec returns that node to the frontier model. No active node, as at
  * a gate, means the frontier
- * model, as does an error turn on the cheap model. Each node entering and
- * leaving `active`, and each escalation, is an item in
+ * model, as does an error turn on the cheap model. Scott saying he is lost or
+ * confused brings the frontier model back at once, mid-node. Each node
+ * entering and leaving `active`, and each escalation, is an item in
  * `artifacts/prewalk/escalations.html`.
  *
  * /prewalk              - status
@@ -34,6 +35,9 @@ export const PLAN_KEY = 'plan'
 export const plan_name = path => path.replace(/\/index\.md$|\.md$/, '')
 
 export const DEFAULT_TARGET = 'openrouter/deepseek/deepseek-v4.1-flash-1017'
+
+/** Mid-session switches one session may make: out to the cheap model, back once. */
+export const MAX_SWITCHES = 2
 const RUNNER =
   /^(npx )?(node( [\w=-]+)* --test\b|node [^ ]+\.(spec|test)\.js\b|vitest\b|vp test\b|npm test\b|npm( --prefix [^ ]+)? run test\b)/
 
@@ -52,6 +56,27 @@ export const is_spec_run = command =>
  */
 export const route = ({ on, approved, active, escalated, proven = false }) =>
   on && approved && proven && active.length > 0 && !active.some(id => escalated.has(id)) ? 'cheap' : 'frontier'
+
+/** Scott asking for plain words, which brings the frontier model back mid-node. */
+/** Scott asking for plain words, which brings the frontier model back mid-node. */
+const LOST = new RegExp(
+  [
+    String.raw`\bi'?m lost\b`,
+    String.raw`\bi am lost\b`,
+    String.raw`\blost me\b`,
+    String.raw`\bconfus`,
+    String.raw`\bstruggl\w* to (understand|follow)\b`,
+    String.raw`\bdon'?t understand\b`,
+    String.raw`\bdo not understand\b`,
+    String.raw`\bno sense\b`,
+    String.raw`\btoo much detail\b`,
+    String.raw`\bsimpler\b`
+  ].join('|'),
+  'i'
+)
+
+/** @param {unknown} prompt */
+export const lost = prompt => LOST.test(String(prompt ?? '').replace(/```[\s\S]*?```/g, ''))
 
 /**
  * The plan file a tool path names, or null outside the plans folder.
@@ -132,6 +157,8 @@ export default (
   const proven = new Set()
   /** True while prewalk itself put this session on the cheap model. */
   let routed = false
+  /** Mid-session switches made, each one a full cache rewrite at 1.25x. */
+  let switches = 0
   let nudge = 'none'
 
   /** @param {any} ctx */
@@ -227,7 +254,18 @@ export default (
       )
   }
 
-  pi.on('before_agent_start', (event, ctx) => {
+  pi.on('before_agent_start', async (event, ctx) => {
+    if (on && lost(event.prompt) && routed && frontier) {
+      for (const id of state.active.filter(id => !escalated.has(id))) {
+        escalated.add(id)
+        record(ctx, id, 'Scott is lost', name_of(ctx.model))
+      }
+      if (switches < MAX_SWITCHES && (await pi.setModel(frontier))) {
+        switches++
+        routed = false
+        ctx.ui.notify(`Prewalk: back to ${name_of(frontier)} for plain words`, 'info')
+      }
+    }
     const file = plan_named(event.prompt, plans)
     if (file) {
       named = true
@@ -294,8 +332,10 @@ export default (
         on = false
         return
       }
+      if (switches >= MAX_SWITCHES) return
       frontier = ctx.model
       if (!(await pi.setModel(model))) return
+      switches++
       routed = true
       ctx.ui.notify(`Prewalk: ${state.active.join(', ')} on ${target}`, 'info')
       return {
@@ -314,7 +354,9 @@ export default (
       }
     }
     if (want === 'frontier' && routed && frontier && current === target) {
+      if (switches >= MAX_SWITCHES) return
       if (!(await pi.setModel(frontier))) return
+      switches++
       routed = false
       const failed = state.active.filter(id => escalated.has(id))
       ctx.ui.notify(`Prewalk: back to ${name_of(frontier)}${failed.length ? ` for ${failed.join(', ')}` : ''}`, 'info')
@@ -340,6 +382,7 @@ export default (
   pi.on('session_start', () => {
     on = true
     routed = false
+    switches = 0
     frontier = null
     plan = null
     state = { approved: false, active: [] }
