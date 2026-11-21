@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="${ROOT:-/opt/fc}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 . "$REPO/lib/output.sh"
+. "$REPO/lib/build-tree.sh"
 TREE="${TREE:-$ROOT/template-tree}"
 IMG="${IMG:-$ROOT/template.ext4}"
 SIZE="${SIZE:-4G}"
@@ -34,13 +35,8 @@ exec > >(tee "$RUN/build.log") 2>&1
 
 log() { printf '\n==> %s\n' "$*"; }
 
-cleanup_mounts() {
-  for dir in dev/pts dev sys proc; do
-    mountpoint -q "$TREE/$dir" && umount "$TREE/$dir" || true
-  done
-}
-cleanup_mounts
-rm -rf --one-file-system "$TREE" "$IMG.new"
+tree_remove
+rm -f "$IMG.new"
 free_gib=$(df -BG --output=avail "$ROOT" | tail -1 | tr -dc 0-9)
 [ "$free_gib" -ge "$MIN_FREE_GIB" ] || {
   echo "only ${free_gib}G free in $ROOT; a build needs ${MIN_FREE_GIB}G" >&2
@@ -64,7 +60,7 @@ fetch "$UBUNTU_BASE_URL" "$UBUNTU_BASE"
 fetch "$NODE_URL" "$NODE"
 (cd "$ROOT" && curl -fsSL "$NODE_URL/SHASUMS256.txt" | grep "$NODE\$" | sha256sum -c -)
 
-rm -rf "$TREE"
+tree_remove
 mkdir -p "$TREE"
 tar xzf "$ROOT/$UBUNTU_BASE" -C "$TREE"
 printf '  %s unpacked: %s\n' "$UBUNTU_BASE" "$(du -sh "$TREE" | cut -f1)"
@@ -109,8 +105,8 @@ for dir in proc sys dev dev/pts; do
   mountpoint -q "$TREE/$dir" || mount --bind "/$dir" "$TREE/$dir"
 done
 finish() {
-  cleanup_mounts
-  rm -rf --one-file-system "$TREE" "$IMG.new"
+  tree_remove
+  rm -f "$IMG.new"
 }
 trap finish EXIT
 
@@ -414,7 +410,7 @@ if [ "$STAGE" != base ]; then
 fi
 
 log "building $IMG"
-cleanup_mounts
+tree_unmount
 rm -f "$IMG.new"
 truncate -s "$SIZE" "$IMG.new"
 mkfs.ext4 -q -F -d "$TREE" "$IMG.new"
@@ -422,7 +418,7 @@ e2fsck -fn "$IMG.new" > /dev/null && mv "$IMG.new" "$IMG"
 cp "$TREE/etc/realness-code" "$ROOT/template-code"
 
 log "done"
-rm -rf "$TREE"
+tree_remove
 ls -lh "$IMG" | awk '{print "  image: " $5 " " $9}'
 dumpe2fs -h "$IMG" 2> /dev/null \
   | awk '/^Block count:/{b=$3} /^Block size:/{s=$3} /^Free blocks:/{f=$3} END{

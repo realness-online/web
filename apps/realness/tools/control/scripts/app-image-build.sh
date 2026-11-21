@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="${ROOT:-/opt/fc}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 . "$REPO/lib/output.sh"
+. "$REPO/lib/build-tree.sh"
 TREE="${TREE:-$ROOT/app-tree}"
 IMG="${IMG:-$ROOT/app.ext4}"
 SIZE="${SIZE:-1G}"
@@ -39,7 +40,7 @@ fetch() {
 fetch "$UBUNTU_BASE_URL" "$UBUNTU_BASE"
 (cd "$ROOT" && curl -fsSL "$UBUNTU_BASE_URL/SHA256SUMS" | grep "$UBUNTU_BASE\$" | sha256sum -c -)
 
-rm -rf "$TREE"
+tree_remove
 mkdir -p "$TREE"
 tar xzf "$ROOT/$UBUNTU_BASE" -C "$TREE"
 printf '  %s unpacked: %s\n' "$UBUNTU_BASE" "$(du -sh "$TREE" | cut -f1)"
@@ -62,12 +63,7 @@ for dir in proc sys dev dev/pts; do
   mkdir -p "$TREE/$dir"
   mountpoint -q "$TREE/$dir" || mount --bind "/$dir" "$TREE/$dir"
 done
-cleanup_mounts() {
-  for dir in dev/pts dev sys proc; do
-    mountpoint -q "$TREE/$dir" && umount "$TREE/$dir" || true
-  done
-}
-trap cleanup_mounts EXIT
+trap tree_unmount EXIT
 
 APP_PACKAGES=(
   systemd systemd-sysv
@@ -138,17 +134,16 @@ if [ "$STAGE" = base ]; then
 else
 
 log "building $IMG"
-cleanup_mounts
+tree_unmount
 rm -f "$IMG.new"
 truncate -s "$SIZE" "$IMG.new"
 mkfs.ext4 -q -F -d "$TREE" "$IMG.new"
 e2fsck -fn "$IMG.new" > /dev/null && mv "$IMG.new" "$IMG"
-cleanup_mounts
-rm -rf "$TREE"
+tree_remove
 
 fi
 
-cleanup_mounts
+tree_unmount
 log "done"
 [ -d "$TREE" ] && du -sh "$TREE" | sed 's/^/  tree: /' || true
 [ -e "$IMG" ] && ls -lh "$IMG" | awk '{print "  image: " $5 " " $9}' || true

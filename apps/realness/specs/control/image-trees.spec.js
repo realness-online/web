@@ -17,13 +17,13 @@ const removes_after = (script, built, removed) => {
 
 for (const name of ['template-build.sh'])
   it(`${name} removes its working tree once the image is built`, () =>
-    removes_after(read(name), 'mv "$IMG.new" "$IMG"', 'rm -rf "$TREE"'))
+    removes_after(read(name), 'mv "$IMG.new" "$IMG"', 'tree_remove'))
 
 it('app-image-build.sh keeps a base tree and removes a built one', () => {
   const script = read('app-image-build.sh')
-  removes_after(script, 'mv "$IMG.new" "$IMG"', 'rm -rf "$TREE"')
+  removes_after(script, 'mv "$IMG.new" "$IMG"', 'tree_remove')
   assert.ok(
-    script.indexOf('rm -rf "$TREE"', script.indexOf('mv "$IMG.new"')) <
+    script.indexOf('tree_remove', script.indexOf('mv "$IMG.new"')) <
       script.indexOf('\nfi\n', script.indexOf('mv "$IMG.new"'))
   )
 })
@@ -39,17 +39,14 @@ it('template-build.sh removes its tree and a half-built image on any exit', () =
   const script = read('template-build.sh')
   const finish = script.slice(script.indexOf('finish() {'))
   assert.match(script, /trap finish EXIT/)
-  assert.ok(
-    finish.indexOf('cleanup_mounts') <
-      finish.indexOf('rm -rf --one-file-system "$TREE" "$IMG.new"')
-  )
+  assert.ok(finish.indexOf('tree_remove') < finish.indexOf('rm -f "$IMG.new"'))
 })
 
 it('template-build.sh frees old scratch, then stops when space is low', () => {
   const script = read('template-build.sh')
-  const sweep = script.indexOf('rm -rf --one-file-system "$TREE" "$IMG.new"')
+  const sweep = script.indexOf('tree_remove\n')
   const check = script.indexOf('[ "$free_gib" -ge "$MIN_FREE_GIB" ]')
-  assert.ok(script.indexOf('cleanup_mounts\n') < sweep)
+  assert.ok(sweep >= 0)
   assert.ok(sweep < check)
   assert.ok(check < script.indexOf('tar xzf'))
 })

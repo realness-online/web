@@ -84,6 +84,7 @@ export const halo_files = [
   'lib/lines.js',
   'lib/output.js',
   'lib/output.sh',
+  'lib/build-tree.sh',
   'lib/release.js',
   'lib/websocket.js',
   'tools/control/webspace.config.js'
