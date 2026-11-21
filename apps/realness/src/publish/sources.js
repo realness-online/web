@@ -269,7 +269,8 @@ export const read_app = async app_dir => {
     typeof value.vault !== 'string' ||
     !Array.isArray(value.sources) ||
     !Array.isArray(value.assets) ||
-    !Array.isArray(value.pages)
+    !Array.isArray(value.pages) ||
+    (value.palette !== undefined && !/^[a-z][a-z0-9-]*$/.test(value.palette))
   )
     throw new Error('invalid app recipe')
   return value
@@ -279,6 +280,26 @@ export const write_app = async (app_dir, value) => {
   await mkdir(app_dir, { recursive: true })
   await write_file(join(app_dir, APP), `${JSON.stringify(value, null, 2)}\n`)
 }
+
+/**
+ * A blog's articles: every article note under `Areas/Blog/`, at its file name.
+ * @param {Map<string, string>} items itemid to vault path
+ * @returns {{ id: string, slug: string }[]}
+ */
+export const blog_articles = items =>
+  [...items]
+    .filter(
+      ([id, path]) =>
+        id.includes('/articles/') &&
+        path.startsWith('Areas/Blog/') &&
+        path.endsWith('.md')
+    )
+    .map(([id, path]) => ({
+      id,
+      slug: (path.split('/').pop() ?? '')
+        .replace(/\.md$/, '')
+        .replace(/[^A-Za-z0-9-]+/g, '-')
+    }))
 
 /**
  * One app's items, found in the vault by itemid. A route appears once; an item
@@ -299,7 +320,11 @@ export const app_sources = async app_dir => {
   }
   const slugs = new Set()
   const sources = []
-  for (const selection of app.sources) {
+  const selections =
+    app.type === 'blog'
+      ? [...app.sources, ...blog_articles(items)]
+      : app.sources
+  for (const selection of selections) {
     if (typeof selection.id !== 'string' || !SLUG.test(selection.slug ?? ''))
       throw new Error(`bad selection: ${selection.slug}`)
     if (slugs.has(selection.slug))

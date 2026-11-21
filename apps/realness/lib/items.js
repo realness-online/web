@@ -25,8 +25,16 @@ export const unescape = text =>
 
 const ISO_TIME = /^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/
 
-/** One value as visible markup, under its own name. */
+const is_record = value =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+/** One value as visible markup, under its own name. A list repeats the
+ * name; a record is a nested item. */
 const value_html = (name, value, link) => {
+  if (Array.isArray(value))
+    return value.map(each => value_html(name, each, link)).join('')
+  if (is_record(value))
+    return `<div itemprop="${name}" itemscope><dl>${rows_html(value, [])}</dl></div>`
   const text = escape(value)
   if (link && text) return `<a itemprop="${name}" href="${text}">${text}</a>`
   if (ISO_TIME.test(String(value ?? '')))
@@ -46,15 +54,20 @@ export const item_html = (
   type,
   fields,
   { links = [], tag = 'article', extra = '' } = {}
-) => {
-  const rows = Object.entries(fields)
+) =>
+  `<${tag} itemscope itemtype="/${type}"><dl>${rows_html(fields, links)}</dl>${extra}</${tag}>\n`
+
+/**
+ * @param {Record<string, unknown>} fields
+ * @param {string[]} links
+ */
+const rows_html = (fields, links) =>
+  Object.entries(fields)
     .map(
       ([name, value]) =>
         `<dt>${name}</dt><dd>${value_html(name, value, links.includes(name))}</dd>`
     )
     .join('')
-  return `<${tag} itemscope itemtype="/${type}"><dl>${rows}</dl>${extra}</${tag}>\n`
-}
 
 const PROP =
   /<(\w+)\s+itemprop="(\w+)"((?:\s+\w+="[^"]*")*)\s*\/?>(?:([^<]*)<\/\1>)?/g

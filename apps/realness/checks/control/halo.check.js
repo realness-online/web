@@ -540,6 +540,72 @@ const terminal = async (
   })
 }
 
+const SCOUT_PAGE = `<!doctype html>
+<title>e1 scout</title>
+<article itemscope itemtype="/scout"><dl><dt>itemid</dt><dd><span itemprop="itemid">/${owner}/scouts/1</span></dd><dt>org</dt><dd><span itemprop="org">/${owner}</span></dd><dt>minutes</dt><dd><span itemprop="minutes">5</span></dd><dt>status</dt><dd><span itemprop="status">active</span></dd></dl></article>`
+
+describe('e1: an actor reads, scouts, and renders', () => {
+  let actor
+
+  before(async () => {
+    actor = await create()
+  })
+
+  test("its program code is the image's", async () => {
+    const health = await call('GET', '/v1/health')
+    const label = await sh(
+      actor.id,
+      "node -e \"import('/usr/local/lib/realness/lib/code-stamp.js').then(m => console.log(m.actor_code('/realness')))\""
+    )
+    assert.equal(label.code, 0, label.err)
+    assert.equal(label.out.trim(), health.json.seed.code)
+  })
+
+  test('it reads a page itself', async () => {
+    const read = await sh(
+      actor.id,
+      'realness-read https://example.com/ --fresh --brief',
+      120
+    )
+    assert.equal(read.code, 0, read.err)
+    assert.match(read.out, /Example Domain/)
+  })
+
+  test('it renders a page in its own Chrome', async () => {
+    const render = await sh(
+      actor.id,
+      `d=$(realness-chrome) || exit 7
+node -e "import('/usr/local/lib/realness/src/halo/render.js').then(async m => { const page = await m.render_page(new URL(process.argv[1]).host, 'https://example.com/', { wait: 'content' }); console.log(page.status, page.html.includes('Example Domain')) })" "$d"
+code=$?
+realness-chrome return
+exit $code`,
+      120
+    )
+    assert.equal(render.code, 0, render.err)
+    assert.match(render.out, /^200 true$/m)
+  })
+
+  test('it briefs a scout from its own vault', async () => {
+    const folder = '/realness/vault/Projects/e1-scout'
+    const made = await sh(
+      actor.id,
+      `mkdir -p ${folder} && cat > ${folder}/scout.html <<'EOF'
+${SCOUT_PAGE}
+EOF
+printf '# Profile\\n\\nAny page.\\n' > ${folder}/Profile.md
+printf '# Sources\\n\\n## 1. Example\\n\\n\`https://example.com/\`\\n' > ${folder}/Sources.md`
+    )
+    assert.equal(made.code, 0, made.err)
+    const brief = await sh(
+      actor.id,
+      'REALNESS_HOME=/realness node /usr/local/lib/realness/scripts/scout.js e1-scout',
+      60
+    )
+    assert.equal(brief.code, 0, brief.err)
+    assert.match(brief.out, /https:\/\/example\.com\//)
+  })
+})
+
 describe('h3 lessons', () => {
   test('destroy with a terminal attached finishes', async () => {
     const actor = await create()

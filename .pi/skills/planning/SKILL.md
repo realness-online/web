@@ -389,6 +389,7 @@ Summarize what ran. Ask whether it meets the plan. Done is your call. Record
 
 - `plans/` is the project list; vault/Projects holds files (active), Areas holds parked.
 - Archive/Projects holds finished plans; move a plan there after Gate 2.
+- A plan folder with `scout.html`: read `apps/realness/docs/scouts.md` first.
 - Projects builds, Areas learns; one subject can be both. Todo's is ignored.
 - One plan file per plan, no companions; normally one work DAG per plan.
 - A plan stays one markdown file until it needs scripts to run.
@@ -400,5 +401,5 @@ Summarize what ran. Ask whether it meets the plan. Done is your call. Record
 - Independent nodes still run one at a time.
 - Header links: front matter `related:` (`title`, `href`) renders as the header nav. Eight at most, one-to-three-word titles, the links a reader opens first.
 - Other links: a `## Links` section at the end, grouped by kind (Watch, Read, GitHub, Demos, Local). The header doesn't repeat them.
-- After plan edits: run `npm run vault`, then confirm the change at https://haight.realness.online/planning.
+- After plan edits, confirm the change at https://haight.realness.online/vault; the app serves it live.
 - Open a plan: `https://haight.realness.online/vault/<itemid>`; itemid is in its frontmatter.

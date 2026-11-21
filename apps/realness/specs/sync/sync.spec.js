@@ -1,6 +1,7 @@
 /**
  * The sync service end to end over HTTP: nobody reaches another person's files.
  */
+import { read_item, read_items } from '#root/lib/items.js'
 import { after, before, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdir, readFile, rm } from 'node:fs/promises'
@@ -47,17 +48,23 @@ before(async () => {
       ],
       articles: () => [],
       shared: ({ itemid }) =>
-        itemid === '/+1555/plans/1'
+        ['/+1555/plans/1', '/+1555/plans/2'].includes(itemid)
           ? {
               path: 'Projects/a.md',
-              storage: `people/${A}/harness/vault/Projects/a.md`,
+              storage: `people/${A}/vault/Projects/a.md`,
               title: 'A',
               text: 'Body',
-              itemid
+              ...(itemid === '/+1555/plans/2'
+                ? { layout: 'article', created: '2026-11-20' }
+                : {}),
+              itemid,
+              related: [],
+              links: {}
             }
           : null,
       note: async () => null,
-      search: () => []
+      search: () => [],
+      changed: () => {}
     },
     log: l => lines.push(l)
   })
@@ -791,7 +798,7 @@ it('x9: an itemid opens only where can allows: the owner, and no one else', asyn
     { headers: as(A) }
   )
   assert.equal(owner.status, 200)
-  assert.equal((await owner.json()).path, 'Projects/a.md')
+  assert.equal(read_item(await owner.text(), 'note')?.path, 'Projects/a.md')
   const stranger = await call(
     'GET',
     'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1',
@@ -808,34 +815,46 @@ it('x9: an itemid opens only where can allows: the owner, and no one else', asyn
   assert.equal(unknown.status, 404)
 })
 
+it('f1: a note with a layout line arrives as a note naming its layout', async () => {
+  const framed = await call(
+    'GET',
+    'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F2',
+    { headers: as(A) }
+  )
+  assert.equal(framed.status, 200)
+  const note = read_item(await framed.text(), 'note')
+  assert.equal(note.path, 'Projects/a.md')
+  assert.equal(note.layout, 'article')
+})
+
 it('p1: a plan is private to its owner until it is granted', async () => {
-  const list = await call('GET', 'v1/vault/plans')
+  const list = await call('GET', 'v1/vault/projects')
   assert.equal(list.status, 404)
-  const mine_list = await call('GET', 'v1/vault/plans', { headers: as(A) })
+  const mine_list = await call('GET', 'v1/vault/projects', { headers: as(A) })
   assert.equal(mine_list.status, 200)
-  assert.equal((await mine_list.json()).plans.length, 1)
+  assert.equal(read_items(await mine_list.text(), 'plan').length, 1)
   const plan = await call('GET', 'v1/vault/item?itemid=%2F%2B1555%2Fplans%2F1')
   assert.equal(plan.status, 404)
-  await status('PUT', `people/${A}/harness/vault/Projects/a.md`, {
+  await status('PUT', `people/${A}/vault/Projects/a.md`, {
     headers: as(A),
     body: 'plan text'
   })
-  const mine = await call('GET', `people/${A}/harness/vault/Projects/a.md`, {
+  const mine = await call('GET', `people/${A}/vault/Projects/a.md`, {
     headers: as(A)
   })
   assert.equal(mine.status, 200)
   assert.equal(await mine.text(), 'plan text')
-  const other = await call('GET', `people/${A}/harness/vault/Projects/a.md`, {
+  const other = await call('GET', `people/${A}/vault/Projects/a.md`, {
     headers: as(B)
   })
   assert.equal(other.status, 403)
   const private_file = await call(
     'GET',
-    `people/${A}/harness/vault/Areas/Realness/profile.md`,
+    `people/${A}/vault/Areas/Realness/profile.md`,
     { headers: as(B) }
   )
   assert.equal(private_file.status, 403)
-  const listed = await call('GET', `people/${A}/harness/vault/Projects/`, {
+  const listed = await call('GET', `people/${A}/vault/Projects/`, {
     headers: as(B)
   })
   assert.equal(listed.status, 403)
@@ -858,7 +877,7 @@ it('s1: an open page hears a vault note written within two seconds', async () =>
       response.on('data', chunk => {
         for (const line of chunk.split('\n')) {
           if (line.startsWith('data: '))
-            events.push(JSON.parse(line.slice(6)).path)
+            events.push(read_item(line.slice(6), 'change')?.path)
         }
       })
     }

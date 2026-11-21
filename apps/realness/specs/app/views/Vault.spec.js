@@ -1,3 +1,4 @@
+import { note_html } from '#root/src/sync/vault-items.js'
 import { readFileSync } from 'node:fs'
 import {
   afterEach as after_each,
@@ -51,12 +52,16 @@ const respond = (note = {}) => {
   const spy = vi.fn(async () => ({
     status: 200,
     ok: true,
-    json: async () => ({
-      path: 'plan.md',
-      title: 'Plan',
-      text: 'Plan',
-      ...note
-    })
+    text: async () =>
+      note_html({
+        path: 'plan.md',
+        title: 'Plan',
+        text: 'Plan',
+        itemid: null,
+        related: [],
+        links: {},
+        ...note
+      })
   }))
   vi.stubGlobal('fetch', spy)
   return spy
@@ -162,6 +167,17 @@ describe('@/views/Vault', () => {
     expect(page.get('section[itemprop="articleBody"] h1').text()).toBe('Plan')
   })
 
+  it('shows a note with its own layout full size, framed here', async () => {
+    at('/vault/+16282281824/plans/1785887078791')
+    respond({ path: 'Areas/a.md', layout: 'article', text: 'Framed body' })
+    const page = await at_page()
+    await vi.waitFor(() => page.get('iframe[title="Note"]'))
+    expect(page.get('iframe[title="Note"]').attributes('srcdoc')).toMatch(
+      /^<!doctype html>[\s\S]*<p>Framed body<\/p>/
+    )
+    expect(page.find('footer[aria-label="Note file"]').exists()).toBe(false)
+  })
+
   it('names a missing note instead of failing', async () => {
     await signed_in()
     at('/vault/+16282281824/plans/1799999999999')
@@ -199,6 +215,45 @@ describe('@/views/Vault', () => {
     vault_events.on_path('/vault/plan.md')
     await flush_promises()
     expect(spy.mock.calls.length).toBe(loads + 1)
+  })
+
+  it('keeps the open note on screen while a change reloads it', async () => {
+    await signed_in()
+    at('/vault/+16282281824/plans/1799999999999')
+    respond()
+    const page = await at_page()
+    await flush_promises()
+    let resolve_text = () => {}
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        status: 200,
+        ok: true,
+        text: () =>
+          new Promise(resolve => {
+            resolve_text = resolve
+          })
+      }))
+    )
+    vault_events.on_path('/vault/plan.md')
+    await flush_promises()
+    expect(page.find('section[itemprop="articleBody"]').exists()).toBe(true)
+    expect(page.text()).not.toContain('Loading')
+    resolve_text('')
+  })
+
+  it('keeps opened details open when a change reloads the note', async () => {
+    await signed_in()
+    at('/vault/+16282281824/plans/1799999999999')
+    respond({ text: '<details><summary>Leads</summary><p>one</p></details>' })
+    const page = await at_page()
+    await flush_promises()
+    page.get('details').element.open = true
+    respond({ text: '<details><summary>Leads</summary><p>two</p></details>' })
+    vault_events.on_path('/vault/plan.md')
+    await flush_promises()
+    expect(page.get('details p').text()).toBe('two')
+    expect(page.get('details').element.open).toBe(true)
   })
 
   it('opens a body link that names another vault note as that note', async () => {

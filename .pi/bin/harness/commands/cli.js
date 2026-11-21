@@ -194,6 +194,27 @@ export const cli_families = [
         'Writes local and remote files.'
       ],
       [
+        'upload',
+        'Sign-in and files',
+        "Upload this Mac's files to its own cloud folder, one way.",
+        '--json',
+        'Mac only; writes remote files, never deletes.'
+      ],
+      [
+        'admit',
+        'Sign-in and files',
+        "Move actors' returned changes that pass the checks into this Mac's files.",
+        '',
+        'Mac only; writes local files and vault/Waiting.html.'
+      ],
+      [
+        'return',
+        'Actor commands',
+        'Send the files an actor changed since its start copy to quarantine.',
+        '--json',
+        'Actor only; writes to quarantine, never the vault.'
+      ],
+      [
         'files sync <folder> <can-url>',
         'Sign-in and files',
         'Sync a folder through file capabilities.',

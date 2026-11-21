@@ -21,6 +21,7 @@ import { createServer as create_server } from 'node:http'
 import { dirname, extname, join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { promisify } from 'node:util'
+import { write_palette } from '#root/src/publish/palette.js'
 
 const run = promisify(exec_file)
 const here = dirname(file_url_to_path(import.meta.url))
@@ -28,6 +29,10 @@ const RENDERER = join(here, '../../tools/publish/renderer')
 const GATE = join(here, '../../../../.pi/bin/checks/soundness-check.js')
 const SCRATCH = join(here, '../../../../artifacts/realness/layouts-check')
 
+/** `--palette <name>` gates the frames on that theme; none means Realness. */
+const PALETTE = process.argv.includes('--palette')
+  ? process.argv[process.argv.indexOf('--palette') + 1]
+  : null
 const LAYOUTS = ['app', 'article', 'canvas', 'deck', 'print']
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -286,6 +291,7 @@ const main = async () => {
   let server = null
   try {
     await write_site(root)
+    if (PALETTE) await write_palette(join(root, 'static'), PALETTE)
     await run(process.execPath, [join(RENDERER, 'build.js')], { cwd: root })
     const dist = join(root, 'dist')
     const pages = await Promise.all(
@@ -309,7 +315,9 @@ const main = async () => {
       console.log(`layouts: ${faults.length} fault(s)`)
       process.exit(1)
     }
-    console.log(`layouts: ${LAYOUTS.length} frames clean`)
+    console.log(
+      `layouts: ${LAYOUTS.length} frames clean${PALETTE ? ` on ${PALETTE}` : ''}`
+    )
   } finally {
     server?.close()
     await rm(root, { recursive: true, force: true })

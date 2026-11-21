@@ -7,6 +7,7 @@ import { actor_url } from '#root/src/harness/actor.js'
 import { door_pass } from '#root/src/harness/recover.js'
 import { LIMIT_DEFAULT } from '#root/src/sync/vault.js'
 import { HTTP } from '#root/lib/http.js'
+import { read_item, read_items } from '#root/lib/items.js'
 
 const USAGE = 'usage: realness vault search <words> [--limit N] | note <path>'
 
@@ -50,13 +51,18 @@ export const run_vault = async (
       verb === 'note' ? `no note at ${text}` : 'this sync has no vault'
     )
   if (!response.ok) throw new Error(`vault ${verb}: HTTP ${response.status}`)
-  const body = await response.json()
-  if (json) stdout.write(`${JSON.stringify(body)}\n`)
-  else if (verb === 'note') stdout.write(body.text)
-  else
-    stdout.write(
-      body.notes.map(note => `${note.path}\n  ${note.text}\n`).join('') ||
-        'no notes match\n'
-    )
+  const page = await response.text()
+  if (verb === 'note') {
+    const note = read_item(page, 'note')
+    stdout.write(json ? `${JSON.stringify(note)}\n` : (note?.text ?? ''))
+    return 0
+  }
+  const notes = read_items(page, 'hit')
+  stdout.write(
+    json
+      ? `${JSON.stringify({ notes })}\n`
+      : notes.map(note => `${note.path}\n  ${note.text}\n`).join('') ||
+          'no notes match\n'
+  )
   return 0
 }

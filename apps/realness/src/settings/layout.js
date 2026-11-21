@@ -66,6 +66,13 @@ export const actor_folders = () => [
   'tools/ops'
 ]
 
+/** A box's installed packages, each with the lock file that names them. */
+export const halo_packages = [
+  ['.pi/runtime', '.pi/runtime/package-lock.json'],
+  ['.pi/node_modules', '.pi/package-lock.json'],
+  ['.pi/agent/npm/node_modules', '.pi/agent/npm/package-lock.json']
+]
+
 export const halo_files = [
   'package.json',
   'lib/check.sh',

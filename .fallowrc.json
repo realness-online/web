@@ -22,6 +22,7 @@
     ".pi/examples/**",
     ".pi/skills/**/references/**",
     ".pi/skills/**/templates/**",
+    ".pi/bin/harness/commands/page.html",
     ".pi/skills/**/assets/**"
   ],
   "ignoreDependencies": [
@@ -40,10 +41,8 @@
   "ignoreUnresolvedImports": [
     "/color.css",
     "/commands.css",
-    "/commands.js",
     "/font.css",
-    "/palette.css",
-    "/scripts/pwa.js"
+    "/palette.css"
   ],
   "rules": {
     "unused-files": "warn",

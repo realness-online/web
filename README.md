@@ -153,7 +153,6 @@ Provider API-key environment variables also work. Saved credentials stay in
 Run npm commands from the repository root.
 
 The shared command index is the Plans [Commands page](http://127.0.0.1:4323/commands/).
-Run `npm run vault` to refresh and build it.
 `npm run commands` refreshes the source page and `artifacts/commands/catalog.json`
 without building Plans. The index covers package scripts, reviewed CLI routes,
 and detected helpers, including Bash. Task buttons and search filter the list.
@@ -171,7 +170,6 @@ this index.
 | `npm run live [name]`                | Checks that need a halo, the network, a browser, or the emulator.                                                             |
 | `npm run make:animation -- clip.mov` | Run `.pi/bin/graphics/make-animation.js`; requirements below.                                                                     |
 | `npm run feeds`                      | Rebuild personal vault feeds; requires the local vault setup.                                                                 |
-| `npm run vault`                      | Refresh the commands page and build the blog into `artifacts/apps/blog/dist`.                                                 |
 
 `npm run realness` remains a compatibility alias for `npm run realness`.
 Configuration keys such as `realness.plans` remain compatible during migration;

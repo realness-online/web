@@ -2,6 +2,7 @@ import { check_secret, open_pass, sign_pass } from '#root/src/can/pass.js'
 import { skipped } from '#root/src/files/skip.js'
 import { limit_path } from '#root/src/files/paths.js'
 import { has_escape, unsafe_part } from '#root/lib/path-parts.js'
+import { is_synced } from '#root/src/files/own.js'
 
 /** @param {string} path @param {string[]} paths */
 const within_paths = (path, paths) =>
@@ -88,18 +89,16 @@ const verify_pass = (pass, secret, now, audience) => {
 }
 
 /**
- * Write passes reach only the owner's harness and the actor's selected paths.
+ * Write passes reach only the owner's own files and the actor's selected paths.
  * @param {string} path
  * @param {string} phone
  * @param {string[] | null} paths
  */
 export const harness_path = (path, phone, paths = null) => {
-  const prefix = `people/${phone}/harness/`
-  if (!path.startsWith(prefix)) return false
-  return recovery_path(
-    `people/${phone}/${path.slice(prefix.length)}`,
-    phone,
-    paths
+  const rest = path.slice(`people/${phone}/`.length)
+  return (
+    (rest === '' || paths !== null || is_synced(rest)) &&
+    recovery_path(path, phone, paths)
   )
 }
 
@@ -112,21 +111,12 @@ export const recovery_path = (path, phone, paths = null) => {
   const prefix = `people/${phone}/`
   if (!path.startsWith(prefix)) return false
   const raw = path.slice(prefix.length)
-  const rest = raw.startsWith('harness/') ? raw.replace(/\.gz$/, '') : raw
+  const rest = raw.replace(/\.gz$/, '')
   const parts = rest.split('/')
   if (parts.at(-1) === '') parts.pop()
   if (!parts.length) return paths === null
   const clean = parts.join('/')
-  if (
-    paths &&
-    !within_paths(clean, paths) &&
-    !(
-      parts[0] === 'harness' &&
-      parts.length > 1 &&
-      within_paths(parts.slice(1).join('/'), paths)
-    )
-  )
-    return false
+  if (paths && !within_paths(clean, paths)) return false
   return (
     !skipped(rest) &&
     parts.every(part => !unsafe_part(part) && !has_escape(part))

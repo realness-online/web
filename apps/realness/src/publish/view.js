@@ -27,6 +27,7 @@ import { dirname, join, resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { createRequire as create_require } from 'node:module'
 import { app_sources } from './sources.js'
+import { write_palette } from './palette.js'
 import { product_paths } from '#root/src/settings/layout.js'
 import { MIB } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- copies run in order so later overlays win */
@@ -362,6 +363,7 @@ const stage_app = async ({
       await cp(selection.file, target)
     }
 
+  if (app.palette) await write_palette(join(output, 'static'), app.palette)
   const poster = join(output, 'static/posters', site.poster)
   const fallback = join(example, 'static/posters', site.poster)
   if (!exists_sync(poster) && exists_sync(fallback)) await cp(fallback, poster)

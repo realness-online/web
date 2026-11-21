@@ -36,6 +36,14 @@
           {{ area }}
         </button>
       </nav>
+      <nav v-if="plans.some(plan => plan.archived)" aria-label="Archive">
+        <button
+          type="button"
+          :aria-pressed="String(show_archived)"
+          @click="toggle_archived">
+          Archived
+        </button>
+      </nav>
     </header>
     <p v-if="error" role="status">{{ error }}</p>
     <p v-else-if="loading" role="status">Loading</p>
@@ -65,6 +73,7 @@
     reveal_diagrams
   } from '@/utils/diagrams'
   import { settled_token } from '@/utils/settled-user'
+  import { read_plans } from '@/utils/vault-items'
   import { watch_vault } from '@/utils/vault-events'
   import '@/style/mermaid.css'
   import '#root/tools/publish/renderer/static/scripts/diagrams.css'
@@ -78,9 +87,16 @@
   const params = new URLSearchParams(location.search)
   const chosen = ref(params.get('area') ?? '')
   const chosen_state = ref(params.get('state') ?? '')
+  const show_archived = ref(params.has('archived'))
 
   const areas = computed(() =>
-    [...new Set(plans.value.map(plan => plan.area))].sort()
+    [
+      ...new Set(
+        plans.value
+          .filter(plan => show_archived.value || !plan.archived)
+          .map(plan => plan.area)
+      )
+    ].sort()
   )
   /** A plan close to done has more behind it than ahead, but work left. */
   const CLOSE_SHARE = 0.75
@@ -113,6 +129,7 @@
   }
 
   const keeps = plan =>
+    (show_archived.value || !plan.archived) &&
     (!chosen.value || plan.area === chosen.value) &&
     in_state(plan, chosen_state.value)
 
@@ -121,6 +138,7 @@
     const params = new URLSearchParams()
     if (chosen.value) params.set('area', chosen.value)
     if (chosen_state.value) params.set('state', chosen_state.value)
+    if (show_archived.value) params.set('archived', '')
     const query = params.toString()
     history.replaceState(
       history.state,
@@ -139,11 +157,16 @@
     write_filters()
   }
 
+  const toggle_archived = () => {
+    show_archived.value = !show_archived.value
+    write_filters()
+  }
+
   const token_for = settled_token
 
   const load = async () => {
     const token = await token_for()
-    const response = await fetch('/v1/vault/plans', {
+    const response = await fetch('/v1/vault/projects', {
       headers: token ? { authorization: `Bearer ${token}` } : {}
     })
     loading.value = false
@@ -152,8 +175,7 @@
       reveal_diagrams()
       return
     }
-    const payload = await response.json()
-    plans.value = Array.isArray(payload.plans) ? payload.plans : []
+    plans.value = read_plans(await response.text())
     if (!plans.value.length) {
       reveal_diagrams()
       return

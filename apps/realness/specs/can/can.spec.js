@@ -39,39 +39,24 @@ it('strangers are denied everything private', () => {
 })
 
 it('p1: a plan is private to its owner, and nobody lists the folder', () => {
-  const file = `people/${A}/harness/vault/Projects/realness.md`
-  const folder = `people/${A}/harness/vault/Projects/realness-serve-plans/index.md`
+  const file = `people/${A}/vault/Projects/realness.md`
+  const folder = `people/${A}/vault/Projects/realness-serve-plans/index.md`
   assert.equal(can(scott, 'get', file), true)
   assert.equal(can(scott, 'get', folder), true)
   for (const who of [stranger, other]) {
     assert.equal(can(who, 'get', file), false)
     assert.equal(can(who, 'get', folder), false)
-    assert.equal(can(who, 'list', `people/${A}/harness/vault/Projects/`), false)
+    assert.equal(can(who, 'list', `people/${A}/vault/Projects/`), false)
   }
+  assert.equal(can(stranger, 'list', `people/${A}/vault/Projects/`), false)
+  assert.equal(can(stranger, 'write', `people/${A}/vault/Projects/a.md`), false)
   assert.equal(
-    can(stranger, 'list', `people/${A}/harness/vault/Projects/`),
+    can(stranger, 'delete', `people/${A}/vault/Projects/a.md`),
     false
   )
-  assert.equal(
-    can(stranger, 'write', `people/${A}/harness/vault/Projects/a.md`),
-    false
-  )
-  assert.equal(
-    can(stranger, 'delete', `people/${A}/harness/vault/Projects/a.md`),
-    false
-  )
-  assert.equal(
-    can(stranger, 'get', `people/${A}/harness/vault/Projects`),
-    false
-  )
-  assert.equal(
-    can(stranger, 'get', `people/${A}/harness/vault/Areas/a.md`),
-    false
-  )
-  assert.equal(
-    can(stranger, 'get', `people/${A}/harness/vault/Sessions/a.html`),
-    false
-  )
+  assert.equal(can(stranger, 'get', `people/${A}/vault/Projects`), false)
+  assert.equal(can(stranger, 'get', `people/${A}/vault/Areas/a.md`), false)
+  assert.equal(can(stranger, 'get', `people/${A}/vault/Sessions/a.html`), false)
 })
 
 it('unknown actions, subjects, and roots deny', () => {

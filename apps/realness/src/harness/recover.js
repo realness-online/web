@@ -24,10 +24,18 @@ import {
 } from './harness.js'
 import { plans_path, state_path, runtime_sessions_path } from './settings.js'
 import { prepare_actor_state } from './state.js'
+import { write_start_copy } from './start-copy.js'
 import { limit_path } from '#root/src/files/paths.js'
 import { STARTER_DIRECTORY, STARTER_FILE } from '#root/src/files/starter.js'
 import { light_policy, light_skips, write_skipped } from './light.js'
 import { HTTP } from '#root/lib/http.js'
+import {
+  MEMORY_FOLDER,
+  MEMORY_LOCAL,
+  holds_synced,
+  in_memory,
+  is_synced
+} from '#root/src/files/own.js'
 /* eslint-disable no-await-in-loop -- paths pull one at a time to bound memory on a small VM */
 
 /** How long a halo door gets to answer before recovery gives up. */
@@ -100,6 +108,36 @@ const renewing_pass = async (issue, fetcher) => {
 }
 
 /**
+ * @param {string | null} starter
+ * @returns {Promise<string[]>}
+ */
+const starter_files = async starter => {
+  if (!starter) return []
+  const manifest = JSON.parse(
+    await read_file(join(starter, STARTER_FILE), 'utf8').catch(() => '{}')
+  )
+  return Object.keys(manifest.files ?? {})
+}
+
+/**
+ * What a whole recovery leaves in the store: anything a harness never wrote,
+ * and memory, which lands at its local path on its own.
+ * @param {string[]} managed
+ */
+const outside_of = managed => {
+  const shipped = new Set(managed)
+  return (path, is_dir = false) =>
+    in_memory(path) ||
+    !(
+      is_synced(path) ||
+      shipped.has(path) ||
+      (is_dir &&
+        (holds_synced(path) ||
+          managed.some(name => name.startsWith(`${path}/`))))
+    )
+}
+
+/**
  * Lay back the shipped files a pull removed. The store carries a person's own
  * files; `.pi/bin` and the rest of the program never upload, so a starter file
  * the store lacks is not a deletion.
@@ -109,11 +147,8 @@ const renewing_pass = async (issue, fetcher) => {
 const relayout_code = async (starter, root) => {
   const MODE_BITS = 0o777
   if (!starter) return []
-  const manifest = JSON.parse(
-    await read_file(join(starter, STARTER_FILE), 'utf8').catch(() => '{}')
-  )
   const relaid = []
-  for (const path of Object.keys(manifest.files ?? {})) {
+  for (const path of await starter_files(starter)) {
     if (is_own(path) || !limit_path(path)) continue
     const target = join(root, path)
     if (exists_sync(target)) continue
@@ -252,16 +287,13 @@ export const recover = async (
       }
     )
   }
-  let saved = base
+  const saved = base
   /** @type {{ skipped: number } | null} */
   let light = null
-  if (claims.paths !== undefined) {
-    const whole = (await optional(`${base}harness/.ignore`)) !== null
-    if (whole) saved = `${base}harness/`
-    for (const path of claims.paths)
-      await pull_path(path, whole ? `${base}harness/` : base)
-  } else if ((await optional(`${base}harness/.ignore`)) !== null) {
-    saved = `${base}harness/`
+  if (claims.paths !== undefined)
+    for (const path of claims.paths) await pull_path(path, base)
+  else if ((await optional(`${base}.ignore`)) !== null) {
+    const outside = outside_of(await starter_files(starter))
     const before_package = count
     await pull_path('package.json', saved)
     count = before_package
@@ -286,24 +318,29 @@ export const recover = async (
       await write_skipped(state, skips)
       const remote_files = Object.fromEntries(
         Object.entries(listing)
-          .filter(([name]) => !keep.has(name))
+          .filter(([name]) => !outside(name) && !keep.has(name))
           .map(([name, { version }]) => [name, version])
       )
       await pull(saved, root, {
         starter,
         baseline: true,
         remote_files,
-        exclude: path =>
-          !limit_path(path) || keep.has(path) || is_past_session(path)
+        exclude: (path, is_dir) =>
+          !limit_path(path) ||
+          outside(path, is_dir) ||
+          keep.has(path) ||
+          is_past_session(path)
       })
     } else {
       await write_skipped(state, [])
       await pull(saved, root, {
         starter,
         baseline: true,
-        exclude: path => !limit_path(path) || is_past_session(path)
+        exclude: (path, is_dir) =>
+          !limit_path(path) || outside(path, is_dir) || is_past_session(path)
       })
     }
+    await pull(`${saved}${MEMORY_FOLDER}/`, join(root, MEMORY_LOCAL))
     light = { skipped: skips.length }
   } else {
     await pull_path('package.json')
@@ -331,6 +368,7 @@ export const recover = async (
   await restore_session_times(store, saved, root)
   const relaid = await relayout_code(starter, root)
   const pending = await optional(`${saved}.pi/agent/deferred.json`)
+  await write_start_copy(root, state)
   const applied = await apply_deferred(
     root,
     Object.fromEntries(

@@ -52,6 +52,10 @@ export const generate = ({
     join(content_dir, 'documentation.md'),
     'utf8'
   )
+  const vault_docs_md = read_file_sync(
+    join(content_dir, 'vault-docs.md'),
+    'utf8'
+  )
   const terms_md = read_file_sync(join(content_dir, 'terms.md'), 'utf8')
   const privacy_md = read_file_sync(join(content_dir, 'privacy.md'), 'utf8')
   const license_md = read_file_sync(join(content_dir, 'license.md'), 'utf8')
@@ -74,6 +78,7 @@ export const generate = ({
     ...documentation_preferences_toc,
     ...documentation_changelog_toc
   ]
+  const vault_docs_toc = markdown_toc(vault_docs_md)
   const terms_toc = markdown_toc(terms_md)
   const privacy_toc = markdown_toc(privacy_md)
   const license_toc = markdown_toc(license_md)
@@ -88,6 +93,9 @@ export const generate = ({
     'export const documentation_toc = ',
     JSON.stringify(documentation_toc, null, 2),
     '',
+    'export const vault_docs_toc = ',
+    JSON.stringify(vault_docs_toc, null, 2),
+    '',
     'export const terms_toc = ',
     JSON.stringify(terms_toc, null, 2),
     '',
@@ -101,7 +109,7 @@ export const generate = ({
 
   write_file_sync(out_path, code)
   console.info(
-    `generate-toc: wrote ${out_path} (${documentation_toc.length + terms_toc.length + privacy_toc.length + license_toc.length} entries)`
+    `generate-toc: wrote ${out_path} (${documentation_toc.length + vault_docs_toc.length + terms_toc.length + privacy_toc.length + license_toc.length} entries)`
   )
   return out_path
 }

@@ -1,5 +1,5 @@
 /**
- * What `realness sync` carries: the whole harness, at `can://~/harness/`,
+ * What `realness sync` carries: a person's own files, at `can://~/`,
  * minus fixed ignores (skip.js), the person's `.ignore`, git repos,
  * and files over the upload limit. Pi session history goes first. Without a
  * `.ignore`, only the plans' Syncs paths and history sync, as before.
@@ -32,12 +32,17 @@ import { STARTER_DIRECTORY, STARTER_FILE } from '#root/src/files/starter.js'
 import { read_skipped } from './light.js'
 import { describe_repos } from './repos.js'
 import { HTTP } from '#root/lib/http.js'
+import {
+  MEMORY_FOLDER,
+  MEMORY_LOCAL as MEMORY,
+  is_own
+} from '#root/src/files/own.js'
 /* eslint-disable no-await-in-loop -- harness paths sync one at a time so a failure stops the rest */
 
 /** Edits a later actor must replay: harness path to base, target, and calls. */
 const DEFERRED = 'can://~/.pi/agent/deferred.json'
 /** Where a whole harness lives in storage. */
-export const HARNESS = 'can://~/harness/'
+export const HARNESS = 'can://~/'
 const HARNESS_DEFERRED = `${HARNESS}.pi/agent/deferred.json`
 /** A person's own ignore rules, at the harness root. */
 const IGNORE_FILE = '.ignore'
@@ -53,17 +58,15 @@ export const whole_enabled = (root, store) => {
     }
   )
 }
-const INTERNAL = ['.pi/agent/deferred.json', '.pi/agent/memory.db']
-/**
- * gz2c: what is a person's own. Every harness starts from the same baseline,
- * so `.pi/`, `apps/`, and the rest never upload; sessions sync on their own.
- */
-const OWN = new Set(['vault', 'work', 'AGENTS.md', IGNORE_FILE])
-export const is_own = path => OWN.has(path.split('/')[0])
+const INTERNAL = [
+  '.pi/agent/deferred.json',
+  '.pi/agent/memory.db',
+  MEMORY_FOLDER
+]
+export { is_own }
 
 /** m0: sealed months of memory, kept beside the index, owner-only in the store. */
-const MEMORY = '.pi/agent/memory'
-const MEMORY_REMOTE = `${HARNESS}.memory/`
+const MEMORY_REMOTE = `${HARNESS}${MEMORY_FOLDER}/`
 /** m0: a session from a month already over, by the month in its name. */
 const SESSION_MONTH = /(?:^|\/)(\d{4}-\d{2})-\d{2}T[^/]*$/
 const MONTH_CHARS = 7
@@ -147,7 +150,7 @@ export const refused = path => {
 }
 
 /** o3: a Syncs entry naming an org folder, `orgs/+name` or deeper. */
-export const org_path = path =>
+const org_path = path =>
   /^orgs\/\+[a-z][a-z0-9-]{0,62}(\/[^/]+)*\/?$/.test(path)
 
 /**
@@ -216,7 +219,7 @@ const repo_of = async path => {
 }
 
 /** A Syncs entry is a file when it exists as one, or names a file extension. */
-export const is_file_entry = async (root, path) => {
+const is_file_entry = async (root, path) => {
   const info = await stat(join(root, path)).catch(() => null)
   if (info) return info.isFile()
   return !path.endsWith('/') && extname(path) !== ''

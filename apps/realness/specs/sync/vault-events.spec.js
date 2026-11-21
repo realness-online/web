@@ -29,7 +29,7 @@ it('an open page hears the path that changed', () => {
   events.send('people/+1555/vault/Projects/realness-hosting.md')
   assert.equal(
     page.written.at(-1),
-    'data: {"path":"people/+1555/vault/Projects/realness-hosting.md"}\n\n'
+    `data: <article itemscope itemtype="/change"><dl><dt>path</dt><dd><span itemprop="path">people/+1555/vault/Projects/realness-hosting.md</span></dd></dl></article>\n\n`
   )
 })
 

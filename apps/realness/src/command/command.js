@@ -14,6 +14,8 @@ import { run_frontend } from './frontend-command.js'
 import { run_control } from './control-command.js'
 import { run_task } from './task-command.js'
 import { run_vault } from './vault-command.js'
+import { run_admit } from './admit-command.js'
+import { run_upload } from './upload-command.js'
 import { actor_client, actor_url } from '#root/src/harness/actor.js'
 import { prepare_actor_state } from '#root/src/harness/state.js'
 import { fetch_skipped } from '#root/src/harness/light.js'
@@ -26,6 +28,7 @@ import { MS_PER_HOUR, MS_PER_SECOND } from '#root/lib/units.js'
 const FILES_SYNC_WORDS = 4
 
 const USAGE = `usage: realness sync [--deletes] [--dry-run] [plan ...]
+       realness return                 (actor: its changed files to quarantine)
        realness turn-start --session <file>
        realness turn-end --session <file> --turn <n> [--no-sync]
        realness login|logout|whoami|ls|cat|cp|rm ...
@@ -33,6 +36,8 @@ const USAGE = `usage: realness sync [--deletes] [--dry-run] [plan ...]
        realness restore <day/time/path> [+org]
        realness frontend build|deploy [--env development|production] [--dry-run]
        realness example static <destination>
+       realness upload [--json]        (Mac: its files up to its own lane, one way)
+       realness admit                  (Mac: actors' returned changes that pass, into its files)
        realness fold [--dry-run]       (merge .conflict session copies into their originals)
        realness fetch <harness-path>   (light VM: pull a file left in storage)
        realness git-credential get     (VM: git's helper for GitHub repos)
@@ -410,6 +415,14 @@ export const run = async (
       command = 'vault'
       return await run_vault(args.slice(1), { stdout })
     }
+    if (args[0] === 'admit') {
+      command = 'admit'
+      return await run_admit(args.slice(1), { stdout })
+    }
+    if (args[0] === 'upload') {
+      command = 'upload'
+      return await run_upload(args.slice(1), { stdout })
+    }
     if (args[0] === 'task') {
       command = 'task'
       return await run_task(args.slice(1), {
@@ -418,7 +431,7 @@ export const run = async (
         ...(root && { root })
       })
     }
-    if (['sync', 'turn-start', 'turn-end'].includes(args[0])) {
+    if (['sync', 'return', 'turn-start', 'turn-end'].includes(args[0])) {
       ;[command] = args
       return await run_harness(args, options)
     }

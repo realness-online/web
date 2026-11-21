@@ -1,5 +1,5 @@
 const MARKERS = [
-  /realness chrome: (?<why>.+)/,
+  /realness chrome: (?!\$\{)(?<why>.+)/,
   /no saved (?<site>yc|swooped|indeed) login.*/,
   /(?<site>yc|swooped|indeed).* may have expired.*/,
   /could not read \S+: .*HTTP (?:401|403)/

@@ -151,7 +151,7 @@ describe('@/components/site-nav', () => {
       'page'
     )
     current.unmount()
-    for (const path of ['/planning', '/docs', '/blog']) {
+    for (const path of ['/docs', '/blog']) {
       mock_route.path = path
       const wrapper = mount()
       expect(
@@ -181,12 +181,10 @@ describe('vault navigation', () => {
     const vault = wrapper.get('menu[data-vault]')
     expect(vault.findAll('a').map(link => link.text())).toEqual([
       'Vault',
-      'About',
       'Docs'
     ])
     expect(vault.findAll('a').map(link => link.attributes('href'))).toEqual([
       '/vault',
-      '/vault/about',
       '/vault/docs'
     ])
     expect(wrapper.find('menu[data-primary]').exists()).toBe(false)

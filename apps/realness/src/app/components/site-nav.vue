@@ -62,12 +62,6 @@
         >Vault</router-link
       >
       <router-link
-        to="/vault/about"
-        replace
-        :aria-current="route.path === '/vault/about' ? 'page' : undefined"
-        >About</router-link
-      >
-      <router-link
         to="/vault/docs"
         replace
         :aria-current="route.path === '/vault/docs' ? 'page' : undefined"

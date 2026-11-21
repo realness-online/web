@@ -57,36 +57,14 @@ const routes = [
     component: () => import('@/views/Documentation'),
     meta: { support: true }
   },
-  {
-    path: '/vault/maps/modules',
-    component: () => import('@/views/Modules'),
-    meta: { note: true },
-    beforeEnter: signed_in_first
-  },
-  {
-    path: '/vault/maps/ways-in',
-    component: () => import('@/views/WaysIn'),
-    meta: { note: true },
-    beforeEnter: signed_in_first
-  },
-  {
-    path: '/vault/keys',
-    component: () => import('@/views/KeyLayouts'),
-    meta: { note: true },
-    beforeEnter: signed_in_first
-  },
+
   {
     path: '/artifacts',
     component: () => import('@/views/Artifacts'),
     meta: { note: true },
     beforeEnter: signed_in_first
   },
-  {
-    path: '/vault/commands',
-    component: () => import('@/views/Commands'),
-    meta: { note: true },
-    beforeEnter: signed_in_first
-  },
+
   {
     path: '/vault/tools',
     component: () => import('@/views/Tools'),
@@ -112,20 +90,9 @@ const routes = [
     beforeEnter: signed_in_first
   },
   {
-    path: '/planning/:rest(.*)*',
-    redirect: to => ({
-      path: `/vault/${to.params.rest?.join('/') ?? ''}`.replace(/\/+$/, ''),
-      hash: to.hash
-    })
-  },
-  {
-    path: '/vault/about',
-    component: () => import('@/views/VaultAbout'),
-    meta: { note: true }
-  },
-  {
     path: '/vault/docs',
-    component: () => import('@/views/VaultDocs'),
+    component: () => import('@/views/Documentation'),
+    props: { tab: 'vault' },
     meta: { note: true }
   },
   {

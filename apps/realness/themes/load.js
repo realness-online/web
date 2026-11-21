@@ -45,7 +45,7 @@ export const load_theme = (directory, name) => {
     if (!materials[key]) throw new Error(`unknown material: ${key}`)
     return materials[key]
   }
-  const schemes = {}
+  const schemes = /** @type {{ light: any, dark: any }} */ ({})
   for (const scheme of ['light', 'dark']) {
     const mapping = mappings[scheme]
     if (!mapping) throw new Error(`missing scheme: ${scheme}`)

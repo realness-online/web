@@ -18,7 +18,7 @@
           :key="page.path"
           itemscope
           itemtype="https://schema.org/CreativeWork">
-          <router-link :to="`/planning/page#${page.path}`">
+          <router-link :to="`/vault/page#${page.path}`">
             <span itemprop="name">{{ page.title }}</span>
           </router-link>
         </li>
@@ -31,6 +31,7 @@
 <script setup>
   import { onMounted as on_mounted, ref } from 'vue'
   import { current_user } from '@/utils/serverless'
+  import { read_pages } from '@/utils/vault-items'
 
   const pages = ref([])
   const error = ref('')
@@ -46,8 +47,7 @@
       error.value = 'Your tool pages could not load.'
       return
     }
-    const payload = await response.json()
-    pages.value = Array.isArray(payload.pages) ? payload.pages : []
+    pages.value = read_pages(await response.text())
   })
 </script>
 

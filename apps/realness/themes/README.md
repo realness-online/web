@@ -28,6 +28,12 @@ Do not edit generated frontend `palette.css` or `color.css`, terminal theme
 files, pi JSON, or nvim Lua. Font settings remain in the frontend's `font.css`;
 this consolidation covers colors, not typography.
 
+## Give an app its palette
+
+Add `"palette": "<theme-name>"` to `apps/<name>/app.json`. The build writes that
+theme's `palette.css` and `color.css`; no palette means Realness. Gate it with
+`node checks/control/layouts.check.js --palette <theme-name>` in `apps/realness`.
+
 ## Export a client theme
 
 Create `apps/realness/themes/<client-name>/` with both source files. Names use lowercase

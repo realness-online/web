@@ -207,7 +207,7 @@ const sync_panel = async ({ store, who, records = {} }) => {
   const saved = Object.keys(records)
   const folders = saved.length
     ? [...new Set(saved)]
-    : [`can://~/harness/${runtime_sessions_path(harness_root())}/`]
+    : [`can://~/${runtime_sessions_path(harness_root())}/`]
   const rows = []
   for (const folder of folders) {
     let error = null

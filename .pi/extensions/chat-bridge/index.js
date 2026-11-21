@@ -212,6 +212,13 @@ export function bridge(pi, { socket_path, chat_prompt = null, handover_path = HA
         return finish(socket, { type: 'error', text: `${model_name(model)} has no sign-in` })
       finish(socket, { type: 'done', text: `Model: ${model_name(model)}`, model: model_name(model) })
     },
+    commands: socket => {
+      const list = (pi.getCommands?.() ?? []).map(command => ({
+        name: command.name.replace(/^skill:/, ''),
+        description: command.description ?? ''
+      }))
+      finish(socket, { type: 'done', text: `${list.length} commands`, commands: list })
+    },
     thinking: (socket, args) => {
       if (args) {
         if (!THINKING_LEVELS.includes(args))

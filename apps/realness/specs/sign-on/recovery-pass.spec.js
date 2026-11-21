@@ -127,7 +127,7 @@ it('percentage filenames keep recovery passes read-only and path-limited', async
     )
 })
 
-it("a harness pass writes only its owner's safe harness paths", async () => {
+it("a harness pass writes only its owner's own safe paths", async () => {
   const pass = issue_harness_pass({ phone, id }, secret)
   assert.deepEqual(verify_harness_pass(pass, secret), {
     phone,
@@ -138,37 +138,37 @@ it("a harness pass writes only its owner's safe harness paths", async () => {
   assert.throws(() =>
     verify_harness_pass(issue_recovery_pass({ phone, id }, secret), secret)
   )
-  const key = `people/${phone}/harness/apps/blog/post.md`
-  assert.equal((await call(pass, key, 'PUT')).status, 200)
-  assert.equal((await call(pass, key)).status, 200)
-  assert.equal((await call(pass, key, 'DELETE')).status, 204)
+  const key = `people/${phone}/vault/blog/post.md`
+  assert.equal((await call(pass, key, 'PUT')).status, 202)
+  assert.equal(
+    (await call(pass, `people/${phone}/vault/secret.md`)).status,
+    200
+  )
+  assert.equal((await call(pass, key, 'DELETE')).status, 202)
   for (const path of [
-    `people/+14155559999/harness/note.md`,
-    `people/${phone}/vault/note.md`,
-    `people/${phone}/harness/.pi/agent/auth.json`,
-    `people/${phone}/harness/apps/.env`,
-    `people/${phone}/harness/artifacts/note.md`
+    `people/+14155559999/vault/note.md`,
+    `people/${phone}/apps/blog/post.md`,
+    `people/${phone}/posters/a.svg`,
+    `people/${phone}/.pi/agent/auth.json`,
+    `people/${phone}/vault/.env`,
+    `people/${phone}/vault/artifacts/note.md`
   ])
     assert.equal((await call(pass, path, 'PUT')).status, 403, path)
   assert.equal((await call(pass, 'v1/halo-pass', 'POST')).status, 401)
   assert.equal(
-    harness_path(`people/${phone}/harness/vault/%2e%2e/note.md`, phone),
+    harness_path(`people/${phone}/vault/%2e%2e/note.md`, phone),
     false
   )
   const limited = issue_harness_pass(
-    { phone, id, paths: ['apps/blog'] },
+    { phone, id, paths: ['vault/blog'] },
     secret
   )
-  assert.equal((await call(limited, key, 'PUT')).status, 200)
+  assert.equal((await call(limited, key, 'PUT')).status, 202)
   assert.equal(
-    (await call(limited, `people/${phone}/harness/apps/other/post.md`, 'PUT'))
-      .status,
+    (await call(limited, `people/${phone}/vault/other/post.md`, 'PUT')).status,
     403
   )
-  assert.equal(
-    (await call(limited, `people/${phone}/harness/?deep`)).status,
-    403
-  )
+  assert.equal((await call(limited, `people/${phone}/?deep`)).status, 403)
   const expired = issue_harness_pass(
     { phone, id },
     secret,

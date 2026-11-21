@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
-import { join } from 'node:path'
 import { parseArgs as parse_args } from 'node:util'
 import { Door } from '#root/src/halo/door.js'
 
-import { COMMON_CRAWL, WebEngine } from '#root/src/halo/web-engine.js'
 import { cookie_jars } from '#root/src/halo/cookie-jar.js'
 import { Loops } from '#root/src/halo/loops.js'
 import { HaloStatus } from '#root/src/halo/status.js'
@@ -34,10 +32,7 @@ import { promisify } from 'node:util'
 import { issue_model_pass } from '#root/src/proxy/model-pass.js'
 import { environment_settings } from '#root/src/settings/environments.js'
 
-import { MS_PER_HOUR } from '#root/lib/units.js'
-
 const PROBE_MS = 5000
-const WEB_PRUNE_HOURS = 6
 
 const LOG = logger('halo')
 const FLUSH_MS = 5000
@@ -200,18 +195,7 @@ const site_url = store.sync_sites
   ? `${String(site_public).replace(/\/$/, '')}/sites/{id}/`
   : '/s/{id}/'
 const jars = cookie_jars(values.jars)
-const web_firecrawl_file = process.env.FIRECRAWL_API_KEY_FILE
-const web = new WebEngine({
-  root: join(values.volume, 'web-cache'),
-  common_crawl: COMMON_CRAWL,
-  firecrawl_key:
-    process.env.FIRECRAWL_API_KEY ??
-    (web_firecrawl_file && exists_sync(web_firecrawl_file)
-      ? read_file_sync(web_firecrawl_file, 'utf8').trim()
-      : null)
-})
-setInterval(() => web.prune(), WEB_PRUNE_HOURS * MS_PER_HOUR).unref()
-new Door(store, values['site-url'] ?? site_url, loops, jars, web).start()
+new Door(store, values['site-url'] ?? site_url, loops, jars).start()
 const apps = new AppStore({
   volume: values.volume,
   image: values['app-image'],

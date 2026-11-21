@@ -5,7 +5,6 @@
     "pi-autoresearch": "^1.9.0",
     "pi-claude-oauth-adapter": "^0.2.2",
     "pi-mono-btw": "^1.7.4",
-    "pi-mono-loop": "^1.7.3",
     "pi-mono-usage": "^0.2.0",
     "pi-rewind-hook": "^1.8.7"
   }

@@ -44,6 +44,7 @@ export const run_chat_command = async (user, actor, command, args = '') => {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ command, args })
   })
+  /** @type {Record<string, any> | null} */
   let reply = null
   for await (const record of records(response.body)) {
     if (record.type === 'error') throw new Error(record.text)

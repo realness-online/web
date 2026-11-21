@@ -22,6 +22,19 @@ describe('markdown', () => {
     expect(missing).toEqual([])
   })
 
+  it('opens outside links in a new tab', () => {
+    const html = markdown_html(
+      '[out](https://vuejobs.com/a) [in](/+A/plans/1/)\n\n<a href="https://news.ycombinator.com/item?id=1">hn</a>'
+    )
+    expect(html).toContain(
+      '<a href="https://vuejobs.com/a" target="_blank" rel="noopener">out</a>'
+    )
+    expect(html).toContain(
+      '<a href="https://news.ycombinator.com/item?id=1" target="_blank" rel="noopener">hn</a>'
+    )
+    expect(html).toContain('<a href="/+A/plans/1/">in</a>')
+  })
+
   it('renders arbitrary markdown via markdown_html', () => {
     const html = markdown_html('## Privacy\n\nWe collect little.')
     expect(html).toContain('id="privacy"')

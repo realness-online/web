@@ -16,14 +16,17 @@ const stream_of = chunks => {
   })
 }
 
+const change = path =>
+  `<article itemscope itemtype="/change"><dl><dt>path</dt><dd><span itemprop="path">${path}</span></dd></dl></article>`
+
 it('hands over each path an event names, across chunk boundaries', async () => {
   const seen = []
   await read_events(
     stream_of([
       ': open\n\n',
-      'data: {"path":"a.md"}\n',
-      '\ndata: {"p',
-      'ath":"b.md"}\n\n'
+      `data: ${change('a.md')}\n`,
+      `\ndata: ${change('b.md').slice(0, 40)}`,
+      `${change('b.md').slice(40)}\n\n`
     ]),
     path => seen.push(path)
   )
@@ -37,7 +40,7 @@ it('opens one stream with the reader token, and stops on request', async () => {
     return {
       ok: true,
       status: 200,
-      body: stream_of(['data: {"path":"a.md"}\n\n'])
+      body: stream_of([`data: ${change('a.md')}\n\n`])
     }
   })
   vi.stubGlobal('fetch', fetch)

@@ -57,4 +57,88 @@ describe('load_shadow_into_vector', () => {
     expect(result.regular).toBeTruthy()
     expect(result.light).toBeTruthy()
   })
+
+  it('takes only the layers a cached shadows item has', async () => {
+    const poster_id = '/+1/posters/1799999999990'
+    vi.mocked(load_from_cache).mockImplementation(async id =>
+      id.includes('/shadows/')
+        ? { item: { regular: 'M0 1' }, html: null }
+        : { item: null, html: null }
+    )
+    const vector = { id: poster_id, light: 'kept' }
+    const result = await load_shadow_into_vector(
+      /** @type {import('@/types').Poster} */ (vector),
+      poster_id
+    )
+    expect(result.regular).toBe('M0 1')
+    expect(result.light).toBe('kept')
+    expect(result.bold).toBeUndefined()
+  })
+
+  it('a new poster reads its shadows from a cached shadows page', async () => {
+    const poster_id = '/+1/posters/1799999999991'
+    const shadow_id = '/+1/shadows/1799999999991'
+    const shadow_html = `<svg itemscope itemid="${shadow_id}" itemtype="/shadows"><path itemprop="bold" d="M0 3"/></svg>`
+    vi.mocked(load_from_cache).mockImplementation(async id =>
+      id === shadow_id
+        ? { item: null, html: shadow_html }
+        : { item: null, html: null }
+    )
+    const result = await load_shadow_into_vector(
+      /** @type {import('@/types').Poster} */ ({ id: poster_id }),
+      poster_id
+    )
+    expect(result.bold).toBeTruthy()
+  })
+
+  it('a new poster with no shadows reads its own cached copy', async () => {
+    const poster_id = '/+1/posters/1799999999992'
+    const inline_html = `<svg itemscope itemid="${poster_id}" itemtype="/posters" viewBox="0 0 10 10" width="10" height="10"><path itemprop="medium" d="M0 2"/></svg>`
+    vi.mocked(load_from_cache).mockImplementation(async id =>
+      id === poster_id
+        ? { item: null, html: inline_html }
+        : { item: null, html: null }
+    )
+    const result = await load_shadow_into_vector(
+      /** @type {import('@/types').Poster} */ ({ id: poster_id }),
+      poster_id
+    )
+    expect(result.medium).toBeTruthy()
+  })
+
+  it('an old poster reads its layers from the cached copy', async () => {
+    const poster_id = '/+1/posters/1000'
+    const inline_html = `<svg itemscope itemid="${poster_id}" itemtype="/posters" viewBox="0 0 10 10" width="10" height="10"><path itemprop="regular" d="M0 1"/></svg>`
+    vi.mocked(load_from_cache).mockResolvedValue({
+      item: null,
+      html: inline_html
+    })
+    const result = await load_shadow_into_vector(
+      /** @type {import('@/types').Poster} */ ({ id: poster_id }),
+      poster_id
+    )
+    expect(result.regular).toBeTruthy()
+    expect(result.light).toBeUndefined()
+  })
+
+  it('an old poster with nothing stored stays as it was', async () => {
+    const poster_id = '/+1/posters/1000'
+    const vector = { id: poster_id }
+    const result = await load_shadow_into_vector(
+      /** @type {import('@/types').Poster} */ (vector),
+      poster_id
+    )
+    expect(result).toBe(vector)
+    expect(result.regular).toBeUndefined()
+  })
+
+  it('a new poster with nothing stored stays as it was', async () => {
+    const poster_id = '/+1/posters/1799999999999'
+    const vector = { id: poster_id }
+    const result = await load_shadow_into_vector(
+      /** @type {import('@/types').Poster} */ (vector),
+      poster_id
+    )
+    expect(result).toBe(vector)
+  })
 })

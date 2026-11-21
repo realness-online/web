@@ -29,6 +29,7 @@
   import PageArticle from '@/components/page/as-article.vue'
   import { current_user } from '@/utils/serverless'
   import { watch_vault } from '@/utils/vault-events'
+  import { read_note } from '@/utils/vault-items'
 
   const NOT_FOUND = 404
   const html = ref('')
@@ -72,7 +73,7 @@
         error.value = 'The page could not load.'
         return
       }
-      const { text } = await response.json()
+      const { text } = read_note(await response.text()) ?? { text: '' }
       const page = page_of(text)
       itemtype.value =
         /<html[^>]*itemtype="([^"]+)"/.exec(text)?.[1] ??
@@ -83,7 +84,7 @@
           ?.textContent?.trim() ?? ''
       if (/<script[\s>]/i.test(text)) {
         apply_styles([])
-        own_document.value = text
+        own_document.value = await with_vault_files(text, path)
         return
       }
       html.value = body_of(page)
@@ -115,22 +116,59 @@
    * @param {string} path the page's vault path
    */
   const styles_of = async (text, path) => {
-    const folder = path.split('/').slice(0, -1).join('/')
+    const token = await token_for()
     const hrefs = [...text.matchAll(/<link[^>]+href="([^"]+\.css)"/g)].map(
       ([, href]) => href
     )
-    const token = await token_for()
     const sheets = await Promise.all(
-      hrefs.map(async href => {
-        const file = `${folder}/${href.replace(/^\/+/, '')}`
-        const response = await fetch(
-          `/v1/vault/note?path=${encodeURIComponent(file)}`,
-          { headers: { authorization: `Bearer ${token}` } }
-        )
-        return response.ok ? (await response.json()).text : null
-      })
+      hrefs.map(href => vault_file(href, path, token))
     )
     return sheets.filter(sheet => sheet !== null)
+  }
+
+  /**
+   * A file the page links, read from beside it in the vault, or null.
+   * @param {string} href
+   * @param {string} path the page's vault path
+   * @param {string | null} token
+   */
+  const vault_file = async (href, path, token) => {
+    if (/^[a-z]+:/i.test(href)) return null
+    const folder = path.split('/').slice(0, -1).join('/')
+    const file = `${folder}/${href.replace(/^\/+/, '')}`
+    const response = await fetch(
+      `/v1/vault/note?path=${encodeURIComponent(file)}`,
+      { headers: { authorization: `Bearer ${token}` } }
+    )
+    return response.ok ? (read_note(await response.text())?.text ?? null) : null
+  }
+
+  /**
+   * The page with the stylesheets and scripts it keeps in the vault written
+   * inline, so its frame needs nothing from the app's origin.
+   * @param {string} text the page's whole text
+   * @param {string} path the page's vault path
+   */
+  const with_vault_files = async (text, path) => {
+    const token = await token_for()
+    const tags = [
+      ...text.matchAll(/<link\b[^>]*href="([^"]+\.css)"[^>]*>/g),
+      ...text.matchAll(/<script\b[^>]*src="([^"]+\.js)"[^>]*><\/script>/g)
+    ]
+    const files = await Promise.all(
+      tags.map(([, href]) => vault_file(href, path, token))
+    )
+    return tags.reduce((page, [tag], index) => {
+      const file = files[index]
+      if (file === null) return page
+      const element = document.createElement(
+        tag.startsWith('<link') ? 'style' : 'script'
+      )
+      if (element.localName === 'script') element.type = 'module'
+      element.textContent = file
+      const inline = element.outerHTML
+      return page.replace(tag, () => inline)
+    }, text)
   }
 
   /**

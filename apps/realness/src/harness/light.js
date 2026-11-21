@@ -12,6 +12,7 @@ import {
 import { mkdir, writeFile as write_file } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { MIB, MS_PER_DAY } from '#root/lib/units.js'
+import { add_to_start_copy } from './start-copy.js'
 
 const SESSIONS = '.pi/agent/sessions'
 const LIGHT_DEFAULTS = { days: 14, bytes: 2 * MIB }
@@ -76,7 +77,7 @@ export const fetch_skipped = async ({
   state,
   store,
   path,
-  remote = 'can://~/harness/'
+  remote = 'can://~/'
 }) => {
   const skipped = read_skipped(state)
   if (!skipped.has(path)) return { path, fetched: false }
@@ -92,6 +93,7 @@ export const fetch_skipped = async ({
   )
   if (report.conflicts.length)
     throw new Error(`fetch ${path}: ${report.conflicts.join(', ')}`)
+  await add_to_start_copy(root, state, path)
   skipped.delete(path)
   await write_skipped(state, skipped)
   return { path, fetched: true }

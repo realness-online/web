@@ -1,5 +1,6 @@
 <template>
   <Planning v-if="!note_wanted" />
+  <iframe v-else-if="framed" :srcdoc="framed" title="Note" />
   <template v-else>
     <header aria-label="Vault"></header>
     <p v-if="error" role="status">{{ error }}</p>
@@ -27,6 +28,7 @@
   import NoteArticle from '@/components/note/as-article.vue'
   import Planning from '@/views/Planning.vue'
   import { settled_token } from '@/utils/settled-user'
+  import { read_note } from '@/utils/vault-items'
   import { highlight_code, markdown_html } from '@/utils/markdown'
   import { watch_vault } from '@/utils/vault-events'
   import '@/style/mermaid.css'
@@ -34,6 +36,7 @@
 
   const NOT_FOUND = 404
   const html = ref('')
+  const framed = ref('')
   const related = ref([])
   const links = ref({})
   const note_path = ref('')
@@ -46,13 +49,16 @@
   )
   const note_wanted = computed(() => itemid.value !== '')
 
-  const load = async () => {
+  const load = async ({ fresh = true } = {}) => {
     const { value } = itemid
-    html.value = ''
-    related.value = []
+    if (fresh) {
+      html.value = ''
+      framed.value = ''
+      related.value = []
+    }
     error.value = ''
     if (!value) return
-    loading.value = true
+    loading.value = fresh
     try {
       const token = await settled_token()
       const response = await fetch(
@@ -69,11 +75,21 @@
         error.value = 'The note could not load.'
         return
       }
-      const note = await response.json()
+      const note = read_note(await response.text())
+      if (!note) {
+        error.value = 'The note could not load.'
+        return
+      }
       note_path.value = note.path
+      if (note.layout && note.layout !== 'app') {
+        const { framed_note } = await import('@/utils/note-layout')
+        framed.value = String(await framed_note(note))
+        return
+      }
+      framed.value = ''
       html.value = await highlight_code(markdown_html(note.text))
-      related.value = Array.isArray(note.related) ? note.related : []
-      links.value = note.links ?? {}
+      related.value = note.related
+      links.value = note.links
     } finally {
       loading.value = false
     }
@@ -88,7 +104,8 @@
   on_mounted(async () => {
     load()
     stop_watching = await watch_vault(changed => {
-      if (note_path.value && changed.endsWith(`/${note_path.value}`)) load()
+      if (note_path.value && changed.endsWith(`/${note_path.value}`))
+        load({ fresh: false })
     }, token_for)
   })
   on_unmounted(() => {
@@ -97,6 +114,14 @@
 </script>
 
 <style lang="stylus">
+  iframe[title='Note'] {
+    position: fixed;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+  }
+
   header[aria-label='Vault'] {
     position: sticky;
     inset-block-start: 0;

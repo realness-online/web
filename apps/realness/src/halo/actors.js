@@ -738,7 +738,7 @@ export class ActorStore extends Store {
         'realness',
         '--',
         '/usr/local/bin/realness',
-        'sync',
+        'return',
         '--sync',
         this.sync_url
       ]

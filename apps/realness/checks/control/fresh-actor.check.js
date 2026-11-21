@@ -241,7 +241,7 @@ test('a fresh actor updates stock files and keeps personal edits and deletions',
   )
   assert.equal(installed.code, 0, installed.err)
   const latest = JSON.parse(installed.out)
-  const removed = 'prompts/site.md'
+  const removed = 'prompts/page.md'
   assert.ok(latest.files.LICENSE)
   assert.ok(latest.files['README.md'])
   assert.ok(latest.files[removed])

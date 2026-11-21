@@ -12,6 +12,7 @@
  */
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { vault_door } from '#root/src/sync/vault.js'
+import { disk_source } from '#root/src/sync/vault-source.js'
 import { google_certs } from '#root/src/can/index.js'
 import { disk } from '#root/src/can/disk.js'
 import { create_gcs, gcloud_token, metadata_token } from '#root/src/can/gcs.js'
@@ -113,13 +114,16 @@ sync_service({
   issuer,
   origins,
   halo_pass_secret: halo_pass_secret(),
-  /** vlt1: on the Mac, the owner's actors search this vault's index here. */
-  vault: vault_door({
-    dir: vault_dir,
-    index: vault_index,
-    owner: vault_owner,
-    artifacts: artifacts_dir
-  }),
+  /** vlt1: on the Mac, the owner's vault folder; in the cloud, each person's storage. */
+  vault:
+    vault_dir && vault_owner
+      ? vault_door({
+          source: disk_source(vault_dir),
+          owner: vault_owner,
+          dir: vault_dir,
+          artifacts: artifacts_dir
+        })
+      : null,
   git_app,
   halo_statuses,
   ...alerts

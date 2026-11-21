@@ -53,7 +53,7 @@ after(async () => {
   await rm(dir, { recursive: true, force: true })
 })
 
-const harness_file = `people/${phone}/harness/notes.md`
+const harness_file = `people/${phone}/vault/notes.md`
 
 it('a fenced halo cannot write through the passes it minted', async () => {
   const fenced = issue_harness_pass({ phone, id, halo: 'old-halo' }, secret)
@@ -67,12 +67,12 @@ it('a fenced halo cannot write through the passes it minted', async () => {
 
 it('the halo that took over writes the same harness', async () => {
   const live = issue_harness_pass({ phone, id, halo: 'new-halo' }, secret)
-  assert.equal((await put(harness_file, live)).status, 200)
+  assert.equal((await put(harness_file, live)).status, 202)
 })
 
 it('passes from before the halo claim keep working', async () => {
   const older = issue_harness_pass({ phone, id }, secret)
-  assert.equal((await put(harness_file, older)).status, 200)
+  assert.equal((await put(harness_file, older)).status, 202)
 })
 
 it('a fenced halo cannot write its record', async () => {
@@ -124,7 +124,7 @@ it('a gate pass reaches only its halo lifecycle and the placements', async () =>
   for (const path of [
     'halos/old-halo/lifecycle.html',
     'halos/new-halo/status.html',
-    `people/${phone}/harness/notes.md`,
+    `people/${phone}/notes.md`,
     'placements/nested/x.html',
     'halo-keys/new-halo'
   ])

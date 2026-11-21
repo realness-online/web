@@ -3,10 +3,12 @@
  * polling runs when nothing changes.
  */
 
+import { read_change } from '@/utils/vault-items'
+
 /* eslint-disable no-await-in-loop -- a stream is read one chunk at a time */
 
 /**
- * Read a stream of `data: {"path":"..."}` events and hand each path over.
+ * Read a stream of `data: <article itemtype="/change">` events and hand each path over.
  * @param {ReadableStream<Uint8Array>} stream
  * @param {(path: string) => void} on_path
  * @returns {Promise<void>} resolves when the stream ends
@@ -25,7 +27,7 @@ export const read_events = async (stream, on_path) => {
     buffer = buffer.slice(cut + 2)
     for (const line of chunk.split('\n')) {
       if (!line.startsWith('data: ')) continue
-      const { path } = JSON.parse(line.slice('data: '.length))
+      const path = read_change(line.slice('data: '.length))
       if (typeof path === 'string') on_path(path)
     }
   }

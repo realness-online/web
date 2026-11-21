@@ -39,6 +39,7 @@ it('reads a plan: title, area, diagram, and node states', () => {
     title: 'Hosting',
     area: 'Realness',
     scout: false,
+    archived: false,
     diagram:
       'flowchart LR\n  h1["h1 one"] --> h2["h2 two"]\n  class h1 active;\n  class h2 blocked;\n',
     nodes: { open: 1, done: 1, active: ['h1'], blocked: ['h2'] }
@@ -56,6 +57,18 @@ it('names a folder plan by its folder and skips notes that are not plans', () =>
   assert.equal(plan_summary('Projects/notes.md', '# Not a plan\n'), null)
   assert.equal(plan_summary('Areas/Blog/post.md', PLAN), null)
   assert.equal(plan_summary('Projects/deep/inner/index.md', PLAN), null)
+})
+
+it('reads an archived plan and marks it archived', () => {
+  const plan = plan_summary('Archive/Projects/music-mpc.md', PLAN)
+  assert.equal(plan?.archived, true)
+  assert.equal(plan?.area, 'Music')
+  assert.equal(plan_summary('Archive/Areas/music-mpc.md', PLAN), null)
+})
+
+it('marks a plan archived from its front matter', () => {
+  const marked = PLAN.replace('---\n\n', 'archived: true\n---\n\n')
+  assert.equal(plan_summary('Projects/music-mpc.md', marked)?.archived, true)
 })
 
 it('names an area from its prefix, and keeps an unknown one readable', () => {

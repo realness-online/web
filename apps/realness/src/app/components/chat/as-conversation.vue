@@ -79,7 +79,16 @@
     key_commands?.unregister_handler('view::Chat_Latest')
   })
 
-  const suggestions = computed(() => matching_commands(props.chat.draft.value))
+  const suggestions = computed(() =>
+    matching_commands(props.chat.draft.value, props.chat.pi_commands?.value)
+  )
+
+  watch(
+    () => props.chat.draft.value.startsWith('/'),
+    typing => {
+      if (typing) props.chat.load_pi_commands?.()
+    }
+  )
 
   const pick = command => {
     props.chat.draft.value = `/${command.name}${command.args ? ' ' : ''}`

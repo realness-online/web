@@ -2,8 +2,6 @@
  * v3a: a tool page in the vault, rendered by the app. The page stays one item
  * with its own itemid; the app reads it, not a build.
  */
-import { readdir } from 'node:fs/promises'
-import { join, relative, sep } from 'node:path'
 
 /**
  * @typedef {{ title: string, path: string }} ToolPage
@@ -43,29 +41,6 @@ const clean_sentence = text =>
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .trim()
-
-/**
- * Every tool page file under the pages folder, as vault paths.
- * @param {string} dir the vault's folder
- * @returns {Promise<string[]>}
- */
-export const page_files = async dir => {
-  const root = join(dir, 'Areas/Realness/pages')
-  const folders = [root, join(root, 'maps')]
-  /** @type {import('node:fs').Dirent[][]} */
-  const listed = await Promise.all(
-    folders.map(folder =>
-      readdir(folder, { withFileTypes: true }).catch(() => [])
-    )
-  )
-  return listed.flatMap((entries, at) =>
-    entries
-      .filter(entry => entry.isFile() && entry.name.endsWith('.html'))
-      .map(entry =>
-        relative(dir, join(folders[at], entry.name)).split(sep).join('/')
-      )
-  )
-}
 
 /**
  * One tool page, or null when the note is not one.

@@ -246,23 +246,6 @@ const OPS = {
       return { ok: true, scouts: started }
     }
   },
-  read: {
-    refused: 'actor cannot read the web',
-    answer: async (door, { id, request }) => {
-      if (request.site)
-        throw new Error(
-          'a login site is read in the box that holds it: pass the cookies, not a site'
-        )
-      if (!door.web) throw new Error('this halo has no internet engine')
-      return {
-        ok: true,
-        ...(await door.web.read(String(request.url ?? ''), {
-          actor: id,
-          fresh: request.fresh === true
-        }))
-      }
-    }
-  },
   'site-cookies': { refused: 'actor cannot read its login', answer: use_jar },
   'site-versions': {
     refused: 'actor cannot read site versions',
@@ -303,16 +286,8 @@ export class Door {
    * @param {string} [site_url]
    * @param {import('./loops.js').Loops | null} [loops]
    * @param {{ load: Function, save: Function } | null} [jars]
-   * @param {import('./web-engine.js').WebEngine | null} [web]
    */
-  constructor(
-    store,
-    site_url = '/s/{id}/',
-    loops = null,
-    jars = null,
-    web = null
-  ) {
-    this.web = web
+  constructor(store, site_url = '/s/{id}/', loops = null, jars = null) {
     this.store = store
     this.site_url = site_url
     this.loops = loops

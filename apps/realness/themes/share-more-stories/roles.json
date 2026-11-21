@@ -1,0 +1,126 @@
+{
+  "light": {
+    "background": "white",
+    "surface": "white",
+    "raised": "white",
+    "surface-glass": "white",
+    "text": "night",
+    "document-text": "night",
+    "contrast": "night",
+    "muted": {
+      "mix": ["text", 60, "surface"]
+    },
+    "muted-text": {
+      "mix": ["text", 60, "surface"]
+    },
+    "accent": "sky",
+    "success": "sky",
+    "error": "rust",
+    "warning": "amber",
+    "working": "sun",
+    "secondary": "marigold",
+    "cursor": "sky",
+    "selection": {
+      "mix": ["accent", 30, "surface"]
+    },
+    "selection-text": "night",
+    "syntax-comment": {
+      "mix": ["text", 60, "surface"]
+    },
+    "syntax-secondary-text": {
+      "mix": ["text", 60, "surface"]
+    },
+    "syntax-strong-text": "night",
+    "syntax-bright-text": "night",
+    "syntax-string": "marigold",
+    "syntax-number": "sun",
+    "syntax-keyword": "sky",
+    "syntax-special": "rust",
+    "syntax-cyan": "sky",
+    "terminal-black": "night",
+    "terminal-white": "white",
+    "terminal-bright-black": {
+      "mix": ["text", 60, "surface"]
+    },
+    "terminal-bright-white": "white",
+    "terminal-bright-error": "rust",
+    "terminal-bright-success": "sky",
+    "terminal-bright-warning": "amber",
+    "terminal-bright-working": "sun",
+    "terminal-bright-secondary": "marigold",
+    "code-surface": {
+      "mix": ["text", 6, "surface"]
+    },
+    "success-tint": {
+      "tint": "sky"
+    },
+    "error-tint": {
+      "tint": "rust"
+    },
+    "warning-tint": {
+      "tint": "amber"
+    }
+  },
+  "dark": {
+    "background": "night",
+    "surface": "night",
+    "raised": "night",
+    "surface-glass": "night",
+    "text": "white",
+    "document-text": "white",
+    "contrast": "white",
+    "muted": {
+      "mix": ["text", 60, "surface"]
+    },
+    "muted-text": {
+      "mix": ["text", 60, "surface"]
+    },
+    "accent": "sky",
+    "success": "sky",
+    "error": "rust",
+    "warning": "amber",
+    "working": "sun",
+    "secondary": "marigold",
+    "cursor": "sky",
+    "selection": {
+      "mix": ["accent", 30, "surface"]
+    },
+    "selection-text": "white",
+    "syntax-comment": {
+      "mix": ["text", 60, "surface"]
+    },
+    "syntax-secondary-text": {
+      "mix": ["text", 60, "surface"]
+    },
+    "syntax-strong-text": "white",
+    "syntax-bright-text": "white",
+    "syntax-string": "marigold",
+    "syntax-number": "sun",
+    "syntax-keyword": "sky",
+    "syntax-special": "rust",
+    "syntax-cyan": "sky",
+    "terminal-black": "night",
+    "terminal-white": "white",
+    "terminal-bright-black": {
+      "mix": ["text", 60, "surface"]
+    },
+    "terminal-bright-white": "white",
+    "terminal-bright-error": "rust",
+    "terminal-bright-success": "sky",
+    "terminal-bright-warning": "amber",
+    "terminal-bright-working": "sun",
+    "terminal-bright-secondary": "marigold",
+    "code-surface": {
+      "mix": ["text", 6, "surface"]
+    },
+    "success-tint": {
+      "tint": "sky"
+    },
+    "error-tint": {
+      "tint": "rust"
+    },
+    "warning-tint": {
+      "tint": "amber"
+    }
+  }
+}

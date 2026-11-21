@@ -64,3 +64,4 @@ scripts/service-account*
 .auto/
 fallow-report.json
 
+.actor-code

@@ -22,11 +22,13 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 import { read_items } from '#root/lib/items.js'
 import { read_leads } from '#root/src/scouts/leads.js'
 import {
+  all_confirmed,
   box_model_for,
   compare_finds,
   save_box_leads,
   compare_lines,
   confirms,
+  run_line,
   side_root
 } from '#root/src/scouts/compare.js'
 import { local_settings } from '#root/src/settings/environments.js'
@@ -46,6 +48,8 @@ const value_of = (args, flag) => {
   const at = args.indexOf(flag)
   return at === -1 ? '' : (args[at + 1] ?? '')
 }
+
+const RUNS_IN_A_ROW = 3
 
 const DEFAULT_MAC_MODEL = 'openrouter/deepseek/deepseek-v4-flash'
 const DEFAULT_BOX_MODEL = 'realness/standard'
@@ -85,9 +89,10 @@ export const box_prep = ({ root, plan }) =>
     `mkdir -p ${root}/vault/Projects`,
     'for p in /realness/* /realness/.[!.]*; do',
     '  b=$(basename "$p")',
-    '  case "$b" in vault|artifacts|nvim.root) continue;; esac',
+    '  case "$b" in vault|artifacts|apps|nvim.root) continue;; esac',
     `  ln -s "$p" "${root}/$b"`,
     'done',
+    `ln -s /apps ${root}/apps`,
     `cp -r /realness/vault/Projects/${plan} ${root}/vault/Projects/`,
     `rm -rf ${root}/vault/Projects/${plan}/Finds`,
     `rm -rf ${root}/vault/Projects/${plan}/Runs`,
@@ -246,7 +251,7 @@ export const read_side = ({
     ? ''
     : problems[0]?.problem ||
       failure_of(output) ||
-      (page?.trim() ? 'wrote 0 leads' : 'wrote no finds')
+      (page?.trim() ? '' : 'wrote no finds')
   return {
     model,
     leads: leads.length,
@@ -269,7 +274,7 @@ const main = async () => {
   const scout = args[0]?.startsWith('--') ? '' : (args[0] ?? '')
   if (!scout)
     throw new Error(
-      'usage: scout-compare.js <scout> --source <key> [--mac-model <m>] [--box-model <m>]'
+      'usage: scout-compare.js <scout> --source <key> [--runs <n>] [--mac-model <m>] [--box-model <m>]'
     )
   const source = value_of(args, '--source')
   if (!source) throw new Error('--source names the one source to compare')
@@ -292,101 +297,117 @@ const main = async () => {
   if (!page.includes('itemtype="/scout"'))
     throw new Error(`${scout} holds no scout.html`)
 
-  const stamp = String(Date.now())
-  const mac_root = resolve(here, 'artifacts', 'scout-compare', stamp, 'mac')
-  const box_root = `/realness/artifacts/scout-compare/${stamp}/box`
+  const runs = Number(value_of(args, '--runs') || RUNS_IN_A_ROW)
+  const results = []
+  const once = async () => {
+    const stamp = String(Date.now())
+    const mac_root = resolve(here, 'artifacts', 'scout-compare', stamp, 'mac')
+    const box_root = `/realness/artifacts/scout-compare/${stamp}/box`
 
-  say(`mac  ${scout} ${source} on ${mac_model}`)
-  side_root({ harness: here, root: mac_root, plan: scout })
-  const mac = await mac_run({
-    root: mac_root,
-    plan: scout,
-    source,
-    model: mac_model,
-    owner,
-    say
-  })
-  const mac_side = read_side({
-    plan_dir: join(mac_root, 'vault', 'Projects', scout),
-    model: mac_model,
-    seconds: mac.seconds,
-    output: mac.text
-  })
-  say(
-    mac_side.failed
-      ? `mac  failed: ${mac_side.failed}`
-      : `mac  ${mac_side.leads} leads, ${mac_side.problems} broken, in ${mac.seconds}s`
-  )
-
-  say(`box  ${scout} ${source} on ${box_model}`)
-  const list = await (await halo_call(halo, owner, 'GET', '/v1/actors')).json()
-  const actor = list.actors?.[0]
-  if (!actor) throw new Error('no box on this halo for that owner')
-  const target = { halo, owner, id: actor.id }
-  await exec_stream(
-    target,
-    ['/bin/sh', '-c', box_prep({ root: box_root, plan: scout })],
-    RUN_SECONDS,
-    'box',
-    say
-  )
-  const box = await exec_stream(
-    target,
-    [
-      '/bin/sh',
-      '-c',
-      box_run({
-        root: box_root,
-        plan: scout,
-        source,
-        model: box_model,
-        person: owner
-      })
-    ],
-    RUN_SECONDS,
-    'box',
-    say
-  )
-  const collected = await exec_stream(
-    target,
-    ['/bin/sh', '-c', box_collect({ root: box_root, plan: scout })],
-    COLLECT_SECONDS,
-    'box',
-    () => {}
-  )
-  const box_side = read_side({
-    html: between(collected.text, '<<<FOUND', '>>>FOUND'),
-    steps: between(collected.text, '<<<STEPS', '>>>STEPS'),
-    model: box_model,
-    seconds: box.seconds,
-    output: box.text
-  })
-  say(
-    box_side.failed
-      ? `box  failed: ${box_side.failed}`
-      : `box  ${box_side.leads} leads, ${box_side.problems} broken, in ${box.seconds}s`
-  )
-
-  const diff = compare_finds(box_side.found, mac_side.found)
-  const result = { box: box_side, mac: mac_side, diff }
-  say('')
-  for (const line of compare_lines(result)) say(line)
-  say('')
-  if (box_side.leads) {
-    const saved = await save_box_leads({
-      plan_dir: join(vault_dir, 'Projects', scout),
-      label: scout,
+    say(`mac  ${scout} ${source} on ${mac_model}`)
+    side_root({ harness: here, root: mac_root, plan: scout })
+    const mac = await mac_run({
+      root: mac_root,
+      plan: scout,
       source,
-      leads: box_side.found,
-      person: `/${owner}`
+      model: mac_model,
+      owner,
+      say
     })
-    say(`box  saved ${saved.fresh.length} new, ${saved.repeats.length} repeats`)
+    const mac_side = read_side({
+      plan_dir: join(mac_root, 'vault', 'Projects', scout),
+      model: mac_model,
+      seconds: mac.seconds,
+      output: mac.text
+    })
+    say(
+      mac_side.failed
+        ? `mac  failed: ${mac_side.failed}`
+        : `mac  ${mac_side.leads} leads, ${mac_side.problems} broken, in ${mac.seconds}s`
+    )
+
+    say(`box  ${scout} ${source} on ${box_model}`)
+    const list = await (
+      await halo_call(halo, owner, 'GET', '/v1/actors')
+    ).json()
+    const actor = list.actors?.[0]
+    if (!actor) throw new Error('no box on this halo for that owner')
+    const target = { halo, owner, id: actor.id }
+    await exec_stream(
+      target,
+      ['/bin/sh', '-c', box_prep({ root: box_root, plan: scout })],
+      RUN_SECONDS,
+      'box',
+      say
+    )
+    const box = await exec_stream(
+      target,
+      [
+        '/bin/sh',
+        '-c',
+        box_run({
+          root: box_root,
+          plan: scout,
+          source,
+          model: box_model,
+          person: owner
+        })
+      ],
+      RUN_SECONDS,
+      'box',
+      say
+    )
+    const collected = await exec_stream(
+      target,
+      ['/bin/sh', '-c', box_collect({ root: box_root, plan: scout })],
+      COLLECT_SECONDS,
+      'box',
+      () => {}
+    )
+    const box_side = read_side({
+      html: between(collected.text, '<<<FOUND', '>>>FOUND'),
+      steps: between(collected.text, '<<<STEPS', '>>>STEPS'),
+      model: box_model,
+      seconds: box.seconds,
+      output: box.text
+    })
+    say(
+      box_side.failed
+        ? `box  failed: ${box_side.failed}`
+        : `box  ${box_side.leads} leads, ${box_side.problems} broken, in ${box.seconds}s`
+    )
+
+    const diff = compare_finds(box_side.found, mac_side.found)
+    const result = { box: box_side, mac: mac_side, diff }
+    say('')
+    for (const line of compare_lines(result)) say(line)
+    say('')
+    if (box_side.leads) {
+      const saved = await save_box_leads({
+        plan_dir: join(vault_dir, 'Projects', scout),
+        label: scout,
+        source,
+        leads: box_side.found,
+        person: `/${owner}`
+      })
+      say(
+        `box  saved ${saved.fresh.length} new, ${saved.repeats.length} repeats`
+      )
+    }
+    say(confirms(result) ? 'confirmed' : 'not confirmed')
+    say(
+      `both sides kept in ${resolve(here, 'artifacts', 'scout-compare', stamp)}`
+    )
+    return result
   }
-  say(confirms(result) ? 'confirmed' : 'not confirmed')
-  say(
-    `both sides kept in ${resolve(here, 'artifacts', 'scout-compare', stamp)}`
-  )
-  if (!confirms(result)) process.exitCode = 1
+
+  for (let index = 1; index <= runs; index += 1) {
+    results.push(await once())
+    say(run_line(index, runs, results.at(-1)))
+  }
+  if (runs > 1)
+    say(`${results.filter(confirms).length} of ${runs} runs confirmed`)
+  if (!all_confirmed(results)) process.exitCode = 1
 }
 
 /** The newest run folder a plan holds, by name. */

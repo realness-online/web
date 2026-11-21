@@ -443,3 +443,17 @@ test('a chat turn blocks answers printed through bash; the terminal does not', a
   assert.equal(allowed, undefined)
   close()
 })
+
+test('commands lists what pi offers, skills without their prefix', async () => {
+  const { pi, path, close } = setup()
+  pi.getCommands = () => [
+    { name: 'prewalk', description: 'Route the plan', source: 'extension' },
+    { name: 'skill:planning', description: 'Plan as a DAG', source: 'skill' }
+  ]
+  const replies = await command(path, 'commands')
+  close()
+  assert.deepEqual(replies.at(-1).commands, [
+    { name: 'prewalk', description: 'Route the plan' },
+    { name: 'planning', description: 'Plan as a DAG' }
+  ])
+})

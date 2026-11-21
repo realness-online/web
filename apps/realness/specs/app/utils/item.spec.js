@@ -1,7 +1,21 @@
 import { describe, it, expect } from 'vite-plus/test'
 import get_item, { hydrate, get_itemprops } from '@/utils/item'
+import { item_html } from '#root/lib/items.js'
 
 describe('@/utils/item', () => {
+  it('m1: reads the nested items the server writes', () => {
+    const html = item_html('plan', {
+      title: 'One',
+      active: ['s1', 'm1'],
+      nodes: { open: 3, done: 2 }
+    })
+    const fragment = hydrate(html)
+    const plan = get_itemprops(fragment.querySelector('[itemscope]'))
+    expect(plan.title).toBe('One')
+    expect(plan.active).toEqual(['s1', 'm1'])
+    expect(plan.nodes).toEqual({ open: '3', done: '2' })
+  })
+
   describe('hydrate', () => {
     it('returns null for empty string', () => {
       expect(hydrate('')).toBeNull()

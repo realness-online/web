@@ -1,3 +1,4 @@
+import { plans_html } from '#root/src/sync/vault-items.js'
 import { readFileSync as read_file_sync } from 'node:fs'
 import { join } from 'node:path'
 import {
@@ -102,14 +103,13 @@ const respond = (plans = PLANS) => {
   const spy = vi.fn(async () => ({
     ok: true,
     status: 200,
-    json: async () => ({ plans })
+    text: async () => plans_html(plans)
   }))
   vi.stubGlobal('fetch', spy)
   return spy
 }
 
-const at = search =>
-  vi.stubGlobal('location', { search, pathname: '/planning' })
+const at = search => vi.stubGlobal('location', { search, pathname: '/vault' })
 
 after_each(() => {
   vi.unstubAllGlobals()
@@ -131,7 +131,7 @@ describe('@/views/Planning', () => {
     const fetch = respond()
     const page = at_page()
     await flush_promises()
-    expect(fetch).toHaveBeenCalledWith('/v1/vault/plans', { headers: {} })
+    expect(fetch).toHaveBeenCalledWith('/v1/vault/projects', { headers: {} })
     const covers = page.findAll('section > article')
     expect(covers.length).toBe(2)
     expect(
@@ -198,7 +198,7 @@ describe('@/views/Planning', () => {
     expect(covers[0].attributes('hidden')).toBeDefined()
     expect(covers[1].attributes('hidden')).toBeUndefined()
     expect(pills[2].attributes('aria-pressed')).toBe('true')
-    expect(replace).toHaveBeenCalledWith(null, '', '/planning?area=SEEQ')
+    expect(replace).toHaveBeenCalledWith(null, '', '/vault?area=SEEQ')
   })
 
   it('waits for a restored sign-in, then asks with its token', async () => {
@@ -209,7 +209,7 @@ describe('@/views/Planning', () => {
     await flush_promises()
     current_user.value = { getIdToken: async () => 'token' }
     await flush_promises()
-    expect(fetch).toHaveBeenCalledWith('/v1/vault/plans', {
+    expect(fetch).toHaveBeenCalledWith('/v1/vault/projects', {
       headers: { authorization: 'Bearer token' }
     })
     current_user.value = null
@@ -277,6 +277,43 @@ describe('@/views/Planning', () => {
         .filter(cover => cover.attributes('hidden') === undefined)
         .map(cover => cover.get('[itemprop="headline"]').text())
     ).toEqual(['Big plan'])
+  })
+
+  it('hides archived plans until the archive pill is on', async () => {
+    at('')
+    const replace = vi.spyOn(history, 'replaceState')
+    respond([
+      ...PLANS,
+      {
+        itemid: '/+1555/plans/old',
+        path: 'Archive/Projects/music-mpc.md',
+        title: 'Old plan',
+        area: 'Music',
+        archived: true,
+        diagram: null,
+        nodes: { open: 0, done: 2, active: [], blocked: [] }
+      }
+    ])
+    const page = at_page()
+    await flush_promises()
+    const shown = () =>
+      page
+        .findAll('section > article')
+        .filter(cover => cover.attributes('hidden') === undefined)
+        .map(cover => cover.get('[itemprop="headline"]').text())
+    const areas = () =>
+      page
+        .get('nav[aria-label="Plans by area"]')
+        .findAll('button')
+        .map(pill => pill.text())
+    expect(shown()).toEqual(['Hosting', 'SEEQ leads'])
+    expect(areas()).toEqual(['All', 'Realness', 'SEEQ'])
+    const pill = page.get('nav[aria-label="Archive"] button')
+    expect(pill.attributes('aria-pressed')).toBe('false')
+    await pill.trigger('click')
+    expect(shown()).toEqual(['Hosting', 'SEEQ leads', 'Old plan'])
+    expect(areas()).toEqual(['All', 'Music', 'Realness', 'SEEQ'])
+    expect(replace).toHaveBeenCalledWith(null, '', '/vault?archived=')
   })
 
   it('opens on the area the address names', async () => {

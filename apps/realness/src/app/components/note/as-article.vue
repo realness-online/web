@@ -56,6 +56,20 @@
     await draw_diagrams(body.value)
   }
 
+  const summary_of = details =>
+    details.querySelector('summary')?.textContent?.trim() ?? ''
+
+  /** A new copy of the same note keeps the details the reader opened. */
+  const redraw = async () => {
+    const opened = new Set(
+      [...(body.value?.querySelectorAll('details[open]') ?? [])].map(summary_of)
+    )
+    await next_tick()
+    for (const details of body.value?.querySelectorAll('details') ?? [])
+      if (opened.has(summary_of(details))) details.open = true
+    await draw()
+  }
+
   on_mounted(draw)
-  watch(() => props.html, draw)
+  watch(() => props.html, redraw, { flush: 'pre' })
 </script>

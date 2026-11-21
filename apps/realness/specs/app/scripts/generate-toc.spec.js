@@ -46,6 +46,7 @@ describe('generate-toc', () => {
     const content_dir = join(dir, 'content')
     mkdir_sync(content_dir)
     write_file_sync(join(content_dir, 'documentation.md'), '## Start\n')
+    write_file_sync(join(content_dir, 'vault-docs.md'), '## Chat\n')
     write_file_sync(join(content_dir, 'terms.md'), '## Terms\n')
     write_file_sync(join(content_dir, 'privacy.md'), '')
     write_file_sync(join(content_dir, 'license.md'), '### License Text\n')
@@ -61,6 +62,9 @@ describe('generate-toc', () => {
       level: 2
     })
     expect(toc.documentation_toc.at(-1).id).toBe('changelog')
+    expect(toc.vault_docs_toc).toEqual([
+      { id: 'chat', title: 'Chat', level: 2 }
+    ])
     expect(toc.terms_toc).toEqual([{ id: 'terms', title: 'Terms', level: 2 }])
     expect(toc.privacy_toc).toEqual([])
     expect(toc.license_toc[0].level).toBe(3)

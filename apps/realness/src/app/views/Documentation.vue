@@ -3,9 +3,14 @@
   import AsPromptAgent from '@/components/as-prompt-agent.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
-  import { documentation_html_parts, changelog_html } from '@/utils/markdown'
-  import { documentation_toc } from '@/prerender/toc'
   import {
+    documentation_html_parts,
+    changelog_html,
+    vault_docs_html
+  } from '@/utils/markdown'
+  import { documentation_toc, vault_docs_toc } from '@/prerender/toc'
+  import {
+    computed,
     onMounted as mounted,
     onUnmounted as unmounted,
     ref,
@@ -14,7 +19,14 @@
   import { useRouter as use_router } from 'vue-router'
   const router = use_router()
 
-  const toc_items = documentation_toc
+  const { tab } = defineProps({
+    tab: { type: String, default: 'posters' }
+  })
+
+  const toc_items = computed(() =>
+    tab === 'vault' ? vault_docs_toc : documentation_toc
+  )
+  const vault_content = vault_docs_html()
   const {
     before: install_before,
     after: install_after,
@@ -26,10 +38,12 @@
 
   /** @param {MouseEvent} event */
   const on_content_click = event => {
-    const link = event.target?.closest?.('a[href^="#"]')
+    const link = event.target?.closest?.('a[href^="#"], a[href^="/"]')
     if (!link) return
     event.preventDefault()
-    router.replace({ hash: link.getAttribute('href') })
+    const href = link.getAttribute('href')
+    if (href.startsWith('#')) router.replace({ hash: href })
+    else router.push(href)
   }
 
   const active_id = ref(null)
@@ -81,6 +95,18 @@
   <section id="docs" data-page lang="en">
     <header>
       <h1>Documentation</h1>
+      <nav aria-label="Topics">
+        <router-link
+          to="/docs"
+          :aria-current="tab === 'posters' ? 'page' : undefined"
+          >Thoughts and posters</router-link
+        >
+        <router-link
+          to="/vault/docs"
+          :aria-current="tab === 'vault' ? 'page' : undefined"
+          >Vault</router-link
+        >
+      </nav>
     </header>
     <article>
       <nav v-if="toc_items.length" aria-label="Table of contents">
@@ -95,30 +121,37 @@
         </router-link>
       </nav>
       <section
+        v-if="tab === 'vault'"
         itemprop="content"
-        v-html="install_before"
+        v-html="vault_content"
         @click="on_content_click" />
-      <install-guide />
-      <section itemprop="content" v-html="install_after" />
-      <section v-if="install_realness" itemprop="self-host">
-        <section itemprop="content" v-html="install_realness" />
-        <as-prompt-agent />
-      </section>
-      <section itemprop="preferences">
-        <header>
-          <button type="button" @click="reset_preferences">Reset</button>
-          <h2 id="preferences">Preferences</h2>
-          <p>
-            Layers, geology, motion, 3D atmosphere - every poster responds to
-            what you turn on. Reset everything to start clean.
-          </p>
-        </header>
-        <preferences-menu icon />
-      </section>
-      <section itemprop="changelog">
-        <h2 id="changelog">Changelog</h2>
-        <section itemprop="content" v-html="changelog_content" />
-      </section>
+      <template v-else>
+        <section
+          itemprop="content"
+          v-html="install_before"
+          @click="on_content_click" />
+        <install-guide />
+        <section itemprop="content" v-html="install_after" />
+        <section v-if="install_realness" itemprop="self-host">
+          <section itemprop="content" v-html="install_realness" />
+          <as-prompt-agent />
+        </section>
+        <section itemprop="preferences">
+          <header>
+            <button type="button" @click="reset_preferences">Reset</button>
+            <h2 id="preferences">Preferences</h2>
+            <p>
+              Layers, geology, motion, 3D atmosphere - every poster responds to
+              what you turn on. Reset everything to start clean.
+            </p>
+          </header>
+          <preferences-menu icon />
+        </section>
+        <section itemprop="changelog">
+          <h2 id="changelog">Changelog</h2>
+          <section itemprop="content" v-html="changelog_content" />
+        </section>
+      </template>
     </article>
   </section>
 </template>
@@ -139,6 +172,24 @@
         margin-top: 0;
         text-align: center;
         color: var(--emphasis);
+      }
+
+      nav[aria-label='Topics'] {
+        display: flex;
+        justify-content: center;
+        gap: base-line;
+
+        a {
+          color: var(--accent);
+          text-decoration: none;
+          padding-block: base-line * 0.25;
+          border-block-end: 2px solid transparent;
+
+          &[aria-current='page'] {
+            color: var(--emphasis);
+            border-block-end-color: var(--emphasis);
+          }
+        }
       }
     }
 

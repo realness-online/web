@@ -410,10 +410,11 @@ const create_message_preparer =
     draft,
     status,
     working,
-    waiting_state
+    waiting_state,
+    pi_commands
   }) =>
   async message => {
-    const command = parse_chat_command(message)
+    const command = parse_chat_command(message, pi_commands.value)
     if (command?.unknown) {
       status.value = `Unknown command /${command.name}. Try ${chat_commands.map(known => `/${known.name}`).join(', ')}`
       return null
@@ -600,6 +601,9 @@ export const use_chat = (
     apply
   })
   const { watch } = watcher
+  const pi_commands = ref([])
+  /** @type {string | null} */
+  let pi_commands_actor = null
   const run = make_command_runner({
     actor,
     messages,
@@ -619,8 +623,22 @@ export const use_chat = (
     draft,
     status,
     working,
-    waiting_state
+    waiting_state,
+    pi_commands
   })
+
+  /** Pi's own commands, asked for once per actor; the browser's list stays without them. */
+  const load_pi_commands = async () => {
+    if (pi_commands_actor === actor.value || current_user.value || !actor.value)
+      return
+    pi_commands_actor = actor.value
+    try {
+      const reply = await run_chat_command(null, actor.value, 'commands')
+      pi_commands.value = reply?.commands ?? []
+    } catch {
+      pi_commands_actor = null
+    }
+  }
 
   const send = async () => {
     const message = draft.value.trim()
@@ -691,6 +709,8 @@ export const use_chat = (
     watch,
     retry,
     send,
+    pi_commands,
+    load_pi_commands,
     /** Clear the view; Pi's history remains. */
     clear() {
       messages.value = []

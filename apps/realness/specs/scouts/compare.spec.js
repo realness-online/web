@@ -12,11 +12,13 @@ import { join } from 'node:path'
 import { it } from 'node:test'
 import { out_path } from '#root/lib/output.js'
 import {
+  all_confirmed,
   box_model_for,
   compare_finds,
   save_box_leads,
   compare_lines,
   confirms,
+  run_line,
   side_root
 } from '#root/src/scouts/compare.js'
 
@@ -76,6 +78,61 @@ it('two runs compare by url, with both scores kept', () => {
   )
 })
 
+it('one company found at two urls is one lead, not two', () => {
+  const diff = compare_finds(
+    [FIND('https://a.test/1', 6, 'Toolkit LLC')],
+    [FIND('https://b.test/job/9', 8, 'Toolkit LLC')]
+  )
+  assert.equal(diff.box_only.length, 0)
+  assert.equal(diff.mac_only.length, 0)
+  assert.deepEqual(diff.both, [
+    {
+      url: 'https://a.test/1',
+      org: 'Toolkit LLC',
+      box_score: 6,
+      mac_score: 8,
+      mac_url: 'https://b.test/job/9'
+    }
+  ])
+})
+
+it('a find with no company compares by its url', () => {
+  const diff = compare_finds(
+    [FIND('https://a.test/1', 6, '')],
+    [FIND('https://a.test/1', 7, ''), FIND('https://a.test/2', 7, '')]
+  )
+  assert.equal(diff.both.length, 1)
+  assert.deepEqual(
+    diff.mac_only.map(find => find.url),
+    ['https://a.test/2']
+  )
+})
+
+it('three runs in a row each say confirmed, and one miss ends it', () => {
+  const side = leads => ({
+    model: 'm',
+    leads,
+    problems: 0,
+    seconds: 1,
+    reads: 1
+  })
+  const shared = compare_finds(
+    [FIND('https://a.test/1', 6, 'Toolkit')],
+    [FIND('https://a.test/1', 8, 'Toolkit')]
+  )
+  const apart = compare_finds(
+    [FIND('https://a.test/1', 6, 'Toolkit')],
+    [FIND('https://a.test/3', 7, 'PathAI')]
+  )
+  const hit = { box: side(1), mac: side(1), diff: shared }
+  const miss = { box: side(1), mac: side(1), diff: apart }
+  assert.equal(run_line(2, 3, hit), 'run 2 of 3  confirmed')
+  assert.equal(run_line(2, 3, miss), 'run 2 of 3  not confirmed')
+  assert.equal(all_confirmed([hit, hit, hit]), true)
+  assert.equal(all_confirmed([hit, miss, hit]), false)
+  assert.equal(all_confirmed([]), false, 'no run is not three in a row')
+})
+
 it('the table names what each side found alone', () => {
   const diff = compare_finds(
     [FIND('https://a.test/1', 6, 'Toolkit')],
@@ -128,6 +185,11 @@ it('a box run is confirmed only when both sides found a lead in common', () => {
   assert.equal(confirms(at(shared, 1, 1)), true)
   assert.equal(confirms(at(apart, 1, 1)), false, 'nothing in common')
   assert.equal(confirms(at(shared, 0, 1)), false, 'the box wrote no lead')
+  assert.equal(
+    confirms(at(compare_finds([], []), 0, 0)),
+    true,
+    'both found no one'
+  )
 })
 const FIND_PAGE = `<article itemscope itemtype="/find"><dl><dt>url</dt><dd><a itemprop="url" href="https://a.test/1">a</a></dd><dt>title</dt><dd><span itemprop="title">A</span></dd><dt>org</dt><dd><span itemprop="org">Toolkit</span></dd><dt>source</dt><dd><span itemprop="source">VueJobs</span></dd><dt>score</dt><dd><span itemprop="score">8</span></dd><dt>reason</dt><dd><span itemprop="reason">ownership and Vue work</span></dd></dl></article>`
 

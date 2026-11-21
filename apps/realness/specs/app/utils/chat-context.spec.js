@@ -35,8 +35,8 @@ describe('page context', () => {
   it('separates facts held in inline elements', () => {
     document.body.innerHTML =
       '<section aria-label="Current page"><article aria-label="Plans"><ul><li><span>Organizations</span><p><span>Realness</span><span>20 open</span><span>1 done</span></p></li></ul></article></section>'
-    expect(page_context({ path: '/planning' })).toEqual({
-      path: '/planning',
+    expect(page_context({ path: '/vault' })).toEqual({
+      path: '/vault',
       title: 'Plans',
       text: 'Organizations Realness 20 open 1 done'
     })
@@ -45,7 +45,7 @@ describe('page context', () => {
   it('names the page by its article label, not its logo heading', () => {
     document.body.innerHTML =
       '<section aria-label="Current page"><article aria-label="Plans"><header><h1>Realness</h1><p>Planning</p></header></article></section>'
-    expect(page_context({ path: '/planning' }).title).toBe('Plans')
+    expect(page_context({ path: '/vault' }).title).toBe('Plans')
   })
 
   it('names a note by its heading, not the generic Note label', () => {

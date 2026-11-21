@@ -96,6 +96,16 @@ it('a clean log still writes the run', async () => {
   await rm(root, { recursive: true })
 })
 
+it('the chrome script read as text is not a failed lease', () => {
+  const cat =
+    '{"type":"tool_execution_update","partialResult":{"content":[{"type":"text","text":"} catch (error) {\\n  exit(`realness chrome: ${error.message}`)\\n}\\n"}]}}'
+  assert.equal(dead_source(cat), null)
+  assert.match(
+    dead_source('realness chrome: no Chrome on http://127.0.0.1:9223\n'),
+    /no Chrome/
+  )
+})
+
 it('a refused story is one page lost; a refused source page ends the run', () => {
   const named = [
     'https://news.test/rss/search?q=x',

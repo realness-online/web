@@ -60,6 +60,7 @@ const INDEX_TIMEOUT_MS = 8000
 const END_OF_HEADERS = '\r\n\r\n'
 
 /** Common Crawl's public index and data hosts. */
+// fallow-ignore-next-line unused-export
 export const COMMON_CRAWL = {
   index: 'https://index.commoncrawl.org',
   data: 'https://data.commoncrawl.org'

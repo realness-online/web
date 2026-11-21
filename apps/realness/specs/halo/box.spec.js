@@ -217,10 +217,55 @@ maybe(
   }
 )
 
-test('BoxStore: seed_status reflects the template', () => {
-  const store = new BoxStore({ volume, template: '/opt/fc/template.ext4' })
+/** A template folder whose image records `label`. */
+const stamped = label => {
+  const dir = mkdtemp_sync(join(volume, 'template-'))
+  write_file_sync(join(dir, 'template-code'), `${label}\n`)
+  return join(dir, 'template.ext4')
+}
+
+test('BoxStore: seed_status matches when the image holds the shipped code', () => {
+  const store = new BoxStore({
+    volume,
+    template: stamped('abc'),
+    actor_code: () => 'abc'
+  })
   const status = store.seed_status()
   assert.equal(status.matches, true)
+  assert.equal(status.code, 'abc')
+})
+
+test('BoxStore: seed_status names an image that holds other code', () => {
+  const store = new BoxStore({
+    volume,
+    template: stamped('old'),
+    actor_code: () => 'new'
+  })
+  const status = store.seed_status()
+  assert.equal(status.matches, false)
+  assert.deepEqual(status.mismatches, ['image: old != new'])
+})
+
+test('BoxStore: an unstamped image never matches', () => {
+  const store = new BoxStore({
+    volume,
+    template: join(volume, 'none', 'template.ext4'),
+    actor_code: () => 'abc'
+  })
+  assert.equal(store.seed_status().matches, false)
+})
+
+test('BoxStore: refuses an actor when the image holds other code', async () => {
+  const store = new BoxStore({
+    volume,
+    template: stamped('old'),
+    actor_code: () => 'new'
+  })
+  await assert.rejects(
+    () => store.create('+14155550123'),
+    /image holds other code: image: old != new/
+  )
+  assert.equal(store.list().length, 0)
 })
 
 test('BoxStore: free space comes from its own volume', () => {

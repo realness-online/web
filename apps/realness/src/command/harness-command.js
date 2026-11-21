@@ -2,7 +2,8 @@ import { existsSync as exists_sync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { client } from '#root/src/files/client.js'
 import { person_target, sync_target } from '#root/src/files/target.js'
-import { actor_url, sync_actor } from '#root/src/harness/actor.js'
+import { actor_client, actor_url } from '#root/src/harness/actor.js'
+import { return_files } from '#root/src/harness/return.js'
 import {
   find_root,
   sync_harness,
@@ -96,6 +97,31 @@ const harness_options = rest => {
 }
 
 /**
+ * Why a command cannot run as asked, or null.
+ * @param {string} command
+ * @param {{ actor: boolean, session?: string }} call
+ */
+const usage_of = (command, { actor, session }) => {
+  if (command.startsWith('turn') && !session)
+    return 'turn commands need --session <file>'
+  if (command === 'return' && !actor) return 'return runs on an actor'
+  return null
+}
+
+/**
+ * k3: an actor's sync is its return: changes since its start copy, to quarantine.
+ * @param {{ root: string, state: string, service_url?: string, issue?: () => Promise<string> }} options
+ */
+const return_actor = async ({ root, state, service_url, issue }) => {
+  const { store } = await actor_client({
+    url: service_url ?? (await actor_url(root, state)),
+    issue,
+    state
+  })
+  return return_files({ root, state, store })
+}
+
+/**
  * @returns {Promise<number | null>} Exit code when turn-end stopped early, else null.
  */
 const end_turn = async ({
@@ -114,7 +140,7 @@ const end_turn = async ({
   const logged = await turn_end({ root, state, session, turn })
   if (logged.length && !json && !actor)
     stdout.write(`turn ${turn}: ${logged.length} change(s) logged\n`)
-  const syncs = !no_sync && (actor || local)
+  const syncs = !no_sync && !actor && local
   const claimed = syncs && claim_turn_sync(state)
   if (claimed) return null
   const skipped = syncs ? 'another turn-end is syncing' : null
@@ -224,8 +250,8 @@ export const run_harness = async (
   const json = rest.includes('--json')
   const dry_run = command === 'sync' && rest.includes('--dry-run')
   const { no_sync, session, turn } = harness_options(rest)
-  if (command.startsWith('turn') && !session) {
-    const message = 'turn commands need --session <file>'
+  const message = usage_of(command, { actor, session })
+  if (message) {
     if (json)
       stdout.write(
         `${JSON.stringify({
@@ -271,13 +297,7 @@ export const run_harness = async (
     return 0
   }
   if (actor) {
-    const result = await sync_actor({
-      root,
-      state,
-      url: service_url ?? (await actor_url(root, state)),
-      issue,
-      defer_edits: command === 'turn-end'
-    })
+    const result = await return_actor({ root, state, service_url, issue })
     stdout.write(
       `${JSON.stringify(json ? { ok: true, command, result } : result)}\n`
     )

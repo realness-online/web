@@ -7,8 +7,8 @@
  *
  * Scout code in the vault for the site, or for the URL's host, reads first.
  * A `--site` names the cookie jar the read uses, so a logged-in source reads
- * signed in. In a box, a plain read asks the halo through the door; on this
- * Mac, it runs the same web engine here. The engine tries a Common Crawl copy
+ * signed in. A plain read runs the web engine where it is, in a box or on
+ * this Mac. The engine tries a Common Crawl copy
  * first, then the site, then Chrome, then Firecrawl. `--fresh` skips the
  * crawled copy and the cache.
  *

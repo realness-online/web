@@ -1,5 +1,6 @@
 /**
- * v1: the planning index. A plan is a note in `Projects/`, a file or a folder's
+ * v1: the planning index. A plan is a note in `Projects/` or
+ * `Archive/Projects/`, a file or a folder's
  * `index.md`, whose itemid names a plan. Its summary comes from the note alone:
  * title, area, first diagram, and how many nodes stand in each state.
  */
@@ -16,10 +17,10 @@ const AREAS = {
   scouts: 'Scouts'
 }
 
-const PLAN_PATH = /^Projects\/(?:[^/]+\.md|[^/]+\/index\.md)$/
+const PLAN_PATH = /^(?:Archive\/)?Projects\/(?:[^/]+\.md|[^/]+\/index\.md)$/
 
 /**
- * @typedef {{ itemid: string, path: string, title: string, area: string, scout: boolean, diagram: string | null, nodes: { open: number, done: number, active: string[], blocked: string[] } }} PlanSummary
+ * @typedef {{ itemid: string, path: string, title: string, area: string, scout: boolean, archived: boolean, diagram: string | null, nodes: { open: number, done: number, active: string[], blocked: string[] } }} PlanSummary
  */
 
 /**
@@ -29,6 +30,7 @@ const PLAN_PATH = /^Projects\/(?:[^/]+\.md|[^/]+\/index\.md)$/
  */
 export const area_of = path => {
   const key = path
+    .replace(/^Archive\//, '')
     .split('/')[1]
     .replace(/\.md$/, '')
     .split('-')[0]
@@ -77,6 +79,7 @@ export const plan_summary = (path, raw, scout = false) => {
     title: /^# (.+)$/m.exec(body)?.[1].trim() ?? path,
     area: area_of(path),
     scout,
+    archived: path.startsWith('Archive/') || String(data.archived) === 'true',
     diagram,
     nodes: {
       open: rows.length - done,

@@ -94,7 +94,7 @@ it('whole-harness sync ignores the removed legacy starter override', async conte
   const report = await sync_harness({ root: harness, store: isolated })
   assert.ok(report.harness.files.pushed.includes('vault/note.md'))
   assert.equal(
-    (await isolated.cat('can://~/harness/vault/note.md')).toString(),
+    (await isolated.cat('can://~/vault/note.md')).toString(),
     'personal\n'
   )
 })
@@ -493,7 +493,7 @@ it('h1: a whole harness reaches a fresh VM, minus ignores, repos, and big files;
 
   const first = await sync_harness({ root: desktop, store: owner })
   assert.deepEqual(first.harness.files.too_big, ['work/huge.bin'])
-  assert.deepEqual(Object.keys(await owner.walk('can://~/harness/')).sort(), [
+  assert.deepEqual(Object.keys(await owner.walk('can://~/')).sort(), [
     '.ignore',
     'AGENTS.md',
     'work/code.md',
@@ -578,14 +578,14 @@ it('a1: two accounts sync matching work paths without sharing private files', as
       `VM post ${index}\n`
     )
     const stranger = accounts[1 - index].phone
-    const path = `can://people/${stranger}/harness/work/site/content/articles/post.md`
+    const path = `can://people/${stranger}/work/site/content/articles/post.md`
     await assert.rejects(owner.cat(path), { status: 403 })
     await assert.rejects(owner.put(path, 'overwrite'), { status: 403 })
-    await assert.rejects(owner.walk(`can://people/${stranger}/harness/work/`), {
+    await assert.rejects(owner.walk(`can://people/${stranger}/work/`), {
       status: 403
     })
     const response = await fetch(
-      `${url}/people/${accounts[index].phone}/harness/work/site/content/articles/post.md`
+      `${url}/people/${accounts[index].phone}/work/site/content/articles/post.md`
     )
     assert.equal(response.status, 403, 'sync does not publish work')
   }
@@ -598,7 +598,7 @@ it('gz2c: an empty workspace syncs its first work file, not apps', async () => {
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550133')
   })
-  await owner.put('can://~/harness/.ignore', '')
+  await owner.put('can://~/.ignore', '')
   const fresh = join(root, 'empty-apps')
   await mkdir(fresh, { recursive: true })
   await sync_harness({ root: fresh, store: owner })
@@ -607,10 +607,10 @@ it('gz2c: an empty workspace syncs its first work file, not apps', async () => {
   await writeFile(join(fresh, 'apps/baseline.md'), 'baseline')
   await sync_harness({ root: fresh, store: owner })
   assert.equal(
-    (await owner.cat('can://~/harness/work/first.md')).toString(),
+    (await owner.cat('can://~/work/first.md')).toString(),
     'first work file'
   )
-  await assert.rejects(owner.cat('can://~/harness/apps/baseline.md'), {
+  await assert.rejects(owner.cat('can://~/apps/baseline.md'), {
     status: 404
   })
 })
@@ -640,7 +640,7 @@ it('s2: with .ignore, an org folder syncs to its org; a stranger is refused', as
     (await member.cat('can://orgs/+team/Projects/p.md')).toString(),
     '# P\n'
   )
-  await assert.rejects(member.cat('can://~/harness/orgs/+team/Projects/p.md'), {
+  await assert.rejects(member.cat('can://~/orgs/+team/Projects/p.md'), {
     status: 404
   })
   const outsider = await files(join(root, 's2-stranger'), {
@@ -657,7 +657,7 @@ it('s2: with .ignore, an org folder syncs to its org; a stranger is refused', as
   })
 })
 
-it('x10: with .ignore, plan Syncs paths no longer write their old places', async () => {
+it('x10: with .ignore, plan Syncs paths and whole sync share one place', async () => {
   const owner = client({
     state: join(root, 'state'),
     trash: join(root, 'trash'),
@@ -670,18 +670,21 @@ it('x10: with .ignore, plan Syncs paths no longer write their old places', async
     'vault/notes/public.md': 'public',
     'vault/notes/private.md': 'private'
   })
+  await owner.put('can://~/posters/a.svg', '<svg/>')
   const report = await sync_harness({ root: desktop, store: owner })
   assert.deepEqual(report.synced, {})
+  await assert.rejects(readFile(join(desktop, 'posters/a.svg')), {
+    code: 'ENOENT'
+  })
+  await sync_harness({ root: desktop, store: owner, deletes: 'all' })
+  assert.equal((await owner.cat('can://~/posters/a.svg')).toString(), '<svg/>')
   assert.equal(
-    (await owner.cat('can://~/harness/vault/notes/public.md')).toString(),
+    (await owner.cat('can://~/vault/notes/public.md')).toString(),
     'public'
   )
-  for (const path of [
-    'can://~/vault/notes/public.md',
-    'can://~/vault/notes/private.md',
-    'can://~/harness/vault/notes/private.md'
-  ])
-    await assert.rejects(owner.cat(path), { status: 404 }, path)
+  await assert.rejects(owner.cat('can://~/vault/notes/private.md'), {
+    status: 404
+  })
 })
 
 it('h1: artifacts stay local on upload and restore, even when listed', async () => {
@@ -703,14 +706,13 @@ it('h1: artifacts stay local on upload and restore, even when listed', async () 
     'artifacts/preview.txt',
     'vault/notes/artifacts/result.svg'
   ])
-    for (const base of ['can://~/', 'can://~/harness/'])
-      await assert.rejects(owner.cat(`${base}${path}`), { status: 404 })
+    await assert.rejects(owner.cat(`can://~/${path}`), { status: 404 })
   assert.equal(
     await readFile(join(desktop, 'artifacts/preview.txt'), 'utf8'),
     'local preview'
   )
-  await owner.put('can://~/harness/artifacts/old.txt', 'old artifact')
-  await owner.put('can://~/harness/notes/artifacts/old.txt', 'old artifact')
+  await owner.put('can://~/artifacts/old.txt', 'old artifact')
+  await owner.put('can://~/notes/artifacts/old.txt', 'old artifact')
   const fresh = await files(join(root, 'artifacts-fresh'), {})
   await sync_harness({ root: fresh, store: owner })
   assert.equal(
@@ -745,12 +747,12 @@ for (const [index, folder] of ['.obsidian', '.smart-env'].entries()) {
       `${folder}/config.json`,
       `vault/nested/${folder}/index.bin`
     ]) {
-      for (const base of ['can://~/', 'can://~/harness/'])
+      for (const base of ['can://~/', 'can://~/'])
         await assert.rejects(owner.cat(`${base}${path}`), { status: 404 })
       assert.ok(await readFile(join(desktop, path)))
     }
     for (const path of [`${folder}/old.json`, `vault/nested/${folder}/old.bin`])
-      await owner.put(`can://~/harness/${path}`, 'old metadata')
+      await owner.put(`can://~/${path}`, 'old metadata')
     const fresh = await files(join(root, `${folder}-fresh`), {})
     await sync_harness({ root: fresh, store: owner })
     assert.equal(
@@ -777,14 +779,12 @@ it('h1: without a .ignore, only listed folders and history sync', async () => {
   const report = await sync_harness({ root: desktop, store: owner })
   assert.equal(report.harness, null)
   assert.deepEqual(report.synced.notes.pushed, ['a.md'])
-  await assert.rejects(
-    owner.walk('can://~/harness/').then(found => {
-      if (!Object.keys(found).length)
-        throw Object.assign(new Error('empty'), { status: 404 })
-    }),
-    { status: 404 }
+  assert.deepEqual(
+    Object.keys(await owner.walk('can://~/')).filter(
+      name => !name.startsWith('.pi/agent/sessions/')
+    ),
+    ['notes/a.md']
   )
-  await assert.rejects(owner.cat('can://~/artifacts/big.bin'), { status: 404 })
 })
 
 it('turn-end defers a saved-history edit and pushes a write', async () => {

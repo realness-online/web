@@ -6,9 +6,7 @@ import {
   mkdir
 } from 'node:fs/promises'
 import { join } from 'node:path'
-
-export const OG_WIDTH = 1200
-export const OG_HEIGHT = 630
+import { OG_HEIGHT, OG_WIDTH } from './og.js'
 
 /** @typedef {ReturnType<typeof create_images>} Images */
 

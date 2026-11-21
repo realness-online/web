@@ -10,7 +10,8 @@ import {
   issue_harness_pass,
   issue_recovery_pass
 } from '#root/src/sign-on/node/recovery-pass.js'
-import { actor_client, sync_actor } from '#root/src/harness/actor.js'
+import { actor_client } from '#root/src/harness/actor.js'
+import { return_files } from '#root/src/harness/return.js'
 import {
   fetch_skipped,
   light_policy,
@@ -35,8 +36,7 @@ let storage, server, url
 
 before(async () => {
   storage = store_of(disk(join(dir, 'bucket')))
-  const put = (path, body) =>
-    storage.put(`people/${phone}/harness/${path}`, body)
+  const put = (path, body) => storage.put(`people/${phone}/${path}`, body)
   await put('.ignore', '')
   await put(
     'package.json',
@@ -48,7 +48,7 @@ before(async () => {
   await put(BIG, randomBytes(2000))
   const month_ago = new Date(Date.now() - 30 * DAY)
   await utimes(
-    join(dir, 'bucket', `people/${phone}/harness/${OLD}.gz`),
+    join(dir, 'bucket', `people/${phone}/${OLD}.gz`),
     month_ago,
     month_ago
   )
@@ -71,7 +71,7 @@ after(async () => {
 
 it('vault history stays remote on a light VM until fetched', async () => {
   const owner = '+14155550140'
-  const prefix = `people/${owner}/harness/`
+  const prefix = `people/${owner}/`
   const old = 'vault/Sessions/old.jsonl'
   const recent = 'vault/Sessions/recent.jsonl'
   await storage.put(`${prefix}.ignore`, '')
@@ -101,11 +101,11 @@ it('vault history stays remote on a light VM until fetched', async () => {
     '{"type":"session","id":"recent"}\n'
   )
   const issue = async () => issue_harness_pass({ phone: owner, id }, secret)
-  const report = await sync_actor({ url, root, issue, state })
-  assert.deepEqual(report.harness.sessions.kept_both, [])
+  const { store } = await actor_client({ url, issue, state })
+  const nothing = { written: [], deleted: [], refused: [] }
+  assert.deepEqual(await return_files({ root, state, store }), nothing)
   await assert.rejects(readFile(join(root, old)), { code: 'ENOENT' })
   assert.ok(await storage.get(`${prefix}${old}`))
-  const { store } = await actor_client({ url, issue })
   assert.deepEqual(await fetch_skipped({ root, state, store, path: old }), {
     path: old,
     fetched: true
@@ -115,6 +115,7 @@ it('vault history stays remote on a light VM until fetched', async () => {
     '{"type":"session","id":"old"}\n'
   )
   assert.deepEqual([...read_skipped(state)], [])
+  assert.deepEqual(await return_files({ root, state, store }), nothing)
 })
 
 it('light policy: unset is full; true takes defaults; bad numbers refuse', () => {
@@ -144,7 +145,7 @@ it('light skips: big files anywhere, old files only in session history', () => {
   ])
 })
 
-it('a light VM leaves old history and big files in storage, keeps them through sync, and fetches on demand', async () => {
+it('a light VM leaves old history and big files in storage, returns none of them, and fetches on demand', async () => {
   const root = join(dir, 'vm')
   const state = join(root, '.pi/agent/state')
   await mkdir(root, { recursive: true })
@@ -166,20 +167,17 @@ it('a light VM leaves old history and big files in storage, keeps them through s
   assert.deepEqual([...read_skipped(state)], [OLD, BIG].sort())
 
   const issue = async () => issue_harness_pass({ phone, id }, secret)
-  const first = await sync_actor({ url, root, issue, state })
-  assert.deepEqual(
-    [...first.harness.files.conflicts, ...first.harness.sessions.conflicts],
-    []
-  )
+  const { store } = await actor_client({ url, issue, state })
+  const nothing = { written: [], deleted: [], refused: [] }
+  assert.deepEqual(await return_files({ root, state, store }), nothing)
   for (const path of [OLD, BIG]) {
     await assert.rejects(readFile(join(root, path)), { code: 'ENOENT' })
     assert.ok(
-      await storage.get(`people/${phone}/harness/${path}`),
+      await storage.get(`people/${phone}/${path}`),
       `${path} stays in storage`
     )
   }
 
-  const { store } = await actor_client({ url, issue })
   assert.deepEqual(await fetch_skipped({ root, state, store, path: OLD }), {
     path: OLD,
     fetched: true
@@ -194,17 +192,9 @@ it('a light VM leaves old history and big files in storage, keeps them through s
     fetched: false
   })
 
-  const second = await sync_actor({ url, root, issue, state })
-  assert.deepEqual(
-    [
-      ...second.harness.files.conflicts,
-      ...second.harness.sessions.conflicts,
-      ...second.harness.sessions.kept_both
-    ],
-    []
-  )
+  assert.deepEqual(await return_files({ root, state, store }), nothing)
   assert.equal(
-    (await storage.get(`people/${phone}/harness/${OLD}`)).body.toString(),
+    (await storage.get(`people/${phone}/${OLD}`)).body.toString(),
     '{"type":"session","old":true}\n'
   )
 })

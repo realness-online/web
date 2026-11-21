@@ -3,14 +3,8 @@
   "defaultProvider": "realness",
   "defaultModel": "standard",
   "defaultThinkingLevel": "off",
-  "packages": [
-    "npm:pi-mono-btw",
-    "npm:pi-mono-loop",
-    "npm:pi-rewind-hook",
-    "npm:pi-autoresearch",
-    "npm:pi-claude-oauth-adapter"
-  ],
-  "extensions": ["../extensions"],
+  "packages": ["npm:pi-mono-btw", "npm:pi-rewind-hook", "npm:pi-autoresearch", "npm:pi-claude-oauth-adapter"],
+  "extensions": ["../extensions", "-builtin:llama.cpp"],
   "prompts": ["../prompts"],
   "theme": "realness-light/realness-dark",
   "hideThinkingBlock": false,

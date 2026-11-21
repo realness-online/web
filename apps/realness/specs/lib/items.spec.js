@@ -60,3 +60,18 @@ it('an itemid before itemtype still reads', () => {
     '<article itemscope itemid="/plan/1" itemtype="/plan"><span itemprop="status">active</span></article>'
   assert.deepEqual(read_item(html, 'plan'), { status: 'active' })
 })
+
+it('m1: a list repeats its name, and a record is a nested item', () => {
+  const html = item_html('plan', {
+    title: 'One',
+    active: ['s1', 'm1'],
+    nodes: { open: 3, done: 2 }
+  })
+  assert.equal(html.match(/itemprop="active"/g)?.length, 2)
+  assert.ok(html.includes('<div itemprop="nodes" itemscope><dl>'))
+  assert.ok(html.includes('<span itemprop="open">3</span>'))
+  assert.equal(
+    item_html('plan', { active: [] }).includes('itemprop="active"'),
+    false
+  )
+})

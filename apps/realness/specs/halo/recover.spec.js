@@ -21,7 +21,8 @@ import {
   issue_harness_pass,
   issue_recovery_pass
 } from '#root/src/sign-on/node/recovery-pass.js'
-import { sync_actor } from '#root/src/harness/actor.js'
+import { actor_client } from '#root/src/harness/actor.js'
+import { return_files } from '#root/src/harness/return.js'
 import { turn_end, turn_start } from '#root/src/harness/turns.js'
 import { sync_service } from '#root/src/sync/server.js'
 import { recover } from '#root/src/harness/recover.js'
@@ -85,31 +86,26 @@ before(async () => {
       }
     })
   )
-  await storage.put(`people/${whole_phone}/harness/.ignore`, '')
+  await storage.put(`people/${whole_phone}/.ignore`, '')
   await storage.put(
-    `people/${whole_phone}/harness/package.json`,
+    `people/${whole_phone}/package.json`,
     JSON.stringify({ realness: { plans: 'vault/plans' } })
   )
+  await storage.put(`people/${whole_phone}/vault/plans/p.md`, '# Whole\n')
   await storage.put(
-    `people/${whole_phone}/harness/vault/plans/p.md`,
-    '# Whole\n'
-  )
-  await storage.put(
-    `people/${whole_phone}/harness/vault/95% Of Your Problems.md`,
+    `people/${whole_phone}/vault/95% Of Your Problems.md`,
     'actual note'
   )
   await storage.put(
-    `people/${whole_phone}/harness/vault/.obsidian/config.json`,
+    `people/${whole_phone}/vault/.obsidian/config.json`,
     'local only'
   )
   await storage.put(
-    `people/${whole_phone}/harness/vault/.smart-env/index.bin`,
+    `people/${whole_phone}/vault/.smart-env/index.bin`,
     'local only'
   )
-  await storage.put(
-    `people/${whole_phone}/harness/artifacts/preview.txt`,
-    'local only'
-  )
+  await storage.put(`people/${whole_phone}/artifacts/preview.txt`, 'local only')
+  await storage.put(`people/${whole_phone}/posters/a.svg`, '<svg/>')
   server = sync_service({
     storage,
     rights: rights(storage),
@@ -135,7 +131,7 @@ const run = async (root, passes) => {
 it('vault session settings survive whole and listed recovery', async () => {
   for (const whole of [false, true]) {
     const owner = whole ? '+14155550130' : '+14155550131'
-    const prefix = `people/${owner}/${whole ? 'harness/' : ''}`
+    const prefix = `people/${owner}/`
     const body =
       JSON.stringify({
         type: 'session',
@@ -228,7 +224,7 @@ it('v7: whole-harness recovery restores vault paths and plain percentages', asyn
   const [count, applied] = await run(root, [
     issue_recovery_pass({ phone: whole_phone, id }, secret)
   ])
-  assert.equal(count, 4)
+  assert.equal(count, 3)
   assert.deepEqual(applied, [])
   assert.equal(
     await readFile(join(root, 'vault/95% Of Your Problems.md'), 'utf8'),
@@ -241,7 +237,8 @@ it('v7: whole-harness recovery restores vault paths and plain percentages', asyn
   for (const path of [
     'vault/.obsidian/config.json',
     'vault/.smart-env/index.bin',
-    'artifacts/preview.txt'
+    'artifacts/preview.txt',
+    'posters/a.svg'
   ])
     await assert.rejects(readFile(join(root, path)), { code: 'ENOENT' })
 })
@@ -280,8 +277,7 @@ it("starter updates preserve a managed file's pending session edits", async () =
   )
   await writeFile(join(directory, 'skill.md'), latest)
   await writeFile(join(root, 'skill.md'), latest)
-  const put = (path, body) =>
-    storage.put(`people/${phone}/harness/${path}`, body)
+  const put = (path, body) => storage.put(`people/${phone}/${path}`, body)
   await put('.ignore', '')
   await put('.pi/starter.json', JSON.stringify(old_manifest))
   await put('skill.md', original)
@@ -371,8 +367,7 @@ it('recovery lays shipped code back when the saved harness never carried it', as
   await chmod(join(directory, '.pi/bin/pi'), 0o755)
   await mkdir(join(directory, '.pi'), { recursive: true })
   await writeFile(join(directory, '.pi/starter.json'), JSON.stringify(manifest))
-  const put = (path, body) =>
-    storage.put(`people/${phone}/harness/${path}`, body)
+  const put = (path, body) => storage.put(`people/${phone}/${path}`, body)
   await put('.ignore', '')
   await put('.pi/starter.json', JSON.stringify(manifest))
   const recovered = await recover(
@@ -392,7 +387,7 @@ it('recovery lays shipped code back when the saved harness never carried it', as
 
 // gz2c: starter files are baseline and never sync, so only a personal file
 for (const [name, gone] of [['a personal file', 'vault/notes/gone.md']])
-  it(`deleting ${name} in the first turn after recovery reaches the saved harness`, async () => {
+  it(`deleting ${name} in the first turn after recovery returns a delete to quarantine`, async () => {
     const phone = '+14155550127'
     const root = join(dir, `first-turn-${phone.slice(-2)}`)
     const state = join(root, '.pi/agent/state')
@@ -408,8 +403,7 @@ for (const [name, gone] of [['a personal file', 'vault/notes/gone.md']])
     }
     await mkdir(join(starter, '.pi'), { recursive: true })
     await writeFile(join(starter, '.pi/starter.json'), JSON.stringify(manifest))
-    const put = (path, body) =>
-      storage.put(`people/${phone}/harness/${path}`, body)
+    const put = (path, body) => storage.put(`people/${phone}/${path}`, body)
     await put('.ignore', 'artifacts/\n')
     await put('.pi/starter.json', JSON.stringify(manifest))
     await put('skills/critic/SKILL.md', stock)
@@ -422,14 +416,15 @@ for (const [name, gone] of [['a personal file', 'vault/notes/gone.md']])
     await turn_start({ root, state, session: 's.jsonl' })
     await rm(join(root, gone))
     await turn_end({ root, state, session: 's.jsonl', turn: 0 })
-    const report = await sync_actor({
+    const { store } = await actor_client({
       url,
-      root,
       state,
       issue: async () => issue_harness_pass({ phone, id }, secret)
     })
-    assert.deepEqual(report.harness.files.deleted, [gone])
-    assert.equal(await storage.get(`people/${phone}/harness/${gone}`), null)
+    const report = await return_files({ root, state, store })
+    assert.deepEqual(report.deleted, [gone])
+    assert.deepEqual(report.written, [])
+    assert.ok(await storage.get(`people/${phone}/${gone}`))
     assert.equal(
       await readFile(join(root, 'vault/notes/kept.md'), 'utf8'),
       'keep me\n'
@@ -438,7 +433,7 @@ for (const [name, gone] of [['a personal file', 'vault/notes/gone.md']])
 
 it('a fresh actor skips past-month sessions and pulls the sealed and current months', async () => {
   const owner = '+14155550132'
-  const prefix = `people/${owner}/harness/`
+  const prefix = `people/${owner}/`
   // Month names come from the clock, so derive them instead of pinning a date.
   const now = new Date()
   const current_month = now.toISOString().slice(0, 7)
@@ -451,7 +446,7 @@ it('a fresh actor skips past-month sessions and pulls the sealed and current mon
   const current_session = `${current_month}-20T02-00-00-000Z_abcdef.html`
   await storage.put(`${prefix}.ignore`, '')
   await storage.put(`${prefix}package.json`, JSON.stringify({}))
-  await storage.put(`${prefix}.memory/turns/${sealed}`, 'sealed earlier')
+  await storage.put(`${prefix}vault/.memory/turns/${sealed}`, 'sealed earlier')
   await storage.put(`${prefix}vault/Sessions/${past_session}`, 'old session')
   await storage.put(
     `${prefix}vault/Sessions/${current_session}`,
@@ -460,7 +455,7 @@ it('a fresh actor skips past-month sessions and pulls the sealed and current mon
   const root = join(dir, 'months')
   await run(root, [issue_recovery_pass({ phone: owner, id }, secret)])
   assert.equal(
-    await readFile(join(root, '.memory/turns', sealed), 'utf8'),
+    await readFile(join(root, '.pi/agent/memory/turns', sealed), 'utf8'),
     'sealed earlier'
   )
   assert.equal(
@@ -542,8 +537,7 @@ it("a fresh actor reads the starter's settings: sessions land packed where packa
       files: { 'package.json': hash(settings) }
     })
   )
-  const put = (path, body) =>
-    storage.put(`people/${phone}/harness/${path}`, body)
+  const put = (path, body) => storage.put(`people/${phone}/${path}`, body)
   await put('.ignore', '')
   const html = '<!doctype html><html><body>session</body></html>'
   await put(

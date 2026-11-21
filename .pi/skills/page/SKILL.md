@@ -32,19 +32,21 @@ An HTML page keeps its own head, styles, and scripts, so it needs no layout.
 - Structure first: semantic HTML with Schema.org microdata, one `<article>` per item.
 - The product renders the page. Nothing is copied.
 
+## Write the note
+
+1. Write `vault/Resources/<name>.md` with `title`, `created`, and `layout:`.
+2. Give it an itemid:
+   `node apps/realness/tools/publish/bin/publish.js items mint Resources/<name>.md --type pages`
+3. The link is `https://haight.realness.online/vault<itemid>`. The app serves it live.
+
 ## Checks
 
-1. `npm run check:page-layout` in `apps/realness`: six widths, no overflow.
-2. `soundness`: semantic HTML, microdata, palette only.
-3. `user-experience`: a person reads it without help.
+1. `npm run check:layouts` in `apps/realness`: every frame, in a browser.
+2. Open the link at 390 and 1920 pixels wide; `scrollWidth` stays within the window.
+3. `soundness`: semantic HTML, microdata, palette only.
+4. `user-experience`: a person reads it without help.
 
-## Publish
+## Give the link
 
-Build and publish with `apps/realness/tools/publish/bin/publish.js`:
-
-```sh
-node apps/realness/tools/publish/bin/publish.js app build <name>
-node apps/realness/tools/publish/bin/publish.js app publish <name> --github <owner/repo>
-```
-
-Give back the link, and publish again after every change.
+Give back the link. An edit shows at the same link, live.
+Publishing to GitHub waits; the plan decides it.

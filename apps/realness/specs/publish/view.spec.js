@@ -355,3 +355,33 @@ it('a build starts from an empty tree, so a dropped source leaves no page', asyn
     await rm(root, { recursive: true, force: true })
   }
 })
+
+it('e8: an app that names a palette ships that palette; the frames link it', async () => {
+  const root = await harness('palette', '# Hello\n', {
+    type: 'blog',
+    palette: 'share-more-stories'
+  })
+  try {
+    const built = await build_app(root, 'blog', { example })
+    const palette = await readFile(join(built.dist, 'palette.css'), 'utf8')
+    const color = await readFile(join(built.dist, 'color.css'), 'utf8')
+    assert.match(palette, /--sky: oklch\(0\.72 0\.098 217\)/)
+    assert.match(color, /--accent: var\(--sky\)/)
+    const page = await readFile(join(built.dist, 'blog/note.html'), 'utf8')
+    assert.match(page, /href="\/palette\.css"/)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+it('e8: an app with no palette keeps Realness', async () => {
+  const root = await harness('no-palette', '# Hello\n', { type: 'blog' })
+  try {
+    const built = await build_app(root, 'blog', { example })
+    const palette = await readFile(join(built.dist, 'palette.css'), 'utf8')
+    assert.match(palette, /--chalk:/)
+    assert.doesNotMatch(palette, /--sky:/)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})

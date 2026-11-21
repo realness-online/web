@@ -54,6 +54,16 @@ A plan is active only while it sits in the configured plans folder
 (`realness.plans`). A plan filed in an Area is parked; moving it back resumes
 it. This skill owns where a plan lives; the `planning` skill owns its shape.
 
+## In the app
+
+People read these facts on the Docs page's Vault tab (`/vault/docs`).
+Change both together.
+
+- Every note opens at `/vault/<itemid>`; a move or rename keeps the link.
+- A note's `layout:` line opens it in that frame: `article`, `canvas`, `deck`, or `print`.
+- HTML tool pages are listed at `/vault/tools`.
+- The app shows an edit live; nothing needs a build.
+
 ## Reading the vault
 
 Use `read`, `rg`, or `find` directly against `$VAULT`. Examples:

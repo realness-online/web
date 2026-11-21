@@ -82,30 +82,42 @@ const find_of = item => ({
 })
 
 /**
- * Two runs of one source, compared by the url each found, so a lead both sides
- * found is one row and a lead only one side found is its own.
+ * What makes two finds one lead: the company they name, else the url. Two
+ * sides read one company on a different page, so a url alone splits it.
+ * @param {{ url: string, org: string }} find
+ */
+const lead_key = find => (find.org ? `org:${find.org.toLowerCase()}` : find.url)
+
+/**
+ * Two runs of one source, compared by the company each found, so a lead both
+ * sides found is one row and a lead only one side found is its own.
  * @param {Record<string, string>[]} box the box's finds, as read from its page
  * @param {Record<string, string>[]} mac the Mac's finds
  */
 export const compare_finds = (box, mac) => {
   const mine = box.map(find_of)
   const theirs = mac.map(find_of)
-  const theirs_at = new Map(theirs.map(find => [find.url, find]))
-  const both = mine
-    .filter(find => theirs_at.has(find.url))
-    .map(find => ({
-      url: find.url,
-      org: find.org || theirs_at.get(find.url)?.org,
-      box_score: find.score,
-      mac_score: theirs_at.get(find.url)?.score
-    }))
-  const mine_at = new Set(mine.map(find => find.url))
+  const theirs_at = new Map(theirs.map(find => [lead_key(find), find]))
+  const both = mine.flatMap(find => {
+    const other = theirs_at.get(lead_key(find))
+    if (!other) return []
+    return [
+      {
+        url: find.url,
+        org: find.org || other.org,
+        box_score: find.score,
+        mac_score: other.score,
+        ...(other.url === find.url ? {} : { mac_url: other.url })
+      }
+    ]
+  })
+  const mine_at = new Set(mine.map(lead_key))
   return {
     box: mine,
     mac: theirs,
     both,
-    box_only: mine.filter(find => !theirs_at.has(find.url)),
-    mac_only: theirs.filter(find => !mine_at.has(find.url))
+    box_only: mine.filter(find => !theirs_at.has(lead_key(find))),
+    mac_only: theirs.filter(find => !mine_at.has(lead_key(find)))
   }
 }
 
@@ -153,10 +165,18 @@ export const compare_lines = ({ box, mac, diff }) => {
   ]
 }
 
-/** Whether the two runs agree closely enough to call the box confirmed. */
+/** Whether the two runs agree closely enough to call the box confirmed: a lead in common, or both found none. */
 export const confirms = ({ box, mac, diff }) =>
   !box.failed &&
   !mac.failed &&
-  box.leads > 0 &&
-  mac.leads > 0 &&
-  diff.both.length > 0
+  (box.leads > 0 && mac.leads > 0
+    ? diff.both.length > 0
+    : box.leads === 0 && mac.leads === 0)
+
+/** One line per run: its place, and whether the two sides agreed. */
+export const run_line = (index, total, result) =>
+  `run ${index} of ${total}  ${confirms(result) ? 'confirmed' : 'not confirmed'}`
+
+/** Every run confirmed, and at least one run: the box matched the Mac in a row. */
+export const all_confirmed = results =>
+  results.length > 0 && results.every(result => confirms(result))

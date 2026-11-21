@@ -81,9 +81,7 @@ it('fold merges every copy into its original, here and in storage', async () => 
   await writeFile(join(sessions, 'b.jsonl'), rows(head))
   await sync_harness({ root: harness, store, plans: [] })
   assert.ok(
-    (await store.walk('can://~/harness/.pi/agent/sessions/'))[
-      '--x--/a.conflict.jsonl'
-    ]
+    (await store.walk('can://~/.pi/agent/sessions/'))['--x--/a.conflict.jsonl']
   )
 
   const dry = await fold_conflicts({
@@ -120,7 +118,7 @@ it('fold merges every copy into its original, here and in storage', async () => 
     2,
     'copies go to the Trash'
   )
-  const remote = await store.walk('can://~/harness/.pi/agent/sessions/')
+  const remote = await store.walk('can://~/.pi/agent/sessions/')
   assert.equal(remote['--x--/a.conflict.jsonl'], undefined)
   assert.equal(remote['--x--/a.conflict-2.jsonl'], undefined)
 
@@ -128,9 +126,7 @@ it('fold merges every copy into its original, here and in storage', async () => 
   assert.deepEqual(after_fold.harness.sessions.pushed, ['--x--/a.jsonl'])
   assert.deepEqual(after_fold.harness.sessions.kept_both, [])
   assert.equal(
-    (
-      await store.cat('can://~/harness/.pi/agent/sessions/--x--/a.jsonl')
-    ).toString(),
+    (await store.cat('can://~/.pi/agent/sessions/--x--/a.jsonl')).toString(),
     await readFile(join(sessions, 'a.jsonl'), 'utf8')
   )
 })

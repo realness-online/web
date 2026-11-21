@@ -20,7 +20,7 @@ describe('@/router', () => {
     expect(router.currentRoute.value.params.itemid).toBe('+1555/plans/1')
     await router.push('/vault#/+1555/plans/2')
     expect(router.currentRoute.value.fullPath).toBe('/vault/+1555/plans/2')
-    await router.push('/vault/about')
+    await router.push('/vault/docs')
     expect(router.currentRoute.value.params.itemid).toBeUndefined()
   })
 
@@ -156,9 +156,9 @@ describe('@/router', () => {
 })
 
 describe('vault routes', () => {
-  it('gives the vault its own About and Docs', () => {
+  it('opens the vault docs as a tab of the docs page; About is gone', () => {
     const route_for = path => router.options.routes.find(r => r.path === path)
-    expect(route_for('/vault/about').component).toBeTypeOf('function')
-    expect(route_for('/vault/docs').component).toBeTypeOf('function')
+    expect(route_for('/vault/about')).toBeUndefined()
+    expect(route_for('/vault/docs').props).toEqual({ tab: 'vault' })
   })
 })

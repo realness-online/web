@@ -1,36 +1,62 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { mount } from '@vue/test-utils'
-import VaultAbout from '@/views/VaultAbout.vue'
-import VaultDocs from '@/views/VaultDocs.vue'
+import { readFileSync } from 'node:fs'
 
-const links_of = view =>
-  mount(view, {
-    global: {
-      stubs: {
-        'router-link': { props: ['to'], template: '<a :href="to"><slot /></a>' }
-      }
-    }
+const tab = readFileSync('src/app/content/vault-docs.md', 'utf8')
+const thoughts = readFileSync('src/app/content/documentation.md', 'utf8')
+
+describe('vault docs', () => {
+  it('links to every vault page it describes', () => {
+    const links = [...tab.matchAll(/\]\((\/vault[^)]*)\)/g)].map(m => m[1])
+    expect(links).toEqual([
+      '/vault',
+      '/vault/page#Areas/Realness/pages/commands.html',
+      '/vault/tools',
+      '/vault/page#Areas/Realness/pages/maps/modules.html',
+      '/vault/page#Areas/Realness/pages/maps/ways-in.html',
+      '/vault/page#Areas/Realness/pages/key-layouts.html'
+    ])
   })
-    .findAll('a')
-    .map(link => link.attributes('href'))
 
-describe('@/views/VaultAbout', () => {
-  it('links back to the vault and its docs', () => {
-    expect(links_of(VaultAbout)).toEqual(['/vault', '/vault/docs'])
+  it('holds the vault sections, and thoughts docs do not', () => {
+    for (const heading of [
+      'Chat',
+      'Your computer',
+      'Loops',
+      'Long-running work',
+      'Organizations',
+      'Work with the world',
+      'Advanced planning'
+    ]) {
+      expect(tab).toContain(`## ${heading}\n`)
+      expect(thoughts).not.toContain(`## ${heading}\n`)
+    }
+    expect(thoughts).not.toContain('### Vault\n')
   })
 })
 
-describe('@/views/VaultDocs', () => {
-  it('links to every vault page it describes', () => {
-    expect(links_of(VaultDocs)).toEqual([
-      '/vault',
-      '/vault/about',
-      '/vault',
-      '/vault/commands',
-      '/vault/tools',
-      '/vault/maps/modules',
-      '/vault/maps/ways-in',
-      '/vault/keys'
-    ])
+describe('the Vault tab and the vault skill', () => {
+  const skill = readFileSync('../../.pi/skills/vault/SKILL.md', 'utf8')
+
+  it('names every main folder the skill names', () => {
+    for (const folder of [
+      'Projects',
+      'Areas',
+      'Resources',
+      'Archive',
+      'Clippings'
+    ]) {
+      expect(skill).toContain(`\`${folder}/\``)
+      expect(tab).toContain(`| \`${folder}/\``)
+    }
+  })
+
+  it('gives the same note link and layouts as the skill', () => {
+    expect(skill).toContain('`/vault/<itemid>`')
+    expect(tab).toContain('`/vault/<itemid>`')
+    for (const layout of ['article', 'canvas', 'deck', 'print']) {
+      expect(skill).toContain(`\`${layout}\``)
+      expect(tab).toContain(`\`${layout}\``)
+    }
+    expect(tab).not.toContain('#itemid')
   })
 })

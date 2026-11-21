@@ -18,6 +18,8 @@
  */
 import { answer_release } from '#root/lib/release.js'
 import { is_vault_note, vault_events } from './vault-events.js'
+import { hold_refused, keep_refusal } from './refusals.js'
+import { hold_change, is_actor, owned_target } from './quarantine.js'
 import {
   createHash as create_hash,
   timingSafeEqual as timing_safe_equal
@@ -59,7 +61,16 @@ import { keeper } from './trash.js'
 import { git_token, GitRefused } from './git.js'
 import { HTTP } from '#root/lib/http.js'
 import { MIB } from '#root/lib/units.js'
-import { LIMIT_DEFAULT } from '#root/src/sync/vault.js'
+import { LIMIT_DEFAULT, vault_door } from '#root/src/sync/vault.js'
+import { storage_source } from '#root/src/sync/vault-source.js'
+import {
+  articles_html,
+  files_html,
+  hits_html,
+  note_html,
+  pages_html,
+  plans_html
+} from './vault-items.js'
 
 const LIMIT_MIB = 10
 const HASH_SHOWN = 12
@@ -791,61 +802,75 @@ const change_record = async ({
  */
 const answer_vault = async (vault, path, request, response) => {
   const query = new URL(request.url ?? '/', 'http://sync').searchParams
-  let body
+  /** @type {string} */
+  let page
   if (path === 'v1/vault/search')
-    body = {
-      notes: vault.search(
+    page = hits_html(
+      await vault.search(
         query.get('q') ?? '',
         Number(query.get('limit') ?? LIMIT_DEFAULT)
       )
-    }
+    )
   else if (path === 'v1/vault/note') {
     const text = await vault.note(query.get('path'))
     if (text === null) throw new Status(HTTP.NOT_FOUND)
-    body = { path: query.get('path'), text }
-  } else if (path === 'v1/vault/plans') body = { plans: vault.plans() }
-  else if (path === 'v1/vault/articles') body = { articles: vault.articles() }
-  else if (path === 'v1/vault/pages') body = { pages: await vault.pages() }
-  else if (path === 'v1/vault/commands')
-    body = { groups: await vault.commands() }
-  else if (path === 'v1/vault/keys') body = { keys: await vault.keys() }
+    page = note_html({ path: query.get('path') ?? '', text })
+  } else if (path === 'v1/vault/projects')
+    page = plans_html(await vault.plans())
+  else if (path === 'v1/vault/articles')
+    page = articles_html(await vault.articles())
+  else if (path === 'v1/vault/pages') page = pages_html(await vault.pages())
   else if (path === 'v1/vault/artifacts') {
     const wanted = query.get('path')
     if (wanted === null)
-      body = { files: await vault.artifacts(query.get('folder') ?? '') }
+      page = files_html(await vault.artifacts(query.get('folder') ?? ''))
     else {
       const file = await vault.artifact(wanted)
       if (file === null) throw new Status(HTTP.NOT_FOUND)
-      body = file
+      page = note_html(file)
     }
-  } else if (path === 'v1/vault/maps')
-    body = {
-      map: await vault.map_of(
-        /** @type {'modules' | 'ways-in'} */ (query.get('page') ?? '')
-      )
-    }
-  else throw new Status(HTTP.NOT_FOUND)
-  response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
-  response.end(JSON.stringify(body))
+  } else throw new Status(HTTP.NOT_FOUND)
+  response.writeHead(HTTP.OK, { 'content-type': 'text/html; charset=utf-8' })
+  response.end(page)
+}
+
+/**
+ * A reader's own vault: its pages, or a stream of its changes.
+ * @param {{ door_for: (phone: string | undefined) => ReturnType<typeof import('./vault.js').vault_door> | null, events: import('./vault-events.js').VaultEvents, who: Caller | null, path: string, request: import('node:http').IncomingMessage, response: import('node:http').ServerResponse }} call
+ */
+const answer_own_vault = async ({
+  door_for,
+  events,
+  who,
+  path,
+  request,
+  response
+}) => {
+  const owner = who?.harness ?? who?.phone
+  const door = door_for(owner)
+  if (!door?.allows(who)) throw new Status(HTTP.NOT_FOUND)
+  if (path === 'v1/vault/events')
+    events.listen(response, `people/${owner}/vault/`)
+  else await answer_vault(door, path, request, response)
 }
 
 /**
  * x9: one note, by itemid, opened only where `can` allows it.
- * @param {{ vault: ReturnType<typeof import('./vault.js').vault_door>, storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, request: import('node:http').IncomingMessage, response: import('node:http').ServerResponse, who: Caller | null }} call
+ * @param {{ door_for: (phone: string | undefined) => ReturnType<typeof import('./vault.js').vault_door> | null, storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, request: import('node:http').IncomingMessage, response: import('node:http').ServerResponse, who: Caller | null }} call
  */
 const answer_item = async ({
-  vault,
+  door_for,
   storage,
   rights,
   request,
   response,
   who
 }) => {
-  const found = vault.shared({
-    itemid: new URL(request.url ?? '/', 'http://sync').searchParams.get(
-      'itemid'
-    )
-  })
+  const itemid = new URL(request.url ?? '/', 'http://sync').searchParams.get(
+    'itemid'
+  )
+  const vault = door_for(/^\/(\+\d+)\//.exec(itemid ?? '')?.[1])
+  const found = vault ? await vault.shared({ itemid }) : null
   if (!found) throw new Status(HTTP.NOT_FOUND)
   const [, owner] = found.storage.split('/')
   const { grants, member_of } = await caller_grants(
@@ -857,8 +882,8 @@ const answer_item = async ({
   const org = await org_of(storage, found.storage, owner)
   if (!can({ ...who, member_of }, 'get', found.storage, grants, org))
     throw new Status(HTTP.NOT_FOUND)
-  response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
-  response.end(JSON.stringify(found))
+  response.writeHead(HTTP.OK, { 'content-type': 'text/html; charset=utf-8' })
+  response.end(note_html(found))
 }
 
 /** Top folders whose rules ask whether the caller is an admin. */
@@ -881,15 +906,31 @@ const org_of = (storage, path, owner) => {
 }
 
 /**
+ * k1: keep the bytes of a refused write in quarantine, so the change is not
+ * lost. A refused delete or list keeps nothing.
+ * @param {{ storage: SyncStorage, request: import('node:http').IncomingMessage, action: string, path: string, owner: string, who: Caller | null }} call
+ * @returns {Promise<string | null>}
+ */
+const hold_write = async ({ storage, request, action, path, owner, who }) => {
+  if (action !== 'write' || !owner) return null
+  const { body, packed } = await read_write(request).catch(() => ({
+    body: null,
+    packed: false
+  }))
+  if (!body) return null
+  return await hold_refused({ storage, body, packed, path, owner, who })
+}
+
+/**
  * Read, list, write, or delete one stored file, after can() allows it. An
  * anonymous read gets a cache header the CDN may keep.
- * @param {{ storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, admins: { has: (phone: string) => Promise<boolean> }, keep: ReturnType<typeof keeper>, events: ReturnType<typeof vault_events> }} sync
+ * @param {{ storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, admins: { has: (phone: string) => Promise<boolean> }, keep: ReturnType<typeof keeper>, events: ReturnType<typeof vault_events>, door_for: ReturnType<typeof vault_doors> }} sync
  * @param {import('node:http').IncomingMessage} request
  * @param {import('node:http').ServerResponse} response
  * @param {{ path: string, action: string, caller: Caller | null }} call caller is null when anonymous
  */
 const answer_record = async (
-  { storage, rights, admins, keep, events },
+  { storage, rights, admins, keep, events, door_for },
   request,
   response,
   { path, action, caller }
@@ -906,8 +947,19 @@ const answer_record = async (
     path
   )
   const org = await org_of(storage, path, owner)
-  if (!caller_allowed({ action, grants, member_of, org, path, who }))
+  if (!caller_allowed({ action, grants, member_of, org, path, who })) {
+    const held = await hold_write({
+      storage,
+      request,
+      action,
+      path,
+      owner,
+      who
+    })
+    await keep_refusal({ storage, owner, entry: { path, action, who, held } })
+    door_for(owner)?.changed()
     throw new Status(HTTP.FORBIDDEN)
+  }
 
   if (!caller && action === 'list') response.setHeader('cache-control', SHORT)
   if (action === 'list')
@@ -922,6 +974,26 @@ const answer_record = async (
         : { method: request.method, wanted: wanted_version(request.url), path }
     )
 
+  const target = is_actor(who) ? owned_target(path, action) : null
+  if (target) {
+    const { body, packed } =
+      action === 'write'
+        ? await read_write(request)
+        : { body: null, packed: false }
+    await hold_change({
+      storage,
+      ...target,
+      action,
+      who,
+      body,
+      packed,
+      base: version_from(request.headers['if-match']) ?? null
+    })
+    response.writeHead(HTTP.ACCEPTED)
+    response.end()
+    return
+  }
+
   await change_record({
     storage,
     request,
@@ -933,7 +1005,30 @@ const answer_record = async (
     keep
   })
   response.end()
-  if (is_vault_note(path)) events.send(path)
+  if (!is_vault_note(path)) return
+  events.send(path)
+  door_for(owner)?.changed()
+}
+
+/**
+ * w1: the door for one person's vault: the Mac's own door where one is set,
+ * else that person's vault in storage, one door each.
+ * @param {SyncStorage} storage
+ * @param {ReturnType<typeof vault_door> | null} vault the Mac's door, if any
+ * @returns {(phone: string | null | undefined) => ReturnType<typeof vault_door> | null}
+ */
+const vault_doors = (storage, vault) => {
+  const doors = new Map()
+  return phone => {
+    if (vault) return vault
+    if (!phone || !/^\+\d+$/.test(phone)) return null
+    if (!doors.has(phone))
+      doors.set(
+        phone,
+        vault_door({ source: storage_source(storage, phone), owner: phone })
+      )
+    return doors.get(phone)
+  }
 }
 
 /**
@@ -1036,6 +1131,8 @@ export const sync_service = ({
 
   const fenced = fence_reader(storage)
 
+  const door_for = vault_doors(storage, vault)
+
   /** A halo's record pass, checked against the key it registered. */
   const who_is = async request => {
     const header = request.headers.authorization
@@ -1125,21 +1222,14 @@ export const sync_service = ({
     }
     if (path === 'v1/vault/item' && method === 'GET') {
       const who = await who_is(request)
-      if (!vault) throw new Status(HTTP.NOT_FOUND)
-      await answer_item({ vault, storage, rights, request, response, who })
+      await answer_item({ door_for, storage, rights, request, response, who })
       return who
     }
     if (method === 'GET' && (await answer_vault_file(vault, path, response)))
       return null
     if (path.startsWith('v1/vault/') && method === 'GET') {
       const who = await who_is(request)
-      if (!vault) throw new Status(HTTP.NOT_FOUND)
-      if (!vault.allows(who)) throw new Status(HTTP.NOT_FOUND)
-      if (path === 'v1/vault/events') {
-        events.listen(response)
-        return who
-      }
-      await answer_vault(vault, path, request, response)
+      await answer_own_vault({ door_for, events, who, path, request, response })
       return who
     }
     if (route === 'POST v1/halo-pass') {
@@ -1153,7 +1243,7 @@ export const sync_service = ({
     if (!action) throw new Status(HTTP.METHOD_NOT_ALLOWED)
     const who = await who_is(request)
     await answer_record(
-      { storage, rights, admins, keep, events },
+      { storage, rights, admins, keep, events, door_for },
       request,
       response,
       {

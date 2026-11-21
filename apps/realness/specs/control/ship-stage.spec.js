@@ -48,7 +48,8 @@ it('the ship tree carries the harness, prompts, and starting examples', () => {
     }
   )
   for (const path of ['.pi/prompts/app.md', '.pi/prompts/site.md'])
-    assert.ok(existsSync(join(ship, path)), path)
+    assert.ok(!existsSync(join(ship, path)), `${path} is retired`)
+  assert.ok(existsSync(join(ship, '.pi/prompts/page.md')))
   for (const folder of ['apps', 'artifacts', 'vault', 'work'])
     assert.ok(existsSync(join(ship, folder)), `home has ${folder}/`)
   assert.deepEqual(readdirSync(join(ship, 'work')), [], 'no work ships')
@@ -64,19 +65,6 @@ it('the ship tree carries the harness, prompts, and starting examples', () => {
     '',
     'private harness sync is enabled without copying personal rules'
   )
-  assert.match(
-    readFileSync(join(ship, '.pi/prompts/site.md'), 'utf8'),
-    /apps\/site/
-  )
-  assert.match(
-    readFileSync(join(ship, '.pi/prompts/app.md'), 'utf8'),
-    /apps\/app/
-  )
-  for (const name of ['app', 'site'])
-    assert.doesNotMatch(
-      readFileSync(join(ship, `.pi/prompts/${name}.md`), 'utf8'),
-      /giget/
-    )
   for (const path of ['.pi/examples/static/src/build.js'])
     assert.ok(existsSync(join(ship, path)), path)
   for (const path of [

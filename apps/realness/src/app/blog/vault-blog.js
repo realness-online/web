@@ -6,6 +6,7 @@ import { render_article } from '../../../tools/publish/renderer/src/render.js'
 import { poster } from '../../../tools/publish/renderer/src/templates/figure.js'
 import { article_body } from '../../../tools/publish/renderer/src/templates/article.js'
 import { index_body } from '../../../tools/publish/renderer/src/templates/index.js'
+import { read_articles, read_note } from '@/utils/vault-items'
 
 /** The published blog's poster address, served from the vault instead. */
 const POSTER_SRC = 'src="/posters/'
@@ -104,10 +105,10 @@ const signed = token => ({
  * @param {string} url
  * @param {string | null} token
  */
-const json_of = async (url, token) => {
+const page_of = async (url, token) => {
   const response = await fetch(url, signed(token))
   if (!response.ok) throw new Error(`${response.status}`)
-  return response.json()
+  return response.text()
 }
 
 /**
@@ -143,11 +144,10 @@ const sizes_of = async names => {
  * @param {string | null} token
  */
 const note_of = async (path, token) => {
-  const { text } = await json_of(
-    `/v1/vault/note?path=${encodeURIComponent(path)}`,
-    token
+  const note = read_note(
+    await page_of(`/v1/vault/note?path=${encodeURIComponent(path)}`, token)
   )
-  return render_note(path, text)
+  return render_note(path, note?.text ?? '')
 }
 
 /**
@@ -155,10 +155,10 @@ const note_of = async (path, token) => {
  * @param {string | null} token
  * @returns {Promise<string[]>}
  */
-const article_paths = async token => {
-  const { articles } = await json_of('/v1/vault/articles', token)
-  return (Array.isArray(articles) ? articles : []).map(article => article.path)
-}
+const article_paths = async token =>
+  read_articles(await page_of('/v1/vault/articles', token)).map(
+    article => article.path
+  )
 
 /**
  * The blog index from the vault.

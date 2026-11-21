@@ -1,0 +1,25 @@
+mark[data-status] {
+  padding-inline: 0.25em;
+  border-radius: 0.2em;
+  color: var(--contrast);
+  font-weight: 600;
+  background: var(--working);
+
+  &[data-status='applied'] {
+    background: var(--accent);
+  }
+
+  &[data-status='applying'] {
+    background: var(--emphasis);
+  }
+
+  &[data-status='no-reply'] {
+    background: var(--warning);
+  }
+
+  &[data-status='dropped'] {
+    color: var(--muted-text);
+    background: var(--code-surface);
+    text-decoration: line-through;
+  }
+}

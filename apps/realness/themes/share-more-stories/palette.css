@@ -1,0 +1,9 @@
+:root {
+  --sky: oklch(0.72 0.098 217);
+  --marigold: oklch(0.69 0.137 52);
+  --sun: oklch(0.84 0.15 86);
+  --amber: oklch(0.81 0.146 77);
+  --rust: oklch(0.6 0.119 51);
+  --white: oklch(1 0 90);
+  --night: oklch(0.18 0 90);
+}

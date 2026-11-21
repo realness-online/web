@@ -121,7 +121,7 @@ const editLog = pi => {
   /** @type {{ root: string; session: string; } | undefined} */
   let open
 
-  /** Log the finished turn and sync, detached so pi never waits on the network. */
+  /** Log the finished turn, detached. Sync stays off until One Network lands. */
   const endTurn = () => {
     if (!open) return
     const { root, session } = open
@@ -130,14 +130,7 @@ const editLog = pi => {
       recursive: true
     })
     const out = open_sync_log(root)
-    const [command, args] = sync_command([
-      'turn-end',
-      '--session',
-      session,
-      '--turn',
-      String(turn),
-      ...(session === 'ephemeral' ? ['--no-sync'] : [])
-    ])
+    const [command, args] = sync_command(['turn-end', '--session', session, '--turn', String(turn), '--no-sync'])
     spawn(command, args, {
       cwd: root,
       detached: true,

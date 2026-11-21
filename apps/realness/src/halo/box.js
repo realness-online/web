@@ -54,8 +54,15 @@ import { issue_recovery_pass } from '#root/src/sign-on/node/recovery-pass.js'
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { hostname } from 'node:os'
 import { Mutex, PTY_PORT, check_command } from '#root/src/halo/actors.js'
+import { halo_packages } from '#root/src/settings/layout.js'
 import { ID_BYTES, MIB, MS_PER_DAY, MS_PER_SECOND } from '#root/lib/units.js'
-import { halo_code, read_code_stamp, stale_code } from '#root/lib/code-stamp.js'
+import {
+  halo_code,
+  read_code_stamp,
+  same_code,
+  shipped_actor_code,
+  stale_code
+} from '#root/lib/code-stamp.js'
 /* eslint-disable no-await-in-loop -- lifecycle steps run in order, as in actors.js; the Pi poll waits each turn */
 
 const LOG = logger('box')
@@ -116,19 +123,50 @@ export const write_resolver = etc =>
  * @param {string} realness the box's /realness on the VM
  * @param {string} owner a phone like +14155551234
  */
+/** Program code the image owns; every start replaces the box's copy. */
+const PROGRAM = [
+  '.pi/bin',
+  '.pi/skills',
+  '.pi/prompts',
+  '.pi/patches',
+  '.pi/extensions',
+  '.pi/examples',
+  '.pi/editors',
+  '.pi/agent/themes',
+  '.pi/agent/APPEND_SYSTEM.md',
+  'themes'
+]
+
+/** @param {string} path */
+const bytes_of = path => (exists_sync(path) ? read_file_sync(path) : null)
+
+/** @param {string} from @param {string} to */
+const replace = async (from, to) => {
+  rm_sync(to, { recursive: true, force: true })
+  mkdir_sync(dirname(to), { recursive: true })
+  await run('cp', ['-a', from, to])
+}
+
 /**
- * A box's harness is seeded once, but `.pi/bin` is program code: every start
- * replaces it with the template's, so it holds what the image holds, no more.
+ * A box's harness is seeded once, but its program code is the image's: every
+ * start replaces it, and replaces packages whose lock file changed.
  * @param {string} seed the template's harness folder
  * @param {string} realness the box's harness folder
  */
-export const refresh_bin = async (seed, realness) => {
-  const bin = join(seed, '.pi', 'bin')
-  if (!exists_sync(bin)) return
-  const target = join(realness, '.pi', 'bin')
-  rm_sync(target, { recursive: true, force: true })
-  mkdir_sync(target, { recursive: true })
-  await run('cp', ['-a', `${bin}/.`, target])
+export const refresh_program = async (seed, realness) => {
+  for (const [folder, lock] of halo_packages) {
+    const from = join(seed, folder)
+    if (!exists_sync(from)) continue
+    const fresh = bytes_of(join(seed, lock))
+    const held = bytes_of(join(realness, lock))
+    if (exists_sync(join(realness, folder)) && held && fresh?.equals(held))
+      continue
+    await replace(from, join(realness, folder))
+    if (fresh) await replace(join(seed, lock), join(realness, lock))
+  }
+  for (const path of PROGRAM)
+    if (exists_sync(join(seed, path)))
+      await replace(join(seed, path), join(realness, path))
 }
 
 /** Scratch older than this leaves a parked box. */
@@ -375,6 +413,7 @@ const CAPS = [
  * @property {number} [mib] memory limit
  * @property {number} [cpus] cpu limit
  * @property {number} [pids] process limit
+ * @property {() => string | null} [actor_code] the actor label the image must hold
  */
 
 export class BoxStore extends Store {
@@ -400,6 +439,7 @@ export class BoxStore extends Store {
     this.mib = options.mib ?? BOX_MIB
     this.cpus = options.cpus ?? BOX_CPUS
     this.pids = options.pids ?? BOX_PIDS
+    this.actor_code = options.actor_code ?? (() => shipped_actor_code())
     this.traces_dir = join(this.volume, TRACES)
     this.published_dir = join(this.volume, PUBLISHED)
     this.versions_dir = join(this.volume, VERSIONS)
@@ -649,7 +689,7 @@ export class BoxStore extends Store {
     const seed = join(loop, 'realness')
     if (!exists_sync(join(realness, 'AGENTS.md')) && exists_sync(seed))
       await run('cp', ['-a', `${seed}/.`, realness])
-    await refresh_bin(seed, realness)
+    await refresh_program(seed, realness)
     record.code = {
       halo: halo_code(),
       image: read_code_stamp(join(loop, 'etc', 'realness-code'))
@@ -883,6 +923,11 @@ export class BoxStore extends Store {
     if (this.closed) throw new HaloError('the halo is parking')
     if (!/^\+[1-9]\d{6,14}$/.test(owner))
       throw new BadRequest('verified owner required')
+    const seed = this.seed_status()
+    if (!seed.matches)
+      throw new HaloError(
+        `the image holds other code: ${seed.mismatches.join('; ')}`
+      )
     const id = mint_id()
     const startup = this.#startup(id, progress ?? {})
     const record = new Actor({
@@ -1498,12 +1543,16 @@ export class BoxStore extends Store {
     return exists_sync(root) && stat_sync(root).isDirectory() ? root : null
   }
 
+  /** Whether the image holds the actor code this halo was shipped with. */
   seed_status() {
+    const code = read_code_stamp(join(dirname(this.template), 'template-code'))
+    const expected = this.actor_code()
+    const matches = same_code(code, expected)
     return {
       built: exists_sync(this.template),
-      code: read_code_stamp(join(dirname(this.template), 'template-code')),
-      matches: true,
-      /** @type {string[]} */ mismatches: [],
+      code,
+      matches,
+      mismatches: matches ? [] : [`image: ${code} != ${expected}`],
       record: null
     }
   }

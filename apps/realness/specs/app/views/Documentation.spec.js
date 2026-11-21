@@ -23,7 +23,8 @@ vi.mock('@/utils/markdown', () => ({
     realness: '<h2 id="realness">Realness of your own</h2><p>Prompt body</p>',
     has_install_guide: true
   }),
-  changelog_html: () => '<h3 id="changelog-entry">1.0.0</h3><p>Shipped</p>'
+  changelog_html: () => '<h3 id="changelog-entry">1.0.0</h3><p>Shipped</p>',
+  vault_docs_html: () => '<h2 id="chat">Chat</h2>'
 }))
 
 vi.mock('@/prerender/toc', () => ({
@@ -32,7 +33,8 @@ vi.mock('@/prerender/toc', () => ({
     { id: 'quick-start', title: 'Quick start', level: 3 },
     { id: 'preferences', title: 'Preferences', level: 2 },
     { id: 'changelog', title: 'Changelog', level: 2 }
-  ]
+  ],
+  vault_docs_toc: [{ id: 'chat', title: 'Chat', level: 2 }]
 }))
 
 vi.mock('@/content/agent-prompt-instance.md?raw', () => ({
@@ -44,8 +46,9 @@ const router_link_stub = {
   template: '<a :href="to" :class="$attrs.class"><slot /></a>'
 }
 
-const mount = () =>
+const mount = (props = {}) =>
   shallowMount(Documentation, {
+    props,
     attachTo: document.body,
     global: {
       stubs: {
@@ -82,6 +85,29 @@ describe('@/views/Documentation', () => {
     expect(wrapper.find('#changelog').text()).toBe('Changelog')
     expect(wrapper.find('[itemprop="changelog"]').html()).toContain('Shipped')
     wrapper.unmount()
+  })
+
+  it('shows thoughts and posters by default, and the vault as its own tab', () => {
+    const posters = mount()
+    const tabs = posters.findAll('nav[aria-label="Topics"] a')
+    expect(tabs.map(tab => tab.attributes('href'))).toEqual([
+      '/docs',
+      '/vault/docs'
+    ])
+    expect(tabs[0].attributes('aria-current')).toBe('page')
+    expect(posters.find('#chat').exists()).toBe(false)
+    expect(posters.find('#changelog').exists()).toBe(true)
+    posters.unmount()
+    const vault = mount({ tab: 'vault' })
+    expect(
+      vault.findAll('nav[aria-label="Topics"] a')[1].attributes('aria-current')
+    ).toBe('page')
+    expect(vault.find('#chat').exists()).toBe(true)
+    expect(
+      vault.find('nav[aria-label="Table of contents"] a').attributes('href')
+    ).toBe('#chat')
+    expect(vault.find('#changelog').exists()).toBe(false)
+    vault.unmount()
   })
 
   it('resets preferences from the preferences panel', async () => {

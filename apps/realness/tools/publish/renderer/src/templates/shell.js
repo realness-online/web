@@ -1,5 +1,5 @@
 import { escape_html } from '../text.js'
-import { OG_WIDTH, OG_HEIGHT } from '../images.js'
+import { OG_WIDTH, OG_HEIGHT } from '../og.js'
 
 /**
  * @param {import('../types.js').Site} site

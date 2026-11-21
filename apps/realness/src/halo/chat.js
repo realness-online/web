@@ -8,7 +8,14 @@ const LOG = logger('halo')
 const WATCH_IDLE_MS = 5 * MS_PER_MINUTE
 const MESSAGE_LIMIT = 16_384
 /** The chat bridge's commands; anything else never reaches the guest. */
-const COMMANDS = new Set(['stop', 'new', 'compact', 'model', 'thinking'])
+const COMMANDS = new Set([
+  'stop',
+  'new',
+  'compact',
+  'model',
+  'thinking',
+  'commands'
+])
 const NDJSON = {
   'content-type': 'application/x-ndjson; charset=utf-8',
   'cache-control': 'no-store'

@@ -9,13 +9,12 @@ import { client } from '#root/src/files/client.js'
 import { version_sync } from '#root/src/files/version-node.js'
 import { unzip, zip } from '#root/src/files/zip.js'
 import { store_of } from '#root/src/can/store.js'
-import { issue_harness_pass } from '#root/src/sign-on/node/recovery-pass.js'
+import { dev_issuer } from '#root/src/sync/dev-token.js'
 import { rights } from '#root/src/sync/rights.js'
 import { sync_service } from '#root/src/sync/server.js'
 
-const secret = 'zip-sync-test-secret-at-least-thirty-two-bytes!!'
+const issuer = dev_issuer()
 const phone = '+14155550177'
-const id = 'a-0123456789ab'
 const dir = new URL(
   `../../../../artifacts/realness/zip-${randomUUID()}/`,
   import.meta.url
@@ -27,7 +26,8 @@ before(async () => {
   server = sync_service({
     storage,
     rights: rights(storage),
-    halo_pass_secret: secret,
+    project: issuer.project,
+    certs: issuer.certs,
     log: () => {}
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
@@ -39,8 +39,7 @@ after(async () => {
   await rm(dir, { recursive: true, force: true })
 })
 
-const store = () =>
-  client({ url, token: issue_harness_pass({ phone, id }, secret), phone })
+const store = () => client({ url, token: issuer.token(phone), phone })
 
 it('zip is deterministic: same content, same bytes, OS byte fixed', () => {
   const body = Buffer.from('<p>poster</p>\n'.repeat(50))
@@ -57,10 +56,10 @@ it('harness stores as .gz under plain names; versions hash plain; a second run i
   await writeFile(join(local, 'vault/note.md'), 'hello\n')
   const state = join(dir, 'desk-state')
 
-  const first = await store().sync(local, 'can://~/harness/', { state })
+  const first = await store().sync(local, 'can://~/', { state })
   assert.deepEqual(first.pushed, ['vault/note.md'])
 
-  const key = `people/${phone}/harness/vault/note.md`
+  const key = `people/${phone}/vault/note.md`
   const stored = await readFile(join(dir, 'bucket', `${key}.gz`))
   assert.equal(unzip(stored).toString(), 'hello\n')
   assert.equal(
@@ -68,27 +67,27 @@ it('harness stores as .gz under plain names; versions hash plain; a second run i
     version_sync(Buffer.from('hello\n'))
   )
 
-  const again = await store().sync(local, 'can://~/harness/', { state })
+  const again = await store().sync(local, 'can://~/', { state })
   assert.deepEqual([...again.pushed, ...again.pulled], [])
 
   const other = join(dir, 'other')
-  await store().sync(other, 'can://~/harness/', {
+  await store().sync(other, 'can://~/', {
     state: join(dir, 'other-state')
   })
   assert.equal(await readFile(join(other, 'vault/note.md'), 'utf8'), 'hello\n')
 })
 
 it('the same content zipped another way agrees, without a conflict or a loop', async () => {
-  const key = `people/${phone}/harness/vault/elsewhere.md`
+  const key = `people/${phone}/vault/elsewhere.md`
   const body = Buffer.from('made on a halo\n'.repeat(20))
   await storage.put(key, gzipSync(body, { level: 1 }), { encoding: 'gzip' })
   const local = join(dir, 'desk')
   await writeFile(join(local, 'vault/elsewhere.md'), body)
   const state = join(dir, 'desk-state')
 
-  const first = await store().sync(local, 'can://~/harness/', { state })
+  const first = await store().sync(local, 'can://~/', { state })
   assert.deepEqual(first.adopted, ['vault/elsewhere.md'])
   assert.deepEqual(first.kept_both, [])
-  const second = await store().sync(local, 'can://~/harness/', { state })
+  const second = await store().sync(local, 'can://~/', { state })
   assert.deepEqual([...second.pushed, ...second.pulled], [])
 })

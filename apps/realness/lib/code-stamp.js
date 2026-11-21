@@ -16,6 +16,9 @@ import { halo_files, halo_folders } from '#root/src/settings/layout.js'
 /** Where a built image records the actor label it holds. */
 const CODE_STAMP_FILE = '/etc/realness-code'
 
+/** Where a staged halo records the actor label it was shipped with. */
+export const SHIPPED_ACTOR_FILE = '.actor-code'
+
 const APP = resolve(import.meta.dirname, '..')
 const HARNESS = resolve(APP, '../..')
 const GUEST = 'server/halo/guest'
@@ -82,6 +85,14 @@ export const read_code_stamp = (file = CODE_STAMP_FILE) => {
     return null
   }
 }
+
+/**
+ * The actor label a halo expects its image to hold: the one the Mac wrote
+ * beside the halo's code when it shipped or started it.
+ * @param {string} [app] the `apps/realness` folder
+ */
+export const shipped_actor_code = (app = APP) =>
+  read_code_stamp(join(app, SHIPPED_ACTOR_FILE))
 
 /**
  * Whether two copies are the same code. A missing label is never a match.

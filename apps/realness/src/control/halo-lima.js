@@ -10,6 +10,7 @@
  * (`limactl shell` rather than `gcloud compute ssh`) and that Lima has no disks
  * to create: the VM's own filesystem holds the actors volume.
  */
+import { writeFileSync as write_file_sync } from 'node:fs'
 import { readFile as read_file } from 'node:fs/promises'
 import { GUEST_SECRETS, secret_path } from '#root/src/settings/secrets.js'
 import { join } from 'node:path'
@@ -25,7 +26,11 @@ import { store_of } from '#root/src/can/store.js'
 import { local_person } from '#root/src/harness/settings.js'
 import { out_path } from '#root/src/settings/output.js'
 import { local_runtime, runtime_matches } from './local-runtime.js'
-import { actor_code, same_code } from '#root/lib/code-stamp.js'
+import {
+  SHIPPED_ACTOR_FILE,
+  actor_code,
+  same_code
+} from '#root/lib/code-stamp.js'
 import { build } from './dev.js'
 
 /**
@@ -188,6 +193,7 @@ export const restart = async (
  * must not wait for a process that never exits.
  */
 const startStack = async (lima, config, { fresh = false } = {}) => {
+  write_file_sync(join(ROOT, SHIPPED_ACTOR_FILE), `${actor_code()}\n`)
   const health = await probeHealth(config.api)
   if (health && !fresh && runtime_matches(health))
     return { alreadyUp: true, health }

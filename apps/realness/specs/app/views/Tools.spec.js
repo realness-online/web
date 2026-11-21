@@ -17,6 +17,7 @@ vi.mock('@/utils/serverless', async () => {
 })
 
 import Tools from '@/views/Tools.vue'
+import { pages_html } from '#root/src/sync/vault-items.js'
 
 enable_auto_unmount(after_each)
 
@@ -45,7 +46,7 @@ describe('@/views/Tools', () => {
       vi.fn(async () => ({
         ok: true,
         status: 200,
-        json: async () => ({ pages: PAGES })
+        text: async () => pages_html(PAGES)
       }))
     )
     const page = at_page()
@@ -56,7 +57,7 @@ describe('@/views/Tools', () => {
       'Every command'
     ])
     expect(rows[1].get('a').attributes('href')).toBe(
-      '/planning/page#Areas/Realness/pages/commands.html'
+      '/vault/page#Areas/Realness/pages/commands.html'
     )
   })
 
@@ -66,7 +67,7 @@ describe('@/views/Tools', () => {
       vi.fn(async () => ({
         ok: true,
         status: 200,
-        json: async () => ({ pages: [] })
+        text: async () => pages_html([])
       }))
     )
     const empty = at_page()

@@ -28,7 +28,7 @@ export const update_commands = async (root, { page = join(root, 'artifacts/comma
   if (!id) throw new Error('Commands page must retain its itemid')
   const groups = order.map(name => [name, catalog.entries.filter(entry => entry.group === name)])
   const card = entry =>
-    `<li><header><h3>${escape(entry.title.replaceAll(':', ' / '))}</h3><span>${escape(entry.kind)} - ${escape(entry.package)}</span></header><p><strong>${escape(entry.review)}</strong> - ${escape(entry.review_reason)}</p><p><code>${escape(entry.display)}</code><button type="button" value="${escape(entry.command)}" aria-label="Copy ${escape(entry.display)}">Copy</button></p><details><summary>Source and details</summary><p>${escape(entry.definition)}</p><p>${escape(entry.options)}</p><p>${escape(entry.context)}</p><p>Source: <code>${escape(entry.source)}</code></p></details></li>`
+    `<li itemprop="hasPart" itemscope itemtype="/commands/command"><header><h3 itemprop="name">${escape(entry.title.replaceAll(':', ' / '))}</h3><span><span itemprop="kind">${escape(entry.kind)}</span> - <span itemprop="package">${escape(entry.package)}</span></span></header><p><strong itemprop="review">${escape(entry.review)}</strong> - <span itemprop="reason">${escape(entry.review_reason)}</span></p><p><code itemprop="display">${escape(entry.display)}</code><button type="button" value="${escape(entry.command)}" aria-label="Copy ${escape(entry.display)}">Copy</button><meta itemprop="command" content="${escape(entry.command)}"></p><details><summary>Source and details</summary><p itemprop="definition">${escape(entry.definition)}</p><p itemprop="options">${escape(entry.options)}</p><p itemprop="context">${escape(entry.context)}</p><p>Source: <code itemprop="source">${escape(entry.source)}</code></p></details></li>`
   const values = {
     itemid: escape(id),
     count: catalog.entries.length,
@@ -43,7 +43,7 @@ export const update_commands = async (root, { page = join(root, 'artifacts/comma
     commands: groups
       .map(
         ([name, entries], index) =>
-          `<section id="group-${index}"><h2>${escape(name)}</h2>${name === 'Deploy and release' ? '<p>These commands can change remote services or publish releases.</p>' : ''}<ul>${entries.map(card).join('\n')}</ul></section>`
+          `<section id="group-${index}" itemprop="hasPart" itemscope itemtype="/commands/group"><h2 itemprop="name">${escape(name)}</h2>${name === 'Deploy and release' ? '<p>These commands can change remote services or publish releases.</p>' : ''}<ul>${entries.map(card).join('\n')}</ul></section>`
       )
       .join('\n'),
     scope: escape(catalog.scope),

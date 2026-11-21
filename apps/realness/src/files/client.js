@@ -1184,6 +1184,28 @@ const read_api = ({ call, expect, key }) => {
     },
 
     /**
+     * k3: an actor's change, which the server holds in quarantine. `bytes`
+     * null is a delete; `base` is the version the actor started from.
+     * @param {string} path
+     * @param {Buffer | null} bytes
+     * @param {string | null} base
+     */
+    async hand_back(path, bytes, base) {
+      const guard = base
+        ? { 'if-match': `"${base}"` }
+        : { 'if-none-match': '*' }
+      const upload = bytes ? packed_upload(bytes) : null
+      await expect(
+        await call(bytes ? 'PUT' : 'DELETE', path, {
+          ...(upload && { body: upload.body }),
+          headers: { ...guard, ...upload?.headers }
+        }),
+        `return ${path}`,
+        [HTTP.ACCEPTED]
+      )
+    },
+
+    /**
      * sy15: what sync kept from deletes, `<day>/<time>/<path>` to version.
      * Yours by default; an org's (`+name`) for its founder.
      */

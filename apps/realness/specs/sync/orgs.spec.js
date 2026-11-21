@@ -273,13 +273,13 @@ it('only the founder publishes, and never the members page or secrets', async ()
 
 it('o2: a grant naming an org reaches its members, and no one else', async () => {
   const GRANTED = '+granted'
-  const private_folder = `people/${me}/harness/vault/Sessions/`
+  const private_folder = `people/${me}/vault/Sessions/`
   const file = `${private_folder}a.html`
   const grant = (grantee, type) => `
     <li itemscope itemtype="https://schema.org/DigitalDocumentPermission">
       <meta itemprop="grantee" content="${grantee}">
       <meta itemprop="permissionType" content="https://schema.org/${type}Permission">
-      <a itemprop="about" href="/${me}/harness/vault/Sessions/">Sessions</a>
+      <a itemprop="about" href="/${me}/vault/Sessions/">Sessions</a>
     </li>`
   assert.equal(
     await status(
@@ -313,12 +313,12 @@ it('o2: a grant naming an org reaches its members, and no one else', async () =>
 
 it('o2: a write grant to an org lets a member write there', async () => {
   const GRANTED = '+granted'
-  const folder = `people/${me}/harness/vault/Sessions/`
+  const folder = `people/${me}/vault/Sessions/`
   const grant = (grantee, type) => `
     <li itemscope itemtype="https://schema.org/DigitalDocumentPermission">
       <meta itemprop="grantee" content="${grantee}">
       <meta itemprop="permissionType" content="https://schema.org/${type}Permission">
-      <a itemprop="about" href="/${me}/harness/vault/Sessions/">Sessions</a>
+      <a itemprop="about" href="/${me}/vault/Sessions/">Sessions</a>
     </li>`
   assert.equal(
     await status(
@@ -339,7 +339,7 @@ it('o2: a write grant to an org lets a member write there', async () => {
 
 it('o2: removing a member ends their granted reads', async () => {
   const GRANTED = '+granted'
-  const file = `people/${me}/harness/vault/Sessions/a.html`
+  const file = `people/${me}/vault/Sessions/a.html`
   assert.equal(await status('GET', file, daughter), 200)
   assert.equal(
     await status('PUT', `orgs/${GRANTED}/members.html`, me, members(me)),
@@ -349,12 +349,12 @@ it('o2: removing a member ends their granted reads', async () => {
 })
 
 it('o2: a grant naming the commons reaches anyone', async () => {
-  const file = `people/${me}/harness/vault/Sessions/a.html`
+  const file = `people/${me}/vault/Sessions/a.html`
   const grant = (grantee, type) => `
     <li itemscope itemtype="https://schema.org/DigitalDocumentPermission">
       <meta itemprop="grantee" content="${grantee}">
       <meta itemprop="permissionType" content="https://schema.org/${type}Permission">
-      <a itemprop="about" href="/${me}/harness/vault/Sessions/">Sessions</a>
+      <a itemprop="about" href="/${me}/vault/Sessions/">Sessions</a>
     </li>`
   assert.equal(
     await status(

@@ -35,7 +35,7 @@ const door_of = jar => {
     },
     save: async (who, site, cookies) => wrote.push(['save', who, site, cookies])
   }
-  const door = new Door(store, '/s/{id}/', null, jars, null)
+  const door = new Door(store, '/s/{id}/', null, jars)
   return { door, record, wrote, root }
 }
 
@@ -103,4 +103,16 @@ it('a halo with no jars refuses the read', async t => {
   const got = await send({ op: 'site-cookies', site: 'yc' })
   assert.equal(got.ok, false)
   assert.match(got.error, /no cookie jars/)
+})
+
+it('the halo reads no pages; a box reads its own', async t => {
+  const { door, record, root } = door_of(null)
+  const { send, close } = await open(door, record)
+  t.after(async () => {
+    await close()
+    rmSync(root, { recursive: true, force: true })
+  })
+  const got = await send({ op: 'read', url: 'https://example.com/' })
+  assert.equal(got.ok, false)
+  assert.match(got.error, /unknown op 'read'/)
 })

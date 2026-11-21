@@ -9,7 +9,8 @@ import {
   halo_code,
   halo_code_files,
   read_code_stamp,
-  same_code
+  same_code,
+  shipped_actor_code
 } from '../../lib/code-stamp.js'
 
 /** A harness root with an app inside, holding the folders each label reads. */
@@ -97,4 +98,15 @@ it('an actor is current only when both its labels match the halo now', async () 
     stale_code({ halo: 'h1', image: 'i1' }, { halo: 'h1', image: null }),
     ['image']
   )
+})
+
+it('a staged halo expects the actor label shipped beside it', t => {
+  const { app, put } = harness(t)
+  put('apps/realness/.actor-code', 'shipped\n')
+  assert.equal(shipped_actor_code(app), 'shipped')
+})
+
+it('a halo shipped no actor label expects none', t => {
+  const { app } = harness(t)
+  assert.equal(shipped_actor_code(app), null)
 })

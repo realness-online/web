@@ -26,6 +26,8 @@ describe('scripts/scout-compare', () => {
       'cp -r /realness/vault/Projects/Scouts /r/vault/Projects/'
     )
     expect(prep).toContain('rm -rf /r/vault/Projects/Scouts/Runs')
+    expect(prep).toContain('ln -s /apps /r/apps')
+    expect(prep).toContain('vault|artifacts|apps|')
     const run = box_run({
       root: '/r',
       plan: 'Scouts',
@@ -63,6 +65,16 @@ describe('scripts/scout-compare', () => {
     expect(read('', 'scout failed: no model')).toBe('no model')
     expect(read('<p>x</p>')).toBe('the run wrote an empty page')
     expect(read(undefined)).toBe('wrote no finds')
+  })
+
+  it('counts a side that found no one, and says why, as a run', () => {
+    const side = read_side({
+      html: '<article><p>No one on these feeds asked for a poster or a print.</p></article>',
+      model: 'm',
+      seconds: 1
+    })
+    expect(side.leads).toBe(0)
+    expect(side.failed).toBeUndefined()
   })
 
   it('reads the newest run from a plan folder, or fails when none landed', () => {

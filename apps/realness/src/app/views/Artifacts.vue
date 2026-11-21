@@ -30,6 +30,7 @@
   import { computed, onMounted as on_mounted, ref } from 'vue'
   import ArtifactList from '@/components/artifact/as-list.vue'
   import { current_user } from '@/utils/serverless'
+  import { read_files, read_note } from '@/utils/vault-items'
 
   const files = ref([])
   const folder = ref('')
@@ -44,19 +45,19 @@
     const response = await fetch(path, {
       headers: token ? { authorization: `Bearer ${token}` } : {}
     })
-    return response.ok ? response.json() : null
+    return response.ok ? response.text() : null
   }
 
   const list = async (path = '') => {
     const payload = await read(
       `/v1/vault/artifacts?folder=${encodeURIComponent(path)}`
     )
-    if (!payload) {
+    if (payload === null) {
       error.value = 'Your artifacts could not load.'
       return
     }
     folder.value = path
-    files.value = payload.files
+    files.value = read_files(payload)
     shown.value = null
   }
 
@@ -65,12 +66,12 @@
     const payload = await read(
       `/v1/vault/artifacts?path=${encodeURIComponent(file.path)}`
     )
-    if (!payload) {
+    if (payload === null) {
       error.value = 'That file cannot show here.'
       return
     }
     error.value = ''
-    shown.value = payload
+    shown.value = read_note(payload)
   }
 
   const up = () => {

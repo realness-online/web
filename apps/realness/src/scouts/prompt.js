@@ -99,8 +99,9 @@ ${patterns.map(url => `   - ${url}`).join('\n')}`
    one-line reason. Use only what those pages say.
 3. Write ${run_dir}/finds.html once, one item per lead, exactly this shape.
    Writing it ends the run.
-4. A page that will not read, or a source with nothing in it, is a sentence on the
-   page itself. Write finds.html with no items, say why in one sentence, and stop.
+4. A page that will not read, a source with nothing in it, or a source where no
+   one fits, is a sentence on the page itself. Write finds.html with no items,
+   say why in one sentence, and stop. Never write an item that is not a lead.
 
 Read only the pages above. Any other page ends the run at once.
 

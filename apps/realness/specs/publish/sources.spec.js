@@ -399,3 +399,28 @@ it('a note carries its itemid in single, double, or no quotes', () => {
   for (const line of [`itemid: '${id}'`, `itemid: "${id}"`, `itemid: ${id}`])
     assert.equal(carried_itemid(`---\n${line}\n---\n# Plan\n`), id)
 })
+
+it('f4: a blog finds its articles under Areas/Blog, at their file names', async () => {
+  const note = id => `---\nitemid: '${author}/${id}'\n---\n# post\n`
+  const root = await vault_at('blog-find', {
+    'Areas/Blog/2021/DOM-the-ORM.md': note('articles/1'),
+    'Areas/Blog/civilizations shine on.md': note('articles/2'),
+    'Areas/Blog/plan.md': note('plans/3'),
+    'Projects/elsewhere.md': note('articles/4')
+  })
+  try {
+    await blog_at(root, [])
+    const { sources } = await app_sources(join(root, 'apps', 'blog'))
+    assert.deepEqual(
+      sources
+        .map(({ id, slug }) => ({ id, slug }))
+        .sort((a, b) => a.id.localeCompare(b.id)),
+      [
+        { id: `${author}/articles/1`, slug: 'DOM-the-ORM' },
+        { id: `${author}/articles/2`, slug: 'civilizations-shine-on' }
+      ]
+    )
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})

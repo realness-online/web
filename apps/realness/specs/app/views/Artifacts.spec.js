@@ -17,6 +17,7 @@ vi.mock('@/utils/serverless', async () => {
 })
 
 import Artifacts from '@/views/Artifacts.vue'
+import { files_html, note_html } from '#root/src/sync/vault-items.js'
 
 enable_auto_unmount(after_each)
 after_each(() => vi.unstubAllGlobals())
@@ -54,7 +55,7 @@ const answering = map => {
     return {
       ok: Boolean(body),
       status: body ? 200 : 404,
-      json: async () => body
+      text: async () => (body.files ? files_html(body.files) : note_html(body))
     }
   })
   vi.stubGlobal('fetch', spy)

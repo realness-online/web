@@ -48,7 +48,6 @@
     "test:sessions": "./.pi/bin/checks/test-sessions.sh",
     "feeds": "./.pi/skills/vault/rebuild-feeds.sh",
     "commands": "node ./.pi/bin/harness/commands.js",
-    "vault": "node ./.pi/bin/vault/build.js",
     "spend": "node ./.pi/bin/prewalk/spend.js",
     "weeks": "node ./vault/Projects/realness-planning-performance/weeks.js",
     "reads": "node ./.pi/bin/checks/read-limits.js",

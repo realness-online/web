@@ -11,7 +11,8 @@ import {
   issue_harness_pass,
   issue_recovery_pass
 } from '#root/src/sign-on/node/recovery-pass.js'
-import { sync_actor } from '#root/src/harness/actor.js'
+import { actor_client } from '#root/src/harness/actor.js'
+import { return_files } from '#root/src/harness/return.js'
 import { TASK_BASICS, task_paths } from '#root/src/harness/task.js'
 import { sync_service } from '#root/src/sync/server.js'
 import { recover } from '#root/src/harness/recover.js'
@@ -30,8 +31,7 @@ const PLAN =
 
 before(async () => {
   storage = store_of(disk(join(dir, 'bucket')))
-  const put = (path, body) =>
-    storage.put(`people/${phone}/harness/${path}`, body)
+  const put = (path, body) => storage.put(`people/${phone}/${path}`, body)
   await put('.ignore', '')
   await put(
     'package.json',
@@ -122,34 +122,30 @@ it('a task VM gets only its paths, writes files and folders there, and cannot re
   await mkdir(join(root, 'vault/Areas'), { recursive: true })
   await writeFile(join(root, 'vault/Areas/diary.md'), 'overwrite attempt\n')
   const issue = async () => issue_harness_pass({ phone, id, paths }, secret)
-  const reports = await sync_actor({ url, root, issue, state })
-  assert.deepEqual(
-    Object.values(reports).flatMap(report => report.conflicts),
-    []
-  )
+  const { store: actor } = await actor_client({ url, issue, state })
+  const report = await return_files({ root, state, store: actor })
+  assert.deepEqual(report.written.sort(), ['AGENTS.md', 'work/demo/a.js'])
+  assert.deepEqual(report.refused, ['vault/Areas/diary.md'])
   const stored = async path =>
-    (await storage.get(`people/${phone}/harness/${path}`)).body.toString()
-  assert.equal(await stored('work/demo/a.js'), 'two\n')
-  assert.equal(await stored('AGENTS.md'), 'guidance, edited\n')
+    (await storage.get(`people/${phone}/${path}`)).body.toString()
+  assert.equal(await stored('work/demo/a.js'), 'one\n')
+  assert.equal(await stored(`quarantine/${id}/work/demo/a.js`), 'two\n')
+  assert.equal(await stored(`quarantine/${id}/AGENTS.md`), 'guidance, edited\n')
   assert.equal(await stored('vault/Areas/diary.md'), 'personal\n')
 
-  const again = await sync_actor({ url, root, issue, state })
-  for (const report of Object.values(again))
-    assert.deepEqual(
-      [...report.pushed, ...report.kept_both, ...report.conflicts],
-      []
-    )
+  const again = await return_files({ root, state, store: actor })
+  assert.deepEqual(again, { written: [], deleted: [], refused: [] })
 
   const store = client({
     url,
     token: issue_harness_pass({ phone, id, paths }, secret),
     phone
   })
-  await assert.rejects(store.put('can://~/harness/vault/Areas/diary.md', 'x'), {
+  await assert.rejects(store.put('can://~/vault/Areas/diary.md', 'x'), {
     status: 403
   })
-  await assert.rejects(store.cat('can://~/harness/work/other/private.md'), {
+  await assert.rejects(store.cat('can://~/work/other/private.md'), {
     status: 403
   })
-  await assert.rejects(store.walk('can://~/harness/'), { status: 403 })
+  await assert.rejects(store.walk('can://~/'), { status: 403 })
 })

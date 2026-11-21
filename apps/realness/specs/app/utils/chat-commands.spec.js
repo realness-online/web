@@ -39,4 +39,13 @@ describe('chat commands', () => {
     expect(matching_commands('/compact now')).toEqual([])
     expect(matching_commands('hi')).toEqual([])
   })
+
+  it('adds the commands pi lists, and sends them to pi as text', () => {
+    const from_pi = [{ name: 'planning', description: 'Plan as a DAG' }]
+    expect(matching_commands('/pl', from_pi).map(c => c.name)).toEqual([
+      'planning'
+    ])
+    expect(parse_chat_command('/planning slash', from_pi)).toBeNull()
+    expect(parse_chat_command('/planning slash').unknown).toBe(true)
+  })
 })

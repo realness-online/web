@@ -35,7 +35,7 @@ the deny-all rules (m3) must cover every row.
 - itemids (`/+A/posters/<time>`) resolve to keys in `src/app/utils/itemid.js`.
 - Download URLs cached in IndexedDB (`forget_download_url`); stale after o10.
 - Sync records: `.pi/agent/state/sync/*.json`, keyed by server and folder.
-- Pi sessions: `.pi/agent/sessions/`, synced under `people/+A/harness/`.
+- Pi sessions: `.pi/agent/sessions/`, synced under `people/+A/`, at the same path.
 - `starter.json`: sha256 hex manifest of stock harness files.
 
 ## Gaps for o10

@@ -88,8 +88,8 @@ it('the same file command renews an actor pass and respects its path limit', asy
   const storage = store_of(disk(join(root, 'storage')))
   const phone = '+15555550123'
   const secret = 'actor-entry-test-secret-with-thirty-two-bytes'
-  await storage.put(`people/${phone}/harness/vault/note.md`, 'saved note')
-  await storage.put(`people/${phone}/harness/private/note.md`, 'private note')
+  await storage.put(`people/${phone}/vault/note.md`, 'saved note')
+  await storage.put(`people/${phone}/private/note.md`, 'private note')
   const server = sync_service({
     storage,
     rights: rights(storage),
@@ -127,20 +127,14 @@ it('the same file command renews an actor pass and respects its path limit', asy
     }
   }
   assert.equal(
-    await run(
-      ['files', 'cat', 'can://~/harness/vault/note.md', '--json'],
-      options
-    ),
+    await run(['files', 'cat', 'can://~/vault/note.md', '--json'], options),
     0
   )
   assert.equal(JSON.parse(output).result.content, 'saved note')
   assert.equal(issued, 2)
   output = ''
   assert.equal(
-    await run(
-      ['files', 'cat', 'can://~/harness/private/note.md', '--json'],
-      options
-    ),
+    await run(['files', 'cat', 'can://~/private/note.md', '--json'], options),
     1
   )
   assert.equal(JSON.parse(output).error.status, 403)

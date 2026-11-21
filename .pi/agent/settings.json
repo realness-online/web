@@ -5,14 +5,14 @@
   "defaultThinkingLevel": "minimal",
   "packages": [
     "npm:pi-mono-btw",
-    "npm:pi-mono-loop",
     "npm:pi-rewind-hook",
     "npm:pi-autoresearch",
     "npm:pi-claude-oauth-adapter",
     "npm:pi-mono-usage"
   ],
   "extensions": [
-    "../extensions"
+    "../extensions",
+    "-builtin:llama.cpp"
   ],
   "prompts": [
     "../prompts"
@@ -51,7 +51,6 @@
   "deviceId": "557cfcc6-cc6c-487a-a377-a7da8b9edb2d",
   "extensionChangelogVersions": {
     "{\"source\":\"npm:pi-mono-btw\",\"scope\":\"user\"}": "1.7.4",
-    "{\"source\":\"npm:pi-mono-loop\",\"scope\":\"user\"}": "1.7.3",
     "{\"source\":\"npm:pi-rewind-hook\",\"scope\":\"user\"}": "1.8.7",
     "{\"source\":\"npm:pi-autoresearch\",\"scope\":\"user\"}": "1.9.0",
     "{\"source\":\"npm:pi-claude-oauth-adapter\",\"scope\":\"user\"}": "0.2.2",

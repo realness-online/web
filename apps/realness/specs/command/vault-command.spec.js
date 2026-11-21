@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
 import { run_vault } from '#root/src/command/vault-command.js'
+import { hits_html, note_html } from '#root/src/sync/vault-items.js'
 
-const ask = async (args, reply = { notes: [], path: 'x.md', text: 'body' }) => {
+const ask = async (args, reply = note_html({ path: 'x.md', text: 'body' })) => {
   const seen = []
   let out = ''
   await run_vault(args, {
@@ -11,7 +12,7 @@ const ask = async (args, reply = { notes: [], path: 'x.md', text: 'body' }) => {
     issue: async () => 'pass',
     fetcher: async (address, init) => {
       seen.push({ address: new URL(address), init })
-      return new Response(JSON.stringify(reply), { status: 200 })
+      return new Response(reply, { status: 200 })
     }
   })
   return { seen, out }
@@ -43,6 +44,18 @@ it('search sends its words and limit, and --limit never joins the words', async 
 it('search without --limit keeps its first word', async () => {
   const { seen } = await ask(['search', 'release'])
   assert.equal(seen[0].address.searchParams.get('q'), 'release')
+})
+
+it('m3: note prints its text, and search prints each hit', async () => {
+  assert.equal((await ask(['note', 'x.md'])).out, 'body')
+  const hits = hits_html([
+    { path: 'Projects/a.md', title: 'A', text: 'a **train**' }
+  ])
+  assert.equal(
+    (await ask(['search', 'train'], hits)).out,
+    'Projects/a.md\n  a **train**\n'
+  )
+  assert.equal((await ask(['search', 'none'], '')).out, 'no notes match\n')
 })
 
 it('no verb or no words is the usage', async () => {

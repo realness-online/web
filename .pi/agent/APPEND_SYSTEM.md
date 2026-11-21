@@ -43,7 +43,7 @@ return [a, b.output].join('\n')
 The vault is the person's catalog and the system's state. Learn it before
 you design storage, add a data file, or link to a note.
 
-- Sync stores it at `people/+A/harness/vault/`. Organizations live beside
+- Sync stores it at `people/+A/vault/`. Organizations live beside
   people at `orgs/+name/`, not inside a vault. `can` (`src/can/`) reads
   `orgs/+name/members.html` and `people/+A/rights.html` and decides access.
 - Every file carries its own `itemid`: a frontmatter line in a note, the root

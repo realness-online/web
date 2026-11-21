@@ -1,0 +1,144 @@
+/**
+ * k2: `realness admit`, on the Mac. Read the changes actors returned, check
+ * each, and move the ones that pass into the Mac's own files; the next upload
+ * carries them to the cloud. The rest wait, listed with their reasons on
+ * `vault/Waiting.html`.
+ */
+import {
+  mkdir,
+  readFile as read_file,
+  writeFile as write_file
+} from 'node:fs/promises'
+import { dirname, join } from 'node:path'
+import { HTTP } from '#root/lib/http.js'
+import { item_html, read_items } from '#root/lib/items.js'
+import { to_trash } from '#root/src/files/client.js'
+import { WAITING_PAGE } from '#root/src/sync/quarantine.js'
+import { REFUSALS_PAGE } from '#root/src/sync/refusals.js'
+import { reasons_to_wait } from './admit-checks.js'
+/* eslint-disable no-await-in-loop -- changes apply in order, and a lost race reads again */
+
+/** The person's page of changes that wait. */
+export const WAITING_NOTE = 'vault/Waiting.html'
+
+const WAITING = `can://~/quarantine/${WAITING_PAGE}`
+const REFUSALS = `can://~/vault/${REFUSALS_PAGE}`
+
+/**
+ * A remote file's bytes, or null when it is gone.
+ * @param {{ cat: (path: string) => Promise<Buffer> }} store
+ * @param {string} path
+ */
+const remote_bytes = async (store, path) => {
+  try {
+    return await store.cat(path)
+  } catch (error) {
+    if (error.status === HTTP.NOT_FOUND) return null
+    throw error
+  }
+}
+
+/**
+ * The Mac's copy of a file, or null when it has none.
+ * @param {string} root
+ * @param {string} path
+ */
+const local_bytes = (root, path) =>
+  read_file(join(root, path)).catch(error => {
+    if (error.code === 'ENOENT') return null
+    throw error
+  })
+
+/**
+ * The page the person reads: every change that waits and why, then the
+ * writes sync refused, as sync recorded them.
+ * @param {Record<string, unknown>[]} waiting
+ * @param {Record<string, string>[]} refused
+ */
+const waiting_page = (waiting, refused) => `<!doctype html>
+<html lang="en" itemscope itemtype="https://schema.org/WebPage">
+<head><meta charset="utf-8" /><title>Waiting changes</title></head>
+<body><main>
+<h1 itemprop="name">Waiting changes</h1>
+<p>Changes actors returned that did not pass the checks, newest first.</p>
+${waiting.map(change => item_html('waiting', change)).join('')}<h2>Refused writes</h2>
+<p>Writes sync turned away, newest first.</p>
+${refused.map(refusal => item_html('refusal', refusal)).join('')}</main></body>
+</html>
+`
+
+/** One change, as it is named on the quarantine page. */
+const key_of = change => `${change.actor}\n${change.path}\n${change.at}`
+
+/**
+ * Take the changes that moved off the quarantine page. Actors add to it as
+ * this runs, so each write is guarded and a lost race reads again.
+ * @param {any} store
+ * @param {Set<string>} done
+ */
+const clear_moved = async (store, done) => {
+  for (let tries = 0; tries < 3; tries++) {
+    const version = await store.version(WAITING)
+    if (!version) return
+    const page = (await store.cat(WAITING)).toString('utf8')
+    const kept = page.replace(
+      /<article itemscope itemtype="\/change">[\s\S]*?<\/article>\n?/g,
+      item => {
+        const [change] = read_items(item, 'change')
+        return done.has(key_of(change)) ? '' : item
+      }
+    )
+    try {
+      await store.put(WAITING, Buffer.from(kept), {
+        'if-match': `"${version}"`
+      })
+      return
+    } catch (error) {
+      if (error.status !== HTTP.PRECONDITION_FAILED) throw error
+    }
+  }
+}
+
+/**
+ * @param {{ root: string, store: any, phone: string, trash: string }} options
+ * @returns {Promise<{ moved: string[], waiting: string[] }>}
+ */
+export const admit = async ({ root, store, phone, trash }) => {
+  const page = await remote_bytes(store, WAITING)
+  const changes = page ? read_items(page.toString('utf8'), 'change') : []
+  const moved = []
+  const waiting = []
+  const done = new Set()
+  for (const change of changes.toReversed()) {
+    const held =
+      change.held === 'nothing kept'
+        ? null
+        : `can://${change.held.replace(/^people\/[^/]+\//, '~/')}`
+    const bytes = held ? await remote_bytes(store, held) : null
+    if (held && !bytes) {
+      done.add(key_of(change))
+      continue
+    }
+    const local = await local_bytes(root, change.path)
+    const reasons = reasons_to_wait(change, { bytes, local, phone })
+    if (reasons.length) {
+      waiting.unshift({ ...change, reasons })
+      continue
+    }
+    const target = join(root, change.path)
+    if (bytes) {
+      await mkdir(dirname(target), { recursive: true })
+      await write_file(target, bytes)
+      await store.rm(held)
+    } else if (local) await to_trash(target, trash)
+    moved.push(change.path)
+    done.add(key_of(change))
+  }
+  if (done.size) await clear_moved(store, done)
+  const refusals = await remote_bytes(store, REFUSALS)
+  const refused = refusals
+    ? read_items(refusals.toString('utf8'), 'refusal')
+    : []
+  await write_file(join(root, WAITING_NOTE), waiting_page(waiting, refused))
+  return { moved, waiting: waiting.map(change => change.path) }
+}

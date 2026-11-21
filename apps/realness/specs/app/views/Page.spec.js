@@ -26,6 +26,7 @@ vi.mock('@/utils/vault-events', () => ({
 }))
 
 import Page from '@/views/Page.vue'
+import { note_html } from '#root/src/sync/vault-items.js'
 
 enable_auto_unmount(after_each)
 
@@ -42,7 +43,11 @@ const respond = (text = PAGE, sheet = SHEET) => {
   const spy = vi.fn(async url => ({
     ok: true,
     status: 200,
-    json: async () => ({ text: String(url).includes('.css') ? sheet : text })
+    text: async () =>
+      note_html({
+        path: String(url),
+        text: String(url).includes('.css') ? sheet : text
+      })
   }))
   vi.stubGlobal('fetch', spy)
   return spy
@@ -100,6 +105,40 @@ describe('@/views/Page', () => {
     expect(frame.attributes('srcdoc')).toContain('/palette.css')
     expect(page.find('section[itemprop="articleBody"]').exists()).toBe(false)
     expect(page.find('nav[aria-label="Related"]').exists()).toBe(false)
+  })
+
+  it('writes the stylesheets and scripts a page keeps beside it into its frame', async () => {
+    at('#Areas/Realness/pages/maps/modules.html')
+    const map =
+      '<!doctype html><html><head><link rel="stylesheet" href="https://realness.online/palette.css" /><link rel="stylesheet" href="maps.css" /></head><body><table></table><script type="module" src="modules.js"></script></body></html>'
+    const files = {
+      'modules.html': map,
+      'maps.css': 'table { color: red; }',
+      'modules.js': 'document.title = "$& filtered"'
+    }
+    const fetch = vi.fn(async url => {
+      const path = decodeURIComponent(String(url).split('path=')[1])
+      const name = path.split('/').at(-1)
+      return {
+        ok: true,
+        status: 200,
+        text: async () => note_html({ path, text: files[name] })
+      }
+    })
+    vi.stubGlobal('fetch', fetch)
+    const page = at_page()
+    await flush_promises()
+    const srcdoc = page.get('iframe').attributes('srcdoc')
+    expect(fetch).toHaveBeenCalledWith(
+      '/v1/vault/note?path=Areas%2FRealness%2Fpages%2Fmaps%2Fmodules.js',
+      { headers: { authorization: 'Bearer token' } }
+    )
+    expect(srcdoc).toContain('<style>table { color: red; }</style>')
+    expect(srcdoc).toContain(
+      '<script type="module">document.title = "$& filtered"</script>'
+    )
+    expect(srcdoc).toContain('href="https://realness.online/palette.css"')
+    expect(srcdoc).not.toContain('src="modules.js"')
   })
 
   it('shows a page whose article has no body section, as the session map has', async () => {

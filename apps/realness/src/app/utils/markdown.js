@@ -1,4 +1,5 @@
 import documentation_md from '@/content/documentation.md?raw'
+import vault_docs_md from '@/content/vault-docs.md?raw'
 import changelog_md from '../../../CHANGELOG.md?raw'
 import icons_svg from '../../../public/icons.svg?raw'
 import { marked } from 'marked'
@@ -47,12 +48,26 @@ export const inline_documentation_icons = html =>
 export const documentation_html = (content = documentation_md) =>
   inline_documentation_icons(String(marked.parse(content)))
 
+/** @returns {string} */
+export const vault_docs_html = () => documentation_html(vault_docs_md)
+
 /**
  * Render our own first-party markdown (legal pages, etc.) to HTML.
  * @param {string} content
  * @returns {string}
  */
-export const markdown_html = content => documentation_html(content)
+export const markdown_html = content =>
+  open_external_links(documentation_html(content))
+
+/**
+ * @param {string} html
+ * @returns {string}
+ */
+const open_external_links = html =>
+  html.replace(
+    /<a (?![^>]*\btarget=)([^>]*\bhref="https?:\/\/[^"]*"[^>]*)>/g,
+    '<a $1 target="_blank" rel="noopener">'
+  )
 
 const CODE_BLOCK =
   /<pre><code class="language-([\w-]+)">([\s\S]*?)<\/code><\/pre>/g
