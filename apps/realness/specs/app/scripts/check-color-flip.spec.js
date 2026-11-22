@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { main } from '../../../scripts/check-color-flip.js'
+import { main } from '#root/scripts/check-color-flip.js'
 
 const args = ['--dir', '.', '--route', '/x']
 

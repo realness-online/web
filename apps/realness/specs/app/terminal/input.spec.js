@@ -1,6 +1,6 @@
 import { readFileSync as read_file_sync } from 'node:fs'
-import { mount } from '../../../src/app/terminal/terminal.js'
-import { parse_theme } from '../../../src/app/terminal/themes/ghostty-theme.js'
+import { mount } from '#root/src/app/terminal/terminal.js'
+import { parse_theme } from '#root/src/app/terminal/themes/ghostty-theme.js'
 import { make_stage, mount_options } from './stage.js'
 import { terminal_file } from './wasm.js'
 

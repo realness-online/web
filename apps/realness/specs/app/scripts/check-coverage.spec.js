@@ -8,8 +8,8 @@ import {
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { product_paths } from '#root/src/settings/layout.js'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
-import { main } from '../../../scripts/check-coverage.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
+import { main } from '#root/scripts/check-coverage.js'
 
 const { app, frontend } = product_paths()
 const script = join(frontend, 'scripts/check-coverage.js')

@@ -1,4 +1,4 @@
-import renderer_css from '../../../tools/publish/renderer/static/style.css?inline'
+import renderer_css from '#root/tools/publish/renderer/static/style.css?inline'
 import { limit_blog_css } from './blog-css'
 
 const limited = limit_blog_css(renderer_css)

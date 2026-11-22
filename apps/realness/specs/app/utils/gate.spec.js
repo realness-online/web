@@ -17,7 +17,7 @@ import {
 import {
   development_settings,
   environment_settings
-} from '../../../src/settings/environments.js'
+} from '#root/src/settings/environments.js'
 
 const cloud_gate = development_settings.services.gate_url
 const user = { getIdToken: async () => 'id.token' }

@@ -5,7 +5,7 @@
     ref,
     watch
   } from 'vue'
-  import { startup_stages } from '../../../harness/startup.js'
+  import { startup_stages } from '#root/src/harness/startup.js'
 
   const props = defineProps({
     problem: { type: String, default: '' },

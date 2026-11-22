@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events'
 import { describe, expect, it, vi } from 'vite-plus/test'
-import { main, worker_names } from '../../../scripts/watch-workers.js'
+import { main, worker_names } from '#root/scripts/watch-workers.js'
 
 const setup = () => {
   const started = []

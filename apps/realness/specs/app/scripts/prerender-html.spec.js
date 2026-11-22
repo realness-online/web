@@ -5,7 +5,7 @@ import {
   inject_app_html,
   inject_json_ld,
   prerender_dir_for_route
-} from '../../../scripts/prerender-html.js'
+} from '#root/scripts/prerender-html.js'
 
 describe('prerender-html', () => {
   it('maps routes to output directories', () => {

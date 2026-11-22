@@ -256,7 +256,7 @@ const placement_store = envName => {
 /** Where the person is placed, or an error naming what is missing. */
 const placement_of = async (phone, gcs) => {
   const { placement_key, read_placement } =
-    await import('../../../src/gate/placement.js')
+    await import('#root/src/gate/placement.js')
   const held = await gcs.get(placement_key(phone))
   const placement = held ? read_placement(held.body.toString('utf8')) : null
   if (!placement) throw new Error(`no placement for ${phone}`)
@@ -389,7 +389,7 @@ const commands = {
       )
     const from = typeof flags.from === 'string' ? flags.from : 'production'
     const { pull, pull_text, PULL_PREFIXES, is_poster } =
-      await import('../../../src/control/pull.js')
+      await import('#root/src/control/pull.js')
     /** `pull posters`: production's posters only, and they win over local. */
     const posters = args[0] === 'posters'
     const wanted = posters ? ['people'] : args
@@ -726,8 +726,8 @@ const halo_commands = {
       'usage: realness <env> halo memory <actor> [halo] --stages=<file>'
     )
     const halo_name = rest[1] ?? config.haloName ?? 'realness-1'
-    const { measure } = await import('../../../src/control/memory.js')
-    const { remoteApi } = await import('../../../src/control/api.js')
+    const { measure } = await import('#root/src/control/memory.js')
+    const { remoteApi } = await import('#root/src/control/api.js')
     if (is_local(config)) throw new Error('memory measures a cloud halo')
     const api = remoteApi(halo_name, { zone: config.zone })
     if (typeof flags.stages !== 'string')
@@ -774,7 +774,7 @@ const halo_commands = {
   },
   scale: async ({ config, flags }) => {
     const { scale_choice, scale_text } =
-      await import('../../../src/control/scale.js')
+      await import('#root/src/control/scale.js')
     const report = typeof flags.report === 'string' ? flags.report : null
     if (!report)
       throw new Error(
@@ -797,7 +797,7 @@ const halo_commands = {
   },
   hot: async ({ halos, flags, envName }) => {
     const { hot_halos, hot_text, relieve } =
-      await import('../../../src/control/hot.js')
+      await import('#root/src/control/hot.js')
     const sync = await reads.reader(envName)
     const fleet = await reads.halos(sync)
     const rows = fleet.map(row => ({
@@ -836,10 +836,10 @@ const halo_commands = {
         `recover tears down ${name}'s authority and recreates its actors;` +
           ' rerun with --yes'
       )
-    const { remoteApi } = await import('../../../src/control/api.js')
-    const { recover } = await import('../../../src/control/recover.js')
-    const { revoke } = await import('../../../src/control/halo-gcp.js')
-    const { reassign } = await import('../../../src/gate/placement.js')
+    const { remoteApi } = await import('#root/src/control/api.js')
+    const { recover } = await import('#root/src/control/recover.js')
+    const { revoke } = await import('#root/src/control/halo-gcp.js')
+    const { reassign } = await import('#root/src/gate/placement.js')
     const sync = await reads.reader(envName)
     const fleet = await reads.halos(sync)
     const failed = fleet.find(row => row.halo.name === name)
@@ -874,9 +874,8 @@ const halo_commands = {
         /** Drain removed the export folder from the halo it came from, so the bundle is put back before restore reads it. */
         restore: async (report_halo, id, owner, bundle) => {
           const { remoteApi: api_for } =
-            await import('../../../src/control/api.js')
-          const { place_bundle } =
-            await import('../../../src/control/bundle.js')
+            await import('#root/src/control/api.js')
+          const { place_bundle } = await import('#root/src/control/bundle.js')
           await place_bundle(target, config, report_halo, id, {
             object: bundle
           })
@@ -900,9 +899,9 @@ const halo_commands = {
     const [phone, target_host] = rest
     if (!phone || !target_host)
       throw new Error('usage: realness <env> halo move <phone> <halo>')
-    const { remoteApi } = await import('../../../src/control/api.js')
-    const { move } = await import('../../../src/control/move.js')
-    const { reassign } = await import('../../../src/gate/placement.js')
+    const { remoteApi } = await import('#root/src/control/api.js')
+    const { move } = await import('#root/src/control/move.js')
+    const { reassign } = await import('#root/src/gate/placement.js')
     const gcs = placement_store(envName)
     const where = await placement_of(phone, gcs)
     const actor = await running_actor(envName, phone)
@@ -929,10 +928,9 @@ const halo_commands = {
       rest,
       'usage: realness <env> halo retire <name> [--delete]'
     )
-    const { remoteApi } = await import('../../../src/control/api.js')
-    const { retire } = await import('../../../src/control/retire.js')
-    const { release_placements } =
-      await import('../../../src/gate/placement.js')
+    const { remoteApi } = await import('#root/src/control/api.js')
+    const { retire } = await import('#root/src/control/retire.js')
+    const { release_placements } = await import('#root/src/gate/placement.js')
     const store = placement_store(envName)
     return finish(
       await retire(
@@ -956,8 +954,8 @@ const halo_commands = {
   },
   lockdown: async ({ config, flags }) => {
     if (is_local(config)) throw new Error('lockdown is for cloud projects')
-    const { attempt } = await import('../../../src/control/exec.js')
-    const { lockdown } = await import('../../../src/control/lockdown.js')
+    const { attempt } = await import('#root/src/control/exec.js')
+    const { lockdown } = await import('#root/src/control/lockdown.js')
     return lockdown(config, {
       apply: Boolean(flags.apply),
       run: argv => attempt('gcloud', argv)

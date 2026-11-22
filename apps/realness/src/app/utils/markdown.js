@@ -1,7 +1,7 @@
 import documentation_md from '@/content/documentation.md?raw'
 import vault_docs_md from '@/content/vault-docs.md?raw'
-import changelog_md from '../../../CHANGELOG.md?raw'
-import icons_svg from '../../../public/icons.svg?raw'
+import changelog_md from '#root/CHANGELOG.md?raw'
+import icons_svg from '#root/public/icons.svg?raw'
 import { marked } from 'marked'
 import { gfmHeadingId as gfm_heading_id } from 'marked-gfm-heading-id'
 

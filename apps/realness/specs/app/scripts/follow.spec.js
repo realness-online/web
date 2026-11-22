@@ -2,7 +2,7 @@ import { appendFile, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { RUN_DONE, follow } from '../../../scripts/follow.js'
+import { RUN_DONE, follow } from '#root/scripts/follow.js'
 
 describe('follow', () => {
   it('prints each write as it lands and ends on the done line', async () => {

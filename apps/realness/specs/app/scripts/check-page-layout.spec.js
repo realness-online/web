@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vite-plus/test'
-import { main } from '../../../scripts/check-page-layout.js'
+import { main } from '#root/scripts/check-page-layout.js'
 
 const fits = {
   left: 0,

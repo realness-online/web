@@ -1,6 +1,6 @@
 import { readFileSync as read_file_sync } from 'node:fs'
 import { vi } from 'vite-plus/test'
-import { parse_theme } from '../../../src/app/terminal/themes/ghostty-theme.js'
+import { parse_theme } from '#root/src/app/terminal/themes/ghostty-theme.js'
 import { terminal_file, wasm_bytes } from './wasm.js'
 
 const dark = parse_theme(

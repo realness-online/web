@@ -9,8 +9,8 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
-import { pick } from '../../../scripts/pick-og.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
+import { pick } from '#root/scripts/pick-og.js'
 
 const { frontend } = product_paths()
 const script = join(frontend, 'scripts/pick-og.js')

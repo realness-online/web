@@ -27,6 +27,8 @@ const check = async (id, body, { plans = 'vault/plans' } = {}) => {
   for (const name of LIB)
     await copyFile(new URL(`../../lib/${name}.js`, import.meta.url), `${fixture}/.pi/bin/lib/${name}.js`)
   await symlink(new URL('../../../../apps/realness', import.meta.url), `${fixture}/apps/realness`)
+  await mkdir(`${fixture}/.pi/node_modules`, { recursive: true })
+  await symlink('../../apps/realness', `${fixture}/.pi/node_modules/realness`)
   await writeFile(`${fixture}/package.json`, JSON.stringify({ type: 'module', realness: { plans } }))
   await writeFile(`${fixture}/${plans}/p.md`, body)
   const { stdout } = await promisify(execFile)(process.execPath, [`${fixture}/.pi/bin/plans/plan-shape.js`]).catch(

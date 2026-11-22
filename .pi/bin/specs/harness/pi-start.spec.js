@@ -141,7 +141,7 @@ it('an actor resumes a session used in the last 13 minutes; older or none starts
 })
 
 it('an actor resumes within the length of a thought', async () => {
-  const { THOUGHT_WINDOW_MS } = await import('../../../../apps/realness/packages/thoughts/src/thoughts.js')
+  const { THOUGHT_WINDOW_MS } = await import('realness/thoughts')
   const minutes = read_file_sync(join(import.meta.dirname, '../../pi'), 'utf8').match(/^thought_minutes=(\d+)$/m)[1]
   assert.equal(Number(minutes) * 60_000, THOUGHT_WINDOW_MS)
 })

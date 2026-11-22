@@ -12,12 +12,12 @@ import {
 import { homedir } from 'node:os'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
-import { load_theme, theme_name } from '../../../apps/realness/themes/load.js'
-import { ghostty } from '../../../apps/realness/themes/adapters/ghostty.js'
-import { pi } from '../../../apps/realness/themes/adapters/pi.js'
-import { nvim } from '../../../apps/realness/themes/adapters/nvim.js'
-import { emacs } from '../../../apps/realness/themes/adapters/emacs.js'
-import { web } from '../../../apps/realness/themes/adapters/web.js'
+import { load_theme, theme_name } from 'realness/themes/load.js'
+import { ghostty } from 'realness/themes/adapters/ghostty.js'
+import { pi } from 'realness/themes/adapters/pi.js'
+import { nvim } from 'realness/themes/adapters/nvim.js'
+import { emacs } from 'realness/themes/adapters/emacs.js'
+import { web } from 'realness/themes/adapters/web.js'
 
 const ROOT = resolve(dirname(file_url_to_path(import.meta.url)), '../../..')
 

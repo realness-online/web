@@ -11,7 +11,7 @@ import { use_sign_on } from '#root/src/sign-on/browser/flow.js'
 
 const load_push_handlers = () => {
   vi.resetModules()
-  return import('../../../public/push-handlers.js')
+  return import('#root/public/push-handlers.js')
 }
 
 const load_commands_page = () => {

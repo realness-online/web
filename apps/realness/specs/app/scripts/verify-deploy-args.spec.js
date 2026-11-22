@@ -8,7 +8,7 @@ import {
   load_manifest,
   parse_args,
   verify_file
-} from '../../../scripts/verify-deploy.js'
+} from '#root/scripts/verify-deploy.js'
 
 const digest = bytes =>
   `sha256:${createHash('sha256').update(bytes).digest('hex')}`

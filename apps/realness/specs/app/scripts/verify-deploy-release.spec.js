@@ -3,7 +3,7 @@ import {
   load_github_manifest,
   load_manifest,
   parse_args
-} from '../../../scripts/verify-deploy.js'
+} from '#root/scripts/verify-deploy.js'
 
 const json = (body, status = 200) => ({
   ok: status < 400,

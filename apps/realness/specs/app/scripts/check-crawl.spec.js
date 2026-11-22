@@ -8,12 +8,8 @@ import {
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import {
-  check_crawl,
-  main,
-  robots_allows
-} from '../../../scripts/check-crawl.js'
-import { app_shell_html } from '../../../scripts/prerender-html.js'
+import { check_crawl, main, robots_allows } from '#root/scripts/check-crawl.js'
+import { app_shell_html } from '#root/scripts/prerender-html.js'
 
 const origin = 'https://realness.online'
 const robots = `User-agent: *

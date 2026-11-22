@@ -10,14 +10,14 @@ import {
 import http from 'node:http'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
-import { main, preflight } from '../../../scripts/generate-og-candidates.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
+import { main, preflight } from '#root/scripts/generate-og-candidates.js'
 import {
   connect,
   devtools,
   page_socket_url,
   serve_dist
-} from '../../../scripts/lib/headless.js'
+} from '#root/scripts/lib/headless.js'
 
 let root
 let dist_dir

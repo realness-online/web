@@ -1,8 +1,8 @@
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
-import { main } from '../../../scripts/test-prerender-render.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
+import { main } from '#root/scripts/test-prerender-render.js'
 
 let dir
 beforeEach(() => {

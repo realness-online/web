@@ -4,11 +4,8 @@ import {
   load_engine,
   KEY,
   paste_encode
-} from '../../../src/app/terminal/ghostty-vt.js'
-import {
-  control_bytes,
-  meta_bytes
-} from '../../../src/app/terminal/terminal.js'
+} from '#root/src/app/terminal/ghostty-vt.js'
+import { control_bytes, meta_bytes } from '#root/src/app/terminal/terminal.js'
 
 const engine = await load_engine(wasm_bytes)
 const term = engine.terminal(120, 30)

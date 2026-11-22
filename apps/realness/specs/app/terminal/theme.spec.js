@@ -1,10 +1,7 @@
 import { terminal_file, wasm_bytes } from './wasm.js'
 import { readFileSync as read_file_sync } from 'node:fs'
-import {
-  load_engine,
-  apply_theme
-} from '../../../src/app/terminal/ghostty-vt.js'
-import { parse_theme } from '../../../src/app/terminal/themes/ghostty-theme.js'
+import { load_engine, apply_theme } from '#root/src/app/terminal/ghostty-vt.js'
+import { parse_theme } from '#root/src/app/terminal/themes/ghostty-theme.js'
 
 const engine = await load_engine(wasm_bytes)
 const hex = (text, key) =>

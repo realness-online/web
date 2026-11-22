@@ -12,6 +12,7 @@
     "agent-browser": "0.43.0",
     "google-auth-library": "11.3.3",
     "linkedom": "^0.18.13",
+    "realness": "file:../apps/realness",
     "turndown": "^7.2.4",
     "yaml": "2.9.1"
   },

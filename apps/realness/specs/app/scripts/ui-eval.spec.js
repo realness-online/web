@@ -11,7 +11,7 @@ import {
   settle,
   starter_of,
   tells_in
-} from '../../../scripts/ui-eval.js'
+} from '#root/scripts/ui-eval.js'
 
 const diff = `diff --git a/src/a.vue b/src/a.vue
 --- a/src/a.vue

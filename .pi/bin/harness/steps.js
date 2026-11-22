@@ -24,6 +24,7 @@ export const steps = {
       run: 'node .pi/bin/graphics/themes.js --check && node .pi/bin/graphics/palette-sync.js --check'
     },
     { name: 'ds-store', area: 'harness', run: 'node .pi/bin/checks/ds-store.js' },
+    { name: 'deep-imports', area: 'harness', run: 'node .pi/bin/checks/deep-imports.js' },
     { name: 'pi-version', area: 'harness', run: 'node .pi/bin/checks/pi-version.js' },
     { name: 'patches', area: 'harness', run: 'node .pi/bin/harness/apply-patches.js --check' },
     { name: 'doc-scripts', area: 'harness', run: 'node .pi/bin/checks/doc-scripts.js' },

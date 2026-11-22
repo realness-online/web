@@ -3,7 +3,7 @@ import {
   release_tag_candidates,
   is_retryable_status,
   load_github_manifest
-} from '../../../scripts/verify-deploy.js'
+} from '#root/scripts/verify-deploy.js'
 
 /** @param {number[]} statuses One status per fetch call, in order. */
 const fetch_returning = statuses => {

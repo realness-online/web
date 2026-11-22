@@ -2,8 +2,8 @@ import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
-import { cookie_jars } from '../../../src/halo/cookie-jar.js'
-import { main, under } from '../../../scripts/cookie-import.js'
+import { cookie_jars } from '#root/src/halo/cookie-jar.js'
+import { main, under } from '#root/scripts/cookie-import.js'
 
 const cookie = (name, domain) => ({
   name,

@@ -1,8 +1,8 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
-import { main, report_commands } from '../../../scripts/quality-report.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
+import { main, report_commands } from '#root/scripts/quality-report.js'
 
 let reports
 beforeEach(() => {

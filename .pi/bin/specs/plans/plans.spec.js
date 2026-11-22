@@ -6,7 +6,7 @@ import { harness_require } from '../../lib/harness-dependencies.js'
 
 const { parseHTML: parse_html } = harness_require('linkedom')
 
-import { size_diagrams } from '../../../../apps/realness/tools/publish/renderer/static/scripts/plan-diagrams.js'
+import { size_diagrams } from 'realness/plan-diagrams'
 
 const css = readFileSync(
   new URL('../../../../apps/realness/tools/publish/renderer/static/scripts/diagrams.css', import.meta.url),

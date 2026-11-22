@@ -8,9 +8,9 @@ import {
 } from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
-import { main } from '../../../scripts/prerender.js'
-import { prerender_pages } from '../../../src/app/prerender/pages.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
+import { main } from '#root/scripts/prerender.js'
+import { prerender_pages } from '#root/src/app/prerender/pages.js'
 
 const template = `<!doctype html>
 <html>

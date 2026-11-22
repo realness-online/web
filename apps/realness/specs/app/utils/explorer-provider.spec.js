@@ -3,7 +3,7 @@ import {
   assistant_text,
   assistant_failure,
   explorer_provider
-} from '../../../src/app/utils/explorer-provider.js'
+} from '#root/src/app/utils/explorer-provider.js'
 
 describe('Explorer provider', () => {
   it('reports provider errors from committed assistant records', () => {

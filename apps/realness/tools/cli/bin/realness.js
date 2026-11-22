@@ -10,7 +10,7 @@ const sync_at = args.indexOf('--sync')
 if (sync_at >= 0) [, options.service_url] = args.splice(sync_at, 2)
 if (!options.actor && args[0] === 'example' && args[1] === 'static')
   options.export_static = (
-    await import('../../../src/publish/view.js')
+    await import('#root/src/publish/view.js')
   ).export_static
 
 process.exitCode = await run(args, options)

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { is_release_junk } from '../../../scripts/release-junk.js'
+import { is_release_junk } from '#root/scripts/release-junk.js'
 
 describe('is_release_junk', () => {
   it('flags Finder, Windows, and macOS archive junk', () => {

@@ -9,7 +9,7 @@ import {
 } from 'node:fs'
 import { randomUUID as random_uuid } from 'node:crypto'
 import { dirname, isAbsolute as is_absolute, join, relative, resolve } from 'node:path'
-import { sessions_path, state_path } from '../../../apps/realness/src/harness/settings.js'
+import { sessions_path, state_path } from 'realness/harness/settings'
 import { assert_no_live_pi, relocate_history, restore_history } from './session-relocation.js'
 
 const harness_root = resolve(import.meta.dirname, '../../..')

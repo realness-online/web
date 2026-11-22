@@ -6,7 +6,7 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
 import {
   format_ms,
   format_timed,
@@ -14,7 +14,7 @@ import {
   get_thoughts_render_ms,
   median,
   report
-} from '../../../scripts/print-lighthouse-metrics.js'
+} from '#root/scripts/print-lighthouse-metrics.js'
 
 const lhr = (score, fcp, lcp, thoughts) => ({
   categories: { performance: { score } },

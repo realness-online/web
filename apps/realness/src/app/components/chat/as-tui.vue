@@ -4,7 +4,7 @@
   import { open_terminal, load_layout, save_layout } from '@/utils/gate'
   import { use_home_view } from '@/use/home-view'
   import { use_actor_startup } from '@/use/actor-startup'
-  import { create_startup_trace } from '../../../harness/startup.js'
+  import { create_startup_trace } from '#root/src/harness/startup.js'
   import {
     computed,
     inject,
@@ -71,7 +71,7 @@
   const loading = ref(false)
   const startup = use_actor_startup(current_user)
   const connection_progress = ref(
-    /** @type {import('../../../harness/startup.js').StartupEvent | null} */ (
+    /** @type {import('#root/src/harness/startup.js').StartupEvent | null} */ (
       null
     )
   )
@@ -100,7 +100,7 @@
     connection_progress.value = null
     mount_problem.value = ''
     set_loading(true)
-    /** @type {((state?: import('../../../harness/startup.js').StartupResult) => void) | null} */
+    /** @type {((state?: import('#root/src/harness/startup.js').StartupResult) => void) | null} */
     let finish = null
     try {
       const ready = await startup.prepare(actor)

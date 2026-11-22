@@ -1,11 +1,11 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
 import {
   check_interaction_css,
   main
-} from '../../../scripts/check-interaction-css.js'
+} from '#root/scripts/check-interaction-css.js'
 
 const good = [
   'aside#chat-panel{z-index:2}',

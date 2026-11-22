@@ -8,7 +8,7 @@ import {
 } from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
 
 const exec = vi.hoisted(() => ({ calls: [], answer: () => '' }))
 vi.mock('node:child_process', async original => {
@@ -32,7 +32,7 @@ const {
   stamps,
   storage_list,
   upload_preview
-} = await import('../../../scripts/render-print-previews.js')
+} = await import('#root/scripts/render-print-previews.js')
 
 let root
 let dist_dir

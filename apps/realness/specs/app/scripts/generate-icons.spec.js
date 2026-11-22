@@ -9,12 +9,12 @@ import {
 } from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
 import {
   extract_realness_symbol,
   main,
   replace_oklch_with_rgb
-} from '../../../scripts/generate-icons.js'
+} from '#root/scripts/generate-icons.js'
 
 const frontend = path.join(import.meta.dirname, '../../..')
 const png = Buffer.from([0x89, 0x50, 0x4e, 0x47])

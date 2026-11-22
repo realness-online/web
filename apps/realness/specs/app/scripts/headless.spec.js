@@ -19,7 +19,7 @@ const {
   open_page,
   remove_profile,
   wait_for_driver
-} = await import('../../../scripts/lib/headless.js')
+} = await import('#root/scripts/lib/headless.js')
 
 afterEach(() => {
   vi.unstubAllGlobals()

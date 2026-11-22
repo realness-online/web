@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { match_theme } from '../../../tools/publish/renderer/static/scripts/parts.js'
+import { match_theme } from '#root/tools/publish/renderer/static/scripts/parts.js'
 
 describe('match_theme', () => {
   it('points diagram colors at page roles, so they follow light and dark', () => {

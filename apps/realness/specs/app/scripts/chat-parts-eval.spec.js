@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
 
 const child = { code: 0, out: '', err: '', fail: null, calls: [] }
 const spawn = (command, args, options) => {
@@ -20,7 +20,7 @@ const spawn = (command, args, options) => {
 }
 
 const { cards_draw, form_of, main, pi, pooled } =
-  await import('../../../scripts/chat-parts-eval.js')
+  await import('#root/scripts/chat-parts-eval.js')
 const prompts = JSON.parse(
   readFileSync(
     path.join(import.meta.dirname, '../../../scripts/chat-parts-prompts.json'),

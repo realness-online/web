@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { check_pwa_build, main } from '../../../scripts/check-pwa-build.js'
+import { check_pwa_build, main } from '#root/scripts/check-pwa-build.js'
 
 const cached = [
   'index.html',

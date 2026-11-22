@@ -12,7 +12,7 @@ import {
   box_prep,
   box_run,
   read_side
-} from '../../../scripts/scout-compare.js'
+} from '#root/scripts/scout-compare.js'
 
 const finds = values =>
   values.map(value => item_html('find', value, { links: ['url'] })).join('')

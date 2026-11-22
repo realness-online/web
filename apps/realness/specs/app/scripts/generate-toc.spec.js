@@ -7,12 +7,12 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
 import {
   generate,
   heading_id,
   markdown_toc
-} from '../../../scripts/generate-toc.js'
+} from '#root/scripts/generate-toc.js'
 
 const dirs = []
 

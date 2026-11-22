@@ -10,7 +10,7 @@ import {
   INSTALL_GUIDE_MARKER,
   INSTANCE_PROMPT_MARKER
 } from '@/utils/markdown'
-import { markdown_toc } from '../../../scripts/generate-toc.js'
+import { markdown_toc } from '#root/scripts/generate-toc.js'
 import documentation_md from '@/content/documentation.md?raw'
 
 describe('markdown', () => {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
-import { create_templates } from '../../../tools/publish/renderer/src/templates.js'
+import { create_templates } from '#root/tools/publish/renderer/src/templates.js'
 
 const site = {
   name: 'A & B',

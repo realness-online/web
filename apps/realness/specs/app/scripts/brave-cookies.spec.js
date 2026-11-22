@@ -11,7 +11,7 @@ import {
   expires_of,
   key_of,
   main
-} from '../../../scripts/brave-cookies.js'
+} from '#root/scripts/brave-cookies.js'
 
 const SECRET = 'a-test-secret'
 const IV = Buffer.alloc(16, ' ')

@@ -2,10 +2,10 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
-import { runs_path } from '../../../src/scouts/report.js'
-import { load_runs, run_item, save_runs } from '../../../src/scouts/runs.js'
-import { scout_page } from '../../../src/scouts/scout.js'
-import { main } from '../../../scripts/mail-digest.js'
+import { runs_path } from '#root/src/scouts/report.js'
+import { load_runs, run_item, save_runs } from '#root/src/scouts/runs.js'
+import { scout_page } from '#root/src/scouts/scout.js'
+import { main } from '#root/scripts/mail-digest.js'
 
 const NOW = Date.parse('2026-11-08T20:00:00.000Z')
 

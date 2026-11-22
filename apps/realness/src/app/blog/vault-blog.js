@@ -2,10 +2,10 @@
  * The blog inside the app: the published renderer's own article and index
  * markup, rendered in the browser from the vault's note text.
  */
-import { render_article } from '../../../tools/publish/renderer/src/render.js'
-import { poster } from '../../../tools/publish/renderer/src/templates/figure.js'
-import { article_body } from '../../../tools/publish/renderer/src/templates/article.js'
-import { index_body } from '../../../tools/publish/renderer/src/templates/index.js'
+import { render_article } from '#root/tools/publish/renderer/src/render.js'
+import { poster } from '#root/tools/publish/renderer/src/templates/figure.js'
+import { article_body } from '#root/tools/publish/renderer/src/templates/article.js'
+import { index_body } from '#root/tools/publish/renderer/src/templates/index.js'
 import { read_articles, read_note } from '@/utils/vault-items'
 
 /** The published blog's poster address, served from the vault instead. */
@@ -14,7 +14,7 @@ const PUBLIC_POSTER = 'src="/v1/poster/'
 const VIEW_BOX = /viewBox="[\d.-]+ [\d.-]+ ([\d.]+) ([\d.]+)"/
 /** The app's blog has no site of its own; the poster reads none of it. */
 const NO_SITE =
-  /** @type {import('../../../tools/publish/renderer/src/types.js').Site} */ ({
+  /** @type {import('#root/tools/publish/renderer/src/types.js').Site} */ ({
     tagline: '',
     description: ''
   })
@@ -76,7 +76,7 @@ export const article_html = ({ data, title, html, notes }, sizes) =>
  */
 export const index_html = (notes, sizes) => {
   const articles =
-    /** @type {import('../../../tools/publish/renderer/src/types.js').Article[]} */ (
+    /** @type {import('#root/tools/publish/renderer/src/types.js').Article[]} */ (
       notes.map(({ slug, data, title, html, notes: foot }) => ({
         ...data,
         slug,

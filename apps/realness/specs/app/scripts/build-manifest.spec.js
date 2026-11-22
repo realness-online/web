@@ -4,8 +4,8 @@ import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
-import { main } from '../../../scripts/build-manifest.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
+import { main } from '#root/scripts/build-manifest.js'
 
 const project_root = path.join(
   path.dirname(fileURLToPath(import.meta.url)),

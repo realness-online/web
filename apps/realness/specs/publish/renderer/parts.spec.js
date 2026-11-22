@@ -14,7 +14,7 @@ import {
   mermaid_config,
   plain_shapes,
   without_class_defs
-} from '../../../tools/publish/renderer/static/scripts/parts.js'
+} from '#root/tools/publish/renderer/static/scripts/parts.js'
 
 const fence = fields =>
   Object.entries(fields)

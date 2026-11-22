@@ -1,4 +1,4 @@
-import { mount } from '../../../src/app/terminal/terminal.js'
+import { mount } from '#root/src/app/terminal/terminal.js'
 import { make_stage, mount_options } from './stage.js'
 
 describe('terminal mounted with an open function', () => {

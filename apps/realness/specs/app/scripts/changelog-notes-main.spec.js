@@ -1,16 +1,16 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
 
-vi.mock('../../../scripts/lib/changelog.js', async original => ({
+vi.mock('#root/scripts/lib/changelog.js', async original => ({
   ...(await original()),
   read_changelog: () =>
     '# Changelog\n\n## v2.0.0 - 2026-01-01\n\n- shipped\n\n## v1.0.0\n\n- old\n',
   package_version: () => '2.0.0'
 }))
 
-const { main } = await import('../../../scripts/changelog-notes.js')
+const { main } = await import('#root/scripts/changelog-notes.js')
 
 let dir
 beforeEach(() => {

@@ -1,5 +1,5 @@
 import { wasm_bytes } from './wasm.js'
-import { LAYOUT } from '../../../src/app/terminal/ghostty-vt.js'
+import { LAYOUT } from '#root/src/app/terminal/ghostty-vt.js'
 
 const wasm = await WebAssembly.instantiate(wasm_bytes, {
   env: { log: () => {} }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { read_jpeg_size } from '../../../scripts/lib/jpeg-size.js'
+import { read_jpeg_size } from '#root/scripts/lib/jpeg-size.js'
 
 /**
  * Smallest jpeg-shaped buffer that carries a start-of-frame segment.

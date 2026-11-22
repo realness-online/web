@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test'
-import { main } from '../../../scripts/verify-deploy.js'
+import { main } from '#root/scripts/verify-deploy.js'
 
 /** Capture what a run printed, since main writes to the console. */
 const capture = async run => {

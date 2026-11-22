@@ -4,7 +4,7 @@ import {
   promote_unreleased,
   strip_unreleased,
   read_unreleased
-} from '../../../scripts/lib/changelog.js'
+} from '#root/scripts/lib/changelog.js'
 
 const sample = `# Changelog
 

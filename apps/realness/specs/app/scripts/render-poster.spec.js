@@ -8,14 +8,14 @@ import {
 } from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
 import {
   image_data_url,
   list_images,
   main,
   poster_stem,
   preflight
-} from '../../../scripts/render-poster.js'
+} from '#root/scripts/render-poster.js'
 
 let root
 let input_path

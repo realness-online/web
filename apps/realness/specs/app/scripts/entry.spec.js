@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
-import { is_entry, run_entry } from '../../../scripts/lib/entry.js'
+import { is_entry, run_entry } from '#root/scripts/lib/entry.js'
 
 const script = '/repo/scripts/tool.js'
 const url = pathToFileURL(script).href

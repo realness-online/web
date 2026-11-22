@@ -34,6 +34,8 @@ it('the plan checker reads either configured folder', async () => {
   await copyFile(new URL('../../lib/mermaid-render.js', import.meta.url), `${fixture}/.pi/bin/lib/mermaid-render.js`)
   await mkdir(`${fixture}/apps`, { recursive: true })
   await symlink(new URL('../../../../apps/realness', import.meta.url), `${fixture}/apps/realness`)
+  await mkdir(`${fixture}/.pi/node_modules`, { recursive: true })
+  await symlink('../../apps/realness', `${fixture}/.pi/node_modules/realness`)
   for (const plans of ['plans', 'vault/plans']) {
     await mkdir(`${fixture}/${plans}`, { recursive: true })
     await writeFile(`${fixture}/package.json`, JSON.stringify({ type: 'module', realness: { plans } }))

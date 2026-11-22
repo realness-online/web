@@ -8,8 +8,8 @@ import {
 } from 'node:fs'
 import { isAbsolute as is_absolute, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vite-plus/test'
-import { artifacts_dir } from '../../../scripts/lib/artifacts.js'
-import { main } from '../../../scripts/build-hosting-config.js'
+import { artifacts_dir } from '#root/scripts/lib/artifacts.js'
+import { main } from '#root/scripts/build-hosting-config.js'
 
 const { frontend } = product_paths()
 const script = join(frontend, 'scripts/build-hosting-config.js')

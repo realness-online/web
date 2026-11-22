@@ -1,5 +1,5 @@
 import { wasm_bytes } from './wasm.js'
-import { load_engine } from '../../../src/app/terminal/ghostty-vt.js'
+import { load_engine } from '#root/src/app/terminal/ghostty-vt.js'
 
 const engine = await load_engine(wasm_bytes)
 

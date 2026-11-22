@@ -40,7 +40,16 @@
     },
     "./publish/sources": "./src/publish/sources.js",
     "./items": "./lib/items.js",
-    "./publish/view": "./src/publish/view.js"
+    "./publish/view": "./src/publish/view.js",
+    "./files/target": {
+      "browser": null,
+      "node": "./src/files/target.js"
+    },
+    "./oklch": "./lib/oklch.js",
+    "./itemid": "./packages/itemid/src/index.js",
+    "./thoughts": "./packages/thoughts/src/thoughts.js",
+    "./themes/*": "./themes/*",
+    "./plan-diagrams": "./tools/publish/renderer/static/scripts/plan-diagrams.js"
   },
   "bin": {
     "realness": "./tools/cli/bin/realness.js",

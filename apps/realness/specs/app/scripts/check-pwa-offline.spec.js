@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { main } from '../../../scripts/check-pwa-offline.js'
+import { main } from '#root/scripts/check-pwa-offline.js'
 
 let dist_dir
 let chrome_path

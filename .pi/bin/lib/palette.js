@@ -1,8 +1,8 @@
 import { readFileSync as read_file_sync } from 'node:fs'
 import { join } from 'node:path'
-import { oklch_hex } from '../../../apps/realness/lib/oklch.js'
+import { oklch_hex } from 'realness/oklch'
 
-export { oklch_hex } from '../../../apps/realness/lib/oklch.js'
+export { oklch_hex } from 'realness/oklch'
 
 const PALETTE = 'apps/realness/themes/realness/palette.css'
 

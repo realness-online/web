@@ -13,7 +13,7 @@ import {
 } from 'node:fs'
 import { spawnSync as spawn_sync } from 'node:child_process'
 import { join, relative, resolve } from 'node:path'
-import { load_theme } from '../../../../apps/realness/themes/load.js'
+import { load_theme } from 'realness/themes/load.js'
 import { link_ghostty, render_theme } from '../../graphics/themes.js'
 
 const root = resolve(import.meta.dirname, '../../../..')

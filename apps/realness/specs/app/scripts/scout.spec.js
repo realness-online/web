@@ -11,14 +11,14 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
 import { item_html } from '#root/lib/items.js'
-import { scout_page } from '../../../src/scouts/scout.js'
+import { scout_page } from '#root/src/scouts/scout.js'
 import {
   at_most,
   local_pi,
   main,
   read_outside,
   reads_inside
-} from '../../../scripts/scout.js'
+} from '#root/scripts/scout.js'
 
 const SCOUTS = 'vault/Projects/Scouts'
 

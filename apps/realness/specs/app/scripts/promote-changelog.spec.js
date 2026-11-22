@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
-import { main } from '../../../scripts/promote-changelog.js'
+import { main } from '#root/scripts/promote-changelog.js'
 
 afterEach(() => vi.restoreAllMocks())
 

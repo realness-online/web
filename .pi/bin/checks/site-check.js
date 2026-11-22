@@ -8,7 +8,7 @@ import {
 import { dirname, join, relative, resolve } from 'node:path'
 import { parse_html } from '../lib/harness-dependencies.js'
 import { check_worker, navigation_offline, precached } from './pwa-worker.js'
-import { create_itemid } from '../../../apps/realness/packages/itemid/src/index.js'
+import { create_itemid } from 'realness/itemid'
 
 const style_root = new URL('../../../apps/realness/src/app/style/', import.meta.url)
 const without_comments = text => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, '')

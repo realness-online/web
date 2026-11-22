@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
-import { create_templates } from '../../../tools/publish/renderer/src/templates.js'
+import { create_templates } from '#root/tools/publish/renderer/src/templates.js'
 
 const site = {
   name: 'A & B',
@@ -46,7 +46,7 @@ it('poster labels and attributes cannot insert new HTML attributes', () => {
 
 it('an article shows its owner phone from the itemid, not only in attributes', async () => {
   const { article_body } =
-    await import('../../../tools/publish/renderer/src/templates/article.js')
+    await import('#root/tools/publish/renderer/src/templates/article.js')
   const poster = () => ''
   const html = article_body(poster)(
     { itemid: '/+14155551234/pages/1' },

@@ -3,7 +3,7 @@ import {
   fetch_print_pages,
   print_pages_from_list,
   sale_line
-} from '../../../scripts/print-pages.js'
+} from '#root/scripts/print-pages.js'
 
 const print = (overrides = {}) => ({
   id: '1712000000000',
