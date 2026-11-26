@@ -15,7 +15,7 @@
     "@comark/html": "^0.4.0",
     "comark": "^0.4.0",
     "mermaid": "12.0.0",
-    "sharp": "^0.35.4",
+    "sharp": "^0.35.5",
     "shiki": "^4.4.3",
     "template-for-polyfill": "^0.1.1"
   }
