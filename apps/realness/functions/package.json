@@ -31,7 +31,7 @@
     "@vitest/coverage-v8": "4.1.10",
     "eslint": "9.39.4",
     "globals": "15.15.0",
-    "vitest": "4.1.10"
+    "vitest": "4.1.11"
   },
   "imports": {
     "#handlers/*": "./src/handlers/*",
