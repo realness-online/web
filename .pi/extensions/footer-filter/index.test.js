@@ -96,14 +96,18 @@ describe('labels', () => {
     assert.equal(context_label({ percent: 95, contextWindow: 200_000 }).level, 'error')
   })
 
-  it('puts the thinking level of the latest answer left of its model', () => {
+  it('puts the thinking level of the latest answer left of the selected model', () => {
     const entries = [
-      { type: 'message', message: { role: 'assistant', model: 'house', responseModel: 'opus', thinkingLevel: 'high' } },
+      {
+        type: 'message',
+        message: { role: 'assistant', model: 'house', responseModel: 'claude-opus-5-5', thinkingLevel: 'high' }
+      },
       { type: 'message', message: { role: 'user' } }
     ]
-    assert.equal(model_label(entries, { id: 'house', reasoning: true }, 'low'), 'high · opus')
-    assert.equal(model_label([], { id: 'opus', reasoning: true }, 'low'), 'low · opus')
+    assert.equal(model_label(entries, { id: 'opus', reasoning: true }, 'low'), 'high · opus')
     assert.equal(model_label([], { id: 'plain' }, 'off'), 'plain')
+    assert.equal(model_label([], { id: 'deepseek/deepseek-v4.1-flash-1017' }, 'off'), 'deepseek')
+    assert.equal(model_label([], { id: 'qwen/qwen-9' }, 'off'), 'qwen-9')
   })
 
   it('shows a model or thinking change made after the latest answer', () => {

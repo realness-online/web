@@ -40,6 +40,14 @@ import {
   is_person
 } from '@/use/people'
 
+const { mock_network_ids } = vi.hoisted(() => ({
+  mock_network_ids: vi.fn(() => Promise.resolve([]))
+}))
+vi.mock('@/utils/network', () => ({
+  network_ids: mock_network_ids,
+  is_network_member: () => false
+}))
+
 vi.mock('@/utils/itemid', () => ({
   list: vi.fn(() => Promise.resolve([])),
   load: vi.fn(id => Promise.resolve({ id, type: 'person', loaded: true }))
@@ -160,17 +168,19 @@ describe('people composable', () => {
       }
     })
 
-    it('load_phonebook loads only admin when signed out', async () => {
+    it('n4: load_phonebook loads each network member when signed out', async () => {
       mock_current_user_ref.value = null
-      vi.stubEnv('VITE_ADMIN_ID', '+19995551234')
+      mock_network_ids.mockResolvedValue(['/+19995551234', '/+19995550000'])
       const { directory } = await import('@/utils/serverless')
       const { load } = await import('@/utils/itemid')
       const { load_phonebook, phonebook } = with_setup(use)
       await load_phonebook()
       expect(directory).not.toHaveBeenCalled()
       expect(load).toHaveBeenCalledWith('/+19995551234')
-      expect(phonebook.value).toEqual([
-        expect.objectContaining({ id: '/+19995551234', type: 'person' })
+      expect(load).toHaveBeenCalledWith('/+19995550000')
+      expect(phonebook.value.map(person => person.id).sort()).toEqual([
+        '/+19995550000',
+        '/+19995551234'
       ])
     })
   })

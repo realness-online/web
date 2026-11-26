@@ -11,6 +11,11 @@
  * time the page is hidden with nothing working and nothing half typed - a
  * moment no one can see - tell a waiting worker to activate, and reload once
  * it controls the page. A worker another tab activated reloads the same way.
+ *
+ * iOS freezes a home screen app about a second after it hides, so that chain
+ * rarely finishes there. When the page comes back with a build already
+ * waiting, activate it and reload before sync starts: sync awaits
+ * update_checked() first.
  */
 
 const TYPING =
@@ -29,6 +34,14 @@ export const is_typing = doc => {
       : field.textContent
   return Boolean(text?.trim())
 }
+
+const TAKEOVER_WAIT = 3000
+
+/** @type {() => Promise<void>} */
+let check = () => Promise.resolve()
+
+/** @returns {Promise<void>} settles once no reload is coming */
+export const update_checked = () => check()
 
 /**
  * @param {object} options
@@ -62,11 +75,44 @@ export const watch_for_updates = ({ workers, doc, is_working, reload }) => {
             worker.addEventListener('statechange', done)
           })
         )
+  const took_over = () =>
+    new Promise(resolve => {
+      const done = () => {
+        clearTimeout(timer)
+        workers.removeEventListener('controllerchange', done)
+        resolve(true)
+      }
+      const timer = setTimeout(() => {
+        workers.removeEventListener('controllerchange', done)
+        resolve(false)
+      }, TAKEOVER_WAIT)
+      workers.addEventListener('controllerchange', done)
+    })
+  const is_free = () => !is_working() && !is_typing(doc)
+  /** @type {Promise<void> | undefined} */
+  let returning
+  const on_return = async () => {
+    if (taken_over && is_free()) return reload()
+    const found = await registration()
+    const waiting = found?.waiting
+    if (waiting && is_free()) {
+      const changed = took_over()
+      waiting.postMessage({ type: 'SKIP_WAITING' })
+      if (await changed) return reload()
+    }
+    found?.update().catch(() => {})
+  }
+  check = () => {
+    if (doc.visibilityState !== 'visible') return Promise.resolve()
+    returning ??= on_return()
+    return returning
+  }
   const on_visibility = async () => {
     if (doc.visibilityState === 'visible') {
-      await (await registration())?.update().catch(() => {})
+      await check()
       return
     }
+    returning = undefined
     if (!is_safe()) return
     if (taken_over) {
       reload()
@@ -81,6 +127,7 @@ export const watch_for_updates = ({ workers, doc, is_working, reload }) => {
   workers.addEventListener('controllerchange', on_takeover)
   doc.addEventListener('visibilitychange', on_visibility)
   return () => {
+    check = () => Promise.resolve()
     workers.removeEventListener('controllerchange', on_takeover)
     doc.removeEventListener('visibilitychange', on_visibility)
   }

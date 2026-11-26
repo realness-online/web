@@ -18,13 +18,14 @@ const setup = async t => {
   await write_file(join(root, 'vault/note.md'), 'a note\n')
   await write_file(join(root, 'AGENTS.md'), 'mine\n')
   await write_file(join(root, '.ignore'), '')
+  await write_file(join(root, 'rights.html'), '<ul></ul>\n')
   t.after(() => rm(dir, { recursive: true, force: true }))
   return { root, store: store_of(disk(storage)) }
 }
 
 it('the lane is the same path the files have on the Mac', () => {
   assert.equal(upload_root({ phone: PHONE }), `people/${PHONE}/`)
-  assert.deepEqual(UPLOAD, ['vault', 'AGENTS.md', '.ignore'])
+  assert.deepEqual(UPLOAD, ['vault', 'AGENTS.md', '.ignore', 'rights.html'])
 })
 
 it('the Mac uploads its files where they sit, and a second run is idle', async t => {
@@ -33,6 +34,7 @@ it('the Mac uploads its files where they sit, and a second run is idle', async t
   assert.deepEqual(first.pushed.sort(), [
     '.ignore',
     'AGENTS.md',
+    'rights.html',
     'vault/note.md'
   ])
   assert.equal(
@@ -45,7 +47,7 @@ it('the Mac uploads its files where they sit, and a second run is idle', async t
   )
   const second = await upload({ phone: PHONE, root, store })
   assert.deepEqual(second.pushed, [])
-  assert.equal(second.unchanged.length, 3)
+  assert.equal(second.unchanged.length, 4)
 })
 
 it('the Mac never deletes what the lane holds', async t => {
@@ -98,7 +100,11 @@ it('a skipped name and a missing file stay home', async t => {
   await write_file(join(root, 'vault/.git/config'), 'secret\n')
   await rm(join(root, 'AGENTS.md'))
   const report = await upload({ phone: PHONE, root, store })
-  assert.deepEqual(report.pushed.sort(), ['.ignore', 'vault/note.md'])
+  assert.deepEqual(report.pushed.sort(), [
+    '.ignore',
+    'rights.html',
+    'vault/note.md'
+  ])
   assert.equal(await store.stat(`people/${PHONE}/vault/.git/config`), null)
   assert.equal(await store.stat(`people/${PHONE}/AGENTS.md`), null)
 })
@@ -145,6 +151,7 @@ it('a work path no page names stays home', async t => {
   assert.deepEqual(report.pushed.sort(), [
     '.ignore',
     'AGENTS.md',
+    'rights.html',
     'vault/note.md'
   ])
 })
@@ -164,5 +171,5 @@ it('files upload several at a time', async t => {
     }
   }
   await upload({ phone: PHONE, root, store: slow })
-  assert.equal(most, 3)
+  assert.equal(most, 4)
 })

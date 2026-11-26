@@ -146,6 +146,32 @@ it('a change that passes moves in; the rest wait with their reasons', async () =
   assert.equal(again.waiting.length, 3)
 })
 
+it('a file that moves as the change arrives keeps the Mac copy', async () => {
+  await on_mac('vault/race.md', 'start\n')
+  await actor().hand_back(
+    'can://~/vault/race.md',
+    Buffer.from('theirs\n'),
+    base_of('start\n')
+  )
+  assert.equal(await read_file(join(root, 'vault/race.md'), 'utf8'), 'start\n')
+  let reads = 0
+  const late = async (dir, path) => {
+    if (path !== 'vault/race.md')
+      return read_file(join(dir, path)).catch(() => null)
+    reads += 1
+    return Buffer.from(reads === 1 ? 'start\n' : 'mine\n')
+  }
+  const report = await admit({ root, store: mac(), phone, trash, read: late })
+  assert.equal(reads, 2)
+  assert.deepEqual(report.moved, [])
+  assert.ok(report.waiting.includes('vault/race.md'))
+  assert.equal(await read_file(join(root, 'vault/race.md'), 'utf8'), 'start\n')
+  assert.notEqual(
+    await storage.get(`people/${phone}/quarantine/${id}/vault/race.md`),
+    null
+  )
+})
+
 it('a page keeps its itemid, and a new page names its owner', () => {
   const page = itemid => Buffer.from(`---\nitemid: "${itemid}"\n---\n\n# A\n`)
   const mine = page(`/${phone}/plans/1`)

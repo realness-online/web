@@ -5,16 +5,20 @@
  * edits, when it carries `- Gate 1: approved`. An edit to an approved plan takes
  * over from an edited plan that is unapproved, or idle while the edited one has an
  * active node; a named plan stays. Each
- * binding is announced. Reading a plan never arms it. The frontier works the plan's first node whole, so the pattern is set before
+ * binding is announced. A read arms only an unbound session, and only on an
+ * approved plan with an active node. A mistyped `/plan…` command still names its plan. The frontier works the plan's first node whole, so the pattern is set before
  * the cheap model takes over: once a node's spec passes, later nodes run cheap.
- * A failing spec returns that node to the frontier model. No active node, as at
- * a gate, means the frontier
- * model, as does an error turn on the cheap model. Scott saying he is lost or
- * confused brings the frontier model back at once, mid-node. Each node
- * entering and leaving `active`, and each escalation, is an item in
- * `artifacts/prewalk/escalations.html`.
+ * A session on the cheap model stays there, since a switch back rewrites the
+ * whole cache. A failing spec, a cheap-model error, or a gate asks for
+ * `/prewalk next`: a fresh session on the model the plan needs, told the old
+ * session's id for `remember`. A failed node stays on the frontier model across
+ * sessions until it finishes. Scott saying he is lost or confused brings the
+ * frontier model back at once, mid-node. Each node entering and leaving
+ * `active` through this session's own change, and each escalation, is an item in
+ * `vault/Projects/realness-planning-performance/escalations.html`.
  *
  * /prewalk              - status
+ * /prewalk next         - fresh session on the model the plan needs
  * /prewalk <target>     - cheap model as provider/id
  * /prewalk off | on     - stop or resume routing this session
  */
@@ -36,7 +40,7 @@ export const plan_name = path => path.replace(/\/index\.md$|\.md$/, '')
 
 export const DEFAULT_TARGET = 'openrouter/deepseek/deepseek-v4.1-flash-1017'
 
-/** Mid-session switches one session may make: out to the cheap model, back once. */
+/** Mid-session switches one session may make: out to the cheap model, back once for a lost Scott. */
 export const MAX_SWITCHES = 2
 const RUNNER =
   /^(npx )?(node( [\w=-]+)* --test\b|node [^ ]+\.(spec|test)\.js\b|vitest\b|vp test\b|npm test\b|npm( --prefix [^ ]+)? run test\b)/
@@ -58,7 +62,6 @@ export const route = ({ on, approved, active, escalated, proven = false }) =>
   on && approved && proven && active.length > 0 && !active.some(id => escalated.has(id)) ? 'cheap' : 'frontier'
 
 /** Scott asking for plain words, which brings the frontier model back mid-node. */
-/** Scott asking for plain words, which brings the frontier model back mid-node. */
 const LOST = new RegExp(
   [
     String.raw`\bi'?m lost\b`,
@@ -74,6 +77,51 @@ const LOST = new RegExp(
   ].join('|'),
   'i'
 )
+
+/** Jev's probability above which a message reads as Scott frustrated, lost, or correcting the agent. */
+export const UPSET = 0.7
+
+const UPSET_QUESTION = {
+  upset: {
+    type: 'bool',
+    instructions:
+      'This is the latest message from Scott to his coding agent, after his earlier messages. Scott is dyslexic, so typos are normal and mean nothing. Read the mood across the messages. Is Scott frustrated, lost, confused, resigned, or correcting the agent for doing the wrong thing in the latest one?',
+    criteria: {
+      true: 'Frustrated, lost, confused, or correcting the agent',
+      false: 'A plain request, approval, or question with no frustration'
+    }
+  }
+}
+
+/** How many earlier messages Jev reads for mood. */
+export const EARLIER = 2
+
+/**
+ * Scott's own words: skill text and fenced code removed.
+ * @param {unknown} prompt
+ */
+export const own_words = prompt =>
+  String(prompt ?? '')
+    .replace(/<skill [\s\S]*?<\/skill>/g, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .trim()
+
+/**
+ * Whether Jev reads the message as Scott upset; false when no Jev model answers.
+ * @param {any} registry
+ * @param {string} message
+ * @param {string[]} earlier
+ * @param {(text: string, level: string) => void} [notify]
+ */
+export const upset = async (registry, message, earlier = [], notify = () => {}) => {
+  const jev = (await registry.getAvailableOfType?.('classifier'))?.find((/** @type {any} */ m) => /jev/.test(m.id))
+  if (!jev) return false
+  const result = await registry.classify(jev, { state: { earlier, message }, questions: UPSET_QUESTION }).catch(
+    (/** @type {Error} */ error) =>
+      (notify(`Prewalk: Jev failed: ${error.message}`, 'warning'), null)
+  )
+  return result?.stopReason === 'stop' && result.answers.upset.probability >= UPSET
+}
 
 /** @param {unknown} prompt */
 export const lost = prompt => LOST.test(String(prompt ?? '').replace(/```[\s\S]*?```/g, ''))
@@ -97,7 +145,7 @@ export const plan_of = (path, cwd, plans) => {
  * @param {string} plans
  */
 export const plan_named = (prompt, plans) => {
-  const match = /^<skill name="planning"[\s\S]*?<\/skill>\n\n(\S+)/.exec(prompt ?? '')
+  const match = /^(?:<skill name="planning"[\s\S]*?<\/skill>\n\n|\/plan\w*\s+)(\S+)/.exec(prompt ?? '')
   if (!match) return null
   const name = match[1].replace(/\.md$/, '').replace(/\/$/, '')
   const file_of = entry =>
@@ -120,6 +168,9 @@ export const plan_named = (prompt, plans) => {
 export const takes_over = (bound, edited) =>
   edited.approved && (!bound.approved || (!bound.active.length && edited.active.length > 0))
 
+/** @param {{ approved: boolean, active: string[] }} state */
+const ready = state => state.approved && state.active.length > 0
+
 /** @param {string} file */
 const plan_state = file => {
   const text = readFileSync(file, 'utf8')
@@ -135,7 +186,10 @@ const name_of = model => (model ? `${model.provider}/${model.id}` : '')
  */
 export default (
   pi,
-  { plans = join(root, plans_path(root)), log = join(root, 'artifacts/prewalk/escalations.html') } = {}
+  {
+    plans = join(root, plans_path(root)),
+    log = join(root, 'vault/Projects/realness-planning-performance/escalations.html')
+  } = {}
 ) => {
   let on = true
   let target = DEFAULT_TARGET
@@ -159,7 +213,11 @@ export default (
   let routed = false
   /** Mid-session switches made, each one a full cache rewrite at 1.25x. */
   let switches = 0
+  /** @type {string[]} */
+  let said = []
   let nudge = 'none'
+  /** Reasons this session already asked for `/prewalk next`. */
+  const told = new Set()
 
   /** @param {any} ctx */
   const session_of = ctx => ctx?.sessionManager?.getSessionId?.() ?? ''
@@ -174,11 +232,12 @@ export default (
 
   /**
    * @param {any} ctx
-   * @param {'start' | 'escalation' | 'outcome'} kind
+   * @param {'start' | 'escalation' | 'outcome' | 'handoff'} kind
    * @param {Record<string, string>} fields
    */
   const append = (ctx, kind, fields) => {
     const at = new Date().toISOString()
+    pi.appendEntry('prewalk', { kind, ...fields, at })
     mkdirSync(dirname(log), { recursive: true })
     appendFileSync(
       log,
@@ -189,6 +248,21 @@ export default (
         at
       }).replace('itemscope', `itemscope itemid="/prewalk/${kind}s/${fields.node}/${at}"`)
     )
+  }
+
+  /**
+   * The frontier model this session or an earlier one handed off from, read from the bound plan's last handoff.
+   * @param {any} ctx
+   */
+  const frontier_of = ctx => {
+    if (frontier || !existsSync(log)) return frontier
+    const key = relative(root, plan ?? '')
+    const last = read_items(readFileSync(log, 'utf8'), 'prewalk/handoff')
+      .filter(item => item.plan === key)
+      .at(-1)
+    if (!last?.frontier) return null
+    const [provider, ...rest] = String(last.frontier).split('/')
+    return ctx.modelRegistry.find(provider, rest.join('/')) ?? null
   }
 
   /** Whether this plan's log already holds a passing spec, so a later session keeps its nodes cheap. */
@@ -206,12 +280,39 @@ export default (
     return true
   }
 
-  /** @param {any} ctx */
-  const read_plan = ctx => {
+  /** Active nodes of the bound plan whose last log entry is a spec failure or model error. */
+  const open_escalations = () => {
+    if (!existsSync(log)) return []
+    const html = readFileSync(log, 'utf8')
+    const key = relative(root, plan ?? '')
+    const items = [
+      ...read_items(html, 'prewalk/escalation').map(item => ({
+        ...item,
+        open: /^(spec failed|model error)/.test(item.reason)
+      })),
+      ...read_items(html, 'prewalk/outcome').map(item => ({ ...item, open: false }))
+    ]
+      .filter(item => item.plan === key)
+      .sort((a, b) => String(a.at).localeCompare(String(b.at)))
+    const open = new Set()
+    for (const item of items) item.open ? open.add(item.node) : open.delete(item.node)
+    return [...open]
+  }
+
+  /**
+   * @param {any} ctx
+   * @param {boolean} own - this session made the change, so it logs the nodes it moved
+   */
+  const read_plan = (ctx, own) => {
     if (!plan || !existsSync(plan)) return
     const text = readFileSync(plan, 'utf8')
     const active = nodes_in(text, 'active')
     const blocked = nodes_in(text, 'blocked')
+    if (!own) {
+      if (active.length) nudge = 'none'
+      state = { approved: approved(text), active }
+      return
+    }
     for (const id of active.filter(id => !state.active.includes(id)))
       append(ctx, 'start', { node: id, model: name_of(ctx.model) })
     for (const id of state.active.filter(id => !active.includes(id))) {
@@ -241,12 +342,13 @@ export default (
    * @param {string} file
    * @param {any} ctx
    */
-  const bind = (file, ctx) => {
+  const bind = (file, ctx, own = false) => {
     const moved = file !== plan
     if (moved) state = { approved: false, active: [] }
     plan = file
     ctx.ui.setStatus(PLAN_KEY, plan_name(relative(plans, file)))
-    read_plan(ctx)
+    read_plan(ctx, own)
+    if (moved) for (const id of open_escalations().filter(id => state.active.includes(id))) escalated.add(id)
     if (moved)
       ctx.ui.notify(
         `Prewalk: bound to ${relative(plans, file)}${state.approved ? ' (Gate 1 approved)' : ', no Gate 1 approval, frontier only'}`,
@@ -255,21 +357,41 @@ export default (
   }
 
   pi.on('before_agent_start', async (event, ctx) => {
-    if (on && lost(event.prompt) && routed && frontier) {
-      for (const id of state.active.filter(id => !escalated.has(id))) {
-        escalated.add(id)
-        record(ctx, id, 'Scott is lost', name_of(ctx.model))
-      }
-      if (switches < MAX_SWITCHES && (await pi.setModel(frontier))) {
-        switches++
-        routed = false
-        ctx.ui.notify(`Prewalk: back to ${name_of(frontier)} for plain words`, 'info')
-      }
-    }
     const file = plan_named(event.prompt, plans)
     if (file) {
       named = true
       bind(file, ctx)
+    }
+    const words = own_words(event.prompt)
+    const earlier = said
+    said = [...said, words].filter(Boolean).slice(-EARLIER)
+    const cheap = on && name_of(ctx.model) === target && frontier_of(ctx)
+    const why = !cheap
+      ? null
+      : lost(event.prompt)
+        ? 'Scott is lost'
+        : words && state.active.length > 0 && (await upset(ctx.modelRegistry, words, earlier, ctx.ui.notify))
+          ? 'Scott is upset'
+          : null
+    const back = why && cheap
+    if (back) {
+      for (const id of state.active.filter(id => !escalated.has(id))) {
+        escalated.add(id)
+        record(ctx, id, why, name_of(ctx.model))
+      }
+      if (switches < MAX_SWITCHES && (await pi.setModel(back))) {
+        switches++
+        routed = false
+        ctx.ui.notify(`Prewalk: back to ${name_of(back)}: ${why}`, 'info')
+        return {
+          message: {
+            customType: 'prewalk',
+            display: false,
+            content:
+              'Prewalk: Scott is frustrated or lost. You are back on the frontier model. Act on his message now: do the work or write the summary yourself, in plain short words. Do not ask him to type a command.'
+          }
+        }
+      }
     }
   })
 
@@ -277,14 +399,18 @@ export default (
     if (!on) return
     const file = ['read', 'edit', 'write'].includes(event.toolName) && plan_of(event.input?.path, ctx.cwd, plans)
     if (file) {
-      if (file === plan) read_plan(ctx)
-      else if (event.toolName !== 'read' && (!plan || (!named && takes_over(state, plan_state(file))))) bind(file, ctx)
+      if (file === plan) read_plan(ctx, event.toolName !== 'read')
+      else if (!plan && event.toolName === 'read' && ready(plan_state(file))) bind(file, ctx)
+      else if (event.toolName !== 'read' && (!plan || (!named && takes_over(state, plan_state(file)))))
+        bind(file, ctx, true)
       return
     }
     const working = ['edit', 'write'].includes(event.toolName) && plan && state.approved && !state.active.length
     if (working && nudge === 'none') nudge = 'due'
     if (event.toolName !== 'bash') return
-    if (!state.active.length || !is_spec_run(String(event.input?.command ?? ''))) return read_plan(ctx)
+    const command = String(event.input?.command ?? '')
+    if (!state.active.length || !is_spec_run(command))
+      return read_plan(ctx, Boolean(plan) && command.includes(plan_name(relative(plans, plan ?? ''))))
     for (const id of state.active) {
       if (!event.isError) {
         verified.add(id)
@@ -337,6 +463,7 @@ export default (
       if (!(await pi.setModel(model))) return
       switches++
       routed = true
+      append(ctx, 'handoff', { node: state.active.join('-'), frontier: name_of(frontier) })
       ctx.ui.notify(`Prewalk: ${state.active.join(', ')} on ${target}`, 'info')
       return {
         entries: [
@@ -353,18 +480,22 @@ export default (
         ]
       }
     }
-    if (want === 'frontier' && routed && frontier && current === target) {
-      if (switches >= MAX_SWITCHES) return
-      if (!(await pi.setModel(frontier))) return
-      switches++
-      routed = false
+    if (want === 'frontier' && routed && current === target) {
       const failed = state.active.filter(id => escalated.has(id))
-      ctx.ui.notify(`Prewalk: back to ${name_of(frontier)}${failed.length ? ` for ${failed.join(', ')}` : ''}`, 'info')
+      const reason = failed.length ? failed.join(', ') : 'gate'
+      if (told.has(reason)) return
+      told.add(reason)
+      ctx.ui.notify(
+        `Prewalk: ${failed.length ? `${reason} needs` : 'the gate needs'} ${name_of(frontier)}; type /prewalk next for a fresh session`,
+        'warning'
+      )
       if (!failed.length) return
       const errored = failed.filter(id => errors.has(id))
-      const content = errored.length
-        ? `Prewalk: the cheaper model failed on ${errored.join(', ')}: ${errors.get(errored[0])}. You take this node over from where it stopped.`
-        : `Prewalk: the spec failed on ${failed.join(', ')} under the cheaper model. You take this node over; find the cause before changing the test.`
+      const content =
+        (errored.length
+          ? `Prewalk: the cheaper model failed on ${errored.join(', ')}: ${errors.get(errored[0])}. `
+          : `Prewalk: the spec failed on ${failed.join(', ')}. `) +
+        'Stop now. Report what failed and where you stopped, in a few lines; never loosen the test. Scott starts a fresh frontier session with /prewalk next.'
       return {
         entries: [
           ...event.entries,
@@ -380,6 +511,7 @@ export default (
   })
 
   pi.on('session_start', () => {
+    told.clear()
     on = true
     routed = false
     switches = 0
@@ -395,18 +527,42 @@ export default (
     models.clear()
   })
 
+  /**
+   * A fresh session on the model the plan needs, which reads the plan and asks
+   * `remember` for this session's decisions instead of carrying its context.
+   * @param {any} ctx
+   */
+  const next = async ctx => {
+    if (!plan) return ctx.ui.notify('Prewalk: no plan bound; type /planning <name> first', 'warning')
+    const want = route({ on, ...state, escalated, proven: proven_plan() })
+    const [provider, ...rest] = target.split('/')
+    const model = want === 'cheap' ? ctx.modelRegistry.find(provider, rest.join('/')) : (frontier_of(ctx) ?? ctx.model)
+    if (model && name_of(model) !== name_of(ctx.model)) await pi.setModel(model)
+    const failed = state.active.filter(id => escalated.has(id))
+    const kickoff = [
+      `/planning ${plan_name(relative(plans, plan))}`,
+      state.active.length
+        ? `Continue node ${state.active.join(', ')}.${failed.length ? ` Its spec failed on the cheaper model; find the cause.` : ''}`
+        : 'No node is active: this is a gate. Show Scott the plan state and ask how to go on.',
+      `The previous session is ${session_of(ctx)}. Read the plan, then the previous node's changes, then use remember with that session for decisions you need.`
+    ].join('\n')
+    await ctx.newSession({
+      parentSession: ctx.sessionManager.getSessionFile?.(),
+      withSession: async (/** @type {any} */ fresh) => fresh.sendUserMessage(kickoff)
+    })
+  }
+
   pi.registerCommand('prewalk', {
-    description: 'Cheap model works approved plan nodes. /prewalk [provider/id | off | on]',
+    description: 'Cheap model works approved plan nodes. /prewalk [next | provider/id | off | on]',
     handler: async (args, ctx) => {
       const arg = args?.trim() ?? ''
+      if (arg === 'next') return next(ctx)
       if (arg === 'off' || arg === 'on') on = arg === 'on'
       else if (arg) {
         target = arg
         routed = false
       }
-      const where = plan
-        ? `${relative(root, plan)}, ${state.approved ? 'approved' : 'not approved'}`
-        : 'no plan read yet'
+      const where = plan ? `${relative(root, plan)}, ${state.approved ? 'approved' : 'not approved'}` : 'no plan bound'
       ctx.ui.notify(
         `Prewalk ${on ? 'on' : 'off'}: ${target}; ${where}; active ${state.active.join(', ') || 'none'}`,
         'info'

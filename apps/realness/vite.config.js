@@ -33,6 +33,7 @@ const host_cert = (() => {
 const https_port = 443
 const http_port = 5173
 import wasm from 'vite-plugin-wasm'
+import { explorer_brief } from '#root/scripts/lib/explorer-brief.js'
 
 /** The durable bundle is built by `build:durable`; dev serves it from the output folder. */
 const durable_bundle = () => ({
@@ -416,6 +417,7 @@ export default define_config(({ mode }) => ({
     }),
     wasm(),
     durable_bundle(),
+    explorer_brief(),
     icon_version_in_html(),
     realness_pwa({
       profile: 'app',

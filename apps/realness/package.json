@@ -40,10 +40,15 @@
     },
     "./publish/sources": "./src/publish/sources.js",
     "./items": "./lib/items.js",
+    "./can": "./src/can/index.js",
     "./publish/view": "./src/publish/view.js",
     "./files/target": {
       "browser": null,
       "node": "./src/files/target.js"
+    },
+    "./files/sync-check": {
+      "browser": null,
+      "node": "./src/files/sync-check.js"
     },
     "./oklch": "./lib/oklch.js",
     "./itemid": "./packages/itemid/src/index.js",
@@ -84,6 +89,7 @@
     "store": "node server/sync/bin/realness-store.js",
     "reset:local": "bash tools/control/scripts/reset-local.sh",
     "gz3": "node server/sync/bin/copy-layout.js",
+    "mirror:production": "node server/sync/bin/mirror-production.js",
     "realness": "node tools/cli/bin/realness.js",
     "publish": "node tools/publish/bin/publish.js",
     "check:google": "node checks/can/google.check.js",
@@ -103,6 +109,7 @@
     "check:actor-request": "node checks/control/actor-request.check.js",
     "check:chat-limit": "node checks/control/chat-limit.check.js",
     "secret": "bash tools/control/scripts/set-secret.sh",
+    "secrets:rotate": "node tools/control/scripts/rotate-secrets.js",
     "dev:frontend": "node scripts/generate-toc.js && vp dev",
     "dev:frontend:workers": "node scripts/watch-workers.js",
     "check:frontend": "vp check src/app scripts specs/app packages",

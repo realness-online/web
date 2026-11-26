@@ -15,10 +15,9 @@ the deny-all rules (m3) must cover every row.
 | `subscriptions/+A/<id>`                           | the person              | browser SDK (`src/app/use/push.js`)                           | owner; push sender (functions)                 |
 | `orgs/+name/`                                     | org founder and members | sync org routes                                               | members (`src/can/members.js`)                 |
 | `orgs/+name/members.html`                         | founder                 | sync org routes only                                          | sync, on every request                         |
-| `commons/+name/`                                  | org founder             | `POST v1/publish`                                             | anyone                                         |
 | `trash/people/+A/<day>/<time>/`                   | the person              | sync, on delete (sy15)                                        | owner (`realness trash`)                       |
 | `trash/orgs/+name/<day>/<time>/`                  | founder                 | sync, on delete                                               | founder                                        |
-| `admins.html`                                     | global admins           | by hand, through sync                                         | sync                                           |
+| `orgs/+realness/members.html`                     | network founder         | `realness <env> admins`, or the account page                  | anyone, as `GET v1/network`                    |
 
 ## Paths that reach storage
 

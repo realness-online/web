@@ -241,7 +241,7 @@ it('local sync keeps files in the configured iCloud store when it exists', async
   try {
     assert.equal(sync_dir({ HOME: home }), out_path('sync-data'))
     await mkdir(icloud_sync(home), { recursive: true })
-    assert.match(icloud_sync(home), /Realness-sync-2$/)
+    assert.match(icloud_sync(home), /Realness-sync-3$/)
     assert.equal(sync_dir({ HOME: home }), icloud_sync(home))
     assert.equal(sync_dir({ HOME: home, SYNC_DIR: '/x/y' }), '/x/y')
   } finally {

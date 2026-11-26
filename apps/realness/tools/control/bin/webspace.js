@@ -131,7 +131,7 @@ const USAGE = `usage: realness <local|development|production> <command> [options
 
 
   admin login|logout|whoami    browser sign-in; sync verifies admin access
-  admins list                  who sync treats as a global admin (admins.html)
+  admins list                  who sync treats as a global admin (network org members)
   admins init                  first admin from person.local.html, only if none exist
   admins add <phone> [name] [--yes]   dry-run unless --yes; bucket credentials
   admins remove <phone> [--yes]       refuses to remove the last admin

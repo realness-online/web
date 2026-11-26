@@ -28,7 +28,7 @@ const part = (used, limit) => ({
 })
 const free_status = (day = 1000) => ({
   plan: 'free',
-  free: { day: part(day, 250000), month: part(day, 3000000) },
+  free: { day: part(day, 440000), month: part(day, 12000000) },
   paid: null,
   warn:
     day >= 225000

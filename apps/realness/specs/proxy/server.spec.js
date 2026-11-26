@@ -271,17 +271,17 @@ const paid_plan = {
   end: '2999-01-01T00:00:00.000Z',
   subscription: 'sub_1'
 }
-async function routed({ paid = null, cost = 0, stripe = null }) {
+async function routed({ paid = null, cost = 0, stripe = null, used = 10 }) {
   const sent = [],
     recorded = [],
     put = []
   const identify_phone = async () => ({ phone: '+14155550123' })
   const ledger = {
     spent: async () => ({
-      day: { tokens: 10, cost: 0 },
-      month: { tokens: 10, cost: 0 }
+      day: { tokens: used, cost: 0 },
+      month: { tokens: used, cost: 0 }
     }),
-    spent_since: async () => ({ tokens: 0, cost }),
+    spent_since: async () => ({ tokens: 0, cost, paid: cost }),
     record: async (phone, row) => recorded.push(row)
   }
   const plan_for = async () => ({
@@ -390,6 +390,32 @@ it('b1d: paid people reach the house model until the credit is spent', async () 
   })
   assert.equal((await refused.json()).error.limit, 'credit')
   await spent.close()
+})
+
+it('chat goes on paid credit once the free tokens are spent', async () => {
+  const ask = app =>
+    fetch(`${app.at}/chat/completions`, {
+      method: 'POST',
+      headers: app.auth,
+      body: JSON.stringify({ model: 'standard' })
+    })
+  const free_spent = await routed({ used: 100 })
+  const blocked = await ask(free_spent)
+  assert.equal((await blocked.json()).error.limit, 'day')
+  await free_spent.close()
+  const paying = await routed({ used: 100, paid: paid_plan, cost: 1 })
+  assert.equal((await ask(paying)).status, 200)
+  await settle()
+  assert.equal(paying.recorded[0].plan, 'paid')
+  await paying.close()
+  const still_free = await routed({ paid: paid_plan })
+  assert.equal((await ask(still_free)).status, 200)
+  await settle()
+  assert.equal(still_free.recorded[0].plan, 'free')
+  await still_free.close()
+  const credit_gone = await routed({ used: 100, paid: paid_plan, cost: 5 })
+  assert.equal((await (await ask(credit_gone)).json()).error.limit, 'credit')
+  await credit_gone.close()
 })
 
 it('browser model preflight allows the OpenAI SDK headers', async () => {

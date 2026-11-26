@@ -45,7 +45,7 @@ const call = (method, path, { headers = {}, body } = {}) =>
   fetch(`${base}/${path}`, { method, headers, body })
 
 const refusals_for = async owner => {
-  const page = await storage.get(`people/${owner}/vault/${REFUSALS_PAGE}`)
+  const page = await storage.get(`people/${owner}/quarantine/${REFUSALS_PAGE}`)
   return page ? read_items(page.body.toString('utf8'), 'refusal') : []
 }
 
@@ -63,6 +63,24 @@ it("another person's write leaves the reason on the owner's page", async () => {
   assert.match(found[0].reason, /does not allow write/)
 })
 
+it('a refusal outside a phone folder leaves no page', async () => {
+  const refused = await call('GET', 'people/planning/posters/', {
+    headers: as(B)
+  })
+  assert.equal(refused.status, 403)
+  assert.deepEqual(await refusals_for('planning'), [])
+})
+
+it('a refused write outside a phone folder keeps no bytes', async () => {
+  const refused = await call('PUT', 'people/junk/x.html', {
+    headers: as(B),
+    body: 'junk'
+  })
+  assert.equal(refused.status, 403)
+  assert.equal(await storage.get(`people/junk/quarantine/${B}/x.html`), null)
+  assert.deepEqual(await refusals_for('junk'), [])
+})
+
 it('a signed-out write says so, and a second refusal is listed too', async () => {
   await call('PUT', `people/${A}/vault/Projects/b.md`, { body: 'x' })
   const found = await refusals_for(A)
@@ -72,8 +90,8 @@ it('a signed-out write says so, and a second refusal is listed too', async () =>
   assert.equal(found[1].path, `people/${A}/vault/Projects/a.md`)
 })
 
-it('the owner reads the page from their own vault', async () => {
-  const page = await call('GET', `v1/vault/note?path=${REFUSALS_PAGE}`, {
+it('the owner reads the page beside the waiting changes', async () => {
+  const page = await call('GET', `people/${A}/quarantine/${REFUSALS_PAGE}`, {
     headers: as(A)
   })
   assert.equal(page.status, 200)

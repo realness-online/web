@@ -175,17 +175,32 @@ describe('vault navigation', () => {
     mock_me.value = undefined
   })
 
+  it('keeps the vault links on the terminal, articles, and artifacts', () => {
+    for (const path of ['/terminal', '/blog', '/blog/one-post', '/artifacts']) {
+      mock_route.path = path
+      const wrapper = mount()
+      expect(wrapper.find('menu[data-vault]').exists()).toBe(true)
+      expect(wrapper.find('menu[data-primary]').exists()).toBe(false)
+    }
+    mock_route.path = '/blogger'
+    expect(mount().find('menu[data-vault]').exists()).toBe(false)
+  })
+
   it('gives the vault its own links', () => {
     mock_route.path = '/vault/docs'
     const wrapper = mount()
     const vault = wrapper.get('menu[data-vault]')
     expect(vault.findAll('a').map(link => link.text())).toEqual([
       'Vault',
-      'Docs'
+      'Docs',
+      'Articles',
+      'Terminal'
     ])
     expect(vault.findAll('a').map(link => link.attributes('href'))).toEqual([
       '/vault',
-      '/vault/docs'
+      '/vault/docs',
+      '/blog',
+      '/terminal'
     ])
     expect(wrapper.find('menu[data-primary]').exists()).toBe(false)
     wrapper.unmount()

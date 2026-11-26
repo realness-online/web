@@ -48,6 +48,7 @@
   import { poster_delete_log } from '@/utils/poster-delete-log'
   import AsTextarea from '@/components/thoughts/as-textarea.vue'
   import { use_home_view } from '@/use/home-view'
+  import { network_ids } from '@/utils/network'
 
   const on_toggle_keyboard = active => {
     posting.value = active ?? !posting.value
@@ -402,19 +403,10 @@
         ])
       if (my_id && !people.value.some(p => p.id === my_id))
         people.value.push({ id: my_id, type: 'person' })
-      const admin_raw = import.meta.env.VITE_ADMIN_ID
-      const admin_itemid = admin_raw
-        ? /** @type {Id} */ (`/${String(admin_raw).replace(/^\/?/, '')}`)
-        : null
-      if (
-        !current_user.value &&
-        admin_itemid &&
-        !people.value.some(p => p.id === admin_itemid)
-      )
-        people.value.push({
-          id: admin_itemid,
-          type: 'person'
-        })
+      if (!current_user.value)
+        for (const id of await network_ids())
+          if (!people.value.some(p => p.id === id))
+            people.value.push({ id, type: 'person' })
     }
 
     await load_feed_for_people(

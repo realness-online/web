@@ -208,6 +208,13 @@ export const cli_families = [
         'Mac only; writes local files and vault/Waiting.html.'
       ],
       [
+        'door',
+        'Sign-in and files',
+        'Pull the cloud both ways once and admit what waits.',
+        '',
+        'Mac only; writes local and remote files.'
+      ],
+      [
         'return',
         'Actor commands',
         'Send the files an actor changed since its start copy to quarantine.',

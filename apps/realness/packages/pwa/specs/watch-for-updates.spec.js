@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { is_typing, watch_for_updates } from '../src/watch-for-updates.js'
+import {
+  is_typing,
+  update_checked,
+  watch_for_updates
+} from '../src/watch-for-updates.js'
 
 /**
  * Behaves like the built worker (vite-plugin-pwa, prompt mode): a new build
@@ -98,13 +102,33 @@ describe('@/use/watch-for-updates', () => {
     expect(reload).toHaveBeenCalledTimes(1)
   })
 
-  it('never activates or reloads while the page is visible', async () => {
+  it('activates a waiting build when the page comes back, before sync runs', async () => {
     const { workers, registration } = fake_workers({ waiting: true })
     const waiting = registration.waiting
     const doc = fake_doc()
     start(workers, doc)
+    const order = []
+    doc.addEventListener('visibilitychange', async () => {
+      await update_checked()
+      order.push('sync')
+    })
+    reload.mockImplementation(() => order.push('reload'))
     await show(doc)
-    expect(waiting.postMessage).not.toHaveBeenCalled()
+    expect(waiting.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' })
+    expect(order[0]).toBe('reload')
+  })
+
+  it('lets sync run at once when nothing is waiting', async () => {
+    const { workers } = fake_workers()
+    const doc = fake_doc()
+    start(workers, doc)
+    let synced = false
+    doc.addEventListener('visibilitychange', async () => {
+      await update_checked()
+      synced = true
+    })
+    await show(doc)
+    expect(synced).toBe(true)
     expect(reload).not.toHaveBeenCalled()
   })
 
@@ -151,7 +175,6 @@ describe('@/use/watch-for-updates', () => {
     expect(waiting.postMessage).not.toHaveBeenCalled()
     working = false
     await show(doc)
-    await hide(doc)
     expect(reload).toHaveBeenCalledTimes(1)
   })
 
@@ -167,7 +190,6 @@ describe('@/use/watch-for-updates', () => {
     expect(waiting.postMessage).not.toHaveBeenCalled()
     textarea.value = ''
     await show(doc)
-    await hide(doc)
     expect(reload).toHaveBeenCalledTimes(1)
   })
 

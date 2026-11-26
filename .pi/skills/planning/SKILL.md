@@ -60,7 +60,11 @@ For code work, read `soundness` before proposing the solution architecture.
 Use its rules for module boundaries, data flow, dependencies, platform choices,
 and verification. This skill owns work order and gates, not coding standards.
 
-- One node per unit of work: id, one-line goal, effort (cheap/medium/expensive).
+- One node per unit of work: id, one-line goal, effort (cheap/medium/expensive),
+  done when.
+- Done when: one check a reader can run or read, and who confirms it -
+  "Scott confirms" or "a spec confirms". "Is it done?" gets answered from it.
+- A row names every id it mentions: "the tutor check (q1) passes".
 - Node ids lead the label (`a1`, `b3`), are unique in the file, and are never
   dropped - no range shorthand.
 - Edges only where one node depends on another. No cycles - a cycle means the
@@ -94,6 +98,11 @@ Node ids lead the label (`a1`, `b3`) so the table can refer to them. Gates use
 the `{{...}}` hexagon and the `gate` classDef. Keep labels to a few words and put
 effort in the table, not the graph. Node ids take no hyphens: a hyphen in an id
 plus a hyphen in its quoted label makes the chat renderer drop the whole graph.
+
+**Name the node, then its id, everywhere you refer to it** - in the graph, the
+table, Decisions, Notes, and chat: "the code stamp (c1)". An id alone (`c1`,
+`x2`) says nothing to the person; it is a pointer into the file, and the reader
+should not have to look it up.
 
 Inside a mermaid fence, ASCII only: `-` for dashes, `"` for quotes, `...` for an
 ellipsis, `-->` or `->` for an arrow. Prose keeps its wider characters.
@@ -292,9 +301,18 @@ Does not carry:
 - Nodes a decision absorbed. When a branch is picked, the choosing node
   disappears and the choice stands alone.
 
-Finished nodes stay, dimmed, until the human says to prune. Pruning removes
-the node, its edges, its row, and any mention elsewhere. Never prune on your
-own.
+**Self-prune** when a node's Done when is met, and at each gate:
+
+- Remove the node, its edges, its row, and any mention elsewhere.
+- Search `remember` for the plan first: Scott's confirmations and answers
+  often sit in sessions, not the plan.
+- A Done when that says "Scott confirms" waits for Scott; the node stays.
+- Cut Decisions only that node used; once it is done, cut lines its code says.
+- Fix a Decision that names code that no longer exists.
+- Move settled open questions to Decisions.
+- Hold Decisions to about twenty lines, done or not: one line per decision,
+  repeats merged, reasons cut, and detail the code or a spec holds cut.
+- Report the cuts in one line.
 
 - A decision explained twice - as a bullet, then prose, then a rationale
   paragraph. Or a rejected option kept as its own paragraph.
@@ -314,13 +332,19 @@ Present the rendered DAG and order. Ask one question: is the shape right? Only
 topology counts - added, removed, or merged nodes, wrong dependencies, wrong
 order. Wait for the go before executing. Revise and re-present if wrong. Record
 the outcome as the Decisions line `- Gate 1: approved`, not a gate log. That
-line arms prewalk, which routes only a plan this session has read and hands it
+line arms prewalk, which routes only the plan this session is bound to and hands it
 to the cheap model once one of its nodes has finished with a passing spec.
 Until then the frontier model works the nodes, which sets the pattern. After
 that, active nodes run cheap, in this session and in later ones, because the
-passing spec is read back from `artifacts/prewalk/escalations.html`. A failed
-spec, or an error from the cheap model, returns that node to the frontier
-model. So does Scott saying he is lost or confused, at once, mid-node.
+passing spec is read back from `vault/Projects/realness-planning-performance/escalations.html`. A session
+on the cheap model never switches back on its own. A failed spec, a cheap-model
+error, or a gate stops the work; Scott types `/prewalk next` for a fresh session
+on the right model, which reads the plan and asks `remember` for the old
+session. Scott saying he is lost brings the frontier model back at once.
+
+A session binds by `/planning <name>`, an edit to the plan, or a read of an
+approved plan with an active node. Before the first node, check for the
+"Prewalk: bound to…" notice; with none, run `/prewalk` and bind the plan.
 
 ### 5. Worker - execute
 
@@ -388,6 +412,7 @@ Summarize what ran. Ask whether it meets the plan. Done is your call. Record
 ## Plan conventions
 
 - `plans/` is the project list; vault/Projects holds files (active), Areas holds parked.
+- A plan an org shares lives in `orgs/+name/Projects/`; the `vault` skill's Orgs section owns orgs. Label it by the org's short name, as in SMS.
 - Archive/Projects holds finished plans; move a plan there after Gate 2.
 - A plan folder with `scout.html`: read `apps/realness/docs/scouts.md` first.
 - Projects builds, Areas learns; one subject can be both. Todo's is ignored.
@@ -396,7 +421,7 @@ Summarize what ran. Ask whether it meets the plan. Done is your call. Record
 - Then it becomes `<Plan>/index.md`; its scripts sit beside it and archive with it.
 - Check companion plans before scoping nodes.
 - Plan lines: seven to ten words; apply the rule during reviews.
-- In chat, name the step, then its id: "file layout gate (L1)".
+- In chat, name the step, then its id: "file layout gate (L1)". Never the id alone.
 - Skip what reference repos already teach. Labels beat pane fit.
 - Independent nodes still run one at a time.
 - Header links: front matter `related:` (`title`, `href`) renders as the header nav. Eight at most, one-to-three-word titles, the links a reader opens first.

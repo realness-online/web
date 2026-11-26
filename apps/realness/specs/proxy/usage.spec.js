@@ -355,7 +355,8 @@ it('spent reads once, then counts in memory', async () => {
   const ledger = usage_ledger(store, { wait: 5 })
   assert.deepEqual((await ledger.spent('+14155550123', now)).day, {
     tokens: 10,
-    cost: 0.5
+    cost: 0.5,
+    paid: 0
   })
   let lists = 0
   const list = store.list
@@ -364,7 +365,8 @@ it('spent reads once, then counts in memory', async () => {
   lists = 0
   assert.deepEqual((await ledger.spent('+14155550123', now)).day, {
     tokens: 20,
-    cost: 1
+    cost: 1,
+    paid: 0
   })
   assert.equal(lists, 0)
 })
@@ -437,9 +439,9 @@ it('b1b: either limit refuses; month wins when both are spent', () => {
     month: { tokens: month, cost: 0 }
   })
   assert.equal(over_limit(at(249_999, 2_999_999), FREE_LIMITS), null)
-  assert.equal(over_limit(at(250_000, 250_000), FREE_LIMITS), 'day')
-  assert.equal(over_limit(at(0, 3_000_000), FREE_LIMITS), 'month')
-  assert.equal(over_limit(at(250_000, 3_000_000), FREE_LIMITS), 'month')
+  assert.equal(over_limit(at(440_000, 440_000), FREE_LIMITS), 'day')
+  assert.equal(over_limit(at(0, 12_000_000), FREE_LIMITS), 'month')
+  assert.equal(over_limit(at(440_000, 12_000_000), FREE_LIMITS), 'month')
   assert.equal(
     over_limit(
       { day: { tokens: 0, cost: 1 }, month: { tokens: 0, cost: 1 } },
@@ -498,7 +500,7 @@ it('b1d: paid rows spend credit, never free tokens; spent_since crosses months',
   )
   await ledger.record(
     '+14155550123',
-    row('free', 40, 0),
+    row('free', 40, 0.1),
     new Date('2026-10-01T12:00:00Z')
   )
   await ledger.record(
@@ -509,11 +511,12 @@ it('b1d: paid rows spend credit, never free tokens; spent_since crosses months',
   const now = new Date('2026-10-01T14:00:00Z')
   assert.deepEqual((await ledger.spent('+14155550123', now)).day, {
     tokens: 40,
-    cost: 0.5
+    cost: 0.6,
+    paid: 0.5
   })
   assert.deepEqual(
     await ledger.spent_since('+14155550123', '2026-09-30', now),
-    { tokens: 40, cost: 0.75 }
+    { tokens: 40, cost: 0.85, paid: 0.75 }
   )
   await ledger.record(
     '+14155550123',
@@ -527,7 +530,7 @@ it('b1d: paid rows spend credit, never free tokens; spent_since crosses months',
         '2026-09-30',
         new Date('2026-10-01T16:00:00Z')
       )
-    ).cost,
+    ).paid,
     1
   )
   assert.deepEqual(days_since('2026-12-30', new Date('2027-01-02T00:00:00Z')), [

@@ -1,8 +1,18 @@
 import assert from 'node:assert/strict'
 import { after, test } from 'node:test'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import prewalk, { MAX_SWITCHES, is_spec_run, lost, plan_name, plan_named, plan_of, route, takes_over } from './index.js'
+import prewalk, {
+  MAX_SWITCHES,
+  is_spec_run,
+  lost,
+  own_words,
+  plan_name,
+  plan_named,
+  plan_of,
+  route,
+  takes_over
+} from './index.js'
 
 const scratch = new URL('../../../artifacts/', import.meta.url).pathname
 mkdirSync(scratch, { recursive: true })
@@ -37,10 +47,12 @@ const harness = name => {
   const commands = {}
   const notes = []
   const statuses = {}
+  const marks = []
   const ctx = {
     cwd: dir,
     model: FRONTIER,
-    sessionManager: { getSessionId: () => `session-${name}` },
+    sessionManager: { getSessionId: () => `session-${name}`, getSessionFile: () => `${name}.jsonl` },
+    newSession: async ({ withSession }) => withSession({ sendUserMessage: text => (ctx.kickoff = text) }),
     modelRegistry: { find: (provider, id) => [FRONTIER, CHEAP].find(m => m.provider === provider && m.id === id) },
     ui: {
       notify: (text, level) => notes.push({ text, level }),
@@ -50,7 +62,8 @@ const harness = name => {
   const pi = {
     on: (event, handler) => (handlers[event] = handler),
     registerCommand: (command, { handler }) => (commands[command] = handler),
-    setModel: async model => ((ctx.model = model), true)
+    setModel: async model => ((ctx.model = model), true),
+    appendEntry: (type, data) => marks.push({ type, data })
   }
   prewalk(/** @type {any} */ (pi), { plans, log })
   const file = join(plans, 'p.md')
@@ -58,6 +71,7 @@ const harness = name => {
     ctx,
     notes,
     statuses,
+    marks,
     log,
     write: shape => {
       writeFileSync(file, plan_text(shape))
@@ -144,28 +158,63 @@ test('a failing spec returns the node to the frontier model and logs it', async 
   assert.equal(h.ctx.model, CHEAP)
   h.spec(false)
   const result = await h.turn()
-  assert.equal(h.ctx.model, FRONTIER)
-  assert.match(result.entries[0].content, /spec failed on b2/)
+  assert.equal(h.ctx.model, CHEAP)
+  assert.match(result.entries[0].content, /spec failed on b2\. Stop now/)
+  assert.ok(h.notes.some(note => /b2 needs anthropic\/opus; type \/prewalk next/.test(note.text)))
   const html = readFileSync(h.log, 'utf8')
   assert.match(html, /itemtype="\/prewalk\/escalation"/)
   assert.match(html, /<span itemprop="node">b2<\/span>.*spec failed/)
 })
 
-test('a session stops switching after two, since each one rewrites the cache', async () => {
+test('a session on the cheap model stays there through a gate and the next node', async () => {
   assert.equal(MAX_SWITCHES, 2)
   const h = harness('cap')
-  h.write({ gate: '- Gate 1: approved', active: 'a1' })
-  await h.turn()
-  h.spec(true)
+  await h.prove()
   h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   await h.turn()
+  h.spec(true)
+  h.write({ gate: '- Gate 1: approved', done: 'a1,b2' })
+  await h.turn()
+  await h.turn()
   assert.equal(h.ctx.model, CHEAP)
+  assert.equal(h.notes.filter(note => /the gate needs .*\/prewalk next/.test(note.text)).length, 1)
+  h.write({ gate: '- Gate 1: approved', done: 'a1,b2', active: 'c3' })
+  await h.turn()
+  assert.equal(h.ctx.model, CHEAP)
+})
+
+test('a failed node stays on the frontier model in the next session', async () => {
+  const h = harness('carry')
+  await h.prove()
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await h.turn()
   h.spec(false)
   await h.turn()
-  assert.equal(h.ctx.model, FRONTIER)
-  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'c3' })
-  await h.turn()
-  assert.equal(h.ctx.model, FRONTIER)
+  const fresh = harness('carry')
+  fresh.read()
+  await fresh.turn()
+  assert.equal(fresh.ctx.model, FRONTIER)
+})
+
+test('/prewalk next starts a fresh session on the model the plan needs', async () => {
+  const h = harness('next')
+  await h.prove()
+  h.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  h.ctx.model = FRONTIER
+  await h.command('next')
+  assert.equal(h.ctx.model, CHEAP)
+  assert.match(h.ctx.kickoff, /^\/planning p\nContinue node b2\.\nThe previous session is session-next\..*remember/s)
+})
+
+test('a plan changed by another session logs nothing here', async () => {
+  const h = harness('watcher')
+  h.write({ gate: '- Gate 1: approved' })
+  h.seed({ gate: '- Gate 1: approved', active: 'a1' })
+  h.read()
+  h.seed({ gate: '- Gate 1: approved', done: 'a1' })
+  h.read()
+  assert.equal(existsSync(h.log), false)
+  assert.equal(h.notes.filter(note => note.level === 'warning').length, 0)
 })
 
 test('Scott saying he is lost brings the frontier model back at once', async () => {
@@ -181,6 +230,106 @@ test('Scott saying he is lost brings the frontier model back at once', async () 
   assert.match(readFileSync(h.log, 'utf8'), /<span itemprop="node">b2<\/span>.*Scott is lost/)
   await h.says('run the spec')
   assert.equal(h.ctx.model, FRONTIER)
+})
+
+test('a session that starts on the cheap model still goes back when Scott is lost', async () => {
+  const first = harness('lost-fresh')
+  first.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await first.turn()
+  first.spec(true)
+  first.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await first.turn()
+  const h = harness('lost-fresh')
+  h.ctx.model = CHEAP
+  await h.planning('p')
+  await h.says("I'm lost")
+  assert.equal(h.ctx.model, FRONTIER)
+})
+
+test("another plan's handoff never brings the frontier model back", async () => {
+  const first = harness('lost-other')
+  await first.prove()
+  first.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await first.turn()
+  writeFileSync(first.log, readFileSync(first.log, 'utf8').replaceAll('p.md<', 'q.md<'))
+  const h = harness('lost-other')
+  h.ctx.model = CHEAP
+  await h.planning('p')
+  await h.says("I'm lost")
+  assert.equal(h.ctx.model, CHEAP)
+})
+
+/** A cheap session on plan p, with Jev answering `probability` or throwing. */
+const jev_session = async (name, probability) => {
+  const first = harness(name)
+  await first.prove()
+  first.write({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
+  await first.turn()
+  const h = harness(name)
+  h.ctx.model = CHEAP
+  h.asked = []
+  h.ctx.modelRegistry.getAvailableOfType = async () => [{ id: 'typesafe/jev-latest' }]
+  h.ctx.modelRegistry.classify = async (_, { state }) => {
+    if (probability === null) throw new Error('no Jev')
+    h.asked.push(state)
+    const score = state.message === 'p' ? 0.1 : probability
+    return { stopReason: 'stop', answers: { upset: { probability: score } } }
+  }
+  return h
+}
+
+test('Jev hearing Scott upset brings the frontier model back and says act now', async () => {
+  const h = await jev_session('upset', 0.83)
+  await h.planning('p')
+  const result = await h.says('you should have auto summarized just done it')
+  assert.equal(h.ctx.model, FRONTIER)
+  assert.match(result.message.content, /Act on his message now/)
+  assert.match(readFileSync(h.log, 'utf8'), /Scott is upset/)
+})
+
+test('a calm message, or a Jev error, keeps the cheap model', async () => {
+  for (const [name, probability] of [
+    ['calm', 0.13],
+    ['jev-error', null]
+  ]) {
+    const h = await jev_session(name, probability)
+    await h.planning('p')
+    assert.equal(await h.says('run the spec'), undefined)
+    assert.equal(h.ctx.model, CHEAP, name)
+    assert.equal(
+      h.notes.some(note => /Jev failed: no Jev/.test(note.text)),
+      probability === null,
+      name
+    )
+  }
+})
+
+test('an upset first message binds the plan before it switches', async () => {
+  const h = await jev_session('upset-bind', 0.95)
+  await h.planning("p this isn't what i asked for")
+  assert.equal(h.ctx.model, FRONTIER)
+  assert.ok(h.notes.some(note => /Prewalk: bound to p\.md/.test(note.text)))
+})
+
+test('with no active node, Jev is never asked', async () => {
+  const h = await jev_session('no-node', 0.95)
+  await h.planning('p')
+  h.seed({ gate: '- Gate 1: approved', done: 'b2' })
+  h.read()
+  h.asked.length = 0
+  await h.says('this is wrong')
+  assert.deepEqual(h.asked, [])
+})
+
+test("Jev reads only Scott's own words, with his last two messages for mood", async () => {
+  assert.equal(own_words('<skill name="x">\nbody\n</skill>\n\nfix ```\ncode\n``` it'), 'fix  it')
+  const h = await jev_session('mood', 0.2)
+  await h.planning('p')
+  await h.says('hmm')
+  await h.says('no')
+  await h.says("okay fix and we'll start again")
+  assert.deepEqual(h.asked.at(-1), { earlier: ['hmm', 'no'], message: "okay fix and we'll start again" })
+  assert.ok(h.asked.every(state => !state.message.includes('<skill')))
 })
 
 test('only a lost Scott brings the frontier model back', () => {
@@ -199,12 +348,11 @@ test('a cheap-model error turn returns the session to the frontier model with a 
   await h.turn()
   assert.equal(h.ctx.model, CHEAP)
   const result = await h.turn({ stopReason: 'error', errorMessage: 'provider 503' })
-  assert.equal(h.ctx.model, FRONTIER)
-  assert.match(result.entries[0].content, /cheaper model failed on b2: provider 503/)
-  assert.ok(h.notes.some(note => /back to anthropic\/opus for b2/.test(note.text)))
+  assert.equal(h.ctx.model, CHEAP)
+  assert.match(result.entries[0].content, /cheaper model failed on b2: provider 503\. Stop now/)
+  assert.ok(h.notes.some(note => /b2 needs anthropic\/opus; type \/prewalk next/.test(note.text)))
   assert.match(readFileSync(h.log, 'utf8'), /<span itemprop="node">b2<\/span>.*model error: provider 503/)
-  await h.turn()
-  assert.equal(h.ctx.model, FRONTIER)
+  assert.equal(await h.turn(), undefined)
 })
 
 test('each node leaving active logs one outcome beside the escalations', async () => {
@@ -258,8 +406,10 @@ test('a plan changed through bash is read again', async () => {
   await h.turn()
   assert.equal(h.ctx.model, CHEAP)
   h.shell({ gate: '- Gate 1: approved', done: 'a1,b2' })
-  await h.turn()
-  assert.equal(h.ctx.model, FRONTIER)
+  assert.match(
+    readFileSync(h.log, 'utf8'),
+    /itemprop="node">b2<.*itemtype="\/prewalk\/outcome"|itemtype="\/prewalk\/outcome".*itemprop="node">b2</s
+  )
 })
 
 test('work on an approved plan with no active node is told to mark one, once', async () => {
@@ -360,17 +510,30 @@ test('/planning <name> finds the plan by folder, file, or part of its name', () 
   assert.equal(ask('presentation'), join(plans, 'realness-presentation.md'))
   assert.equal(ask('realness'), null)
   assert.equal(plan_named('read the scouts plan', plans), null)
+  assert.equal(plan_named('/planninqg presentation', plans), join(plans, 'realness-presentation.md'))
 })
 
-test('reading a plan never routes the session to it', async () => {
+test('reading an approved plan with an active node binds an unbound session', async () => {
   const h = harness('read-only')
   await h.prove()
-  await h.command('on')
+  const idle = harness('read-only')
+  idle.seed({ gate: '- Gate 1: approved', done: 'a1' })
+  idle.read()
+  await idle.turn()
+  assert.equal(idle.statuses.plan, undefined)
   const fresh = harness('read-only')
   fresh.seed({ gate: '- Gate 1: approved', done: 'a1', active: 'b2' })
   fresh.read()
   await fresh.turn()
-  assert.equal(fresh.ctx.model, FRONTIER)
+  assert.equal(fresh.ctx.model, CHEAP)
+})
+
+test('reading another plan never moves a bound session', async () => {
+  const h = harness('read-bound')
+  h.other({ gate: '- Gate 1: approved' })
+  h.seed({ gate: '- Gate 1: approved', active: 'a1' })
+  h.read()
+  assert.equal(h.statuses.plan, 'other')
 })
 
 test('/planning binds the plan; other plans with active nodes are ignored', async () => {
@@ -415,4 +578,14 @@ test('the bound plan is named in a status the footer shows', () => {
   h.write({ gate: '- Gate 1: approved' })
   assert.equal(h.statuses.plan, 'p')
   assert.equal(plan_name('realness-scouts/index.md'), 'realness-scouts')
+})
+
+test('each log item also marks the session page', async () => {
+  const h = harness('session-mark')
+  h.write({ gate: '- Gate 1: approved', active: 'a1' })
+  await h.turn()
+  assert.deepEqual(
+    h.marks.map(mark => [mark.type, mark.data.kind, mark.data.node]),
+    [['prewalk', 'start', 'a1']]
+  )
 })

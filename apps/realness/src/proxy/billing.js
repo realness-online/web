@@ -313,9 +313,9 @@ export const limit_status = (
     paid: paid
       ? {
           credit: paid.credit,
-          used: period.cost,
-          left: Math.max(0, paid.credit - period.cost),
-          percent: percent(period.cost, paid.credit),
+          used: period.paid,
+          left: Math.max(0, paid.credit - period.paid),
+          percent: percent(period.paid, paid.credit),
           renews:
             paid.status === 'active' && paid.subscription ? paid.end : null,
           ends: paid.end

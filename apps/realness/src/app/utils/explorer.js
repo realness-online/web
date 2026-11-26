@@ -2,6 +2,7 @@ import { browser_settings } from '../../settings/environments.js'
 import { create_vm_env } from './vm-env.js'
 import { current_user } from './serverless.js'
 import { create_vm_files } from './vm-files.js'
+import { explorer_instructions } from './explorer-brief.js'
 import {
   claim_view,
   compare_tails,
@@ -279,11 +280,7 @@ const open_explorer = async (token, database, owner) => {
       agent: { model: EXPLORER_MODEL, cwd: '/realness' }
     })
     await root.configure(
-      {
-        model: EXPLORER_MODEL,
-        instructions:
-          "You are Explorer. Use bash for shell requests and read, write, and edit for files. Commands and files are on the person's VM; this browser keeps the conversation."
-      },
+      { model: EXPLORER_MODEL, instructions: explorer_instructions() },
       pi.BACKGROUND_CONTEXT
     )
     return { pi, storage, harness, root, database, remote }

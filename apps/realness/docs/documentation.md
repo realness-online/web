@@ -460,9 +460,11 @@ a URL").
 Loops: a halo mirrors `loops/<id>/record.html` to Storage. `/admin` on the
 Realness frontend lists every loop across halos; a stop is a Storage write at
 `loops/<id>/stop.html` that the halo obeys on its next 30-second probe. Sync
-serves the view, and `can()` admits only the admins named in `admins.html`.
-Each bucket needs its own `admins.html`; without it admin login fails with 403.
-Manage it with `npm run realness -- <env> admins list|add <phone> [name]|remove <phone>`;
+serves the view, and `can()` admits only the admins named in the network org
+page, `orgs/+realness/members.html`. Each bucket needs its own network org;
+without it admin login fails with 403. A bucket that still has the older
+`admins.html` reads that until `admins init` moves it. Manage the list with
+`npm run realness -- <env> admins list|add <phone> [name]|remove <phone>`;
 changes are a dry run until `--yes`, writes fail if someone else edited the
 list first, and the last admin cannot be removed. Sync picks changes up within
 30 seconds.
@@ -786,7 +788,7 @@ The ledger sits outside `people/`, so sync never writes it: `can()` lets the
 owner `get` and `list` their own `usage/+A/`, and nothing else. One file per
 call because Storage has no append; racing calls never conflict.
 
-Limits are per payer, per UTC day and per UTC month: 250k tokens a day and 3M a
+Limits are per payer, per UTC day and per UTC month: 440k tokens a day (about one cent) and 12M a
 month free (`FREE_LIMITS` in `src/proxy/usage.js`). Free use runs a free model,
 so free limits count tokens. `FREE_TOKENS_PER_DAY`, `FREE_TOKENS_PER_MONTH`,
 `FREE_COST_PER_DAY`, and `FREE_COST_PER_MONTH` override them. The first call

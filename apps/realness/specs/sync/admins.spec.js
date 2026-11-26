@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
-import { admins, read_admins } from '../../src/sync/admins.js'
+import { NETWORK_KEY, admins, read_admins } from '../../src/sync/admins.js'
 
 it('admins are tel: links; anything else is ignored', () => {
   const html =
@@ -25,7 +25,7 @@ it('the list is read at most every 30 seconds; none means no admins', async () =
   let page = null
   let clock = 0
   const list = admins(
-    { get: async () => (reads++, page) },
+    { get: async key => (key === NETWORK_KEY ? (reads++, page) : null) },
     { now: () => clock }
   )
   assert.equal(await list.has('+14156667777'), false)
@@ -34,4 +34,19 @@ it('the list is read at most every 30 seconds; none means no admins', async () =
   clock = 30_000
   assert.equal(await list.has('+14156667777'), true)
   assert.equal(reads, 2)
+})
+
+it('n2: every member of the network org passes the admin check', async () => {
+  const { members_html } = await import('../../src/can/members.js')
+  const page = members_html({
+    name: '+realness',
+    founder: { name: 'Scott', phone: '+14156667777' },
+    members: [{ name: 'Ada', phone: '+14155550123' }]
+  })
+  const list = admins({
+    get: async key => (key === NETWORK_KEY ? { body: Buffer.from(page) } : null)
+  })
+  assert.equal(await list.has('+14156667777'), true)
+  assert.equal(await list.has('+14155550123'), true)
+  assert.equal(await list.has('+14155550999'), false)
 })

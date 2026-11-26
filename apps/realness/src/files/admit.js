@@ -1,8 +1,8 @@
 /**
- * k2: `realness admit`, on the Mac. Read the changes actors returned, check
- * each, and move the ones that pass into the Mac's own files; the next upload
- * carries them to the cloud. The rest wait, listed with their reasons on
- * `vault/Waiting.html`.
+ * k2, c1: read the changes actors returned, check each, and move the ones that
+ * pass into the person's own files. The Mac runs this over its files; the
+ * cloud runs the same code over its own copy, so a change lands while the Mac
+ * sleeps. The rest wait, listed with their reasons on `vault/Waiting.html`.
  */
 import {
   mkdir,
@@ -15,6 +15,7 @@ import { item_html, read_items } from '#root/lib/items.js'
 import { to_trash } from '#root/src/files/client.js'
 import { WAITING_PAGE } from '#root/src/sync/quarantine.js'
 import { REFUSALS_PAGE } from '#root/src/sync/refusals.js'
+import { version_sync } from '#root/src/files/version-node.js'
 import { reasons_to_wait } from './admit-checks.js'
 /* eslint-disable no-await-in-loop -- changes apply in order, and a lost race reads again */
 
@@ -22,7 +23,7 @@ import { reasons_to_wait } from './admit-checks.js'
 export const WAITING_NOTE = 'vault/Waiting.html'
 
 const WAITING = `can://~/quarantine/${WAITING_PAGE}`
-const REFUSALS = `can://~/vault/${REFUSALS_PAGE}`
+const REFUSALS = `can://~/quarantine/${REFUSALS_PAGE}`
 
 /**
  * A remote file's bytes, or null when it is gone.
@@ -50,6 +51,21 @@ const local_bytes = (root, path) =>
   })
 
 /**
+ * A folder tree on the machine's disk: read a path, write one, move one aside.
+ * @param {string} root
+ * @param {string | undefined} trash
+ */
+const disk_tree = (root, trash) => ({
+  read: path => local_bytes(root, path),
+  write: async (path, bytes) => {
+    const target = join(root, path)
+    await mkdir(dirname(target), { recursive: true })
+    await write_file(target, bytes)
+  },
+  trash: path => to_trash(join(root, path), trash)
+})
+
+/**
  * The page the person reads: every change that waits and why, then the
  * writes sync refused, as sync recorded them.
  * @param {Record<string, unknown>[]} waiting
@@ -69,6 +85,23 @@ ${refused.map(refusal => item_html('refusal', refusal)).join('')}</main></body>
 
 /** One change, as it is named on the quarantine page. */
 const key_of = change => `${change.actor}\n${change.path}\n${change.at}`
+
+/** The reason a change waits when its file moved as it arrived. */
+const MOVED = 'the file changed since the actor started'
+
+/**
+ * Drop the held bytes, only while they are the ones this change listed.
+ * @param {any} store
+ * @param {string} held
+ * @param {string | undefined} version
+ */
+const drop_held = async (store, held, version) => {
+  try {
+    await store.rm(held, version ? { 'if-match': `"${version}"` } : undefined)
+  } catch (error) {
+    if (error.status !== HTTP.PRECONDITION_FAILED) throw error
+  }
+}
 
 /**
  * Take the changes that moved off the quarantine page. Actors add to it as
@@ -100,10 +133,18 @@ const clear_moved = async (store, done) => {
 }
 
 /**
- * @param {{ root: string, store: any, phone: string, trash: string }} options
+ * @param {{ root?: string, store: any, phone: string, trash?: string, read?: typeof local_bytes, tree?: { read: (path: string) => Promise<Buffer | null>, write: (path: string, bytes: Buffer, version?: string) => Promise<unknown>, trash: (path: string) => Promise<unknown> } }} options
  * @returns {Promise<{ moved: string[], waiting: string[] }>}
  */
-export const admit = async ({ root, store, phone, trash }) => {
+export const admit = async ({
+  root = '',
+  store,
+  phone,
+  trash,
+  read,
+  tree = disk_tree(root, trash)
+}) => {
+  const look = read ? path => read(root, path) : tree.read
   const page = await remote_bytes(store, WAITING)
   const changes = page ? read_items(page.toString('utf8'), 'change') : []
   const moved = []
@@ -119,18 +160,28 @@ export const admit = async ({ root, store, phone, trash }) => {
       done.add(key_of(change))
       continue
     }
-    const local = await local_bytes(root, change.path)
+    const local = await look(change.path)
     const reasons = reasons_to_wait(change, { bytes, local, phone })
     if (reasons.length) {
       waiting.unshift({ ...change, reasons })
       continue
     }
-    const target = join(root, change.path)
-    if (bytes) {
-      await mkdir(dirname(target), { recursive: true })
-      await write_file(target, bytes)
-      await store.rm(held)
-    } else if (local) await to_trash(target, trash)
+    const now = await look(change.path)
+    const current = now ? version_sync(now) : 'new'
+    if (current !== change.base) {
+      waiting.unshift({ ...change, reasons: [MOVED] })
+      continue
+    }
+    if (bytes && held) {
+      try {
+        await tree.write(change.path, bytes, current)
+      } catch (error) {
+        if (error.code !== 'conflict') throw error
+        waiting.unshift({ ...change, reasons: [MOVED] })
+        continue
+      }
+      await drop_held(store, held, change.held_version)
+    } else if (now) await tree.trash(change.path)
     moved.push(change.path)
     done.add(key_of(change))
   }
@@ -139,6 +190,6 @@ export const admit = async ({ root, store, phone, trash }) => {
   const refused = refusals
     ? read_items(refusals.toString('utf8'), 'refusal')
     : []
-  await write_file(join(root, WAITING_NOTE), waiting_page(waiting, refused))
+  await tree.write(WAITING_NOTE, Buffer.from(waiting_page(waiting, refused)))
   return { moved, waiting: waiting.map(change => change.path) }
 }

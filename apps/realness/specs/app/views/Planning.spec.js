@@ -149,16 +149,6 @@ describe('@/views/Planning', () => {
     expect(covers[1].find('pre.mermaid').exists()).toBe(false)
   })
 
-  it('links to the articles from the header', async () => {
-    at('')
-    respond()
-    const page = at_page()
-    await flush_promises()
-    const link = page.get('header nav[aria-label="Related"] a')
-    expect(link.text()).toBe('Articles')
-    expect(link.attributes('href')).toBe('/blog')
-  })
-
   it('tiles the covers on the thoughts grid', () => {
     const view = read_file_sync(
       join(import.meta.dirname, '../../../src/app/views/Planning.vue'),

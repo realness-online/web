@@ -4,7 +4,7 @@
  * source. Read-only, for the vault owner alone; a path cannot leave the vault
  * or name a dot path.
  */
-import { join, normalize, sep } from 'node:path'
+import { join, normalize, posix, sep } from 'node:path'
 import { read_frontmatter } from './frontmatter.js'
 import { artifact_file, artifact_list } from './vault-artifacts.js'
 import { article_summary, newest_first } from './vault-articles.js'
@@ -108,6 +108,40 @@ const to_match = text => {
     .join(' OR ')
 }
 
+/** Images a note shows from its own folder, by extension. */
+const ATTACHMENTS = {
+  '.gif': 'image/gif',
+  '.jpeg': 'image/jpeg',
+  '.jpg': 'image/jpeg',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp'
+}
+
+/**
+ * The vault path of an image a note names, or null when the name leaves the
+ * note's folder or is no image.
+ * @param {string} note the note's vault path
+ * @param {unknown} name the image's path, relative to the note
+ * @returns {{ path: string, type: string } | null}
+ */
+const attachment_path = (note, name) => {
+  const type =
+    ATTACHMENTS[
+      /** @type {keyof typeof ATTACHMENTS} */ (
+        posix.extname(String(name ?? '')).toLowerCase()
+      )
+    ]
+  if (!type) return null
+  const folder = posix.dirname(note)
+  const path = posix.normalize(
+    posix.join(folder, decodeURIComponent(String(name)))
+  )
+  const inside =
+    folder === '.' ? !path.startsWith('..') : path.startsWith(`${folder}/`)
+  return inside ? { path, type } : null
+}
+
 /** Files the door reads: a note, a tool page, and the styles and scripts beside it. */
 const READABLE = ['.md', '.html', '.css', '.js']
 
@@ -178,6 +212,21 @@ export const vault_door = ({ source, owner, dir = null, artifacts = null }) => {
     if (!notes) return null
     await notes.ready()
     return notes
+  }
+  /**
+   * The index row of the note one itemid names.
+   * @param {unknown} itemid
+   */
+  const note_row = async itemid => {
+    const value = typeof itemid === 'string' ? itemid : ''
+    const index = value ? await indexed() : null
+    if (!index) return null
+    const escaped = value.replace(/[\\%_]/g, '\\$&')
+    return index.db
+      .prepare(
+        "SELECT path, title, text FROM note WHERE text LIKE ? ESCAPE '\\' LIMIT 1"
+      )
+      .get(`%\nitemid: "${escaped}"%`)
   }
   return {
     ready,
@@ -296,23 +345,32 @@ export const vault_door = ({ source, owner, dir = null, artifacts = null }) => {
       return await source.read(clean.split(sep).join('/'))
     },
     /**
+     * An image beside the note one itemid names, with the storage path `can`
+     * decides on.
+     * @param {{ itemid?: unknown, name?: unknown }} query
+     * @returns {Promise<{ storage: string, type: string, body: Buffer } | null>}
+     */
+    async attachment({ itemid, name }) {
+      const row = await note_row(itemid)
+      const found = row ? attachment_path(String(row.path), name) : null
+      const body = found && source ? await source.bytes(found.path) : null
+      if (!found || !body) return null
+      return {
+        storage: `people/${owner}/vault/${found.path}`,
+        type: found.type,
+        body
+      }
+    },
+    /**
      * The note one itemid names, with the storage path `can` decides on. There
      * is no lookup by key: a key skips every right.
      * @param {{ itemid?: unknown }} query
      * @returns {Promise<{ path: string, storage: string, title: string, text: string, itemid: string | null, layout: string, created: string, related: { title: string, href: string }[], links: Record<string, string> } | null>}
      */
     async shared({ itemid }) {
-      const property = 'itemid'
-      const value = typeof itemid === 'string' ? itemid : ''
-      const index = value ? await indexed() : null
-      if (!index) return null
-      const escaped = String(value).replace(/[\\%_]/g, '\\$&')
-      const row = index.db
-        .prepare(
-          "SELECT path, title, text FROM note WHERE text LIKE ? ESCAPE '\\' LIMIT 1"
-        )
-        .get(`%\n${property}: "${escaped}"%`)
-      if (!row) return null
+      const row = await note_row(itemid)
+      const index = row ? await indexed() : null
+      if (!row || !index) return null
       const raw = String(row.text)
       const { data, body: text } = read_frontmatter(raw)
       const itemid_at = near => {

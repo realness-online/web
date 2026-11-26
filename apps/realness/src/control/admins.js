@@ -1,23 +1,25 @@
 /**
- * Manage an environment's global admins: `admins.html` at the bucket root.
- * Sync reads it (src/sync/admins.js) and `can()` denies the key to everyone,
- * so only the bucket owner's credentials write it. This is that writer.
+ * n1: manage an environment's global admins, the people of the network org
+ * `orgs/+realness/members.html` (src/sync/admins.js). The first admin is
+ * its founder. With the bucket owner's credentials this writes the page
+ * before any admin can sign in; after that the founder may also edit it on
+ * the account page.
  *
- * The page is an Organization whose people are members, read by the same
- * microdata reader as an org's members page (src/can/members.js):
- *
- *   <p><span itemprop="name">Scott</span> <span itemprop="telephone">+1 415 666 7777</span></p>
- *
- * What the page shows is what admits: the telephone is on a span, whose
- * microdata value is its text, laid out as +1 415 666-7777 while the phone
- * is stored as digits. Sync's reader accepts an older page of tel: links.
+ * While the network org has no page, the older `admins.html` is read as the
+ * list, and the first write moves it into the network org.
  *
  * Writes are conditional on the version that was read, so two operators
  * cannot silently overwrite each other. Removing the last admin is refused.
  */
-import { read_admins } from '#root/src/sync/admins.js'
-import { read_people } from '#root/src/can/members.js'
-import { escape, unescape } from '#root/lib/items.js'
+import {
+  LEGACY_KEY,
+  NETWORK,
+  NETWORK_KEY,
+  admins_page,
+  read_admins
+} from '#root/src/sync/admins.js'
+import { members_html, read_people } from '#root/src/can/members.js'
+import { unescape } from '#root/lib/items.js'
 
 const PHONE = /^\+[1-9]\d{6,14}$/
 const ENTRY =
@@ -45,40 +47,25 @@ export const parse_admins = html => {
   return admins.length ? admins : legacy_admins(html)
 }
 
-/** A displayed number, laid out for reading, never for parsing. */
-const shown_phone = phone => {
-  const [, code, area = '', head = '', tail = ''] =
-    /^\+(\d)(\d{3})(\d{3})(\d{4})$/.exec(phone) ?? []
-  return code ? `+${code} ${area} ${head}-${tail}` : phone
-}
-
-const person_html = (role, { phone, name }, tag) =>
-  `<${tag} itemprop="${role}" itemscope itemtype="https://schema.org/Person">${
-    name ? `<span itemprop="name">${escape(name)}</span> ` : ''
-  }<span itemprop="telephone">${shown_phone(phone)}</span></${tag}>`
-
 /**
- * The page sync reads; `read_admins` must see exactly these phones. The first
- * admin leads as the organization's founder, the rest follow as members, and
- * everyone on it is an admin.
+ * The network org's page; `read_admins` must see exactly these phones. The
+ * first admin is the founder, the rest are members.
  */
 export const render_admins = list => {
-  const [admin, ...others] = list
-  if (!admin) throw new Error('an admins page needs one admin')
-  return `<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><title>Admins</title></head>
-<body>
-<article itemscope itemtype="https://schema.org/Organization">
-<h1 itemprop="name">Realness admins</h1>
-${person_html('founder', admin, 'p')}
-<ul>
-${others.map(person => person_html('member', person, 'li')).join('\n')}
-</ul>
-</article>
-</body>
-</html>
-`
+  const [founder, ...members] = list
+  if (!founder) throw new Error('an admins page needs one admin')
+  return members_html({ name: NETWORK, title: 'Realness', founder, members })
+}
+
+/** Where a write goes: over the network page it read, or a new one. */
+const guard_of = page =>
+  page?.key === NETWORK_KEY ? { if_version: page.version } : { if_absent: true }
+
+/** Writes the network page; an older admins page it replaced is removed. */
+const write_network = async (storage, page, html) => {
+  await storage.put(NETWORK_KEY, html, guard_of(page))
+  if (page?.key === LEGACY_KEY)
+    await storage.delete(LEGACY_KEY, { if_version: page.version })
 }
 
 const check_phone = phone => {
@@ -127,8 +114,8 @@ export const manage_admins = async (
   storage,
   { verb = 'list', phone, name, yes = false } = {}
 ) => {
-  const page = await storage.get('admins.html')
-  const before = parse_admins(page ? page.body.toString('utf8') : '')
+  const page = await admins_page(storage)
+  const before = parse_admins(page?.html ?? '')
   const { list, changed, note } = plan_admins(before, { verb, phone, name })
   const result = {
     before,
@@ -145,11 +132,7 @@ export const manage_admins = async (
     !list.every(admin => written.has(admin.phone))
   )
     throw new Error('rendered admins page does not round-trip')
-  await storage.put(
-    'admins.html',
-    html,
-    page ? { if_version: page.version } : { if_absent: true }
-  )
+  await write_network(storage, page, html)
   return { ...result, written: true }
 }
 
@@ -166,27 +149,31 @@ export const ensure_admins = async (
   const wanted = people
     .filter(Boolean)
     .map(({ phone, name = '' }) => ({ phone: check_phone(phone), name }))
-  const page = await storage.get('admins.html')
-  const before = parse_admins(page ? page.body.toString('utf8') : '')
-  if (page && create_only)
+  const page = await admins_page(storage)
+  const before = parse_admins(page?.html ?? '')
+  const moved = page?.key === NETWORK_KEY
+  if (moved && create_only)
     return {
       before,
       after: before,
       changed: false,
       written: false,
-      note: 'admins.html exists; left as is'
+      note: 'admins exist; left as is'
     }
-  const after = [
-    ...before,
-    ...wanted.filter(
-      admin => !before.some(known => known.phone === admin.phone)
-    )
-  ]
+  const after =
+    create_only && page
+      ? before
+      : [
+          ...before,
+          ...wanted.filter(
+            admin => !before.some(known => known.phone === admin.phone)
+          )
+        ]
   if (!after.length)
     throw new Error(
       'no first admin: add person.local.html with your telephone link, then rerun'
     )
-  if (page && after.length === before.length)
+  if (moved && after.length === before.length)
     return {
       before,
       after,
@@ -194,11 +181,7 @@ export const ensure_admins = async (
       written: false,
       note: 'admins already listed'
     }
-  await storage.put(
-    'admins.html',
-    render_admins(after),
-    page ? { if_version: page.version } : { if_absent: true }
-  )
+  await write_network(storage, page, render_admins(after))
   return { before, after, changed: true, written: true }
 }
 

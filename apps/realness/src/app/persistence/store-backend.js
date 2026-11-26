@@ -8,6 +8,7 @@ import { synced } from '@/utils/storage-mode'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { is_sync_index_missing } from '@/utils/sync-file'
 import { as_path_parts } from '@/utils/itemid'
+import { is_network_member } from '@/utils/network'
 import {
   current_user,
   directory,
@@ -19,15 +20,13 @@ import {
 } from '@/utils/serverless'
 
 /**
+ * n4: a signed-out reader reads what the network's members wrote.
  * @param {string} itemid
  * @returns {boolean}
  */
-export const is_admin_directory = itemid => {
-  const raw = import.meta.env.VITE_ADMIN_ID
-  if (!raw) return false
-  const admin_id = `/${String(raw).replace(/^\/?/, '')}`
+export const is_network_directory = itemid => {
   const [author] = as_path_parts(itemid)
-  return !!(author && `/${author}` === admin_id)
+  return !!author && is_network_member(`/${author}`)
 }
 
 /**
@@ -123,7 +122,7 @@ export const backend = {
   directory: path => directory(path),
   online: () => navigator.onLine,
   signed_in: () => !!current_user.value,
-  can_read: itemid => !!current_user.value || is_admin_directory(itemid),
+  can_read: itemid => !!current_user.value || is_network_directory(itemid),
   serialize: items => prepare_upload_html(items),
   after_upload,
   after_directory,

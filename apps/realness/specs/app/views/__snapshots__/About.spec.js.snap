@@ -692,7 +692,9 @@ exports[`About > Rendering > renders about view 1`] = `
   <footer
     itemprop="footer"
   >
-    <logo-as-link-stub />
+    <logo-as-link-stub
+      vault="false"
+    />
     <anonymous-stub
       id="medium-is-the-message"
     />

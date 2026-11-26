@@ -54,6 +54,29 @@ A plan is active only while it sits in the configured plans folder
 (`realness.plans`). A plan filed in an Area is parked; moving it back resumes
 it. This skill owns where a plan lives; the `planning` skill owns its shape.
 
+## Orgs
+
+An org is a group that shares files. Its folder is `orgs/+name/` at the
+harness root, beside `vault/`, and the same path in sync. Git ignores it.
+
+- `orgs/+name/members.html` is a Schema.org `Organization`: `name`,
+  `alternateName` (the short name, as in `SMS`), `url`, `logo`, the
+  founder, and the members. Only sync's org routes write it; never edit or
+  move it on the Mac.
+- An org's plans live in `orgs/+name/Projects/`, where its members read them.
+  Share More Stories (`+share-more-stories`, short name SMS) holds the SEEQ
+  plans. A scout plan stays in `vault/Projects/`; scouts look only there.
+- Name an org by its short name in labels and filters: SMS, not
+  `+share-more-stories`.
+- Chat makes orgs, adds and removes people, and sets the name, short name,
+  website, and logo, through sync's `v1/orgs` routes. `can` checks every
+  call, so chat acts with the person's own rights. The account page only
+  shows orgs.
+
+Realness has two experiences. Human first: thoughts, posters, profiles, and
+prints. Vault: plans, chat, the terminal, articles, and artifacts. A link
+keeps a person in the experience they are in.
+
 ## In the app
 
 People read these facts on the Docs page's Vault tab (`/vault/docs`).

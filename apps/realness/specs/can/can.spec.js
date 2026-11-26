@@ -495,21 +495,11 @@ it('org names are +lowercase; phones, bare names, and the root are refused', () 
   assert.equal(can(scott, 'get', `org/${FAMILY}/x.md`, [], org), false)
 })
 
-it("anyone reads an org's commons; only its founder publishes", () => {
+it('o4: the old commons folder is closed to everyone', () => {
   const file = `commons/${FAMILY}/recipe.html`
-  for (const who of [stranger, scott, other, { phone: C }]) {
-    assert.equal(can(who, 'get', file, [], org), true)
-    assert.equal(can(who, 'list', `commons/${FAMILY}/`, [], org), true)
-  }
-  assert.equal(can(scott, 'write', file, [], org), true)
-  assert.equal(can(scott, 'delete', file, [], org), true)
-  for (const who of [stranger, other, { phone: C }, box]) {
-    assert.equal(can(who, 'write', file, [], org), false)
-    assert.equal(can(who, 'delete', file, [], org), false)
-  }
-  assert.equal(can(scott, 'write', `commons/${OTHER}/x.html`, [], null), false)
-  assert.equal(can(stranger, 'list', 'commons/', [], null), false)
-  assert.equal(can(stranger, 'get', 'commons/family/x.html', [], null), false)
+  for (const who of [stranger, scott, other])
+    for (const action of ['get', 'list', 'write', 'delete'])
+      assert.equal(can(who, action, file, [], org), false)
 })
 
 it("sy15: the trash is the owner's, or the org founder's, to read and empty", () => {

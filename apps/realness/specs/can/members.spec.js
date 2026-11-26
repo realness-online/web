@@ -103,3 +103,30 @@ it('a page sync writes reads back the same, names escaped', () => {
   assert.equal(org.people[1].name, 'Ava <3 & co')
   assert.throws(() => members_html({ name: '+x', founder: { phone: 'nope' } }))
 })
+
+it('sh8: the org name, website, and logo read back; a bad address is dropped', () => {
+  const html = members_html({
+    name: '+share-more-stories',
+    title: 'Share More Stories',
+    short: 'SMS',
+    url: 'https://sharemorestories.com/',
+    logo: 'https://sharemorestories.com/icon.png',
+    founder: { name: 'Scott', phone: A }
+  })
+  assert.match(
+    html,
+    /<a itemprop="url" href="https:\/\/sharemorestories.com\/">sharemorestories.com<\/a>/
+  )
+  const org = read_members(html)
+  assert.equal(org.title, 'Share More Stories')
+  assert.equal(org.short, 'SMS')
+  assert.equal(org.url, 'https://sharemorestories.com/')
+  assert.equal(org.logo, 'https://sharemorestories.com/icon.png')
+  assert.equal(org.people[0].name, 'Scott')
+  const unsafe = members_html({
+    name: '+x',
+    url: 'javascript:alert(1)',
+    founder: { phone: A }
+  })
+  assert.doesNotMatch(unsafe, /itemprop="url"/)
+})

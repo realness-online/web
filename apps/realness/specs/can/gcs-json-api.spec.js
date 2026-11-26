@@ -177,6 +177,19 @@ it('a generation that moved between read and write is a conflict', async t => {
   )
 })
 
+it('an unguarded put that lost a race reads again and writes', async t => {
+  let uploaded = 0
+  const calls = routed_fetch(t, url => {
+    if (!url.includes('/upload/')) return object()
+    uploaded += 1
+    return uploaded === 1
+      ? reply('precondition', { status: 412 })
+      : json({ generation: '9' })
+  })
+  await store().put('a.md', 'x')
+  assert.equal(uploads(calls).length, 2)
+})
+
 it('compose joins on the server and names every source with the prefix', async t => {
   const calls = routed_fetch(t, () => json({ generation: '5', crc32c: 'c==' }))
   assert.equal(

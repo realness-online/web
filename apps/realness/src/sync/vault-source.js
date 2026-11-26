@@ -13,7 +13,7 @@ import { join, sep } from 'node:path'
 
 /**
  * @typedef {{ version: string, updated: string }} VaultFile
- * @typedef {{ list: () => Promise<Record<string, VaultFile>>, read: (path: string) => Promise<string | null> }} VaultSource
+ * @typedef {{ list: () => Promise<Record<string, VaultFile>>, read: (path: string) => Promise<string | null>, bytes: (path: string) => Promise<Buffer | null> }} VaultSource
  */
 
 /** Folders that hold no pages a reader opens: the session archive, packages. */
@@ -62,20 +62,27 @@ const walk = async (root, folder = '') => {
  * @param {string} dir
  * @returns {VaultSource}
  */
-export const disk_source = dir => ({
-  list: () => walk(dir),
-  async read(path) {
+export const disk_source = dir => {
+  /** @param {string} path */
+  const bytes = async path => {
     if (!is_served(path)) return null
     try {
       const root = await realpath(dir)
       const full = await realpath(join(root, path))
       if (!full.startsWith(root + sep)) return null
-      return await read_file(full, 'utf8')
+      return await read_file(full)
     } catch {
       return null
     }
   }
-})
+  return {
+    list: () => walk(dir),
+    bytes,
+    async read(path) {
+      return (await bytes(path))?.toString('utf8') ?? null
+    }
+  }
+}
 
 /**
  * One person's vault in sync storage, `people/<phone>/vault/`.
@@ -85,6 +92,12 @@ export const disk_source = dir => ({
  */
 export const storage_source = (storage, phone) => {
   const prefix = `people/${phone}/vault/`
+  /** @param {string} path */
+  const bytes = async path => {
+    if (!is_served(path)) return null
+    const file = await storage.get(`${prefix}${path}`)
+    return file ? file.body : null
+  }
   return {
     async list() {
       const listed = await storage.walk_meta(prefix)
@@ -94,10 +107,9 @@ export const storage_source = (storage, phone) => {
           .map(([path, { version, updated }]) => [path, { version, updated }])
       )
     },
+    bytes,
     async read(path) {
-      if (!is_served(path)) return null
-      const file = await storage.get(`${prefix}${path}`)
-      return file ? file.body.toString('utf8') : null
+      return (await bytes(path))?.toString('utf8') ?? null
     }
   }
 }

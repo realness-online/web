@@ -11,8 +11,40 @@ const strip_overlays = document => {
   }
 }
 
+const tag_text = (xml, tag) =>
+  (xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i'))?.[1] ?? '')
+    .replace(/^<!\[CDATA\[|\]\]>$/g, '')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+/** An RSS or Atom feed as a markdown list, one entry per item. */
+export const feed_markdown = xml => {
+  const entries = xml.match(/<(item|entry)[\s>][\s\S]*?<\/\1>/gi) ?? []
+  const markdown = entries
+    .map(entry => {
+      const link = tag_text(entry, 'link') || (entry.match(/<link[^>]*href="([^"]+)"/i)?.[1] ?? '')
+      const date = tag_text(entry, 'pubDate') || tag_text(entry, 'updated')
+      const source = tag_text(entry, 'source')
+      const summary = tag_text(entry, 'description') || tag_text(entry, 'summary')
+      const line = [`- [${tag_text(entry, 'title')}](${link})`, source, date].filter(Boolean).join(' | ')
+      return summary && !tag_text(entry, 'title').startsWith(summary.slice(0, 40)) ? `${line}\n  ${summary}` : line
+    })
+    .join('\n\n')
+  return { title: tag_text(xml.replace(/<(item|entry)[\s>][\s\S]*/i, ''), 'title'), markdown }
+}
+
+const is_feed = body => /^\s*(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*<(rss|feed|rdf:RDF)[\s>]/i.test(body)
+
 /** @param {string} html */
 export const to_markdown = html => {
+  if (is_feed(html)) return feed_markdown(html)
   const { document } = parse_html(html)
   strip_overlays(document)
   const article = new Readability(document).parse()
@@ -59,7 +91,7 @@ export const filter = (md, grep) => {
  */
 export const page_text = (reply, { url, source, max = 8000, grep = null, links = false }) => {
   const page = reply.kind === 'html' ? to_markdown(reply.body) : { title: reply.title ?? '', markdown: reply.body }
-  const full = present(page.markdown, { links })
+  const full = reply.kind === 'json' ? page.markdown : present(page.markdown, { links })
   let md = filter(full, grep)
   const cut = md.length > max
   if (cut) md = md.slice(0, max)

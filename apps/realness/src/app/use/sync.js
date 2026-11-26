@@ -2,6 +2,7 @@
 /** @typedef {import('@/types').Sync_Deps} Sync_Deps */
 /** @typedef {import('@/types').Sync_Offline_Item} Sync_Offline_Item */
 import { get, del, set } from 'idb-keyval'
+import { update_checked } from '#root/packages/pwa/src/watch-for-updates.js'
 import {
   as_created_at,
   load,
@@ -48,6 +49,7 @@ import { JS_TIME } from '@/utils/numbers'
 import { profile_sync_log } from '@/utils/profile-sync-log'
 import { poster_delete_log } from '@/utils/poster-delete-log'
 import { DOES_NOT_EXIST, is_sync_index_missing } from '@/utils/sync-file'
+import { network_ids } from '@/utils/network'
 
 export { DOES_NOT_EXIST }
 
@@ -80,26 +82,26 @@ const purge_missing_sync_index_entries = async () => {
 }
 
 /**
- * @returns {Id | null}
+ * Signed-out users see the network's members. Aligns each profile's HTML
+ * with `sync:index`, dropping cached folder listings when a profile has moved.
+ * @param {Sync_Deps} deps
+ * @returns {Promise<Id[]>} the members whose local state changed
  */
-const admin_itemid_from_env = () => {
-  const raw = import.meta.env.VITE_ADMIN_ID
-  if (!raw) return null
-  return /** @type {Id} */ (`/${String(raw).replace(/^\/?/, '')}`)
+const sync_public_default_feed = async deps => {
+  const changed = []
+  for (const id of await network_ids())
+    // eslint-disable-next-line no-await-in-loop -- a few members, one at a time
+    if (await sync_public_author(id)) changed.push(id)
+  if (deps.load_phonebook) await deps.load_phonebook()
+  return changed
 }
 
 /**
- * Signed-out users only see the env admin. Aligns profile HTML with `sync:index`,
- * dropping cached folder listings when the profile has moved.
- * @param {Sync_Deps} deps
- * @returns {Promise<boolean>} True when local state for the admin changed
+ * One network member's profile and posters, fresh for a signed-out reader.
+ * @param {Id} id
+ * @returns {Promise<boolean>} True when local state for them changed
  */
-const sync_public_default_feed = async deps => {
-  const id = admin_itemid_from_env()
-  if (!id) {
-    if (deps.load_phonebook) await deps.load_phonebook()
-    return false
-  }
+const sync_public_author = async id => {
   await fresh_metadata(id)
   const posters_changed = await sync_author_posters(id)
   const index_hash = await get_index_hash(id)
@@ -119,19 +121,16 @@ const sync_public_default_feed = async deps => {
   if (profile_missing_on_server || profile_hash_stale)
     await clear_author_dirs(id)
 
-  if (!index_hash) {
-    if (deps.load_phonebook) await deps.load_phonebook()
+  if (!index_hash)
     return (
       !!(profile_missing_on_server || profile_hash_stale) || posters_changed
     )
-  }
 
   if (local_hash !== index_hash) {
     localStorage.removeItem(id)
     await del(id)
   }
 
-  if (deps.load_phonebook) await deps.load_phonebook()
   return local_hash !== index_hash || posters_changed
 }
 
@@ -160,18 +159,14 @@ const defer_working_border = emit => {
  */
 const create_play = deps => async () => {
   if (document.visibilityState !== 'visible') return
+  await update_checked()
 
   if (!current_user.value) {
     await sync_offline_actions()
     if (!navigator.onLine) return
-    const admin_changed = await sync_public_default_feed(deps)
-    if (admin_changed) {
-      const admin_id = admin_itemid_from_env()
-      deps.emit('refreshed', {
-        reload_phonebook: false,
-        authors: admin_id ? [admin_id] : []
-      })
-    }
+    const authors = await sync_public_default_feed(deps)
+    if (authors.length)
+      deps.emit('refreshed', { reload_phonebook: false, authors })
     return
   }
 
@@ -200,19 +195,19 @@ const create_play = deps => async () => {
     })
     if (poster_directory_changed) mine_changed = true
 
-    const admin_id = admin_itemid_from_env()
-    const author_posters_changed = admin_id
-      ? await sync_author_posters(admin_id)
-      : false
-    if (author_posters_changed) mine_changed = true
+    const me_id = get_my_itemid()
+    /** @type {Id[]} */
+    const network_changed = []
+    for (const id of await network_ids())
+      // eslint-disable-next-line no-await-in-loop -- a few members, one at a time
+      if (id !== me_id && (await sync_author_posters(id)))
+        network_changed.push(id)
+    if (network_changed.length) mine_changed = true
 
     if (!contacts_changed && !mine_changed) return
-    const me_id = get_my_itemid()
     /** @type {Id[] | null} */
-    let authors = me_id ? [me_id] : null
+    let authors = me_id ? [me_id, ...network_changed] : null
     if (contacts_changed) authors = null
-    if (authors && author_posters_changed && admin_id && admin_id !== me_id)
-      authors = [me_id, admin_id]
     deps.emit('refreshed', { reload_phonebook: contacts_changed, authors })
   } catch (e) {
     console.warn('[sync] tick failed', e)

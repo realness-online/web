@@ -181,12 +181,12 @@ it('b1e: limit sums today and the month against free limits', async () => {
   assert.equal(found.plan, 'free')
   assert.equal(found.free.day.used, 300)
   assert.equal(found.free.month.used, 1300)
-  assert.equal(found.free.day.left, 249_700)
-  assert.equal(found.free.month.limit, 3_000_000)
+  assert.equal(found.free.day.left, 439_700)
+  assert.equal(found.free.month.limit, 12_000_000)
   assert.equal(found.paid, null)
   assert.match(
     text.limit(found),
-    /today: 300 of 250,000 free tokens \(0%\), 249,700 left/
+    /today: 300 of 440,000 free tokens \(0%\), 439,700 left/
   )
   const fresh = await limit(sync, '+15555550109', new Date(now))
   assert.equal(fresh.free.month.used, 0)
@@ -244,7 +244,19 @@ it('report sums every person, by day and by model and client', async () => {
   await assert.rejects(report(sync, { days: 99 }), /days must be 1 to 31/)
 })
 
-it('b1e: a paid plan shows its credit from the period start', async () => {
+it('b1e: a paid plan shows the credit paid calls spent since the period start', async () => {
+  await storage.put(
+    `usage/${owner}/2026-09-01/000000001Z-phone-paid01.html`,
+    usage_row({
+      model: 'm',
+      actor: 'phone',
+      plan: 'paid',
+      status: 200,
+      request_bytes: 1,
+      reply_bytes: 1,
+      usage: { prompt_tokens: 10, completion_tokens: 0, cost: 0.02 }
+    })
+  )
   await storage.put(
     `billing/${owner}/plan.html`,
     plan_html({
@@ -257,10 +269,10 @@ it('b1e: a paid plan shows its credit from the period start', async () => {
   )
   const found = await limit(await as(admin), owner, new Date(now))
   assert.equal(found.plan, 'paid')
-  assert.equal(found.paid.used.toFixed(2), '0.03')
+  assert.equal(found.paid.used.toFixed(2), '0.02')
   assert.match(
     text.limit(found),
-    /credit: \$0\.03 of \$5\.00 \(0%\), renews 2026-09-30/
+    /credit: \$0\.02 of \$5\.00 \(0%\), renews 2026-09-30/
   )
   await storage.delete?.(`billing/${owner}/plan.html`)
 })

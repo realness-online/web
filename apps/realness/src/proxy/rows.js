@@ -46,8 +46,15 @@ export const free_tokens = row =>
     ? 0
     : (row.prompt_tokens ?? 0) + (row.completion_tokens ?? 0)
 
-/** Free-plan tokens and all cost; paid rows and free models spend none. */
+/** A row's cost when a paid plan's credit carried it, else nothing. */
+export const paid_cost = row => (row.plan === 'paid' ? (row.cost ?? 0) : 0)
+
+/**
+ * Free-plan tokens, all cost, and the cost paid credit carried; paid rows and
+ * free models spend no free tokens.
+ */
 export const sum_rows = rows => ({
   tokens: rows.reduce((sum, row) => sum + free_tokens(row), 0),
-  cost: rows.reduce((sum, row) => sum + (row.cost ?? 0), 0)
+  cost: rows.reduce((sum, row) => sum + (row.cost ?? 0), 0),
+  paid: rows.reduce((sum, row) => sum + paid_cost(row), 0)
 })

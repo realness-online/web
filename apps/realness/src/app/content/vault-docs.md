@@ -122,41 +122,38 @@ Each plan sees only the folders in its Syncs. A Fryxell plan cannot read SMS fil
 
 An org is a shared folder for a group: your family, your business, or one client. Members read and write its files. Each client gets its own org, so clients never see each other.
 
-| Folder           | Who reads it      |
-| ---------------- | ----------------- |
-| `people/+you/`   | only you          |
-| `orgs/+name/`    | the org's members |
-| `commons/+name/` | anyone            |
+| Folder         | Who reads it      |
+| -------------- | ----------------- |
+| `people/+you/` | only you          |
+| `orgs/+name/`  | the org's members |
 
 ### Roles
 
-- **Founder** - owns the org. Adds and removes members, deletes files, publishes, and closes the org.
+- **Founder** - owns the org. Adds and removes members, deletes files, hands the org on, and closes the org.
 - **Member** - reads, lists, and writes the org's files. Can leave.
 - **Admin** - can start new orgs. Being an admin opens no org's files.
 
 ### Set one up
 
-Today, an admin starts an org on sync with `POST v1/orgs` and a name such as `+family`. The person who starts it is the founder. Names are lower case, start with a letter, and never change.
+An admin starts an org from the [Account](/account) page, or asks chat to. A name such as `+family` is lower case, starts with a letter, and never changes. The person who starts it is the founder.
 
-**NEXT:** start orgs and name their members from the [Account](/account) page.
+The founder can give the org a shown name, a website, and a logo. Chat can do the same, as you: every route checks your rights first.
 
 ### Manage it
 
 - **Members** - the founder adds people by name and phone number, and removes them by phone number. The list is `orgs/+name/members.html`.
 - **Leave** - a member leaves. The founder cannot leave.
-- **Close** - the founder closes the org. Every file is archived to the founder's own folder, then the org and what it published are deleted. Members keep copies they already downloaded. Sync stops.
+- **Close** - the founder closes the org. Every file is archived to the founder's own folder, then the org is deleted. Members keep copies they already downloaded. Sync stops.
 - **Removed access** - a removed member stops syncing at once. Their queued changes are refused.
 
-**NEXT:** hand an org to a new founder. The new founder must accept.
+- **Hand over** - the founder gives the org to a member, who becomes the founder. The old founder loses access.
 
 ---
 
 ## Work with the world
 
-Everything is private until you publish it. Sync and publishing are separate steps.
+Everything is private until you share it. A grant in your `rights.html` that names everyone lets anyone read that folder until you take the grant away.
 
-- **Publish a file** - the founder copies a finished org file to `commons/+name/`. Anyone can read it. The copy does not change until you publish again.
-- **Withdraw** - the founder takes it down.
 - **Publish a site** - from your terminal, `realness publish <directory>` puts a built site online at its own address.
 - **Site versions** - `realness-site versions` lists them, `realness-site restore <version>` goes back to one, and `realness-site remove` takes the site offline and keeps its versions.
 

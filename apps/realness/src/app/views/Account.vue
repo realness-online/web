@@ -1,6 +1,7 @@
 <script setup>
   import AsFieldsetNotifications from '@/components/account/as-fieldset-notifications'
   import AsFieldsetWipe from '@/components/account/as-fieldset-wipe'
+  import AsFieldsetOrgs from '@/components/account/as-fieldset-orgs'
   import NameAsForm from '@/components/profile/as-form-name'
   import Preference from '@/components/preference'
   import {
@@ -87,6 +88,7 @@
 
       <section itemprop="preferences">
         <as-fieldset-notifications v-if="signed_in" />
+        <as-fieldset-orgs v-if="signed_in" />
         <preference
           name="sync_folder"
           label="Sync folder"

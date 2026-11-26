@@ -37,6 +37,11 @@ const run_store_command = async (command, rest, { print, store, stdout }) => {
     for (const name of await store.ls(rest[0] ?? 'can://~/')) print(name)
     return null
   }
+  if (command === 'walk') {
+    const found = await store.walk(rest[0] ?? 'can://~/')
+    for (const name of Object.keys(found).sort()) print(name)
+    return null
+  }
   if (command === 'cat') {
     stdout.write(await store.cat(rest[0]))
     return null
@@ -119,6 +124,7 @@ export const run_store = async (
       'logout',
       'whoami',
       'ls',
+      'walk',
       'cat',
       'cp',
       'rm',
@@ -128,7 +134,7 @@ export const run_store = async (
     ].includes(command)
   ) {
     stderr.write(
-      'usage: realness login|logout|whoami|ls|cat|cp|rm|trash|restore|store sync ...\n'
+      'usage: realness login|logout|whoami|ls|walk|cat|cp|rm|trash|restore|store sync ...\n'
     )
     return 2
   }

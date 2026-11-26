@@ -5,6 +5,7 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 import { readFileSync as read_file_sync } from 'node:fs'
 import { product_paths } from '#root/src/settings/layout.js'
 import { frontend_out } from '#root/src/settings/output.js'
+import { explorer_brief } from '#root/scripts/lib/explorer-brief.js'
 
 const project_root = file_url_to_path(new URL('.', import.meta.url))
 const { app: app_root } = product_paths()
@@ -36,6 +37,7 @@ export default define_config({
     'import.meta.env.DEV': 'false'
   },
   plugins: [
+    explorer_brief(),
     vue({
       template: {
         compilerOptions: {

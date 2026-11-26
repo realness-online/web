@@ -203,7 +203,7 @@ it('b1d: plan_source gives free always and paid inside the period', async () => 
   const source = plan_source(billing, {})
   assert.equal((await source(A, at)).paid.credit, 5)
   assert.equal((await source('+14155550999', at)).paid, null)
-  assert.equal((await source(A, at)).free.day.tokens, 250_000)
+  assert.equal((await source(A, at)).free.day.tokens, 440_000)
 })
 
 it(`b1c: warnings at ${WARN_AT.join('% and ')}%, each with a way to pay`, () => {
@@ -211,7 +211,7 @@ it(`b1c: warnings at ${WARN_AT.join('% and ')}%, each with a way to pay`, () => 
   const spent = (day, month, cost = 0) => ({
     day: { tokens: day, cost: 0 },
     month: { tokens: month, cost: 0 },
-    period: { tokens: 0, cost }
+    period: { tokens: 0, cost, paid: cost }
   })
   assert.equal(limit_status({ free, paid: null }, spent(749, 749)).warn, null)
   assert.deepEqual(
@@ -310,7 +310,7 @@ it('a granted plan ends; only a subscription renews', () => {
   const spent = {
     day: { tokens: 0, cost: 0 },
     month: { tokens: 0, cost: 0 },
-    period: { tokens: 0, cost: 0 }
+    period: { tokens: 0, cost: 0, paid: 0 }
   }
   const granted = {
     status: 'active',

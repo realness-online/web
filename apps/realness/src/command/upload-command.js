@@ -3,6 +3,7 @@
  * way, with the same storage code the sync server uses.
  */
 import { create_gcs, gcloud_token } from '#root/src/can/gcs.js'
+import { flush_marks } from '#root/src/can/marks.js'
 import { store_of } from '#root/src/can/store.js'
 import { local_owner } from '#root/src/files/target.js'
 import { upload } from '#root/src/files/upload.js'
@@ -23,11 +24,13 @@ export const run_upload = async (
       create_gcs({
         bucket: person_settings.services.bucket,
         token: gcloud_token()
-      })
+      }),
+      { marks: true }
     )
   } = {}
 ) => {
   const report = await upload({ root, store, phone })
+  await flush_marks()
   if (args.includes('--json')) {
     stdout.write(`${JSON.stringify(report)}\n`)
     return 0

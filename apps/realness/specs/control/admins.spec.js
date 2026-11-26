@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { disk } from '../../src/can/disk.js'
-import { read_admins } from '../../src/sync/admins.js'
+import { NETWORK_KEY, read_admins } from '../../src/sync/admins.js'
 import {
   manage_admins,
   parse_admins,
@@ -72,7 +72,7 @@ it('without yes nothing is written; with yes the page is created then edited', a
   })
   assert.equal(dry.changed, true)
   assert.equal(dry.written, false)
-  assert.equal(await storage.get('admins.html'), null)
+  assert.equal(await storage.get(NETWORK_KEY), null)
 
   assert.equal(
     (
@@ -92,7 +92,7 @@ it('without yes nothing is written; with yes the page is created then edited', a
     yes: true
   })
   await manage_admins(storage, { verb: 'remove', phone: SCOTT, yes: true })
-  const page = (await storage.get('admins.html')).body.toString('utf8')
+  const page = (await storage.get(NETWORK_KEY)).body.toString('utf8')
   assert.deepEqual([...read_admins(page)], [ADA])
   await assert.rejects(
     manage_admins(storage, { verb: 'remove', phone: ADA, yes: true }),
@@ -103,7 +103,7 @@ it('without yes nothing is written; with yes the page is created then edited', a
 it('a write loses to a concurrent edit instead of overwriting it', async t => {
   const storage = disk(await scratch(t))
   await storage.put(
-    'admins.html',
+    NETWORK_KEY,
     render_admins([{ phone: SCOTT, name: 'Scott' }])
   )
   const racing = {
@@ -125,7 +125,7 @@ it('a write loses to a concurrent edit instead of overwriting it', async t => {
     error => error.code === 'conflict'
   )
   assert.equal(
-    read_admins((await storage.get('admins.html')).body.toString('utf8')).has(
+    read_admins((await storage.get(NETWORK_KEY)).body.toString('utf8')).has(
       ADA
     ),
     false
@@ -144,7 +144,7 @@ it('realness local admins: dry-run, --yes, list (phones masked)', async t => {
     ])
   const dry = await run('add', SCOTT, 'Scott')
   assert.match(dry.stdout, /would write \(rerun with --yes\)/)
-  const stored = join(dir, 'server/admins.html.gz')
+  const stored = join(dir, 'orgs/+realness/members.html.gz')
   await assert.rejects(read_file(stored))
   await run('add', SCOTT, 'Scott', '--yes')
   assert.deepEqual(
@@ -180,7 +180,7 @@ it('init gives a new environment its first admin and never edits an existing lis
   })
   assert.equal(again.written, false)
   assert.deepEqual(
-    [...read_admins((await storage.get('admins.html')).body.toString('utf8'))],
+    [...read_admins((await storage.get(NETWORK_KEY)).body.toString('utf8'))],
     [SCOTT]
   )
 })
@@ -207,7 +207,7 @@ it('realness local admins init reads person.local.html from the harness', async 
     (await run('init')).stdout,
     /first admin:\n {2}\+1\*\*\*23 {2}Ada/
   )
-  assert.match((await run('init')).stdout, /admins\.html exists; left as is/)
+  assert.match((await run('init')).stdout, /admins exist; left as is/)
 })
 
 it("local seeding keeps the test operator and adds the checkout's person once", async t => {
@@ -217,7 +217,7 @@ it("local seeding keeps the test operator and adds the checkout's person once", 
   const harness = await scratch(t)
   await seed_local_admins({ storage, harness })
   assert.deepEqual(
-    [...read_admins((await storage.get('admins.html')).body.toString('utf8'))],
+    [...read_admins((await storage.get(NETWORK_KEY)).body.toString('utf8'))],
     [DEV_OPERATOR.phone]
   )
   const { writeFile: write_file } = await import('node:fs/promises')
@@ -229,7 +229,7 @@ it("local seeding keeps the test operator and adds the checkout's person once", 
   await seed_local_admins({ storage, harness })
   assert.equal((await seed_local_admins({ storage, harness })).written, false)
   assert.deepEqual(
-    [...read_admins((await storage.get('admins.html')).body.toString('utf8'))],
+    [...read_admins((await storage.get(NETWORK_KEY)).body.toString('utf8'))],
     [DEV_OPERATOR.phone, ADA]
   )
 })
@@ -244,10 +244,50 @@ it('a signed-in non-admin is told who can add them', async () => {
 
 it('the phone shows as text; who is admin comes from the shown number', () => {
   const html = render_admins([{ phone: SCOTT, name: 'Scott' }])
-  assert.ok(html.replace(/<[^>]*>/g, ' ').includes('+1 415 666-7777'))
+  assert.ok(html.replace(/<[^>]*>/g, ' ').includes(SCOTT))
   assert.deepEqual(parse_admins(html), [{ phone: SCOTT, name: 'Scott' }])
   const another = render_admins([{ phone: ADA, name: 'Scott' }])
   assert.deepEqual([...read_admins(another)], [ADA])
   const link_only = '<a href="tel:+14155550123">x</a>'
   assert.deepEqual([...read_admins(link_only)], [ADA])
+})
+
+it('n1: the network org lists the admins; admins.html counts only until it exists', async t => {
+  const { admins } = await import('../../src/sync/admins.js')
+  const storage = disk(await scratch(t))
+  await storage.put('admins.html', `<a href="tel:${SCOTT}">Scott</a>`)
+  assert.equal(await admins(storage).has(SCOTT), true)
+  await manage_admins(storage, {
+    verb: 'add',
+    phone: ADA,
+    name: 'Ada',
+    yes: true
+  })
+  const network = admins(storage)
+  assert.equal(await network.has(ADA), true)
+  assert.equal(await network.has(SCOTT), true)
+  await storage.put(NETWORK_KEY, render_admins([{ phone: ADA, name: 'Ada' }]))
+  assert.equal(await admins(storage).has(SCOTT), false)
+})
+
+it('n1: the deploy step moves admins.html into the network org and removes it', async t => {
+  const { ensure_admins } = await import('../../src/control/admins.js')
+  const storage = disk(await scratch(t))
+  await storage.put(
+    'admins.html',
+    render_admins([{ phone: SCOTT, name: 'Scott' }])
+  )
+  const done = await ensure_admins(storage, [{ phone: ADA, name: 'Ada' }], {
+    create_only: true
+  })
+  assert.equal(done.written, true)
+  assert.equal(await storage.get('admins.html'), null)
+  assert.deepEqual(
+    [...read_admins((await storage.get(NETWORK_KEY)).body.toString('utf8'))],
+    [SCOTT]
+  )
+  assert.equal(
+    (await ensure_admins(storage, [], { create_only: true })).written,
+    false
+  )
 })

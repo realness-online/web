@@ -13,7 +13,7 @@ import { has_escape, unsafe_part } from '#root/lib/path-parts.js'
  *         `loops/<id>/...`, or `halos/<name>/...`.
  * grants  triples read from the owner's rights page (see rights.js). A grantee is
  *         `/+A/harnesses/<id>` for a harness, `/+name` for an org, or `commons`.
- * org     for `orgs/+name/...` and `commons/+name/...`: `{ founder, members }` from that org's
+ * org     for `orgs/+name/...`: `{ founder, members }` from that org's
  *         members page (see members.js), or null when it has none.
  *
  * Deny by default. Ownership comes from the path, never from stored data.
@@ -22,6 +22,15 @@ import { has_escape, unsafe_part } from '#root/lib/path-parts.js'
 
 const ACTIONS = new Set(['get', 'list', 'write', 'delete'])
 const PHONE = /^\+[1-9]\d{6,14}$/
+
+/**
+ * A path a person's folder can hold: `people/<phone>/...`.
+ * @param {string} path
+ */
+export const is_person_path = path => {
+  const [top, owner] = path.split('/')
+  return top === 'people' && PHONE.test(owner ?? '')
+}
 const INSTANCE = /^\/(\+[1-9]\d{6,14})\/harnesses\/([\w.-]+)$/
 const HALO = /^[a-z0-9][a-z0-9-]{0,62}$/
 const LOOP = /^a-[a-f0-9]{12}$/
@@ -191,18 +200,6 @@ const orgs_allowed = (action, name, rest, me, org) => {
 }
 
 /**
- * `commons/+name/` is what an org has published: anyone reads it, signed in
- * or not. Only the org's founder publishes or withdraws, until sh6 gives
- * publishing its own grant. Nobody lists the commons root.
- */
-const commons_allowed = (action, name, rest, me, org) => {
-  if (!ORG.test(name ?? '')) return false
-  if (action === 'get') return rest.length > 0
-  if (action === 'list') return true
-  return rest.length > 0 && Boolean(me.phone) && org?.founder === me.phone
-}
-
-/**
  * sy15: `trash/people/+A/` is yours and `trash/orgs/+name/` the founder's,
  * to read, list, and empty. Nobody writes it; sync files deletes there.
  */
@@ -237,7 +234,6 @@ export const can = (who, action, path, grants = [], org = null) => {
       (action === 'get' || action === 'write')
     )
   if (root === 'orgs') return orgs_allowed(action, owner, rest, me, org)
-  if (root === 'commons') return commons_allowed(action, owner, rest, me, org)
   if (root === 'trash') return trash_allowed(action, owner, rest, me, org)
   if (root === 'usage') return owns_row(action, owner, me)
   if (root === 'billing') return owns_row(action, owner, me)

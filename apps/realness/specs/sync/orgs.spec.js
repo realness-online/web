@@ -153,10 +153,39 @@ it('my org list comes from scanning the members pages', async () => {
 
 it('GET v1/orgs lists only the orgs the caller is in', async () => {
   const mine = await (await call('GET', 'v1/orgs', daughter)).json()
-  assert.deepEqual(mine, { orgs: [FAMILY] })
+  assert.equal(mine.admin, false)
+  assert.deepEqual(
+    mine.orgs.map(org => org.name),
+    [FAMILY]
+  )
+  assert.deepEqual(mine.orgs[0].founder, me)
+  assert.deepEqual(
+    mine.orgs[0].people.map(person => person.phone).sort(),
+    [me, daughter].sort()
+  )
   const client = await (await call('GET', 'v1/orgs', client_a)).json()
-  assert.deepEqual(client, { orgs: [CLIENT_A] })
+  assert.deepEqual(
+    client.orgs.map(org => org.name),
+    [CLIENT_A]
+  )
   assert.equal(await status('GET', 'v1/orgs', null), 401)
+  const admin = await (await call('GET', 'v1/orgs', me)).json()
+  assert.equal(admin.admin, true)
+})
+
+it('n4: anyone reads who runs the network, founder first', async () => {
+  const network = await (await call('GET', 'v1/network', null)).json()
+  assert.deepEqual(network.people, [{ name: '', phone: me, role: 'founder' }])
+  await storage.put('orgs/+realness/members.html', members(me, daughter))
+  const org = await (await call('GET', 'v1/network', null)).json()
+  assert.deepEqual(
+    org.people.map(person => [person.phone, person.role]),
+    [
+      [me, 'founder'],
+      [daughter, 'member']
+    ]
+  )
+  await storage.delete('orgs/+realness/members.html')
 })
 
 const id = 'a-000000000001'
@@ -166,6 +195,30 @@ const by_pass = (pass, method, path, body) =>
     headers: { authorization: `Bearer ${pass}` },
     body
   })
+
+it("sh8: chat lists and changes orgs as its owner, with the owner's rights", async () => {
+  const chat = issue_harness_pass({ phone: me, id }, secret)
+  const stranger = issue_harness_pass({ phone: partner, id }, secret)
+  const listed = await (await by_pass(chat, 'GET', 'v1/orgs')).json()
+  assert.ok(listed.orgs.some(org => org.name === FAMILY))
+  const add = JSON.stringify({ add: [{ name: 'Kit', phone: client_b }] })
+  assert.equal(
+    (await by_pass(stranger, 'POST', `v1/orgs/${FAMILY}/members`, add)).status,
+    403
+  )
+  assert.equal(
+    (await by_pass(chat, 'POST', `v1/orgs/${FAMILY}/members`, add)).status,
+    200
+  )
+  const made = JSON.stringify({ name: '+chat-made' })
+  assert.equal((await by_pass(stranger, 'POST', 'v1/orgs', made)).status, 403)
+  assert.equal((await by_pass(chat, 'POST', 'v1/orgs', made)).status, 200)
+  const drop = JSON.stringify({ remove: [client_b] })
+  assert.equal(
+    (await by_pass(chat, 'POST', `v1/orgs/${FAMILY}/members`, drop)).status,
+    200
+  )
+})
 
 it("a harness reaches its owner's orgs, with the owner's rights", async () => {
   const pass = issue_harness_pass({ phone: partner, id }, secret)
@@ -223,52 +276,14 @@ it('a harness loses an org the moment its owner does', async () => {
   await call('PUT', `orgs/${BUSINESS}/members.html`, me, members(me, partner))
 })
 
-it('the founder publishes to commons; anyone reads it', async () => {
-  const file = `commons/${FAMILY}/recipe.html`
-  assert.equal(await status('PUT', file, daughter, 'soup'), 403)
-  assert.equal(await status('PUT', file, me, 'soup'), 200)
-  assert.equal(await (await call('GET', file, null)).text(), 'soup')
-  assert.equal(await status('GET', `commons/${FAMILY}/`, client_b), 200)
-  assert.equal(await status('DELETE', file, daughter), 403)
-  assert.equal(await status('DELETE', file, me), 204)
-})
-
-const publish = (phone, path) =>
-  fetch(`${base}/v1/publish`, {
+it('o4: publish is gone', async () => {
+  const gone = await fetch(`${base}/v1/publish`, {
     method: 'POST',
-    headers: phone ? as(phone) : {},
-    body: JSON.stringify({ path })
+    headers: as(me),
+    body: JSON.stringify({ path: `orgs/${FAMILY}/notes.md` })
   })
-
-it('publishing copies an org file to commons, frozen until republished', async () => {
-  const from = `orgs/${FAMILY}/recipes/soup.html`
-  const to = `commons/${FAMILY}/recipes/soup.html`
-  await call('PUT', from, me, 'v1')
-  const first = await publish(me, from)
-  assert.equal(first.status, 200)
-  assert.equal((await first.json()).path, to)
-  await call('PUT', from, me, 'v2')
-  assert.equal(await (await call('GET', to, null)).text(), 'v1')
-  assert.equal((await publish(me, from)).status, 200)
-  assert.equal(await (await call('GET', to, null)).text(), 'v2')
-})
-
-it('only the founder publishes, and never the members page or secrets', async () => {
-  const from = `orgs/${FAMILY}/notes.md`
-  assert.equal((await publish(daughter, from)).status, 403)
-  assert.equal((await publish(client_a, from)).status, 403)
-  assert.equal((await publish(null, from)).status, 401)
-  assert.equal((await publish(me, `orgs/${FAMILY}/members.html`)).status, 400)
-  assert.equal((await publish(me, `orgs/${FAMILY}/.env`)).status, 403)
-  assert.equal((await publish(me, `people/${me}/vault/x.md`)).status, 400)
-  assert.equal((await publish(me, `orgs/${FAMILY}/missing.md`)).status, 404)
-  const pass = issue_harness_pass({ phone: me, id }, secret)
-  const by_harness = await fetch(`${base}/v1/publish`, {
-    method: 'POST',
-    headers: { authorization: `Bearer ${pass}` },
-    body: JSON.stringify({ path: from })
-  })
-  assert.equal(by_harness.status, 401)
+  assert.notEqual(gone.status, 200)
+  assert.equal(await status('PUT', `commons/${FAMILY}/x.html`, me, 'x'), 403)
 })
 
 it('o2: a grant naming an org reaches its members, and no one else', async () => {

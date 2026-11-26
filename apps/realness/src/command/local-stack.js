@@ -82,6 +82,7 @@ const vault_env = () => {
   if (!owner || !exists_sync(index)) return {}
   return {
     VAULT_DIR: path.join(home, 'vault'),
+    QUARANTINE_DIR: path.join(home, 'quarantine'),
     VAULT_INDEX: index,
     VAULT_OWNER: owner
   }

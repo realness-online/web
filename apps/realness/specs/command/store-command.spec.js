@@ -56,7 +56,7 @@ it('an unknown command prints the usage and exits 2', async () => {
   assert.equal(code, 2)
   assert.match(
     stderr,
-    /usage: realness login\|logout\|whoami\|ls\|cat\|cp\|rm\|trash\|restore\|store sync/
+    /usage: realness login\|logout\|whoami\|ls\|walk\|cat\|cp\|rm\|trash\|restore\|store sync/
   )
 })
 
@@ -96,6 +96,16 @@ it('ls takes the folder it is given', async t => {
   )
   await run(['ls', 'can://~/notes'])
   assert.match(calls[0].url, /people\/%2B15551234567\/notes\/$/)
+})
+
+it('walk lists every file in subfolders, as deep names', async t => {
+  const calls = routed_fetch(t, () =>
+    reply(JSON.stringify({ 'b.md': '1', 'notes/c.md': '2' }))
+  )
+  const { code, stdout } = await run(['walk', 'can://~/notes'])
+  assert.equal(code, 0)
+  assert.equal(stdout, 'b.md\nnotes/c.md\n')
+  assert.match(calls[0].url, /people\/%2B15551234567\/notes\/\?deep$/)
 })
 
 it('cat writes the file out as it came', async t => {

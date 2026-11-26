@@ -4,9 +4,6 @@
     itemtype="https://schema.org/CollectionPage"
     aria-label="Plans">
     <header>
-      <nav aria-label="Related">
-        <router-link to="/blog">Articles</router-link>
-      </nav>
       <nav v-if="plans.length" aria-label="Plans by state">
         <button
           v-for="state in states"

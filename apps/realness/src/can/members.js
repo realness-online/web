@@ -79,12 +79,28 @@ const phone_of = text => {
   return phone
 }
 
+/** A web address the page may link, or nothing. */
+const web_address = text => {
+  try {
+    const url = new URL(unescape(text ?? '').trim())
+    return ['https:', 'http:'].includes(url.protocol) ? url.href : undefined
+  } catch {
+    return undefined
+  }
+}
+
 /** Ends a field or a person when its element closes. */
 const close_tag = (state, name) => {
   if (VOID.has(name)) return
-  const { stack, phone, person } = state
+  const { stack, phone, person, title } = state
   const top = stack.pop()
   if (top !== name) throw new Error(`members page: </${name}> closes <${top}>`)
+  if (title && stack.length === title.depth) {
+    const text = unescape(title.text.trim().replace(/\s+/g, ' '))
+    if (title.field === 'short') state.org.short ??= text
+    else state.org.title ??= text
+    state.title = null
+  }
   if (phone && stack.length === phone.depth) {
     if (phone.field === 'name') person.names.push(unescape(phone.text.trim()))
     else person.phones.push(phone_of(phone.text))
@@ -128,6 +144,16 @@ const open_tag = (state, name, a, self) => {
     state.phone = { depth: state.stack.length, text: '', field }
   } else if (state.phone)
     throw new Error('members page: markup inside a telephone')
+  else if (!state.person && !state.title) {
+    if (field === 'name' && !empty)
+      state.title = { depth: state.stack.length, text: '' }
+    if (props.includes('alternatename') && !empty)
+      state.title = { depth: state.stack.length, text: '', field: 'short' }
+    if (props.includes('url') && name === 'a')
+      state.org.url ??= web_address(a.href)
+    if (props.includes('logo') && name === 'img')
+      state.org.logo ??= web_address(a.src)
+  }
   if (!empty) state.stack.push(name)
 }
 
@@ -136,28 +162,32 @@ const open_tag = (state, name, a, self) => {
  * @typedef {{ role: string, phone: string, name: string }} Member
  */
 
-/** `{ founder, members, people }` from the page's text; `people` keeps each
- * shown name, so sync can write the page again.  Throws on a malformed page. */
+/** `{ founder, members, people, title, short, url, logo }` from the page's text;
+ * `people` keeps each shown name and the rest describe the org, so sync can
+ * write the page again.  Throws on a malformed page. */
 export const read_members = source => {
   if (typeof source !== 'string') throw new Error('members page is not text')
   const html = source.replace(/<!--[\s\S]*?(?:-->|$)/g, '')
   if (/<(script|style|template|textarea)\b/i.test(html))
     throw new Error('members page: raw or inert content')
-  /** @type {{ found: Record<string, string[]>, stack: string[], people: Member[], person: { prop: string, depth: number, phones: string[], names: string[] } | null, phone: { depth: number, text: string, field: string } | null }} */
+  /** @type {{ found: Record<string, string[]>, stack: string[], people: Member[], person: { prop: string, depth: number, phones: string[], names: string[] } | null, phone: { depth: number, text: string, field: string } | null, title: { depth: number, text: string, field?: string } | null, org: { title?: string, short?: string, url?: string, logo?: string } }} */
   const state = {
     found: { founder: [], member: [], employee: [] },
     stack: [],
     people: [],
     person: null,
-    phone: null
+    phone: null,
+    title: null,
+    org: {}
   }
   for (const [, closing, raw, attrs, self, text] of html.matchAll(TOKEN))
     if (text !== undefined) {
       if (state.phone) state.phone.text += text
+      else if (state.title) state.title.text += text
     } else if (closing) close_tag(state, raw.toLowerCase())
     else open_tag(state, raw.toLowerCase(), attributes(attrs), self)
 
-  const { found, stack, people, person, phone } = state
+  const { found, stack, people, person, phone, org } = state
   if (person || phone || stack.length)
     throw new Error('members page: unclosed element')
   if (found.founder.length !== 1)
@@ -166,7 +196,8 @@ export const read_members = source => {
   return {
     founder,
     members: [...new Set([founder, ...found.member, ...found.employee])],
-    people
+    people,
+    ...org
   }
 }
 
@@ -195,11 +226,20 @@ const person_html = (role, { name = '', phone }, tag) =>
   }<span itemprop="telephone">${phone}</span></${tag}>`
 
 /**
- * A members page sync writes: the org's name, its founder, and each member,
- * every value shown as text. Reads back with read_members.
- * @param {{ name: string, founder: { name?: string, phone: string }, members?: { name?: string, phone: string }[] }} org
+ * A members page sync writes: the org's shown name, website, and logo, its
+ * founder, and each member, every phone shown as text. Reads back with
+ * read_members.
+ * @param {{ name: string, title?: string, short?: string, url?: string, logo?: string, founder: { name?: string, phone: string }, members?: { name?: string, phone: string }[] }} org
  */
-export const members_html = ({ name, founder, members = [] }) => {
+export const members_html = ({
+  name,
+  title,
+  short,
+  url,
+  logo,
+  founder,
+  members = []
+}) => {
   for (const { phone } of [founder, ...members])
     if (!PHONE.test(phone)) throw new Error(`members page: bad phone ${phone}`)
   const others = members.filter(({ phone }) => phone !== founder.phone)
@@ -208,8 +248,8 @@ export const members_html = ({ name, founder, members = [] }) => {
 <head><meta charset="utf-8"><title>${escape(name)} members</title></head>
 <body>
 <article itemscope itemtype="https://schema.org/Organization">
-<h1 itemprop="name">${escape(name)}</h1>
-<p>Founder: ${person_html('founder', founder, 'span')}</p>
+<h1 itemprop="name">${escape(title || name)}</h1>
+${short ? `<p itemprop="alternateName">${escape(short)}</p>\n` : ''}${web_address(url) ? `<p><a itemprop="url" href="${escape(web_address(url))}">${escape(new URL(web_address(url) ?? '').host)}</a></p>\n` : ''}${web_address(logo) ? `<p><img itemprop="logo" src="${escape(web_address(logo))}" alt=""></p>\n` : ''}<p>Founder: ${person_html('founder', founder, 'span')}</p>
 <ul>
 ${others.map(person => `<li>${person_html('member', person, 'span')}</li>`).join('\n')}
 </ul>

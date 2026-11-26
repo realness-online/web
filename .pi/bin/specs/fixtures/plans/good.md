@@ -9,9 +9,9 @@ flowchart TD
 
 ## Nodes
 
-| Node | Goal |
-| --- | --- |
-| a1 | First |
+| Node | Goal | Done when |
+| --- | --- | --- |
+| a1 | First | A spec confirms |
 
 ## Notes
 

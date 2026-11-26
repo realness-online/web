@@ -46,6 +46,15 @@ you design storage, add a data file, or link to a note.
 - Sync stores it at `people/+A/vault/`. Organizations live beside
   people at `orgs/+name/`, not inside a vault. `can` (`src/can/`) reads
   `orgs/+name/members.html` and `people/+A/rights.html` and decides access.
+  `can` checks every read and write, so any caller, chat included, may use a
+  route; the route checks rights, never the caller kind. See the `vault`
+  skill's Orgs section.
+- A person's items are their vault plus every org they belong to. To answer
+  "my plans" or "my notes", search `vault/` and each `orgs/+name/` that
+  lists them in `members.html`, one call per folder, and name the source of
+  each item.
+- Org membership lives on the sync server; ask `/v1/orgs` for the orgs a
+  person is in. A local `orgs/+name/` holds only synced content.
 - Every file carries its own `itemid`: a frontmatter line in a note, the root
   attribute in HTML or SVG. A move or rename keeps the identity. See
   `apps/realness/src/publish/sources.js`.
@@ -61,7 +70,11 @@ you design storage, add a data file, or link to a note.
 - A plan is a markdown file in `vault/Projects/` until it needs scripts to
   run. Then it becomes a folder, `<Plan>/index.md`, and its scripts sit
   beside it and archive with it. Product code stays in `apps/`. A folder plan
-  can hold plans: `<Plan>/<Inner>/index.md`.
+  can hold plans: `<Plan>/<Inner>/index.md`. A plan an org shares lives in
+  `orgs/+name/Projects/`.
+- Realness has two experiences. Human first: thoughts, posters, profiles,
+  prints. Vault: plans, chat, terminal, articles, artifacts. A link keeps a
+  person in the experience they are in.
 
 ## Voice
 
@@ -77,9 +90,6 @@ Write 80% of the way to ASD-STE100 (Simple Technical English).
 - Verify cheapest-first: structural and deterministic checks before expensive
   ones, and someone other than the producer grades the work. See the `soundness`
   and `memory` skills.
-- For sync, storage, or access (`can`), write the plan's Decisions before
-  code. A separate Critic session checks them, and the `tutor` skill teaches
-  the person the design.
 
 ## Session roles
 
@@ -112,7 +122,6 @@ code.
 
 ## Workflow
 
-- Confirm requirements before writing code; pause multi-step work until asked.
 - Use the scripts each project defines, such as `npm run check` and `npm test`.
 - Write unit tests that fit the feature touched.
 - `console.log` while debugging is fine; strip it before commit.

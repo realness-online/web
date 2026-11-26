@@ -12,6 +12,7 @@ import { execFile as exec_file } from 'node:child_process'
 import { readFileSync as read_file_sync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { aliases } from '../model-latest/aliases.js'
 
 /** Status key that prewalk sets to the bound plan's name. */
 export const PLAN_KEY = 'plan'
@@ -84,14 +85,15 @@ export const context_label = usage => {
 
 const SELECTIONS = new Set(['model_change', 'thinking_level_change'])
 
-/** Thinking level and model of the latest answer, unless a selection came after it. */
+/** Thinking level of the latest answer and the `/model` name of the selected model, unless a selection came after it. */
 export const model_label = (entries, model, thinking) => {
   const index = entries.findLastIndex(entry => entry.type === 'message' && entry.message.role === 'assistant')
   const reselected = entries.slice(index + 1).some(entry => SELECTIONS.has(entry.type))
   const last = index < 0 || reselected ? undefined : entries[index].message
-  const id = last?.responseModel ?? last?.model ?? model?.id ?? 'no model'
+  const id = model?.id ?? last?.model ?? 'no model'
+  const name = aliases.find(alias => alias.target === id)?.id ?? id.split('/').at(-1)
   const level = last?.thinkingLevel ?? thinking
-  return model?.reasoning || last?.thinkingLevel ? `${level} · ${id}` : id
+  return model?.reasoning || last?.thinkingLevel ? `${level} · ${name}` : name
 }
 
 /** "sub" when the model runs on a subscription, else "credits". */

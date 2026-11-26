@@ -107,8 +107,11 @@ pre.mermaid {
   box-sizing: border-box;
   background: none;
   overflow: auto;
-  max-height: 80dvh;
   cursor: zoom-out;
+
+  &[aria-pressed='true'] {
+    max-height: 80dvh;
+  }
 
   &:focus {
     outline: none;
@@ -121,7 +124,6 @@ pre.mermaid {
   &[aria-pressed='false'] svg {
     width: auto;
     max-width: 100% !important;
-    max-height: 80dvh;
   }
 
   & svg {

@@ -69,8 +69,10 @@ export const hold_change = async ({
 }) => {
   const actor = actor_of(who)
   const key = `people/${owner}/quarantine/${actor}/${rest}`
-  if (action === 'write' && body)
-    await storage.put(key, body, packed ? { encoding: 'gzip' } : {})
+  const held_version =
+    action === 'write' && body
+      ? await storage.put(key, body, packed ? { encoding: 'gzip' } : {})
+      : null
   await prepend_item({
     storage,
     key: `people/${owner}/quarantine/${WAITING_PAGE}`,
@@ -84,6 +86,7 @@ export const hold_change = async ({
       actor,
       base: base ?? 'new',
       held: action === 'write' ? key : 'nothing kept',
+      held_version: held_version ?? '',
       at
     })
   })

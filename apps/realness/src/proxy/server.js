@@ -87,13 +87,26 @@ export const agent_handler = ({
         message: messages[limit]
       }
     })
-  /** Which limit a call would break, if any. */
-  const limit_for = async (phone, house) => {
+  /** Paid credit left: the limit it breaks, if any. */
+  const credit_for = async (phone, paid) => {
+    if (!paid) return 'plan'
+    const spent = await ledger.spent_since(phone, paid.start)
+    return spent.paid >= paid.credit ? 'credit' : undefined
+  }
+  /**
+   * The lane a call runs in, or the limit it breaks. Free tokens go first;
+   * once they are spent, a paid plan's credit carries the call.
+   * @returns {Promise<{ lane?: 'free' | 'paid', limit?: string }>}
+   */
+  const lane_for = async (phone, house) => {
     const plan = await plan_for(phone)
-    if (!house) return over_limit(await ledger.spent(phone), plan.free)
-    if (!plan.paid) return 'plan'
-    const { cost } = await ledger.spent_since(phone, plan.paid.start)
-    return cost >= plan.paid.credit ? 'credit' : undefined
+    if (!house) {
+      const free_limit = over_limit(await ledger.spent(phone), plan.free)
+      if (!free_limit) return { lane: 'free' }
+      if (!plan.paid) return { limit: free_limit }
+    }
+    const limit = await credit_for(phone, plan.paid)
+    return limit ? { limit } : { lane: 'paid' }
   }
   return async (request, response) => {
     if (request.method !== 'POST')
@@ -115,15 +128,17 @@ export const agent_handler = ({
     )
     const house = wants_house(body)
     if (house && !(ledger && plan_for)) return refuse(response, 'plan')
+    let lane = house ? 'paid' : 'free'
     if (ledger && plan_for) {
-      let limit
+      let found
       try {
-        limit = await limit_for(who.phone, house)
+        found = await lane_for(who.phone, house)
       } catch (error) {
         warn(`usage unreadable: ${error.message}`)
         return response.writeHead(HTTP.UNAVAILABLE).end()
       }
-      if (limit) return refuse(response, limit)
+      if (found.limit) return refuse(response, found.limit)
+      ;({ lane } = found)
     }
     try {
       const model = house ? HOUSE_MODEL : MODEL
@@ -149,7 +164,7 @@ export const agent_handler = ({
         model,
         actor: who.id ?? 'phone',
         payer: who.phone,
-        plan: house ? 'paid' : 'free',
+        plan: lane,
         status: upstream.status,
         request_bytes,
         latency_ms,
@@ -195,7 +210,7 @@ export const limit_handler = ({
         ledger.spent(who.phone),
         plan.paid
           ? ledger.spent_since(who.phone, plan.paid.start)
-          : { tokens: 0, cost: 0 }
+          : { tokens: 0, cost: 0, paid: 0 }
       ])
       json(
         response,

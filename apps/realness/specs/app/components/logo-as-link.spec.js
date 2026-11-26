@@ -7,7 +7,27 @@ const router_link_stub = {
   template: '<a :href="to"><slot /></a>'
 }
 
+const mount = props =>
+  shallowMount(LogoAsLink, {
+    props,
+    global: {
+      stubs: {
+        icon: {
+          name: 'icon',
+          props: ['name'],
+          template: '<svg class="icon" />'
+        },
+        'router-link': router_link_stub
+      }
+    }
+  })
+
 describe('@/components/logo-as-link', () => {
+  it('links to the vault from the vault side', () => {
+    const link = mount({ vault: true }).find('a[aria-label="Vault home"]')
+    expect(link.attributes('href')).toBe('/vault')
+  })
+
   it('links the realness icon to home', () => {
     const wrapper = shallowMount(LogoAsLink, {
       global: {

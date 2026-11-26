@@ -35,6 +35,12 @@ declare module 'country-code-emoji' {
   export function countryCodeEmoji(countryCode: string): string
 }
 
+/** p1: the harness files app chat starts with: heading, path, text. */
+declare module 'virtual:explorer-brief' {
+  const brief: [string, string, string][]
+  export default brief
+}
+
 declare module 'virtual:pwa-register' {
   export interface RegisterSWOptions {
     immediate?: boolean

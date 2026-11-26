@@ -23,8 +23,18 @@ import { sync_service } from '#root/src/sync/server.js'
 import { vault_events } from '#root/src/sync/vault-events.js'
 import { watch_vault_disk } from '#root/src/sync/vault-watch.js'
 import { store_of } from '#root/src/can/store.js'
+import { flush_marks, rebuild_all } from '#root/src/can/marks.js'
+import { MS_PER_DAY } from '#root/lib/units.js'
+import { routed } from '#root/src/can/routed.js'
 import { gce_statuses } from '#root/src/sync/halo-power.js'
-import { sync_dir } from '#root/src/settings/output.js'
+import { icloud_sync, sync_dir } from '#root/src/settings/output.js'
+import { dirname, join } from 'node:path'
+import { production_copy } from '#root/src/sync/mirror.js'
+import { find_root } from '#root/src/harness/harness.js'
+import { deployment_settings } from '#root/src/settings/environments.js'
+import { cloud_admitter, local_admitter } from '#root/src/files/local-admit.js'
+import { trash_dir } from '#root/src/files/client.js'
+import { use_harness_state } from '#root/src/harness/harness.js'
 
 const DEFAULT_PORT = 8787
 
@@ -37,7 +47,7 @@ const open_store = () => {
   const kind = process.env.STORE ?? 'disk'
   if (kind === 'disk') {
     const dir = sync_dir()
-    return { storage: disk(dir), where: dir }
+    return { storage: disk(dir), where: dir, copies: dir === icloud_sync() }
   }
   if (kind === 'gcs') {
     const bucket = process.env.GCS_BUCKET
@@ -52,9 +62,24 @@ const open_store = () => {
   throw new Error(`unknown STORE=${kind}; use disk or gcs`)
 }
 
+const vault_dir = process.env.VAULT_DIR ?? null
+const vault_index = process.env.VAULT_INDEX ?? null
+const vault_owner = process.env.VAULT_OWNER ?? null
+const quarantine_dir = process.env.QUARANTINE_DIR ?? null
+
 /** gz1, st1, st2: every file is `name.gz`, grouped under people and server/. */
-const { storage: bytes, where } = open_store()
-const storage = store_of(bytes)
+const { storage: bytes, where, copies } = open_store()
+/** h1: only the cloud bucket keeps each person's hash page. */
+const marks = { marks: process.env.STORE === 'gcs' }
+/** l2: on the Mac, the owner's quarantine is a plain folder in the vault. */
+const storage =
+  quarantine_dir && vault_owner
+    ? routed(
+        store_of(bytes, marks),
+        `people/${vault_owner}/quarantine/`,
+        disk(quarantine_dir)
+      )
+    : store_of(bytes, marks)
 let project = process.env.PROJECT
 let certs
 let issuer
@@ -90,9 +115,6 @@ const git_app =
       }
     : null
 
-const vault_dir = process.env.VAULT_DIR ?? null
-const vault_index = process.env.VAULT_INDEX ?? null
-const vault_owner = process.env.VAULT_OWNER ?? null
 const artifacts_dir = process.env.ARTIFACTS_DIR ?? null
 const events = vault_events()
 
@@ -105,8 +127,22 @@ if (vault_dir && vault_index && vault_owner)
     log: line => console.info(`# vault ${line}`)
   })
 
+/** c1: in the cloud, the sync server admits each person's quarantine itself. */
+const admitter =
+  quarantine_dir && vault_dir && vault_owner
+    ? local_admitter({
+        storage,
+        owner: vault_owner,
+        root: dirname(vault_dir),
+        trash: trash_dir(use_harness_state(dirname(vault_dir))),
+        log: line => console.info(`# ${line}`)
+      })
+    : cloud_admitter({ storage, log: line => console.info(`# ${line}`) })
+admitter?.start()
+
 sync_service({
   events,
+  on_hold: owner => admitter?.poke(owner),
   storage,
   rights: rights(storage),
   project,
@@ -130,3 +166,34 @@ sync_service({
 }).listen(port, host, () =>
   console.info(`# sync service on http://${host}:${port}, storage ${where}`)
 )
+if (copies)
+  production_copy({
+    page: join(find_root(), 'vault/Switches.html'),
+    to: bytes,
+    from: () =>
+      create_gcs({
+        bucket: deployment_settings('production').bucket,
+        token: gcloud_token()
+      }),
+    write: true
+  })
+    .then(result =>
+      console.info(
+        result
+          ? `# production copy: copied ${result.copied}, removed ${result.removed}`
+          : '# production copy is off'
+      )
+    )
+    .catch(error => console.error(`# production copy failed: ${error.message}`))
+if (marks.marks) {
+  const day = setInterval(
+    () => rebuild_all(storage).catch(console.error),
+    MS_PER_DAY
+  )
+  day.unref()
+  for (const signal of ['SIGTERM', 'SIGINT'])
+    process.on(signal, async () => {
+      await flush_marks()
+      process.exit(0)
+    })
+}

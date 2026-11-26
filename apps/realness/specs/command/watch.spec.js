@@ -531,7 +531,14 @@ it('daily spend reaches the frame through the ledger and health snapshot', async
   const spent = await source.spent(phone, new Date('2026-10-03T12:00:00Z'))
   assert.deepEqual(
     spent.daily,
-    dates.map((date, cost) => ({ date, tokens: 3, cost, calls: 1, used: 3 }))
+    dates.map((date, cost) => ({
+      date,
+      tokens: 3,
+      cost,
+      paid: 0,
+      calls: 1,
+      used: 3
+    }))
   )
   assert.deepEqual(spent.day, { tokens: 3, cost: 2, calls: 1, used: 3 })
   assert.deepEqual(spent.month, { tokens: 9, cost: 3, calls: 3, used: 9 })

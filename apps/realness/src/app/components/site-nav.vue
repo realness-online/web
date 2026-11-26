@@ -14,7 +14,13 @@
 
   const route = use_route()
   const pricing_current = computed(() => route?.path?.startsWith('/pricing/'))
-  const vault_current = computed(() => route?.path?.startsWith('/vault'))
+  /** The vault's side of the app: plans, chat, the terminal, articles, artifacts. */
+  const VAULT = ['/vault', '/terminal', '/blog', '/artifacts']
+  const vault_current = computed(() =>
+    VAULT.some(
+      root => route?.path === root || route?.path?.startsWith(`${root}/`)
+    )
+  )
   const is_home = computed(() => route?.path === '/')
   const account_label = computed(
     () => (current_user.value && me.value?.name) || 'Account'
@@ -67,6 +73,18 @@
         :aria-current="route.path === '/vault/docs' ? 'page' : undefined"
         >Docs</router-link
       >
+      <router-link
+        to="/blog"
+        replace
+        :aria-current="route.path.startsWith('/blog') ? 'page' : undefined"
+        >Articles</router-link
+      >
+      <router-link
+        to="/terminal"
+        replace
+        :aria-current="route.path === '/terminal' ? 'page' : undefined"
+        >Terminal</router-link
+      >
     </menu>
     <menu v-else-if="!is_home" data-primary>
       <router-link to="/about" replace>About</router-link>
@@ -103,7 +121,7 @@
         :title="account_label">
         <icon name="silhouette" />
       </router-link>
-      <logo-as-link v-if="!is_home" />
+      <logo-as-link v-if="!is_home" :vault="vault_current" />
       <router-link v-if="is_home" id="about" to="/about" tabindex="-1">
         <span>{{ version_parts[0] }}</span>
         <span>?</span>

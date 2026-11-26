@@ -21,11 +21,12 @@ vi.mock('@/utils/serverless', () => ({
 }))
 
 import { metadata, upload } from '@/utils/serverless'
+import { network } from '@/utils/network'
 import {
   after_directory,
   after_upload,
   backend,
-  is_admin_directory,
+  is_network_directory,
   sync_later
 } from '@/persistence/store-backend'
 
@@ -143,10 +144,11 @@ describe('can_read', () => {
     expect(backend.signed_in()).toBe(true)
   })
 
-  it('is true for the admin id from the environment', () => {
-    vi.stubEnv('VITE_ADMIN_ID', '+15550000000')
+  it('n4: is true for a network member, as last read', () => {
+    network.value = [{ name: '', phone: '+15550000000', role: 'founder' }]
 
-    expect(is_admin_directory('/+15550000000/posters/')).toBe(true)
-    expect(is_admin_directory('/+19999999999/posters/')).toBe(false)
+    expect(is_network_directory('/+15550000000/posters/')).toBe(true)
+    expect(is_network_directory('/+19999999999/posters/')).toBe(false)
+    network.value = []
   })
 })

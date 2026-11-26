@@ -12,7 +12,8 @@ import {
   day_files,
   free_tokens,
   read_rows as parse_rows,
-  sum_rows
+  sum_rows,
+  paid_cost
 } from './rows.js'
 import { usage_stats } from './report.js'
 import { item_html } from '#root/lib/items.js'
@@ -227,7 +228,11 @@ export const days_since = (start, now = new Date()) => {
 export const month_days = (now = new Date()) =>
   days_since(`${today(now).slice(0, 8)}01`, now)
 
-const add = (a, b) => ({ tokens: a.tokens + b.tokens, cost: a.cost + b.cost })
+const add = (a, b) => ({
+  tokens: a.tokens + b.tokens,
+  cost: a.cost + b.cost,
+  paid: a.paid + b.paid
+})
 const KEEP_DAYS = 62
 
 /**
@@ -261,7 +266,7 @@ export const usage_ledger = (storage, append = {}) => {
       )
       return {
         day: { ...sums.at(-1) },
-        month: sums.reduce(add, { tokens: 0, cost: 0 })
+        month: sums.reduce(add, { tokens: 0, cost: 0, paid: 0 })
       }
     },
     /** `{ tokens, cost }` from `start` (YYYY-MM-DD) through today. */
@@ -270,7 +275,7 @@ export const usage_ledger = (storage, append = {}) => {
       const sums = await Promise.all(
         days_since(start, now).map(day => total(phone, day))
       )
-      return sums.reduce(add, { tokens: 0, cost: 0 })
+      return sums.reduce(add, { tokens: 0, cost: 0, paid: 0 })
     },
     async record(phone, row, now = new Date()) {
       const key = usage_key(phone, row.actor, now)
@@ -286,6 +291,7 @@ export const usage_ledger = (storage, append = {}) => {
             completion_tokens: row.usage?.completion_tokens ?? 0
           })
           sum.cost += row.usage?.cost ?? 0
+          sum.paid += paid_cost({ plan: row.plan, cost: row.usage?.cost })
         },
         () => {}
       )
@@ -348,10 +354,10 @@ export const usage_ledger = (storage, append = {}) => {
   return ledger
 }
 
-/** Free use runs a free model, so its limits count tokens. */
+/** Free use runs a free model, so its limits count tokens. A day is about one cent on it. */
 export const FREE_LIMITS = {
-  day: { tokens: 250_000 },
-  month: { tokens: 3_000_000 }
+  day: { tokens: 440_000 },
+  month: { tokens: 12_000_000 }
 }
 
 /** Free limits after env overrides; "Infinity" lifts one. */

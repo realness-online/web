@@ -1,9 +1,14 @@
 <script setup>
   import icon from '@/components/icon'
+
+  defineProps({ vault: { type: Boolean, default: false } })
 </script>
 
 <template>
-  <router-link aria-label="Realness home" to="/" tabindex="-1">
+  <router-link
+    :aria-label="vault ? 'Vault home' : 'Realness home'"
+    :to="vault ? '/vault' : '/'"
+    tabindex="-1">
     <icon name="realness" />
   </router-link>
 </template>

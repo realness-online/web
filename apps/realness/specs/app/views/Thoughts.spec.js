@@ -69,6 +69,14 @@ const {
   }
 })
 
+const { mock_network_ids } = vi.hoisted(() => ({
+  mock_network_ids: vi.fn(() => Promise.resolve([]))
+}))
+vi.mock('@/utils/network', () => ({
+  network_ids: mock_network_ids,
+  is_network_member: () => false
+}))
+
 vi.mock('@/utils/serverless', () => ({
   get current_user() {
     return mock_current_user_ref
@@ -438,19 +446,19 @@ describe('Thoughts', () => {
       wrapper.unmount()
     })
 
-    it('adds admin and fetches admin thoughts when signed out', async () => {
-      vi.stubEnv('VITE_ADMIN_ID', '14151234356')
+    it('n4: a signed-out feed lists each network member', async () => {
+      mock_network_ids.mockResolvedValue(['/+14151234356', '/+14155550123'])
       mock_current_user_ref.value = null
       mock_phonebook.value = []
       window.localStorage.me = undefined
 
       const wrapper = await settled(mount())
-      expect(mock_statements_for_person).toHaveBeenCalledWith({
-        id: '/14151234356'
-      })
-      expect(mock_people.value.some(p => p.id === '/14151234356')).toBe(true)
+      for (const id of ['/+14151234356', '/+14155550123']) {
+        expect(mock_statements_for_person).toHaveBeenCalledWith({ id })
+        expect(mock_people.value.some(p => p.id === id)).toBe(true)
+      }
       wrapper.unmount()
-      vi.unstubAllEnvs()
+      mock_network_ids.mockResolvedValue([])
     })
   })
 

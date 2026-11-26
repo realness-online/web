@@ -71,6 +71,34 @@ it('opens nothing by a stored key', async () => {
   assert.equal(await door.shared({ itemid: '/+1555/plans/9' }), null)
 })
 
+it('serves an image beside a note, and nothing outside its folder', async () => {
+  const pixel = Buffer.from([0x89, 0x50, 0x4e, 0x47, 1, 2, 3])
+  await write_file(join(dir, 'Projects/pic.png'), pixel)
+  await write_file(join(dir, 'Archived/away.png'), pixel)
+  const found = await door.attachment({
+    itemid: '/+1555/plans/1',
+    name: 'pic.png'
+  })
+  assert.deepEqual(found?.body, pixel)
+  assert.equal(found?.type, 'image/png')
+  assert.equal(found?.storage, 'people/+1555/vault/Projects/pic.png')
+  assert.equal(
+    await door.attachment({
+      itemid: '/+1555/plans/1',
+      name: '../Archived/away.png'
+    }),
+    null
+  )
+  assert.equal(
+    await door.attachment({ itemid: '/+1555/plans/1', name: 'b.md' }),
+    null
+  )
+  assert.equal(
+    await door.attachment({ itemid: '/+1555/plans/9', name: 'pic.png' }),
+    null
+  )
+})
+
 it('reads a tool page, which the note index does not hold', async () => {
   await mkdir(join(dir, 'Areas/Realness/pages/maps'), { recursive: true })
   await write_file(

@@ -164,6 +164,9 @@ const pages = async ({
 const INDEX = '.index/'
 const hidden = name => name.startsWith(INDEX)
 
+/** Reads and writes an unguarded put makes before a lost race is an error. */
+const UNGUARDED_TRIES = 3
+
 /** The hash index, kept as JSON pieces in the bucket. */
 const gcs_index = ({ bucket, call, fail, object }) =>
   hash_index({
@@ -370,6 +373,22 @@ const packed_get = async (download, token, media, key, described) => {
   return { body, packed: true, ...described }
 }
 
+/**
+ * The bucket's precondition for a guard: our hash, pinned to a generation.
+ * Without a guard the write is pinned to the object it read, so a merged
+ * `created` never lands on top of a write it did not see.
+ */
+const precondition = (key, options, current) => {
+  const { if_version, if_absent } = guard(options)
+  if (if_absent) return 'ifGenerationMatch=0'
+  if (
+    if_version !== undefined &&
+    (!current || version_of(current) !== if_version)
+  )
+    throw new Conflict(`${key} changed`)
+  return `ifGenerationMatch=${encodeURIComponent(current?.generation ?? 0)}`
+}
+
 export const create_gcs = ({
   bucket,
   token,
@@ -399,22 +418,6 @@ export const create_gcs = ({
     if (response.status === HTTP.NOT_FOUND) return null
     if (!response.ok) await fail(`stat ${key}`, response)
     return response.json()
-  }
-
-  /**
-   * The bucket's precondition for a guard: our hash, pinned to a generation.
-   * Without a guard the write is pinned to the object it read, so a merged
-   * `created` never lands on top of a write it did not see.
-   */
-  const precondition = (key, options, current) => {
-    const { if_version, if_absent } = guard(options)
-    if (if_absent) return 'ifGenerationMatch=0'
-    if (
-      if_version !== undefined &&
-      (!current || version_of(current) !== if_version)
-    )
-      throw new Conflict(`${key} changed`)
-    return `ifGenerationMatch=${encodeURIComponent(current?.generation ?? 0)}`
   }
 
   const index = gcs_index({ bucket, call, fail, object })
@@ -454,23 +457,32 @@ export const create_gcs = ({
       const stored = sent_gzip
         ? { body: Buffer.from(body), encoding: 'gzip' }
         : at_rest(key, plain, options.gzip || key.endsWith('.gz'))
-      const current = options.if_absent ? null : await head(key)
-      const upload = upload_of(
-        `${prefix}${key}`,
-        plain,
-        stored,
-        version,
-        merged_meta(current ? meta_of(current) : {}, options.meta)
-      )
-      const query = [
-        'uploadType=multipart',
-        await precondition(key, options, current)
-      ].filter(Boolean)
-      const response = await call(`${UPLOAD}/${bucket}/o?${query.join('&')}`, {
-        method: 'POST',
-        headers: { 'content-type': upload.type },
-        body: upload.body
-      })
+      const { if_version, if_absent } = guard(options)
+      const tries = if_version === undefined && !if_absent ? UNGUARDED_TRIES : 1
+      let current
+      let response
+      const send = async left => {
+        current = if_absent ? null : await head(key)
+        const upload = upload_of(
+          `${prefix}${key}`,
+          plain,
+          stored,
+          version,
+          merged_meta(current ? meta_of(current) : {}, options.meta)
+        )
+        const query = [
+          'uploadType=multipart',
+          await precondition(key, options, current)
+        ].filter(Boolean)
+        response = await call(`${UPLOAD}/${bucket}/o?${query.join('&')}`, {
+          method: 'POST',
+          headers: { 'content-type': upload.type },
+          body: upload.body
+        })
+        if (response.status === HTTP.PRECONDITION_FAILED && left > 1)
+          await send(left - 1)
+      }
+      await send(tries)
       if (response.status === HTTP.PRECONDITION_FAILED)
         throw new Conflict(`${key} changed`)
       if (!response.ok) await fail(`put ${key}`, response)

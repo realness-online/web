@@ -60,6 +60,14 @@ beforeAll(() => {
   })
 })
 
+const { mock_network_ids } = vi.hoisted(() => ({
+  mock_network_ids: vi.fn(() => Promise.resolve([]))
+}))
+vi.mock('@/utils/network', () => ({
+  network_ids: mock_network_ids,
+  is_network_member: () => false
+}))
+
 vi.mock('idb-keyval', () => ({
   get: vi.fn(() => Promise.resolve(null)),
   set: vi.fn(() => Promise.resolve()),
@@ -1186,7 +1194,7 @@ describe('sync composable', () => {
       expect(emit).not.toHaveBeenCalled()
     })
 
-    it('signed-out play syncs public admin feed and emits refreshed', async () => {
+    it('n4: signed-out play syncs each network member and emits refreshed', async () => {
       const { current_user, metadata, directory } =
         await import('@/utils/serverless')
       const { clear_author_dirs } = await import('@/persistence/Directory')
@@ -1195,7 +1203,7 @@ describe('sync composable', () => {
       const load_phonebook = vi.fn(() => Promise.resolve())
 
       current_user.value = null
-      vi.stubEnv('VITE_ADMIN_ID', '+14151234356')
+      mock_network_ids.mockResolvedValue(['/+14151234356'])
       metadata.mockResolvedValue({
         updated: new Date().toISOString(),
         customMetadata: { hash: 'admin_hash' }
@@ -1244,7 +1252,7 @@ describe('sync composable', () => {
       const load_phonebook = vi.fn(() => Promise.resolve())
 
       current_user.value = null
-      vi.stubEnv('VITE_ADMIN_ID', '+14151234356')
+      mock_network_ids.mockResolvedValue(['/+14151234356'])
       metadata.mockRejectedValue(
         Object.assign(new Error('not found'), {
           code: 'storage/object-not-found'
@@ -1290,7 +1298,7 @@ describe('sync composable', () => {
       const load_phonebook = vi.fn(() => Promise.resolve())
 
       current_user.value = null
-      vi.stubEnv('VITE_ADMIN_ID', '+14151234356')
+      mock_network_ids.mockResolvedValue(['/+14151234356'])
       metadata.mockResolvedValue({
         updated: new Date().toISOString(),
         customMetadata: { hash: 'admin_hash' }
@@ -1327,11 +1335,11 @@ describe('sync composable', () => {
       expect(emit).not.toHaveBeenCalledWith('refreshed', expect.anything())
     })
 
-    it('signed out with no admin configured still loads the phonebook', async () => {
+    it('signed out with no network members still loads the phonebook', async () => {
       const { current_user, directory } = await import('@/utils/serverless')
       const load_phonebook = vi.fn(() => Promise.resolve())
       current_user.value = null
-      vi.stubEnv('VITE_ADMIN_ID', '')
+      mock_network_ids.mockResolvedValue([])
       directory.mockResolvedValue({ prefixes: [] })
 
       ;({ wrapper } = with_setup(() => use_sync(emit, { load_phonebook })))

@@ -400,6 +400,25 @@ const CAPS = [
 ]
 
 /**
+ * p2: the org folders beside the vault, at `orgs/+name/`, appear in the
+ * owner's box at `/realness/orgs/`, so chat reads and edits shared plans.
+ * @param {{ host_vault: { owner: string, path: string } | null, owner?: string }} where
+ */
+export const org_mounts = ({ host_vault, owner }) => {
+  if (!host_vault || owner !== host_vault.owner) return []
+  const orgs = join(dirname(host_vault.path), 'orgs')
+  if (!exists_sync(orgs)) return []
+  return [
+    {
+      destination: '/realness/orgs',
+      type: 'none',
+      source: orgs,
+      options: ['rbind', 'rw']
+    }
+  ]
+}
+
+/**
  * @typedef {object} BoxStoreOptions
  * @property {string} volume where actor folders live
  * @property {string} template the root filesystem every box starts from
@@ -408,7 +427,7 @@ const CAPS = [
  * @property {number} [vsock_port]
  * @property {number} [boot_timeout] seconds
  * @property {number} [api_timeout] seconds
- * @property {{ owner: string, path: string } | null} [host_vault] the owner's own vault, mounted into their box
+ * @property {{ owner: string, path: string } | null} [host_vault] the owner's own vault, mounted into their box, with the `orgs` folder beside it
  * @property {boolean} [userns] run the box in its own user namespace
  * @property {number} [mib] memory limit
  * @property {number} [cpus] cpu limit
@@ -782,6 +801,11 @@ export class BoxStore extends Store {
     ]
   }
 
+  /** The owner's box works on this machine's vault itself, not a synced copy. */
+  #org_mounts(record) {
+    return org_mounts({ host_vault: this.host_vault, owner: record.owner })
+  }
+
   #write_config(record, netns_path) {
     const box = this.box_dir(record.id)
     const config = {
@@ -870,6 +894,7 @@ export class BoxStore extends Store {
           ...this.#bind_rw(record)
         },
         ...this.#vault_mounts(record),
+        ...this.#org_mounts(record),
         {
           destination: '/usr/local/lib/realness',
           type: 'none',

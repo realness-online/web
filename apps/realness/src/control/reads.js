@@ -206,7 +206,9 @@ export const limit = async (sync, phone, now = new Date()) => {
   const spent = {
     day: total([month.at(-1)]),
     month: total(month),
-    period: paid ? total(days_since(paid.start, now)) : { tokens: 0, cost: 0 }
+    period: paid
+      ? total(days_since(paid.start, now))
+      : { tokens: 0, cost: 0, paid: 0 }
   }
   return { phone, ...limit_status({ free: free_limits(), paid }, spent) }
 }

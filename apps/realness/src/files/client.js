@@ -1179,8 +1179,10 @@ const read_api = ({ call, expect, key }) => {
       return response.headers.get('etag')?.replace(/"/g, '') ?? null
     },
 
-    async rm(path) {
-      await expect(await call('DELETE', path), `rm ${path}`, [HTTP.NO_CONTENT])
+    async rm(path, headers = {}) {
+      await expect(await call('DELETE', path, { headers }), `rm ${path}`, [
+        HTTP.NO_CONTENT
+      ])
     },
 
     /**

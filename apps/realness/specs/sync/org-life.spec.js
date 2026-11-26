@@ -113,6 +113,41 @@ it('sh5: the founder adds and removes members; nobody else can', async () => {
   )
 })
 
+it('sh8: the founder sets name, website, and logo; member changes keep them', async () => {
+  const profile = {
+    title: 'Acme Inc',
+    short: 'ACME',
+    url: 'acme.example',
+    logo: 'https://acme.example/logo.png'
+  }
+  assert.equal(
+    (await post('v1/orgs/+acme/profile', partner, profile)).status,
+    403
+  )
+  assert.equal(
+    (await post('v1/orgs/+acme/profile', me, { url: 'javascript:x' })).status,
+    400
+  )
+  const set = await post('v1/orgs/+acme/profile', me, profile)
+  assert.deepEqual(await set.json(), {
+    title: 'Acme Inc',
+    short: 'ACME',
+    url: 'https://acme.example/',
+    logo: 'https://acme.example/logo.png'
+  })
+  await post('v1/orgs/+acme/members', me, {
+    add: [{ name: 'Oz', phone: outsider }]
+  })
+  await post('v1/orgs/+acme/members', me, { remove: [outsider] })
+  const page = await (
+    await call('GET', 'orgs/+acme/members.html', intern)
+  ).text()
+  assert.match(page, /<h1 itemprop="name">Acme Inc<\/h1>/)
+  assert.match(page, /<p itemprop="alternateName">ACME<\/p>/)
+  assert.match(page, /itemprop="url" href="https:\/\/acme.example\/"/)
+  assert.match(page, /itemprop="logo" src="https:\/\/acme.example\/logo.png"/)
+})
+
 it('sh2, sh3: a subfolder list narrows; it never widens', async () => {
   const narrow = members_html({
     name: '+acme',
@@ -180,19 +215,62 @@ it('o3: a harness pass syncs only the orgs its task names', async () => {
   assert.equal(existsSync(join(local, 'money', 'members.html')), false)
 })
 
+it('sh7: the founder hands the org to a member and loses access', async () => {
+  const body = {
+    name: '+handover',
+    founder_name: 'Scott',
+    members: [{ name: 'Pat', phone: partner }]
+  }
+  assert.equal((await post('v1/orgs', me, body)).status, 200)
+  assert.equal(await status('PUT', 'orgs/+handover/plan.md', me, 'kept'), 200)
+  const to_pat = { phone: partner, confirm: '+handover' }
+  assert.equal(
+    (await post('v1/orgs/+handover/owner', partner, to_pat)).status,
+    403
+  )
+  assert.equal(
+    (await post('v1/orgs/+handover/owner', me, { phone: partner })).status,
+    400
+  )
+  assert.equal(
+    (
+      await post('v1/orgs/+handover/owner', me, {
+        phone: outsider,
+        confirm: '+handover'
+      })
+    ).status,
+    400
+  )
+  const moved = await post('v1/orgs/+handover/owner', me, to_pat)
+  assert.equal(moved.status, 200)
+  assert.deepEqual(await moved.json(), { founder: partner, left: me })
+  assert.equal(await status('GET', 'orgs/+handover/plan.md', me), 403)
+  assert.equal(await status('PUT', 'orgs/+handover/x.md', me, 'x'), 403)
+  assert.equal(
+    (await post('v1/orgs/+handover/members', me, { remove: [partner] })).status,
+    403
+  )
+  assert.equal(
+    await (await call('GET', 'orgs/+handover/plan.md', partner)).text(),
+    'kept'
+  )
+  assert.equal(await status('DELETE', 'orgs/+handover/plan.md', partner), 204)
+  const closed = await post('v1/orgs/+handover/close', partner, {
+    confirm: '+handover'
+  })
+  assert.equal(closed.status, 200)
+})
+
 it('o7: a member leaves; the founder cannot', async () => {
   assert.equal((await post('v1/orgs/+acme/leave', me)).status, 409)
   assert.equal((await post('v1/orgs/+acme/leave', outsider)).status, 403)
   assert.equal((await post('v1/orgs/+acme/leave', intern)).status, 200)
   assert.equal(await status('GET', 'orgs/+acme/hello.md', intern), 403)
   const orgs = await (await call('GET', 'v1/orgs', intern)).json()
-  assert.deepEqual(orgs, { orgs: [] })
+  assert.deepEqual(orgs, { orgs: [], admin: false })
 })
 
 it('o7: only the founder closes, after confirming; files land in their archive', async () => {
-  await status('PUT', 'orgs/+acme/report.html', me, 'final')
-  await post('v1/publish', me, { path: 'orgs/+acme/report.html' })
-  assert.equal(await status('GET', 'commons/+acme/report.html', null), 200)
   assert.equal(
     (await post('v1/orgs/+acme/close', partner, { confirm: '+acme' })).status,
     403
@@ -200,8 +278,7 @@ it('o7: only the founder closes, after confirming; files land in their archive',
   assert.equal((await post('v1/orgs/+acme/close', me, {})).status, 400)
   const closed = await post('v1/orgs/+acme/close', me, { confirm: '+acme' })
   assert.equal(closed.status, 200)
-  const { archive, withdrawn } = await closed.json()
-  assert.equal(withdrawn, 1)
+  const { archive } = await closed.json()
   assert.ok(archive.startsWith(`people/${me}/archive/orgs/+acme/`))
   assert.equal(
     await (await call('GET', `${archive}money/q3.md`, me)).text(),
@@ -209,7 +286,6 @@ it('o7: only the founder closes, after confirming; files land in their archive',
   )
   assert.equal(await status('GET', `${archive}hello.md`, partner), 403)
   assert.equal(await status('GET', 'orgs/+acme/hello.md', partner), 403)
-  assert.equal(await status('GET', 'commons/+acme/report.html', null), 404)
   const orgs = await (await call('GET', 'v1/orgs', partner)).json()
-  assert.deepEqual(orgs, { orgs: [] })
+  assert.deepEqual(orgs, { orgs: [], admin: false })
 })

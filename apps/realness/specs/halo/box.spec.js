@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { BoxStore } from '../../src/halo/box.js'
+import { BoxStore, org_mounts } from '../../src/halo/box.js'
 import * as vsock from '../../src/halo/vsock.js'
 import { DISK_AFTER, MEMORY_AFTER } from '../../src/halo/lifecycle.js'
 import {
@@ -162,15 +162,43 @@ maybe(
   }
 )
 
+test('p2: the owner box mounts the org folders beside the vault', () => {
+  const root = mkdtemp_sync(join(tmpdir(), 'owner-orgs-'))
+  const vault = join(root, 'vault')
+  mkdir_sync(join(root, 'orgs', '+share-more-stories'), { recursive: true })
+  const host_vault = { path: vault, owner: '+16282281824' }
+  assert.deepEqual(org_mounts({ host_vault, owner: '+16282281824' }), [
+    {
+      destination: '/realness/orgs',
+      type: 'none',
+      source: join(root, 'orgs'),
+      options: ['rbind', 'rw']
+    }
+  ])
+  assert.deepEqual(org_mounts({ host_vault, owner: '+14155550199' }), [])
+  assert.deepEqual(org_mounts({ host_vault: null, owner: '+16282281824' }), [])
+  rm_sync(join(root, 'orgs'), { recursive: true })
+  assert.deepEqual(org_mounts({ host_vault, owner: '+16282281824' }), [])
+  rm_sync(root, { recursive: true })
+})
+
 maybe(
-  'BoxStore: the owner works on the host vault; Sessions stay hidden',
+  'BoxStore: the owner works on the host vault, and sees the org folders beside it; Sessions stay hidden',
   async t => {
     const vault = join(volume, 'host-vault')
     mkdir_sync(join(vault, 'Sessions'), { recursive: true })
     mkdir_sync(join(vault, 'Areas'), { recursive: true })
     write_file_sync(join(vault, 'Areas', 'garden.md'), 'tomatoes')
     write_file_sync(join(vault, 'Sessions', 'old.html'), 'a session')
-    exec_file_sync('chown', ['-R', '501:1000', vault])
+    const orgs = join(volume, 'orgs')
+    mkdir_sync(join(orgs, '+share-more-stories', 'Projects'), {
+      recursive: true
+    })
+    write_file_sync(
+      join(orgs, '+share-more-stories', 'Projects', 'sms.md'),
+      'sms'
+    )
+    exec_file_sync('chown', ['-R', '501:1000', vault, orgs])
     const owner = '+16282281824'
     const store = new BoxStore({
       volume,
@@ -206,11 +234,33 @@ maybe(
       read_file_sync(join(vault, 'Sessions', 'old.html'), 'utf8'),
       'a session'
     )
+    assert.equal(
+      await run(mine, 'cat /realness/orgs/+share-more-stories/Projects/sms.md'),
+      'sms'
+    )
+    await run(
+      mine,
+      'printf plan > /realness/orgs/+share-more-stories/Projects/plan.md'
+    )
+    assert.equal(
+      read_file_sync(
+        join(orgs, '+share-more-stories', 'Projects', 'plan.md'),
+        'utf8'
+      ),
+      'plan'
+    )
     const neighbor = await store.create('+14155550199')
     assert.equal(
       await run(
         neighbor,
         'test -e /realness/vault/Areas/garden.md && echo seen || echo hidden'
+      ),
+      'hidden'
+    )
+    assert.equal(
+      await run(
+        neighbor,
+        'test -e /realness/orgs/+share-more-stories && echo seen || echo hidden'
       ),
       'hidden'
     )

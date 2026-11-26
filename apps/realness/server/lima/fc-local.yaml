@@ -28,6 +28,10 @@ mounts:
   - location: '{{vault}}'
     mountPoint: /host/vault
     writable: true
+  # The org folders beside the vault; a box mounts them at /realness/orgs.
+  - location: '{{orgs}}'
+    mountPoint: /host/orgs
+    writable: true
 # Mac-facing ports for the dev halo (r3d). Explicit because Lima's automatic
 # forward skips a guest port whose host number is taken - the Mac's 8080 is
 # often an unrelated service - and the failure is silent. From the Mac:

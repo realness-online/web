@@ -28,16 +28,18 @@ import { ROOT } from './paths.js'
 import { out_path } from '#root/lib/output.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
 import { create_gcs, gcloud_token } from '#root/src/can/gcs.js'
+import { flush_marks } from '#root/src/can/marks.js'
 import { store_of } from '#root/src/can/store.js'
 
 /** Copy a local file to gs://bucket/key with the storage client; gcloud storage crashes on Python 3.14. */
 /** The bucket as sync sees it: keys placed by the layout, stored as `.gz`. */
 const bucket_store = bucket =>
-  store_of(create_gcs({ bucket, token: gcloud_token() }))
+  store_of(create_gcs({ bucket, token: gcloud_token() }), { marks: true })
 
 const upload_file = async (file, destination) => {
   const [bucket, ...key] = destination.slice('gs://'.length).split('/')
   await bucket_store(bucket).put(key.join('/'), await read_file(file))
+  await flush_marks()
 }
 /* eslint-disable no-await-in-loop -- readiness polling waits between tries */
 

@@ -29,7 +29,7 @@ import {
   createGunzip as create_gunzip,
   gunzipSync as gunzip_sync
 } from 'node:zlib'
-import { can, identify } from '#root/src/can/index.js'
+import { can, identify, is_person_path } from '#root/src/can/index.js'
 import {
   issue_halo_pass,
   verify_halo_pass,
@@ -51,12 +51,14 @@ import { org_route, RouteStatus } from './org-routes.js'
 import {
   granted_orgs,
   members_key,
-  orgs_of,
+  org_note,
+  org_plans,
+  orgs_with_people,
   read_org,
   read_org_along
 } from './orgs.js'
 import { read_members } from '#root/src/can/members.js'
-import { admins as admin_list } from './admins.js'
+import { admins as admin_list, network_people } from './admins.js'
 import { keeper } from './trash.js'
 import { git_token, GitRefused } from './git.js'
 import { HTTP } from '#root/lib/http.js'
@@ -607,41 +609,6 @@ const answer_git_token = async (
 }
 
 /** POST /v1/halo-pass: a short-lived owner pass. */
-/**
- * sh6: publish copies one org file to `commons/+name/`, at the same place
- * below the org. The copy stays frozen until it is published again. A
- * person publishes; a harness, halo, or recovery pass never does.
- */
-const answer_publish = async (request, response, who, storage) => {
-  if (!who?.phone || who.halo || who.harness || who.recovery)
-    throw new Status(HTTP.UNAUTHORIZED)
-  let from
-  try {
-    from = JSON.parse((await read_body(request)).toString('utf8')).path
-  } catch {
-    throw new Status(HTTP.BAD_REQUEST)
-  }
-  const parts = typeof from === 'string' ? from.split('/') : []
-  const [root, name, ...rest] = parts
-  const inside = rest.join('/')
-  if (root !== 'orgs' || !name || !inside || inside === 'members.html')
-    throw new Status(HTTP.BAD_REQUEST)
-  if (skipped(inside)) throw new Status(HTTP.FORBIDDEN)
-  const to = `commons/${name}/${inside}`
-  const org = await read_org(storage, name)
-  if (!can(who, 'get', from, [], org) || !can(who, 'write', to, [], org))
-    throw new Status(HTTP.FORBIDDEN)
-  const file = await storage.get(from)
-  if (!file) throw new Status(HTTP.NOT_FOUND)
-  const version = await storage.put(to, file.body, { meta: file.meta ?? {} })
-  response.writeHead(HTTP.OK, {
-    'content-type': 'application/json',
-    'cache-control': 'no-store',
-    etag: `"${version}"`
-  })
-  response.end(JSON.stringify({ path: to, version }))
-}
-
 const answer_halo_pass = (response, who, halo_pass_secret) => {
   if (!halo_pass_secret) throw new Status(HTTP.UNAVAILABLE)
   response.writeHead(HTTP.OK, {
@@ -721,12 +688,27 @@ const person_only = who => {
   return who
 }
 
+/** sh8: a person, or a chat agent acting as its owner; the org routes check the owner. */
+const owner_of = who => {
+  if (who?.harness && !who.halo && !who.recovery) return { phone: who.harness }
+  return person_only(who)
+}
+
 const answer_json = (response, value) => {
   response.writeHead(HTTP.OK, {
     'content-type': 'application/json',
     'cache-control': 'no-store'
   })
   response.end(JSON.stringify(value))
+}
+
+/** GET v1/orgs: the caller's orgs, and whether they are the network admin who may start one. */
+const answer_orgs = async (request, response, { storage, admins, who_is }) => {
+  const who = await who_is(request)
+  const { phone } = owner_of(who)
+  const orgs = await orgs_with_people(storage, phone)
+  answer_json(response, { orgs, admin: await admins.has(phone) })
+  return who
 }
 
 /** One org route: a JSON body in, a JSON answer out. */
@@ -836,11 +818,12 @@ const answer_vault = async (vault, path, request, response) => {
 
 /**
  * A reader's own vault: its pages, or a stream of its changes.
- * @param {{ door_for: (phone: string | undefined) => ReturnType<typeof import('./vault.js').vault_door> | null, events: import('./vault-events.js').VaultEvents, who: Caller | null, path: string, request: import('node:http').IncomingMessage, response: import('node:http').ServerResponse }} call
+ * @param {{ door_for: (phone: string | undefined) => ReturnType<typeof import('./vault.js').vault_door> | null, events: import('./vault-events.js').VaultEvents, storage: SyncStorage, who: Caller | null, path: string, request: import('node:http').IncomingMessage, response: import('node:http').ServerResponse }} call
  */
 const answer_own_vault = async ({
   door_for,
   events,
+  storage,
   who,
   path,
   request,
@@ -851,7 +834,15 @@ const answer_own_vault = async ({
   if (!door?.allows(who)) throw new Status(HTTP.NOT_FOUND)
   if (path === 'v1/vault/events')
     events.listen(response, `people/${owner}/vault/`)
-  else await answer_vault(door, path, request, response)
+  else if (path === 'v1/vault/projects') {
+    const own = await door.plans()
+    const seen = new Set(own.map(plan => plan.itemid))
+    const shared = (await org_plans(storage, owner)).filter(
+      plan => !seen.has(plan.itemid)
+    )
+    response.writeHead(HTTP.OK, { 'content-type': 'text/html; charset=utf-8' })
+    response.end(plans_html([...own, ...shared]))
+  } else await answer_vault(door, path, request, response)
 }
 
 /**
@@ -871,7 +862,15 @@ const answer_item = async ({
   )
   const vault = door_for(/^\/(\+\d+)\//.exec(itemid ?? '')?.[1])
   const found = vault ? await vault.shared({ itemid }) : null
-  if (!found) throw new Status(HTTP.NOT_FOUND)
+  if (!found) {
+    const shared = who?.phone
+      ? await org_note(storage, who.harness ?? who.phone, itemid)
+      : null
+    if (!shared) throw new Status(HTTP.NOT_FOUND)
+    response.writeHead(HTTP.OK, { 'content-type': 'text/html; charset=utf-8' })
+    response.end(note_html(shared))
+    return
+  }
   const [, owner] = found.storage.split('/')
   const { grants, member_of } = await caller_grants(
     { rights, storage },
@@ -886,12 +885,49 @@ const answer_item = async ({
   response.end(note_html(found))
 }
 
+/**
+ * An image beside one note, by the note's itemid, opened only where `can`
+ * allows the image's own path.
+ * @param {{ door_for: (phone: string | undefined) => ReturnType<typeof import('./vault.js').vault_door> | null, storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, request: import('node:http').IncomingMessage, response: import('node:http').ServerResponse, who: Caller | null }} call
+ */
+const answer_attachment = async ({
+  door_for,
+  storage,
+  rights,
+  request,
+  response,
+  who
+}) => {
+  const query = new URL(request.url ?? '/', 'http://sync').searchParams
+  const itemid = query.get('itemid')
+  const vault = door_for(/^\/(\+\d+)\//.exec(itemid ?? '')?.[1])
+  const found = vault
+    ? await vault.attachment({ itemid, name: query.get('name') })
+    : null
+  if (!found) throw new Status(HTTP.NOT_FOUND)
+  const [, owner] = found.storage.split('/')
+  const { grants, member_of } = await caller_grants(
+    { rights, storage },
+    owner,
+    who,
+    found.storage
+  )
+  const org = await org_of(storage, found.storage, owner)
+  if (!can({ ...who, member_of }, 'get', found.storage, grants, org))
+    throw new Status(HTTP.NOT_FOUND)
+  response.writeHead(HTTP.OK, {
+    'content-type': found.type,
+    'cache-control': 'private, no-cache'
+  })
+  response.end(found.body)
+}
+
 /** Top folders whose rules ask whether the caller is an admin. */
 const ADMIN_FOLDERS = new Set(['loops', 'halos', 'usage', 'billing', 'orgs'])
 
 /**
- * The org a path answers to: the org itself under `orgs/`, the commons'
- * owner, or a deleted org in the trash. Null for everything else.
+ * The org a path answers to: the org itself under `orgs/`, or a deleted org
+ * in the trash. Null for everything else.
  * @param {SyncStorage} storage
  * @param {string} path
  * @param {string | undefined} owner the path's second segment
@@ -899,7 +935,6 @@ const ADMIN_FOLDERS = new Set(['loops', 'halos', 'usage', 'billing', 'orgs'])
  */
 const org_of = (storage, path, owner) => {
   if (owner && path.startsWith('orgs/')) return read_org_along(storage, path)
-  if (owner && path.startsWith('commons/')) return read_org(storage, owner)
   if (path.startsWith('trash/orgs/+'))
     return read_org(storage, path.split('/')[2])
   return null
@@ -924,13 +959,13 @@ const hold_write = async ({ storage, request, action, path, owner, who }) => {
 /**
  * Read, list, write, or delete one stored file, after can() allows it. An
  * anonymous read gets a cache header the CDN may keep.
- * @param {{ storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, admins: { has: (phone: string) => Promise<boolean> }, keep: ReturnType<typeof keeper>, events: ReturnType<typeof vault_events>, door_for: ReturnType<typeof vault_doors> }} sync
+ * @param {{ storage: SyncStorage, rights: { grants: (owner: string) => Promise<{ grants: object[] }> }, admins: { has: (phone: string) => Promise<boolean> }, keep: ReturnType<typeof keeper>, events: ReturnType<typeof vault_events>, door_for: ReturnType<typeof vault_doors>, on_hold: (owner: string) => void }} sync
  * @param {import('node:http').IncomingMessage} request
  * @param {import('node:http').ServerResponse} response
  * @param {{ path: string, action: string, caller: Caller | null }} call caller is null when anonymous
  */
 const answer_record = async (
-  { storage, rights, admins, keep, events, door_for },
+  { storage, rights, admins, keep, events, door_for, on_hold },
   request,
   response,
   { path, action, caller }
@@ -948,15 +983,17 @@ const answer_record = async (
   )
   const org = await org_of(storage, path, owner)
   if (!caller_allowed({ action, grants, member_of, org, path, who })) {
-    const held = await hold_write({
-      storage,
-      request,
-      action,
-      path,
-      owner,
-      who
-    })
-    await keep_refusal({ storage, owner, entry: { path, action, who, held } })
+    if (is_person_path(path)) {
+      const held = await hold_write({
+        storage,
+        request,
+        action,
+        path,
+        owner,
+        who
+      })
+      await keep_refusal({ storage, owner, entry: { path, action, who, held } })
+    }
     door_for(owner)?.changed()
     throw new Status(HTTP.FORBIDDEN)
   }
@@ -989,6 +1026,7 @@ const answer_record = async (
       packed,
       base: version_from(request.headers['if-match']) ?? null
     })
+    on_hold(target.owner)
     response.writeHead(HTTP.ACCEPTED)
     response.end()
     return
@@ -1043,6 +1081,7 @@ const vault_doors = (storage, vault) => {
  * @property {(path: string) => Promise<Record<string, string>>} walk
  * @property {(path: string) => Promise<Record<string, { version: string, size: number, updated: string }>>} walk_meta
  * @property {(scope: string, version: string) => Promise<string[]>} find
+ * @property {(key: string) => Promise<string | null>} stat
  */
 
 /** Files the vault serves to anyone: blog posters and the pages articles frame. */
@@ -1105,6 +1144,7 @@ const answer_vault_file = async (vault, path, response) => {
  * @param {typeof fetch} [options.git_fetch]
  * @param {ReturnType<typeof import('./vault.js').vault_door> | null} [options.vault] the Mac's vault door (vlt1); off by default
  * @param {ReturnType<typeof vault_events>} [options.events] pushes a vault note change to open pages
+ * @param {(owner: string) => void} [options.on_hold] told each time an actor's change waits in quarantine (l3)
  * @param {(...parts: unknown[]) => void} [options.log]
  */
 export const sync_service = ({
@@ -1122,15 +1162,13 @@ export const sync_service = ({
   git_fetch = fetch,
   vault = null,
   events = vault_events(),
+  on_hold = () => {},
   log = console.info
 }) => {
   const pins = storage_pins(storage, issuer ? PINS_REALNESS : undefined)
   const allowed = new Set(origins)
-
   const alert_call = alert_caller(alert_token)
-
   const fenced = fence_reader(storage)
-
   const door_for = vault_doors(storage, vault)
 
   /** A halo's record pass, checked against the key it registered. */
@@ -1192,22 +1230,17 @@ export const sync_service = ({
       await answer_quiet(response, who, { admins, halo_statuses, storage })
       return who
     }
-    if (route === 'GET v1/orgs') {
-      const who = person_only(await who_is(request))
-      answer_json(response, { orgs: await orgs_of(storage, who.phone) })
-      return who
-    }
+    if (route === 'GET v1/network')
+      return answer_json(response, { people: await network_people(storage) })
+    if (route === 'GET v1/orgs')
+      return answer_orgs(request, response, { storage, admins, who_is })
     const org_call = org_route(path, method)
     if (org_call) {
-      const caller = person_only(await who_is(request))
-      const who = { ...caller, admin: await admins.has(caller.phone) }
+      const caller = await who_is(request)
+      const owner = owner_of(caller)
+      const who = { ...owner, admin: await admins.has(owner.phone) }
       await answer_org_call({ request, response, org_call, who, storage })
       return caller
-    }
-    if (route === 'POST v1/publish') {
-      const who = await who_is(request)
-      await answer_publish(request, response, who, storage)
-      return who
     }
     if (route === 'POST v1/git-token') {
       const who = await who_is(request)
@@ -1225,11 +1258,31 @@ export const sync_service = ({
       await answer_item({ door_for, storage, rights, request, response, who })
       return who
     }
+    if (path === 'v1/vault/attachment' && method === 'GET') {
+      const who = await who_is(request)
+      await answer_attachment({
+        door_for,
+        storage,
+        rights,
+        request,
+        response,
+        who
+      })
+      return who
+    }
     if (method === 'GET' && (await answer_vault_file(vault, path, response)))
       return null
     if (path.startsWith('v1/vault/') && method === 'GET') {
       const who = await who_is(request)
-      await answer_own_vault({ door_for, events, who, path, request, response })
+      await answer_own_vault({
+        door_for,
+        events,
+        storage,
+        who,
+        path,
+        request,
+        response
+      })
       return who
     }
     if (route === 'POST v1/halo-pass') {
@@ -1243,7 +1296,7 @@ export const sync_service = ({
     if (!action) throw new Status(HTTP.METHOD_NOT_ALLOWED)
     const who = await who_is(request)
     await answer_record(
-      { storage, rights, admins, keep, events, door_for },
+      { storage, rights, admins, keep, events, door_for, on_hold },
       request,
       response,
       {

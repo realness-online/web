@@ -30,6 +30,7 @@
   import { settled_token } from '@/utils/settled-user'
   import { read_note } from '@/utils/vault-items'
   import { highlight_code, markdown_html } from '@/utils/markdown'
+  import { with_attachments } from '@/utils/vault-attachments'
   import { watch_vault } from '@/utils/vault-events'
   import '@/style/mermaid.css'
   import '#root/tools/publish/renderer/static/scripts/diagrams.css'
@@ -42,6 +43,8 @@
   const note_path = ref('')
   const error = ref('')
   const loading = ref(false)
+  /** @type {string[]} */
+  let image_urls = []
 
   const route = use_route()
   const itemid = computed(() =>
@@ -87,7 +90,14 @@
         return
       }
       framed.value = ''
-      html.value = await highlight_code(markdown_html(note.text))
+      const shown = await with_attachments(
+        await highlight_code(markdown_html(note.text)),
+        value,
+        token
+      )
+      image_urls.forEach(url => URL.revokeObjectURL(url))
+      image_urls = shown.urls
+      html.value = shown.html
       related.value = note.related
       links.value = note.links
     } finally {
@@ -109,6 +119,7 @@
     }, token_for)
   })
   on_unmounted(() => {
+    image_urls.forEach(url => URL.revokeObjectURL(url))
     stop_watching()
   })
 </script>
@@ -176,6 +187,7 @@
         grid-column: 2 / -1;
         inline-size: fit-content;
         min-inline-size: unquote('min(65ch, 100%)');
+        max-inline-size: 100%;
         margin-block: var(--base-line);
         border-collapse: collapse;
         text-align: start;
@@ -186,18 +198,17 @@
           border-block-end: 1px solid var(--muted-text);
           text-align: start;
           vertical-align: baseline;
+          overflow-wrap: anywhere;
         }
 
         th:first-child,
         td:first-child {
           padding-inline-start: 0;
-          white-space: nowrap;
         }
 
         th:last-child,
         td:last-child {
           padding-inline-end: 0;
-          white-space: nowrap;
         }
 
         th {

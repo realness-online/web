@@ -66,6 +66,44 @@ const table_ids = text => {
   return ids
 }
 
+/** Cells in a markdown table row, with escaped pipes kept inside their cell. */
+const cell_count = line => line.trim().replace(/\\\|/g, '').replace(/^\|/, '').replace(/\|$/, '').split('|').length
+
+const DIVIDER = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/
+
+/** Divider rows whose cell count differs from the header above; such a table shows as raw text. */
+const table_mismatches = lines => {
+  const out = []
+  let fenced = false
+  lines.forEach((line, i) => {
+    if (line.startsWith('```')) fenced = !fenced
+    if (fenced || i === 0 || !DIVIDER.test(line)) return
+    const header = lines[i - 1]
+    if (!header.includes('|')) return
+    const want = cell_count(header)
+    const got = cell_count(line)
+    if (want !== got) out.push({ line: i + 1, want, got })
+  })
+  return out
+}
+
+/** Decisions lines above this warn; the budget is about twenty. */
+const DECISIONS_BUDGET = 30
+
+/** Non-blank lines under `### Decisions`, less headings and `#### Confirm` checklists. */
+const decisions_lines = lines => {
+  const start = lines.findIndex(l => /^### Decisions\b/.test(l))
+  if (start < 0) return 0
+  let count = 0
+  let confirm = false
+  for (const line of lines.slice(start + 1)) {
+    if (/^#{1,3} /.test(line)) break
+    if (/^#### /.test(line)) confirm = /^#### Confirm\b/.test(line)
+    else if (line.trim() && !confirm && !LEGEND_LINE.test(line)) count++
+  }
+  return count
+}
+
 const check = async (name, text) => {
   const problems = []
   const bad = (rule, detail) => problems.push({ rule, detail })
@@ -111,6 +149,12 @@ const check = async (name, text) => {
     if (STATE_CLASS.test(g.body) || STATE_SYMBOL.test(g.body)) marked = true
     const emoji = g.body.match(/\p{Emoji_Presentation}/u)
     if (emoji) bad('symbols', `line ${g.line}: ${emoji[0]} is a color emoji; write ✓ ◐ ✕ ◆`)
+    const plain_bold = g.body.match(/"[^"`]*\*\*[^"]*"/)
+    if (plain_bold)
+      bad(
+        'bold label',
+        `fence at line ${g.line}: ${plain_bold[0].slice(0, 40)} shows its ** marks; wrap it as "\`...\`"`
+      )
     const stray = g.body.replace(/[✓◐✕◆]/g, '')
     if (/[^\x00-\x7F]/.test(stray)) bad('ascii', `non-ASCII character in the fence at line ${g.line}`)
     if (rendered) {
@@ -126,6 +170,19 @@ const check = async (name, text) => {
         'gate line',
         `line ${line}: write ${gate === 1 ? '"- Gate 1: approved"' : '"- Gate 2: held" or "- Gate 2: reshaped <ids>"'}`
       )
+
+  const nodes_end = lines.findIndex((l, i) => i >= (nodes_at ?? Infinity) && /^## (Syncs|Notes)\b/.test(l))
+  lines.slice(nodes_at ?? lines.length, nodes_end < 0 ? lines.length : nodes_end).forEach((line, i) => {
+    if (/^\|\s*(node|id)\s*\|/i.test(line) && !/\|\s*done when\s*\|/i.test(line))
+      bad('done when', `line ${nodes_at + i}: the node table needs a "Done when" column`)
+  })
+
+  for (const { line, want, got } of table_mismatches(lines))
+    bad('table divider', `line ${line}: the header has ${want} cells, the divider row has ${got}`)
+
+  const decisions = decisions_lines(lines)
+  if (decisions > DECISIONS_BUDGET)
+    bad('decisions budget warn', `Decisions: ${decisions} lines, budget about 20; self-prune them`)
 
   if (marked) {
     const at = find(text, LEGEND_LINE)

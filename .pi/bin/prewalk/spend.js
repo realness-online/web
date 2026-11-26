@@ -25,7 +25,7 @@ import { product_import } from '../lib/product.js'
 const { read_items } = await product_import('items')
 const root = resolve(file_url_to_path(new URL('../../..', import.meta.url)))
 const SESSIONS = join(root, 'vault/Sessions')
-const LOG = join(root, 'artifacts/prewalk/escalations.html')
+const LOG = join(root, 'vault/Projects/realness-planning-performance/escalations.html')
 const DAYS = 7
 const MS_PER_DAY = 86_400_000
 /** Models that are the cheap tier, matched on the model id. */

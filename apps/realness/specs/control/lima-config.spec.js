@@ -15,7 +15,8 @@ it('the Lima template names no checkout; every mount is filled from this one', (
     project: '/Users/person x/realness/apps/realness',
     out: '/Users/person x/realness/artifacts/realness',
     sync: '/Users/person x/Realness-sync',
-    vault: '/Users/person x/realness/vault'
+    vault: '/Users/person x/realness/vault',
+    orgs: '/Users/person x/realness/orgs'
   })
   assert.match(
     filled,
@@ -32,6 +33,10 @@ it('the Lima template names no checkout; every mount is filled from this one', (
   assert.match(
     filled,
     /- location: "\/Users\/person x\/realness\/vault"\n\s+mountPoint: \/host\/vault\n/
+  )
+  assert.match(
+    filled,
+    /- location: "\/Users\/person x\/realness\/orgs"\n\s+mountPoint: \/host\/orgs\n/
   )
   assert.doesNotMatch(filled, /\{\{|""/)
 })

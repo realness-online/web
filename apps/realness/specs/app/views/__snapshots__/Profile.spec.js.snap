@@ -6,7 +6,9 @@ exports[`Profile > renders profile view 1`] = `
   id="profile"
 >
   <header>
-    <logo-as-link-stub />
+    <logo-as-link-stub
+      vault="false"
+    />
     <icon-stub
       name="nothing"
     />

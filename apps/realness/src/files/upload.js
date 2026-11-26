@@ -14,7 +14,7 @@ import { version_sync } from '#root/src/files/version-node.js'
 /* eslint-disable no-await-in-loop -- one file at a time bounds open handles */
 
 /** What the Mac writes to its lane, in the order it uploads them. */
-export const UPLOAD = ['vault', 'AGENTS.md', '.ignore']
+export const UPLOAD = ['vault', 'AGENTS.md', '.ignore', 'rights.html']
 
 /** How many files upload at the same time. */
 const AT_ONCE = 16
@@ -132,7 +132,7 @@ const put_file = async ({ base, path, from = path, report, root, store }) => {
  * @param {string} path
  * @returns {Promise<string[]>}
  */
-const local_paths = async (root, path) => {
+export const local_paths = async (root, path) => {
   const target = join(root, path)
   const entry = await stat(target).catch(() => null)
   if (!entry) return []

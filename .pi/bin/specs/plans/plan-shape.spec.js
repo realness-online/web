@@ -1,11 +1,11 @@
 import { after, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { execFile } from 'node:child_process'
-import { randomUUID } from 'node:crypto'
-import { copyFile, mkdir, rm, symlink, writeFile } from 'node:fs/promises'
+import { execFile as exec_file } from 'node:child_process'
+import { randomUUID as random_uuid } from 'node:crypto'
+import { copyFile as copy_file, mkdir, rm, symlink, writeFile as write_file } from 'node:fs/promises'
 import { promisify } from 'node:util'
 
-const root = new URL(`../../../../artifacts/realness/plan-shape-${randomUUID()}/`, import.meta.url).pathname
+const root = new URL(`../../../../artifacts/realness/plan-shape-${random_uuid()}/`, import.meta.url).pathname
 after(() => rm(root, { recursive: true, force: true }))
 
 const LIB = ['harness-settings', 'product', 'palette', 'plan-files', 'plan-gates', 'mermaid-render']
@@ -23,15 +23,15 @@ const check = async (id, body, { plans = 'vault/plans' } = {}) => {
   await mkdir(`${fixture}/.pi/bin/plans`, { recursive: true })
   await mkdir(`${fixture}/apps`, { recursive: true })
   await mkdir(`${fixture}/${plans}`, { recursive: true })
-  await copyFile(new URL('../../plans/plan-shape.js', import.meta.url), `${fixture}/.pi/bin/plans/plan-shape.js`)
+  await copy_file(new URL('../../plans/plan-shape.js', import.meta.url), `${fixture}/.pi/bin/plans/plan-shape.js`)
   for (const name of LIB)
-    await copyFile(new URL(`../../lib/${name}.js`, import.meta.url), `${fixture}/.pi/bin/lib/${name}.js`)
+    await copy_file(new URL(`../../lib/${name}.js`, import.meta.url), `${fixture}/.pi/bin/lib/${name}.js`)
   await symlink(new URL('../../../../apps/realness', import.meta.url), `${fixture}/apps/realness`)
   await mkdir(`${fixture}/.pi/node_modules`, { recursive: true })
   await symlink('../../apps/realness', `${fixture}/.pi/node_modules/realness`)
-  await writeFile(`${fixture}/package.json`, JSON.stringify({ type: 'module', realness: { plans } }))
-  await writeFile(`${fixture}/${plans}/p.md`, body)
-  const { stdout } = await promisify(execFile)(process.execPath, [`${fixture}/.pi/bin/plans/plan-shape.js`]).catch(
+  await write_file(`${fixture}/package.json`, JSON.stringify({ type: 'module', realness: { plans } }))
+  await write_file(`${fixture}/${plans}/p.md`, body)
+  const { stdout } = await promisify(exec_file)(process.execPath, [`${fixture}/.pi/bin/plans/plan-shape.js`]).catch(
     error => ({ stdout: error.stdout ?? '' })
   )
   return stdout
@@ -47,9 +47,9 @@ const plan = ({ dag = DAG.plain, legend = null }) =>
     '',
     '## Nodes',
     '',
-    '| Node | Goal |',
-    '| ---- | ---- |',
-    '| a    | test |',
+    '| Node | Goal | Done when |',
+    '| ---- | ---- | --------- |',
+    '| a    | test | a spec    |',
     '',
     '## Notes',
     '',
@@ -110,4 +110,45 @@ it('gate decisions use the fixed wording', async () => {
   assert.match(loose, /gate line: line \d+: write "- Gate 2: held" or "- Gate 2: reshaped <ids>"/)
   const fixed = await check('gate-fixed', gates(['- Gate 1: approved - shape agreed', '- Gate 2: reshaped a, b2']))
   assert.match(fixed, /1 plans, 0 failed/)
+})
+
+it('Decisions over the budget warn and never fail; a Confirm checklist is not counted', async () => {
+  const decisions = (n, extra = '') =>
+    plan({}).replace(
+      '## Notes\n',
+      `## Notes\n\n### Decisions\n\n${Array.from({ length: n }, (_, i) => `- d${i}`).join('\n')}\n${extra}`
+    )
+  const over = await check('decisions-over', decisions(31))
+  assert.match(over, /WARN p\.md\n\s+decisions budget warn: Decisions: 31 lines/)
+  assert.match(over, /1 plans, 0 failed/)
+  const under = await check('decisions-under', decisions(20))
+  assert.doesNotMatch(under, /decisions budget/)
+  const confirm = await check(
+    'decisions-confirm',
+    decisions(20, `\n#### Confirm after the push\n\n${Array.from({ length: 15 }, (_, i) => `- c${i}`).join('\n')}\n`)
+  )
+  assert.doesNotMatch(confirm, /decisions budget/)
+})
+
+it('a table whose divider row does not match its header fails', async () => {
+  const out = await check(
+    'divider',
+    plan({}).replace('| ---- | ---- | --------- |', '| ---- | ---- | --------- | --- |')
+  )
+  assert.match(out, /table divider: line 11: the header has 3 cells, the divider row has 4/)
+  assert.match(out, /1 plans, 1 failed/)
+  const escaped = '| A | B |\n| - | - |\n| x \\| y | z |\n'
+  assert.match(await check('divider-ok', plan({}).replace('## Notes\n', `## Notes\n\n${escaped}`)), /1 plans, 0 failed/)
+})
+
+it('bold in a plain label fails; a markdown label passes', async () => {
+  const out = await check('bold-plain', plan({ dag: 'flowchart TD\n a["**a** test"]' }))
+  assert.match(out, /bold label: fence at line 3: "\*\*a\*\* test" shows its \*\* marks/)
+  assert.match(await check('bold-md', plan({ dag: 'flowchart TD\n a["`**a** test`"]' })), /1 plans, 0 failed/)
+})
+
+it('a node table without a Done when column fails', async () => {
+  const out = await check('no-done-when', plan({}).replace(/ Done when \|/, ' Effort |'))
+  assert.match(out, /done when: line \d+: the node table needs a "Done when" column/)
+  assert.match(out, /1 plans, 1 failed/)
 })

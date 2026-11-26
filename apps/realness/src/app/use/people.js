@@ -9,6 +9,7 @@ import { recent_visit_first } from '@/utils/sorting'
 import { Me } from '@/persistence/Storage'
 import { from_e64 } from '@/utils/person-identity'
 import { valid_name } from '@/utils/valid-name'
+import { network_ids } from '@/utils/network'
 
 export { from_e64 }
 export { name_error } from '@/utils/valid-name'
@@ -30,15 +31,6 @@ const load_blocked = () => {
   } catch {
     blocked.value = []
   }
-}
-
-/**
- * @returns {Id | null}
- */
-const admin_person_id_from_env = () => {
-  const raw = import.meta.env.VITE_ADMIN_ID
-  if (!raw) return null
-  return /** @type {Id} */ (`/${String(raw).replace(/^\/?/, '')}`)
 }
 
 /**
@@ -79,7 +71,9 @@ export const use = () => {
 
       if (current_user.value) {
         const people_list = await directory('people/')
-        const prefix_refs = people_list?.prefixes ?? []
+        const prefix_refs = (people_list?.prefixes ?? []).filter(ref =>
+          /^\+[1-9]\d{6,14}$/.test(ref.name)
+        )
 
         if (!prefix_refs.length) return
 
@@ -127,11 +121,10 @@ export const use = () => {
             .map(({ person }) => /** @type {Person} */ (person))
         )
       } else {
-        const admin_id = admin_person_id_from_env()
-        if (admin_id) {
-          const person = await load(admin_id)
-          if (person && is_person(person)) phonebook.value = [person]
-        }
+        const loaded = await Promise.all(
+          (await network_ids()).map(id => load(id))
+        )
+        phonebook.value = /** @type {Person[]} */ (loaded.filter(is_person))
       }
 
       phonebook.value.sort(recent_visit_first)

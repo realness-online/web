@@ -1,6 +1,7 @@
 /**
  * i0: a write the access check refuses leaves one item on the owner's page,
- * `people/<phone>/vault/Refusals.html`, so the reason survives the request.
+ * `people/<phone>/quarantine/Refusals.html`, beside the waiting changes, so the
+ * reason survives the request. On the Mac that is `quarantine/`, beside `vault/`.
  */
 import { item_html } from '#root/lib/items.js'
 import { actor_of } from './quarantine.js'
@@ -51,7 +52,7 @@ const reason_of = ({ action, who }) =>
 export const keep_refusal = ({ storage, owner, entry }) =>
   prepend_item({
     storage,
-    key: `people/${owner}/vault/${REFUSALS_PAGE}`,
+    key: `people/${owner}/quarantine/${REFUSALS_PAGE}`,
     head: HEAD,
     tail: TAIL,
     type: 'refusal',

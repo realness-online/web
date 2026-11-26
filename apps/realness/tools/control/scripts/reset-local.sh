@@ -2,7 +2,7 @@
 # A guaranteed-fresh local stack: tear down the Lima VM, rebuild the template
 # from the current checkout, and start clean. The VM is the only persistent
 # sink (mounts, actors, seed), so deleting it removes every previous build.
-# Never touches iCloud data (Realness-sync-2 is the store). Ctrl-C stops the
+# Never touches iCloud data (Realness-sync-3 is the store). Ctrl-C stops the
 # stack it starts; calling the script again rebuilds from scratch. Staging
 # resolves `pi` from PATH, so the repo's own launcher goes first.
 set -euo pipefail

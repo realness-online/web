@@ -18,17 +18,25 @@ import { out_root, sync_dir } from '#root/src/settings/output.js'
 
 /**
  * The VM template names its halo folders as {{project}}, {{out}},
- * {{sync}} (where local sync keeps files), and {{vault}}, so no
+ * {{sync}} (where local sync keeps files), {{vault}}, and {{orgs}}, so no
  * checkout path is written into the repository. Each must be filled.
  */
 /** The harness vault beside this checkout: the main copy of the owner's notes. */
 const VAULT = join(ROOT, '..', '..', 'vault')
+/** The org folders beside the vault; a box mounts them at `/realness/orgs`. */
+const ORGS = join(ROOT, '..', '..', 'orgs')
 
 export const render_vm_config = (
   template,
-  { project = ROOT, out = out_root(), sync = sync_dir(), vault = VAULT } = {}
+  {
+    project = ROOT,
+    out = out_root(),
+    sync = sync_dir(),
+    vault = VAULT,
+    orgs = ORGS
+  } = {}
 ) => {
-  const values = { project, out, sync, vault }
+  const values = { project, out, sync, vault, orgs }
   for (const [name, value] of Object.entries(values))
     if (typeof value !== 'string' || !value.startsWith('/'))
       throw new Error(`lima: ${name} folder must be an absolute path: ${value}`)

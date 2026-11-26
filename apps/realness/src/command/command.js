@@ -15,6 +15,7 @@ import { run_control } from './control-command.js'
 import { run_task } from './task-command.js'
 import { run_vault } from './vault-command.js'
 import { run_admit } from './admit-command.js'
+import { run_door } from './door-command.js'
 import { run_upload } from './upload-command.js'
 import { actor_client, actor_url } from '#root/src/harness/actor.js'
 import { prepare_actor_state } from '#root/src/harness/state.js'
@@ -31,13 +32,14 @@ const USAGE = `usage: realness sync [--deletes] [--dry-run] [plan ...]
        realness return                 (actor: its changed files to quarantine)
        realness turn-start --session <file>
        realness turn-end --session <file> --turn <n> [--no-sync]
-       realness login|logout|whoami|ls|cat|cp|rm ...
+       realness login|logout|whoami|ls|walk|cat|cp|rm ...
        realness trash [+org]           (what sync kept from deletes, 30 days)
        realness restore <day/time/path> [+org]
        realness frontend build|deploy [--env development|production] [--dry-run]
        realness example static <destination>
        realness upload [--json]        (Mac: its files up to its own lane, one way)
        realness admit                  (Mac: actors' returned changes that pass, into its files)
+       realness door                   (Mac: pull both ways once, admit)
        realness fold [--dry-run]       (merge .conflict session copies into their originals)
        realness fetch <harness-path>   (light VM: pull a file left in storage)
        realness git-credential get     (VM: git's helper for GitHub repos)
@@ -422,6 +424,10 @@ export const run = async (
     if (args[0] === 'upload') {
       command = 'upload'
       return await run_upload(args.slice(1), { stdout })
+    }
+    if (args[0] === 'door') {
+      command = 'door'
+      return await run_door(args.slice(1), { stdout })
     }
     if (args[0] === 'task') {
       command = 'task'
