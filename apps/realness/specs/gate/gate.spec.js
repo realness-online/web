@@ -547,7 +547,7 @@ const read_records = async (response, count) => {
 it('a reader on another device follows the writer, and a claim moves the pen', async () => {
   const gate = await start_gate('127.0.0.1:1')
   try {
-    const follower = await view_call(gate, '/v1/view')
+    const follower = await view_call(gate, '/v1/view?client=2')
     assert.equal(follower.status, 200)
     const heard = read_records(follower, 4)
     assert.equal(
@@ -577,6 +577,16 @@ it('a reader on another device follows the writer, and a claim moves the pen', a
         ['claimed', 'phone']
       ]
     )
+  } finally {
+    gate.closeAllConnections()
+    gate.close()
+  }
+})
+
+it('an old tab following the view is refused, which ends its reconnects', async () => {
+  const gate = await start_gate('127.0.0.1:1')
+  try {
+    assert.equal((await view_call(gate, '/v1/view')).status, 401)
   } finally {
     gate.closeAllConnections()
     gate.close()

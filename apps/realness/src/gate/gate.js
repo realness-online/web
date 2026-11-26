@@ -91,7 +91,9 @@ const json_body = (request, limit) =>
   })
 
 /**
- * The live view routes: follow, publish, and claim the pen.
+ * The live view routes: follow, publish, and claim the pen. A follower
+ * without `client=2` is an old tab that holds the stream while hidden; a 401
+ * ends its reconnect loop.
  * @param {ReturnType<typeof make_views>} views
  * @param {string} path
  * @param {import('node:http').IncomingMessage} request
@@ -104,6 +106,11 @@ const view_route = async (views, path, request, response, phone) => {
       .writeHead(status, { 'content-type': 'application/json' })
       .end(JSON.stringify(body))
   if (request.method === 'GET' && path === '/v1/view') {
+    if (
+      new URL(request.url ?? '', 'http://gate').searchParams.get('client') !==
+      '2'
+    )
+      return json(HTTP.UNAUTHORIZED, { error: 'reload for the new app' })
     response.writeHead(HTTP.OK, NDJSON)
     response.write(record(views.current(phone)))
     const stop = views.follow(phone, event => response.write(record(event)))

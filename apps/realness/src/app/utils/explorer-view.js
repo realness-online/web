@@ -5,6 +5,7 @@ import { records } from '@/utils/stream-records'
 const CONFLICT = 409
 const UNAUTHORIZED = 401
 const RECONNECT_MS = 3000
+const FOLLOW = '/v1/view?client=2'
 
 /**
  * @typedef {{ role: string, text: string, thinking?: string }} Line
@@ -13,6 +14,10 @@ const RECONNECT_MS = 3000
  */
 
 const person = token => ({ getIdToken: token })
+const hidden = () => globalThis.document?.hidden === true
+const IDLE_MS = 300_000
+const ACTIVITY = ['pointerdown', 'keydown', 'visibilitychange']
+
 const post = (token, path, body) =>
   gate_fetch(person(token), path, {
     method: 'POST',
@@ -41,7 +46,7 @@ export const publish_view = async (token, view) => {
     return { ok: true }
   } catch (error) {
     if (error.status !== CONFLICT) throw error
-    const response = await gate_fetch(person(token), '/v1/view')
+    const response = await gate_fetch(person(token), FOLLOW)
     for await (const record of records(response.body)) {
       await response.body?.cancel().catch(() => {})
       return { ok: false, current: record }
@@ -52,32 +57,78 @@ export const publish_view = async (token, view) => {
 
 /**
  * Follow the person's live view until the signal aborts, reconnecting after a
- * drop. `on_open` hears the first record of every connection, the moment a
- * returning writer compares tails.
+ * drop. A hidden or idle page holds no connection, so the gate can scale to
+ * zero; the next key or tap reconnects. `on_open` hears the first record of
+ * every connection, the moment a returning writer compares tails.
  * @param {() => Promise<string>} token
- * @param {{ on_open: (view: ViewRecord) => void | Promise<void>, on_record: (record: ViewRecord) => void | Promise<void>, signal: AbortSignal }} handlers
+ * @param {{ on_open: (view: ViewRecord) => void | Promise<void>, on_record: (record: ViewRecord) => void | Promise<void>, signal: AbortSignal, idle_ms?: number }} handlers
  */
-export const watch_view = async (token, { on_open, on_record, signal }) => {
-  while (!signal.aborted) {
-    try {
-      const response = await gate_fetch(person(token), '/v1/view', { signal })
-      let first = true
-      for await (const record of records(response.body)) {
-        if (first) await on_open(record)
-        else await on_record(record)
-        first = false
+export const watch_view = async (
+  token,
+  { on_open, on_record, signal, idle_ms = IDLE_MS }
+) => {
+  let asleep = false
+  let idle_timer
+  let wake = () => {}
+  let sleep = () => {}
+  const doze = () => {
+    asleep = true
+    sleep()
+  }
+  const active = () => {
+    clearTimeout(idle_timer)
+    if (hidden()) return doze()
+    asleep = false
+    idle_timer = setTimeout(doze, idle_ms)
+    wake()
+  }
+  for (const type of ACTIVITY)
+    globalThis.document?.addEventListener(type, active)
+  active()
+  try {
+    while (!signal.aborted) {
+      if (asleep) {
+        await new Promise(done => {
+          wake = () => done(undefined)
+          signal.addEventListener('abort', done, { once: true })
+        })
+        wake = () => {}
+        continue
       }
-    } catch (error) {
-      if (signal.aborted) return
-      if (error.status === UNAUTHORIZED) return
-    }
-    await new Promise(done => {
-      const timer = setTimeout(done, RECONNECT_MS)
-      signal.addEventListener('abort', () => {
-        clearTimeout(timer)
-        done(undefined)
+      const connection = new AbortController()
+      const close = () => connection.abort()
+      sleep = close
+      signal.addEventListener('abort', close)
+      try {
+        const response = await gate_fetch(person(token), FOLLOW, {
+          signal: connection.signal
+        })
+        let first = true
+        for await (const record of records(response.body)) {
+          if (first) await on_open(record)
+          else await on_record(record)
+          first = false
+        }
+      } catch (error) {
+        if (signal.aborted) return
+        if (error.status === UNAUTHORIZED) return
+      } finally {
+        sleep = () => {}
+        signal.removeEventListener('abort', close)
+      }
+      if (connection.signal.aborted) continue
+      await new Promise(done => {
+        const timer = setTimeout(done, RECONNECT_MS)
+        signal.addEventListener('abort', () => {
+          clearTimeout(timer)
+          done(undefined)
+        })
       })
-    })
+    }
+  } finally {
+    clearTimeout(idle_timer)
+    for (const type of ACTIVITY)
+      globalThis.document?.removeEventListener(type, active)
   }
 }
 

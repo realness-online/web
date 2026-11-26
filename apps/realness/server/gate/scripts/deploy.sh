@@ -14,7 +14,7 @@ gcloud run deploy realness-gate \
   --project "$project" --region "$region" --source "$stage" \
   --service-account "$account" --build-service-account "projects/$project/serviceAccounts/$account" \
   --network default --subnet default --vpc-egress private-ranges-only \
-  --timeout 3600 \
+  --timeout 300 \
   --min-instances 0 \
   --set-env-vars "^@^IDENTITY_PROJECT=$identity@PINS_BUCKET=$bucket@ORIGINS=$origins@GATE_HALO=$halo_address@GATE_HALO_NAME=$halo_name@GATE_HALO_ZONE=$halo_zone" \
   --set-secrets "HALO_PASS_SECRET=HALO_PASS_SECRET:latest" \
