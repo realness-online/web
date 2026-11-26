@@ -14,7 +14,7 @@
   "dependencies": {
     "@comark/html": "^0.4.0",
     "comark": "^0.4.0",
-    "mermaid": "12.0.0",
+    "mermaid": "12.3.0",
     "sharp": "^0.35.4",
     "shiki": "^4.4.3",
     "template-for-polyfill": "^0.1.1"
