@@ -1,12 +1,13 @@
 /**
- * l4: the Mac's `vault/` and `quarantine/` move both ways with the store, and
- * every write is guarded by the version it started from. A record beside the
- * folders holds each file's version at the last agreement: the side that moved
- * from it wins, and both moving keeps both, the other side's copy landing as
- * `x.conflict.ext`. A file the store no longer has goes when the record knows
- * it and this copy still matches the record; a file the record never saw stays
- * and goes back up. A lost record is safe: every file looks new, so identical
- * ones match and the rest keep both.
+ * z4, l4: the Mac's `vault/` goes up only, the Mac's copy winning over the
+ * cloud's, so no `.conflict` file is ever written. A file the Mac deleted goes
+ * from the store when the record knew it; a file the record never saw stays.
+ * `quarantine/` and org folders move both ways: others' changes come in there.
+ * Every write is guarded by the version it started from.
+ *
+ * Both ways: the side that moved from the record wins, and both moving keeps
+ * both, the cloud copy landing as `x.conflict.ext`. A lost record is safe:
+ * every file looks new, so identical ones match and the rest keep both.
  */
 import {
   mkdir,
@@ -17,6 +18,8 @@ import {
 import { dirname, join } from 'node:path'
 import { MAX_BYTES } from '#root/src/files/client.js'
 import { local_paths } from '#root/src/files/upload.js'
+import { skipped } from '#root/src/files/skip.js'
+import { style_local } from '#root/src/files/preview-styles.js'
 import { version_file } from '#root/src/files/version-file.js'
 import { version_sync } from '#root/src/files/version-node.js'
 import { orgs_of } from '#root/src/sync/orgs.js'
@@ -65,14 +68,67 @@ const write_local = async (path, bytes) => {
 }
 
 /**
- * One folder both ways.
- * @param {{ root: string, store: any, base: string, folder: string, saved: Record<string, string>, next: Record<string, string>, report: { pushed: string[], pulled: string[], deleted: string[], kept_both: string[], unchanged: string[], too_big: string[], postponed: string[] } }} run
+ * One name, the Mac's copy winning: a change on the Mac goes up whatever the
+ * store holds, a file the Mac no longer has goes from the store when the
+ * record knew it, and a file the record never saw stays. Nothing comes down.
+ * @param {{ store: any, prefix: string, key: string, name: string, file: string, on_mac: boolean, here: string | null, there: string | null, was: string | undefined, next: Record<string, string>, report: { pushed: string[], deleted: string[], unchanged: string[], too_big: string[], postponed: string[] } }} run
+ */
+const mac_wins = async ({
+  store,
+  prefix,
+  key,
+  name,
+  file,
+  on_mac,
+  here,
+  there,
+  was,
+  next,
+  report
+}) => {
+  if (!on_mac) {
+    if (was === undefined) return
+    if (there !== null) {
+      try {
+        await store.delete(`${prefix}${name}`, { if_version: there })
+      } catch (error) {
+        if (error.code !== 'conflict') throw error
+        report.postponed.push(key)
+        return
+      }
+      report.deleted.push(key)
+    }
+    delete next[key]
+    return
+  }
+  if (here !== null && here === there) {
+    next[key] = here
+    report.unchanged.push(key)
+    return
+  }
+  const version = await push({
+    store,
+    key: `${prefix}${name}`,
+    file,
+    there,
+    report
+  })
+  if (version === null) return
+  next[key] = version
+  report.pushed.push(key)
+}
+
+/**
+ * One folder both ways, or one way when `wins` is `mac`.
+ * @param {{ root: string, store: any, base: string, folder: string, shallow?: boolean, wins?: 'mac' | 'both', saved: Record<string, string>, next: Record<string, string>, report: { pushed: string[], pulled: string[], deleted: string[], kept_both: string[], unchanged: string[], too_big: string[], postponed: string[] } }} run
  */
 const one_folder = async ({
   root,
   store,
   base,
   folder,
+  shallow = false,
+  wins = 'both',
   saved,
   next,
   report
@@ -87,16 +143,47 @@ const one_folder = async ({
   )
   const names = [...new Set([...on_mac, ...remote.keys()])]
     .filter(name => name.split('/').at(-1) !== 'members.html')
+    .filter(name => !skipped(name))
+    .filter(name => !shallow || !name.includes('/'))
     .sort()
   for (const name of names) {
     const key = `${folder}/${name}`
     const file = join(root, folder, name)
+    if (on_mac.includes(name)) await style_local(key, file)
     const here = on_mac.includes(name) ? await local_version(file) : null
     const there = remote.get(name) ?? null
     const was = saved[key]
+    if (wins === 'mac') {
+      await mac_wins({
+        store,
+        prefix,
+        key,
+        name,
+        file,
+        on_mac: on_mac.includes(name),
+        here,
+        there,
+        was,
+        next,
+        report
+      })
+      continue
+    }
     if (here !== null && here === there) {
       next[key] = here
       report.unchanged.push(key)
+      continue
+    }
+    if (!on_mac.includes(name) && was !== undefined && was === there) {
+      try {
+        await store.delete(`${prefix}${name}`, { if_version: there })
+      } catch (error) {
+        if (error.code !== 'conflict') throw error
+        report.postponed.push(key)
+        continue
+      }
+      delete next[key]
+      report.deleted.push(key)
       continue
     }
     if (here === null) {
@@ -191,13 +278,16 @@ const push = async ({ store, key, file, there, report }) => {
 }
 
 /**
- * The Mac's own folders both ways with its lane in the store, then x3: each
- * org folder it is a member of, at `orgs/+name/`. Members pages stay in the
- * store; the founder edits them through sync.
- * @param {{ root: string, store: any, phone: string, record: string }} run
+ * The Mac's own folders with its lane in the store, then x3: each org folder it
+ * is a member of, at `orgs/+name/`. `vault/` goes up only (z4); `quarantine/`
+ * and org folders move both ways. Members pages stay in the store; the founder
+ * edits them through sync.
+ * With `folders`, only those move: `vault` alone is its top files, and
+ * `vault/X` is that folder whole. Orgs always move.
+ * @param {{ root: string, store: any, phone: string, record: string, folders?: string[] }} run
  * @returns {Promise<{ pushed: string[], pulled: string[], deleted: string[], kept_both: string[], unchanged: string[], too_big: string[], postponed: string[] }>}
  */
-export const two_way = async ({ root, store, phone, record }) => {
+export const two_way = async ({ root, store, phone, record, folders }) => {
   const base = `people/${phone}/`
   const saved = await read_record(record)
   const next = { ...saved }
@@ -210,8 +300,18 @@ export const two_way = async ({ root, store, phone, record }) => {
     too_big: [],
     postponed: []
   }
-  for (const folder of TWO_WAY)
-    await one_folder({ root, store, base, folder, saved, next, report })
+  for (const folder of folders ?? TWO_WAY)
+    await one_folder({
+      root,
+      store,
+      base,
+      folder,
+      shallow: folders !== undefined && folder === 'vault',
+      wins: folder === 'vault' || folder.startsWith('vault/') ? 'mac' : 'both',
+      saved,
+      next,
+      report
+    })
   for (const name of await orgs_of(store, phone))
     await one_folder({
       root,

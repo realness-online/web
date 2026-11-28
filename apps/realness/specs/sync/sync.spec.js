@@ -829,7 +829,8 @@ it('f1: a note with a layout line arrives as a note naming its layout', async ()
 
 it('p1: a plan is private to its owner until it is granted', async () => {
   const list = await call('GET', 'v1/vault/projects')
-  assert.equal(list.status, 404)
+  assert.equal(list.status, 200)
+  assert.equal(read_items(await list.text(), 'plan').length, 0)
   const mine_list = await call('GET', 'v1/vault/projects', { headers: as(A) })
   assert.equal(mine_list.status, 200)
   assert.equal(read_items(await mine_list.text(), 'plan').length, 1)

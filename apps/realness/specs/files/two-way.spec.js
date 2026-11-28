@@ -1,12 +1,15 @@
 /**
- * l4: the Mac's `vault/` and `quarantine/` sync both ways, every write guarded
- * by the version it started from. Nothing is deleted, so a change one side has
- * not seen stays.
+ * z4: the Mac's `vault/` goes up only, its copy winning over the cloud's, and
+ * no `.conflict` file is ever written. A file the Mac deleted goes from the
+ * store when the record knew it; a file the record never saw stays. Every write
+ * is guarded by the version it started from. `quarantine/` and org folders stay
+ * both ways: others' changes come in through them.
  */
 import assert from 'node:assert/strict'
 import { randomUUID as random_uuid } from 'node:crypto'
 import {
   mkdir,
+  readdir,
   readFile as read_file,
   rm,
   writeFile as write_file
@@ -56,14 +59,46 @@ it('a new file goes up, and a second pass is idle', async t => {
   assert.deepEqual(again.unchanged, ['vault/note.md'])
 })
 
-it('a file the cloud moved comes down when the Mac left it alone', async t => {
+it('the Mac copy wins when only the cloud moved', async t => {
   const run = await mac(t)
   await run.put('vault/note.md', 'a note\n')
   await run.sync()
   await run.store.put(`${base}vault/note.md`, Buffer.from('from the cloud\n'))
   const report = await run.sync()
-  assert.deepEqual(report.pulled, ['vault/note.md'])
-  assert.equal(await run.local('vault/note.md'), 'from the cloud\n')
+  assert.deepEqual(report.pushed, ['vault/note.md'])
+  assert.deepEqual(report.pulled, [])
+  assert.equal(await run.local('vault/note.md'), 'a note\n')
+  assert.equal(await run.remote('vault/note.md'), 'a note\n')
+})
+
+it('a file only the cloud holds stays in the cloud', async t => {
+  const run = await mac(t)
+  await run.store.put(`${base}vault/theirs.md`, Buffer.from('theirs\n'))
+  const report = await run.sync()
+  assert.deepEqual(report.pulled, [])
+  assert.equal(await run.remote('vault/theirs.md'), 'theirs\n')
+  await assert.rejects(read_file(join(run.root, 'vault/theirs.md')))
+})
+
+it('named folders move alone; vault alone is its top files', async t => {
+  const run = await mac(t)
+  await run.put('vault/note.md', 'top\n')
+  await run.put('vault/A/a.md', 'a\n')
+  await run.put('vault/B/b.md', 'b\n')
+  await run.sync()
+  for (const path of ['vault/note.md', 'vault/A/a.md', 'vault/B/b.md'])
+    await run.store.put(`${base}${path}`, Buffer.from('cloud\n'))
+  const report = await two_way({
+    root: run.root,
+    store: run.store,
+    phone: PHONE,
+    record: run.record,
+    folders: ['vault', 'vault/A']
+  })
+  assert.deepEqual(report.pushed.sort(), ['vault/A/a.md', 'vault/note.md'])
+  assert.equal(await run.local('vault/B/b.md'), 'b\n')
+  assert.equal(await run.remote('vault/B/b.md'), 'cloud\n')
+  assert.equal(await run.remote('vault/note.md'), 'top\n')
 })
 
 it('a file the Mac moved goes up, guarded by the version it read', async t => {
@@ -76,17 +111,19 @@ it('a file the Mac moved goes up, guarded by the version it read', async t => {
   assert.equal(await run.remote('vault/note.md'), 'edited here\n')
 })
 
-it('both moving keeps both, the cloud copy beside the Mac copy', async t => {
+it('both moving keeps the Mac copy, and no conflict file is written', async t => {
   const run = await mac(t)
   await run.put('vault/note.md', 'a note\n')
   await run.sync()
   await run.put('vault/note.md', 'edited here\n')
   await run.store.put(`${base}vault/note.md`, Buffer.from('edited there\n'))
   const report = await run.sync()
-  assert.deepEqual(report.kept_both, ['vault/note.md'])
+  assert.deepEqual(report.pushed, ['vault/note.md'])
+  assert.deepEqual(report.kept_both, [])
   assert.equal(await run.local('vault/note.md'), 'edited here\n')
-  assert.equal(await run.local('vault/note.conflict.md'), 'edited there\n')
   assert.equal(await run.remote('vault/note.md'), 'edited here\n')
+  assert.deepEqual(await readdir(join(run.root, 'vault')), ['note.md'])
+  assert.equal(await run.store.get(`${base}vault/note.conflict.md`), null)
 })
 
 it('quarantine travels both ways, at the same path', async t => {
@@ -107,13 +144,66 @@ it('quarantine travels both ways, at the same path', async t => {
   assert.equal(await run.local('quarantine/actor-2/vault/Waiting.md'), 'held\n')
 })
 
-it('a file the store lost goes, when the record knows this copy', async t => {
+it('a file the store lost goes back up', async t => {
   const run = await mac(t)
   await run.put('vault/note.md', 'a note\n')
   await run.sync()
   await run.store.delete(`${base}vault/note.md`)
   const report = await run.sync()
+  assert.deepEqual(report.pushed, ['vault/note.md'])
+  assert.deepEqual(report.deleted, [])
+  assert.equal(await run.remote('vault/note.md'), 'a note\n')
+})
+
+it('w3: a file the Mac deleted stays deleted, and goes from the store', async t => {
+  const run = await mac(t)
+  await run.put('vault/note.md', 'a note\n')
+  await run.sync()
+  await rm(join(run.root, 'vault/note.md'))
+  const report = await run.sync()
   assert.deepEqual(report.deleted, ['vault/note.md'])
+  assert.deepEqual(report.pulled, [])
+  assert.equal(await run.remote('vault/note.md'), undefined)
+  const again = await run.sync()
+  assert.deepEqual(again.pulled, [])
+  await assert.rejects(read_file(join(run.root, 'vault/note.md')))
+})
+
+it('a vault page goes up linking the Realness stylesheets', async t => {
+  const run = await mac(t)
+  await run.put(
+    'vault/page.html',
+    '<!doctype html>\n<title>Page</title>\n<p>hi</p>\n'
+  )
+  await run.sync()
+  const up = await run.remote('vault/page.html')
+  assert.match(up, /href="https:\/\/realness\.online\/style\.css"/)
+  assert.equal(await run.local('vault/page.html'), up)
+  const again = await run.sync()
+  assert.deepEqual(again.pushed, [])
+})
+
+it('w3: a file sync skips is never pulled and never deleted', async t => {
+  const run = await mac(t)
+  await run.store.put(`${base}vault/.obsidian/app.json`, '{}')
+  await run.put('vault/.obsidian/app.json', '{}')
+  await run.sync()
+  const again = await run.sync()
+  assert.deepEqual(again.deleted, [])
+  assert.deepEqual(again.pulled, [])
+  assert.equal(await run.remote('vault/.obsidian/app.json'), '{}')
+})
+
+it('a file the Mac deleted goes, even when the cloud edited it since', async t => {
+  const run = await mac(t)
+  await run.put('vault/note.md', 'a note\n')
+  await run.sync()
+  await rm(join(run.root, 'vault/note.md'))
+  await run.store.put(`${base}vault/note.md`, 'edited there\n')
+  const report = await run.sync()
+  assert.deepEqual(report.deleted, ['vault/note.md'])
+  assert.deepEqual(report.pulled, [])
+  assert.equal(await run.remote('vault/note.md'), undefined)
   await assert.rejects(read_file(join(run.root, 'vault/note.md')))
 })
 
