@@ -29,14 +29,12 @@ import {
   version_local
 } from '#root/src/files/session-gz.js'
 import { version_sync } from '#root/src/files/version-node.js'
+import { ORG_OWN } from '#root/src/can/marks.js'
 import { orgs_of } from '#root/src/sync/orgs.js'
 /* eslint-disable no-await-in-loop -- one folder at a time; files inside move in lanes */
 
 /** The folders that sync both ways, each at its own path on the Mac and in the store. */
 const TWO_WAY = ['vault', 'quarantine']
-
-/** An org's own pages: its member list and its hash page stay in the store. */
-const ORG_OWN = new Set(['members.html', 'sync-hash.html'])
 
 /** How many files move at the same time; each write is guarded by its own version. */
 const AT_ONCE = 16
@@ -155,13 +153,11 @@ const one_folder = async ({
   const local_of = sync_names(
     (await local_paths(root, folder)).map(path => path.slice(folder.length + 1))
   )
-  const on_mac = [...local_of.keys()]
-  const names = [...new Set([...on_mac, ...remote.keys()])]
+  const names = [...new Set([...local_of.keys(), ...remote.keys()])]
     .filter(name => !ORG_OWN.has(name.split('/').at(-1) ?? ''))
     .filter(name => !skipped(name))
     .filter(name => !shallow || !name.includes('/'))
     .sort()
-  const mine = new Set(on_mac)
   /** @param {string} name */
   const one_name = async name => {
     const key = `${folder}/${name}`
@@ -169,10 +165,10 @@ const one_folder = async ({
     const file = local
       ? join(root, folder, local)
       : new_local_path(join(root, folder), name, SESSION.test(key))
-    if (mine.has(name)) await style_local(key, file)
+    if (local) await style_local(key, file)
     /** @type {string | null} */
     let here = null
-    if (mine.has(name))
+    if (local)
       try {
         here = await version_local(key, file)
       } catch (error) {
@@ -190,7 +186,7 @@ const one_folder = async ({
         key,
         name,
         file,
-        on_mac: mine.has(name),
+        on_mac: Boolean(local),
         here,
         there,
         was,
@@ -204,7 +200,7 @@ const one_folder = async ({
       report.unchanged.push(key)
       return
     }
-    if (!mine.has(name) && was !== undefined && was === there) {
+    if (!local && was !== undefined && was === there) {
       try {
         await store.delete(`${prefix}${name}`, { if_version: there })
       } catch (error) {

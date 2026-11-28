@@ -1,19 +1,19 @@
 import { after, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-  utimesSync,
-  writeFileSync
+  mkdirSync as mkdir_sync,
+  mkdtempSync as mkdtemp_sync,
+  rmSync as rm_sync,
+  utimesSync as utimes_sync,
+  writeFileSync as write_file_sync
 } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { disk } from '../../src/can/disk.js'
-import { store_of } from '../../src/can/store.js'
-import { SYNC_HASH } from '../../src/can/marks.js'
-import { item_html } from '../../lib/items.js'
-import { members_html } from '../../src/can/members.js'
+import { disk } from '#root/src/can/disk.js'
+import { store_of } from '#root/src/can/store.js'
+import { SYNC_HASH } from '#root/src/can/marks.js'
+import { item_html } from '#root/lib/items.js'
+import { members_html } from '#root/src/can/members.js'
 import {
   SEEN,
   changed,
@@ -24,14 +24,14 @@ import {
   seen_html,
   turn_check,
   turn_line
-} from '../../src/files/sync-check.js'
+} from '#root/src/files/sync-check.js'
 
 const A = '+14155550001'
 const dirs = []
-after(() => dirs.forEach(dir => rmSync(dir, { recursive: true, force: true })))
+after(() => dirs.forEach(dir => rm_sync(dir, { recursive: true, force: true })))
 
 const buckets = () => {
-  const root = mkdtempSync(join(tmpdir(), 'sync-check-'))
+  const root = mkdtemp_sync(join(tmpdir(), 'sync-check-'))
   dirs.push(root)
   const store = store_of(disk(root))
   return {
@@ -125,17 +125,17 @@ it('a Mac edit opens its folder when the cloud is quiet', async () => {
 })
 
 it('file dates name the folders saved since the last run', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'edited-'))
+  const root = mkdtemp_sync(join(tmpdir(), 'edited-'))
   dirs.push(root)
   const old = new Date('2026-01-01T00:00:00.000Z')
   const put = path => {
-    mkdirSync(join(root, path, '..'), { recursive: true })
-    writeFileSync(join(root, path), 'x')
+    mkdir_sync(join(root, path, '..'), { recursive: true })
+    write_file_sync(join(root, path), 'x')
   }
   for (const path of ['vault/top.md', 'vault/Old/a.md', 'vault/New/Deep/b.md'])
     put(path)
   for (const path of ['vault', 'vault/top.md', 'vault/Old', 'vault/Old/a.md'])
-    utimesSync(join(root, path), old, old)
+    utimes_sync(join(root, path), old, old)
   assert.deepEqual(await edited_folders(root, '2026-06-01T00:00:00.000Z'), [
     'vault/New'
   ])
@@ -272,13 +272,13 @@ it('org pages the hashes match cost nothing', async () => {
 })
 
 it('file dates name the org folders saved since the last run', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'edited-org-'))
+  const root = mkdtemp_sync(join(tmpdir(), 'edited-org-'))
   dirs.push(root)
   const old = new Date('2026-01-01T00:00:00.000Z')
-  mkdirSync(join(root, 'orgs/+fam/data/old'), { recursive: true })
-  mkdirSync(join(root, 'orgs/+fam/data/new'), { recursive: true })
-  writeFileSync(join(root, 'orgs/+fam/data/old/a.html'), 'x')
-  writeFileSync(join(root, 'orgs/+fam/data/new/b.html'), 'x')
+  mkdir_sync(join(root, 'orgs/+fam/data/old'), { recursive: true })
+  mkdir_sync(join(root, 'orgs/+fam/data/new'), { recursive: true })
+  write_file_sync(join(root, 'orgs/+fam/data/old/a.html'), 'x')
+  write_file_sync(join(root, 'orgs/+fam/data/new/b.html'), 'x')
   for (const path of [
     'orgs',
     'orgs/+fam',
@@ -286,7 +286,7 @@ it('file dates name the org folders saved since the last run', async () => {
     'orgs/+fam/data/old',
     'orgs/+fam/data/old/a.html'
   ])
-    utimesSync(join(root, path), old, old)
+    utimes_sync(join(root, path), old, old)
   assert.deepEqual(await edited_folders(root, '2026-06-01T00:00:00.000Z'), [
     'orgs/+fam/data/new'
   ])

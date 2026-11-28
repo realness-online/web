@@ -21,6 +21,7 @@ import { members_html } from '#root/src/can/members.js'
 import { store_of } from '#root/src/can/store.js'
 import { two_way } from '#root/src/files/two-way.js'
 import { zip } from '#root/src/files/zip.js'
+import { PREVIEW_LINK } from '#root/src/files/preview-styles.js'
 import { out_path } from '#root/lib/output.js'
 
 const PHONE = '+15555550100'
@@ -304,8 +305,7 @@ it('named org folders move alone, and an org left unnamed stays', async t => {
 
 const ENTRY =
   '<article itemscope itemtype="/sessions/message" itemid="/sessions/x/1"></article>\n'
-const LINK =
-  '<link rel="stylesheet" href="https://realness.online/style.css">\n'
+const LINK = `${PREVIEW_LINK}\n`
 
 it('w5: a packed session goes up as plain x.html, styled, and never as x.html.gz', async t => {
   const run = await mac(t)

@@ -16,7 +16,8 @@ export const SYNC_HASH = 'sync-hash.html'
 const MARKED = /^people\/(\+[1-9]\d{6,14})\/(vault|quarantine)\/(.+)$/
 const ORG_MARKED = /^orgs\/(\+[a-z0-9-]+)\/(.+)$/
 /** Org files that are not the org's content. */
-const ORG_OWN = new Set(['members.html', SYNC_HASH])
+/** An org's own pages, apart from its content: they stay in the store. */
+export const ORG_OWN = new Set(['members.html', SYNC_HASH])
 const TRIES = 5
 const WAIT_MS = 2000
 /** Flushers of every marked store this process opened. */
