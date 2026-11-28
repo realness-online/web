@@ -908,3 +908,14 @@ it('s1: an open page hears a vault note written within two seconds', async () =>
   assert.deepEqual(heard.events, [`people/${A}/vault/Projects/live.md`])
   assert.ok(heard.ms < 2000, `heard in ${heard.ms}ms`)
 })
+
+it('b3: a halo key is never read through sync, by anyone', async () => {
+  await storage.put('halo-keys/some-halo', 'a'.repeat(64))
+  for (const headers of [{}, as(A), as(B)]) {
+    const read = await call('GET', 'halo-keys/some-halo', { headers })
+    assert.ok([403, 404].includes(read.status), String(read.status))
+    assert.doesNotMatch(await read.text(), /a{64}/)
+    const listed = await call('GET', 'halo-keys/', { headers })
+    assert.ok([403, 404].includes(listed.status), String(listed.status))
+  }
+})
