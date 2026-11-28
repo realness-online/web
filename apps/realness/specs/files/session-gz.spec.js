@@ -9,6 +9,7 @@ import {
   disk_bytes,
   new_local_path,
   packed_on_disk,
+  read_local,
   sync_names,
   version_local
 } from '#root/src/files/session-gz.js'
@@ -50,6 +51,32 @@ it('a packed session syncs its plain version, and a truncated one is open', asyn
   await writeFile(packed, zip(Buffer.from('hello')).subarray(0, 12))
   await assert.rejects(version_local('a.html', packed), OpenSession)
   await rm(packed, { force: true })
+})
+
+it('a vault session opens styled, with the one stylesheet linked above it', async () => {
+  await mkdir(root, { recursive: true })
+  const packed = join(root, 'b.html.gz')
+  const entry =
+    '<article itemscope itemtype="/sessions/message" itemid="/sessions/x/1"></article>\n'
+  await writeFile(packed, zip(Buffer.from(entry)))
+  const styled = await read_local('vault/Sessions/b.html', packed)
+  assert.ok(
+    styled
+      .toString()
+      .startsWith(
+        '<link rel="stylesheet" href="https://realness.online/style.css">\n'
+      )
+  )
+  assert.equal(
+    await version_local('vault/Sessions/b.html', packed),
+    version_sync(styled)
+  )
+  const outside = join(root, 'c.html.gz')
+  await writeFile(outside, zip(Buffer.from(entry)))
+  assert.equal(
+    (await read_local('.pi/agent/sessions/c.html', outside)).toString(),
+    entry
+  )
 })
 
 it('a session arriving with no copy here lands packed, as the Mac keeps it', () => {

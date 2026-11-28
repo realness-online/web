@@ -1,6 +1,5 @@
 /**
- * Synced HTML opens styled from disk: each file links the Realness palette,
- * colour roles, and site stylesheet. A file that already links one keeps it.
+ * Synced HTML opens styled from disk: each file links the Realness `style.css`.
  */
 import {
   readFile as read_file,
@@ -10,9 +9,12 @@ import {
 const SITE = 'https://realness.online'
 
 /** The stylesheets a previewed file links, in cascade order. */
-export const PREVIEW_STYLES = ['palette.css', 'color.css', 'style.css'].map(
-  name => `${SITE}/${name}`
-)
+export const PREVIEW_STYLES = ['style.css'].map(name => `${SITE}/${name}`)
+
+/** The link block a previewed file opens with. */
+export const PREVIEW_LINK = PREVIEW_STYLES.map(
+  href => `<link rel="stylesheet" href="${href}">`
+).join('\n')
 
 /** The block an earlier sync put above everything, doctype included. */
 const TOP_BLOCK = new RegExp(

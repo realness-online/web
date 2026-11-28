@@ -7,11 +7,23 @@
  */
 import { readFile as read_file } from 'node:fs/promises'
 import { join } from 'node:path'
+import { PREVIEW_LINK } from './preview-styles.js'
 import { version_file } from './version-file.js'
+import { version_sync } from './version-node.js'
 import { unzip, zip } from './zip.js'
 
 const PACKED = /\.html\.gz$/
 const GZ = '.gz'
+
+/** A vault session opens as a styled page; pi's own session files stay bare. */
+const STYLED = 'vault/Sessions/'
+
+/** The one stylesheet a page links. */
+const STYLE = `${PREVIEW_LINK}\n`
+
+/** @param {string} name @param {string} text */
+const styled = (name, text) =>
+  name.startsWith(STYLED) && !text.startsWith(STYLE) ? STYLE + text : text
 
 /** A session whose last member is still being written. */
 export class OpenSession extends Error {}
@@ -52,12 +64,16 @@ export const packed_on_disk = (name, path) =>
 /** A local file's sync bytes: a packed session reads as its plain HTML. */
 export const read_local = async (name, path) => {
   const bytes = await read_file(path)
-  if (!packed_on_disk(name, path)) return bytes
-  try {
-    return unzip(bytes)
-  } catch {
-    throw new OpenSession(`${name} is mid-write`)
-  }
+  const packed = packed_on_disk(name, path)
+  let plain = bytes
+  if (packed)
+    try {
+      plain = unzip(bytes)
+    } catch {
+      throw new OpenSession(`${name} is mid-write`)
+    }
+  if (!name.startsWith(STYLED)) return plain
+  return Buffer.from(styled(name, plain.toString('utf8')))
 }
 
 /**
@@ -65,6 +81,7 @@ export const read_local = async (name, path) => {
  * hashes its plain HTML. A session mid-write is `OpenSession`.
  */
 export const version_local = async (name, path) => {
+  if (name.startsWith(STYLED)) return version_sync(await read_local(name, path))
   const packed = packed_on_disk(name, path)
   try {
     return await version_file(path, { unpack: packed })

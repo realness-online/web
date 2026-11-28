@@ -55,6 +55,25 @@ body {
       padding: var(--base-line);
       border-radius: 0.25rem;
     }
+
+    &:has(> dl) {
+      width: min(100%, var(--wide));
+    }
+
+    dl {
+      display: grid;
+      grid-template-columns: minmax(8ch, max-content) 1fr;
+      gap: calc(var(--base-line) * 0.25) var(--base-line);
+      margin-block: var(--base-line);
+    }
+
+    dt {
+      color: var(--muted-text);
+    }
+
+    dd {
+      margin: 0;
+    }
   }
 }
 
