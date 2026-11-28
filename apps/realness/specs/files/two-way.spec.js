@@ -20,6 +20,7 @@ import { disk } from '#root/src/can/disk.js'
 import { members_html } from '#root/src/can/members.js'
 import { store_of } from '#root/src/can/store.js'
 import { two_way } from '#root/src/files/two-way.js'
+import { zip } from '#root/src/files/zip.js'
 import { out_path } from '#root/lib/output.js'
 
 const PHONE = '+15555550100'
@@ -299,4 +300,44 @@ it('named org folders move alone, and an org left unnamed stays', async t => {
     folders: ['vault']
   })
   assert.deepEqual(none.pulled, [])
+})
+
+const ENTRY =
+  '<article itemscope itemtype="/sessions/message" itemid="/sessions/x/1"></article>\n'
+const LINK =
+  '<link rel="stylesheet" href="https://realness.online/style.css">\n'
+
+it('w5: a packed session goes up as plain x.html, styled, and never as x.html.gz', async t => {
+  const run = await mac(t)
+  await mkdir(join(run.root, 'vault/Sessions'), { recursive: true })
+  await write_file(
+    join(run.root, 'vault/Sessions/s.html.gz'),
+    zip(Buffer.from(ENTRY))
+  )
+  const report = await run.sync()
+  assert.deepEqual(report.pushed, ['vault/Sessions/s.html'])
+  assert.equal(await run.remote('vault/Sessions/s.html'), LINK + ENTRY)
+  assert.equal(await run.remote('vault/Sessions/s.html.gz'), undefined)
+  const again = await run.sync()
+  assert.deepEqual(again.pushed, [])
+  assert.deepEqual(again.unchanged, ['vault/Sessions/s.html'])
+})
+
+it('w5: a session under its old cloud name moves to x.html once', async t => {
+  const run = await mac(t)
+  await mkdir(join(run.root, 'vault/Sessions'), { recursive: true })
+  await mkdir(dirname(run.record), { recursive: true })
+  const packed = zip(Buffer.from(ENTRY))
+  await write_file(join(run.root, 'vault/Sessions/s.html.gz'), packed)
+  await run.store.put(`${base}vault/Sessions/s.html.gz`, packed)
+  const listed = await run.store.walk_meta(`${base}vault/Sessions/`)
+  await write_file(
+    run.record,
+    JSON.stringify({ 'vault/Sessions/s.html.gz': listed['s.html.gz'].version })
+  )
+  const report = await run.sync()
+  assert.deepEqual(report.pushed, ['vault/Sessions/s.html'])
+  assert.deepEqual(report.deleted, ['vault/Sessions/s.html.gz'])
+  assert.equal(await run.remote('vault/Sessions/s.html.gz'), undefined)
+  assert.equal(await run.remote('vault/Sessions/s.html'), LINK + ENTRY)
 })

@@ -20,7 +20,14 @@ import { MAX_BYTES } from '#root/src/files/client.js'
 import { local_paths } from '#root/src/files/upload.js'
 import { skipped } from '#root/src/files/skip.js'
 import { style_local } from '#root/src/files/preview-styles.js'
-import { version_file } from '#root/src/files/version-file.js'
+import {
+  OpenSession,
+  disk_bytes,
+  new_local_path,
+  read_local,
+  sync_names,
+  version_local
+} from '#root/src/files/session-gz.js'
 import { version_sync } from '#root/src/files/version-node.js'
 import { orgs_of } from '#root/src/sync/orgs.js'
 /* eslint-disable no-await-in-loop -- one folder at a time; files inside move in lanes */
@@ -61,16 +68,16 @@ const save_record = async (path, record) => {
   await write_file(path, `${JSON.stringify(sorted, null, 2)}\n`)
 }
 
-/**
- * @param {string} path a `/`-separated path under the root
- * @returns {Promise<string | null>}
- */
-const local_version = path => version_file(path).catch(() => null)
+/** A session transcript: kept packed on disk, synced as plain `x.html`. */
+const SESSION = /(^|\/)(Sessions|sessions)\//
 
-/** @param {string} path @param {Buffer} bytes */
-const write_local = async (path, bytes) => {
+/**
+ * Bytes from the store onto disk, packed again when the file is a session.
+ * @param {string} key the sync name @param {string} path @param {Buffer} bytes
+ */
+const write_local = async (key, path, bytes) => {
   await mkdir(dirname(path), { recursive: true })
-  await write_file(path, bytes)
+  await write_file(path, disk_bytes(key, path, bytes))
 }
 
 /**
@@ -115,6 +122,7 @@ const mac_wins = async ({
   const version = await push({
     store,
     key: `${prefix}${name}`,
+    sync: key,
     file,
     there,
     report
@@ -144,9 +152,10 @@ const one_folder = async ({
   const remote = new Map(
     Object.entries(listed).map(([name, info]) => [name, info.version])
   )
-  const on_mac = (await local_paths(root, folder)).map(path =>
-    path.slice(folder.length + 1)
+  const local_of = sync_names(
+    (await local_paths(root, folder)).map(path => path.slice(folder.length + 1))
   )
+  const on_mac = [...local_of.keys()]
   const names = [...new Set([...on_mac, ...remote.keys()])]
     .filter(name => !ORG_OWN.has(name.split('/').at(-1) ?? ''))
     .filter(name => !skipped(name))
@@ -156,9 +165,22 @@ const one_folder = async ({
   /** @param {string} name */
   const one_name = async name => {
     const key = `${folder}/${name}`
-    const file = join(root, folder, name)
+    const local = local_of.get(name)
+    const file = local
+      ? join(root, folder, local)
+      : new_local_path(join(root, folder), name, SESSION.test(key))
     if (mine.has(name)) await style_local(key, file)
-    const here = mine.has(name) ? await local_version(file) : null
+    /** @type {string | null} */
+    let here = null
+    if (mine.has(name))
+      try {
+        here = await version_local(key, file)
+      } catch (error) {
+        if (!(error instanceof OpenSession) && error.code !== 'ENOENT')
+          throw error
+        report.postponed.push(key)
+        return
+      }
     const there = remote.get(name) ?? null
     const was = saved[key]
     if (wins === 'mac') {
@@ -197,7 +219,7 @@ const one_folder = async ({
     if (here === null) {
       const bytes = await store.get(`${prefix}${name}`)
       if (!bytes) return
-      await write_local(file, bytes.body)
+      await write_local(key, file, bytes.body)
       next[key] = there
       report.pulled.push(key)
       return
@@ -212,6 +234,7 @@ const one_folder = async ({
       const version = await push({
         store,
         key: `${prefix}${name}`,
+        sync: key,
         file,
         there,
         report
@@ -224,7 +247,7 @@ const one_folder = async ({
     if (was !== undefined && was === here) {
       const theirs = await store.get(`${prefix}${name}`)
       if (!theirs) return
-      await write_local(file, theirs.body)
+      await write_local(key, file, theirs.body)
       next[key] = there
       report.pulled.push(key)
       return
@@ -233,6 +256,7 @@ const one_folder = async ({
       const version = await push({
         store,
         key: `${prefix}${name}`,
+        sync: key,
         file,
         there,
         report
@@ -244,10 +268,12 @@ const one_folder = async ({
     }
     const theirs = await store.get(`${prefix}${name}`)
     if (!theirs) return
-    await write_local(join(root, folder, conflict_path(name)), theirs.body)
+    const aside = conflict_path(name)
+    await write_local(aside, join(root, folder, aside), theirs.body)
     const version = await push({
       store,
       key: `${prefix}${name}`,
+      sync: key,
       file,
       there,
       report
@@ -264,12 +290,13 @@ const one_folder = async ({
 }
 
 /**
- * One file up, guarded by the version the store holds.
- * @param {{ store: any, key: string, file: string, there: string | null, report: { too_big: string[], postponed: string[] } }} run
+ * One file up, guarded by the version the store holds. A session goes up as
+ * its plain HTML.
+ * @param {{ store: any, key: string, sync: string, file: string, there: string | null, report: { too_big: string[], postponed: string[] } }} run
  * @returns {Promise<string | null>} the version written, or null when it did not land
  */
-const push = async ({ store, key, file, there, report }) => {
-  const bytes = await read_file(file)
+const push = async ({ store, key, sync, file, there, report }) => {
+  const bytes = await read_local(sync, file)
   if (bytes.byteLength > MAX_BYTES) {
     report.too_big.push(key)
     return null
