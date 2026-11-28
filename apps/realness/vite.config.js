@@ -12,6 +12,7 @@ import {
 } from '#root/src/settings/layout.js'
 import { frontend_out, out_path } from '#root/src/settings/output.js'
 import { realness_pwa } from '#root/packages/pwa/src/vite.js'
+import { vault_style } from '#root/src/publish/vault-style.js'
 import { local_settings } from '#root/src/settings/environments.js'
 import { cert_paths, host_label } from '#root/src/control/host-name.js'
 
@@ -62,6 +63,20 @@ const durable_bundle = () => ({
         url.endsWith('.map') ? 'application/json' : 'text/javascript'
       )
       response.end(read_file_sync(file))
+    })
+  }
+})
+
+/** The stylesheet vault pages link: the renderer's four sheets as one. */
+const vault_styles = () => ({
+  name: 'vault-styles',
+  apply: 'build',
+  generateBundle() {
+    const folder = path.join(product_root, 'tools/publish/renderer/static')
+    this.emitFile({
+      type: 'asset',
+      fileName: 'style.css',
+      source: vault_style(folder)
     })
   }
 })
@@ -417,6 +432,7 @@ export default define_config(({ mode }) => ({
     }),
     wasm(),
     durable_bundle(),
+    vault_styles(),
     explorer_brief(),
     icon_version_in_html(),
     realness_pwa({
