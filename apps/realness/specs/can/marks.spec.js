@@ -68,6 +68,17 @@ it('a second write to the same folder keeps one entry; the hash changes', async 
   assert.notEqual(second.vault, first.vault)
 })
 
+it('a file deep in a folder changes the hash of that folder', async () => {
+  const { storage, page } = store()
+  await storage.put(`people/${A}/vault/Plans/a.md`, Buffer.from('one'))
+  await storage.flush()
+  const first = await page_of(page())
+  await storage.put(`people/${A}/vault/Plans/Deep/index.md`, Buffer.from('two'))
+  await storage.flush()
+  const second = await page_of(page())
+  assert.notEqual(second.folders['vault/Plans'], first.folders['vault/Plans'])
+})
+
 it('the quarantine hash stands apart and ignores vault writes', async () => {
   const { storage, page } = store()
   await storage.put(`people/${A}/quarantine/halo/vault/a.md`, Buffer.from('q'))
@@ -138,4 +149,57 @@ it('a marked store still hides names and stores .gz keys', async () => {
   assert.deepEqual(listed.files, ['a.md'])
   const root = await page().list(`people/${A}/`)
   assert.deepEqual(root.files, [SYNC_HASH])
+})
+
+const ORG = '+fam'
+const org_page = async storage => {
+  const read = await storage.get(`orgs/${ORG}/${SYNC_HASH}`)
+  return read ? read_sync_hash(read.body.toString()) : null
+}
+
+it('an org file marks its own folder, at any depth', () => {
+  assert.deepEqual(folder_of(`orgs/${ORG}/data/reflections/a.html`), {
+    org: ORG,
+    folder: 'data/reflections'
+  })
+  assert.deepEqual(folder_of(`orgs/${ORG}/note.md`), {
+    org: ORG,
+    folder: '.'
+  })
+  assert.equal(folder_of(`orgs/${ORG}/members.html`), null)
+  assert.equal(folder_of(`orgs/${ORG}/${SYNC_HASH}`), null)
+})
+
+it('an org write flushes to the org page, one hash per folder', async () => {
+  const { storage, page } = store()
+  await storage.put(`orgs/${ORG}/data/reflections/a.html`, Buffer.from('a'))
+  await storage.put(`orgs/${ORG}/data/stories/b.html`, Buffer.from('b'))
+  await storage.flush()
+  const first = await org_page(page())
+  assert.deepEqual(Object.keys(first.folders).sort(), [
+    'data/reflections',
+    'data/stories'
+  ])
+  await storage.put(`orgs/${ORG}/data/stories/b.html`, Buffer.from('two'))
+  await storage.flush()
+  const second = await org_page(page())
+  assert.equal(
+    second.folders['data/reflections'],
+    first.folders['data/reflections']
+  )
+  assert.notEqual(second.folders['data/stories'], first.folders['data/stories'])
+  assert.equal(await page_of(page()), null)
+})
+
+it('an org rebuild hashes every folder it holds', async () => {
+  const { storage, page } = store()
+  await page().put(`orgs/${ORG}/top.md`, Buffer.from('t'))
+  await page().put(`orgs/${ORG}/data/reflections/a.html`, Buffer.from('a'))
+  await page().put(`orgs/${ORG}/members.html`, Buffer.from('m'))
+  await storage.rebuild_org(ORG)
+  const written = await org_page(page())
+  assert.deepEqual(Object.keys(written.folders).sort(), [
+    '.',
+    'data/reflections'
+  ])
 })

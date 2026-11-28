@@ -15,7 +15,7 @@ import { owner_store } from '#root/src/files/local-admit.js'
  * one writer at a time and a change cleared here is cleared there. The Mac's
  * `quarantine/` folder is the inbox the local server fills; the pull keeps it
  * in step.
- * @param {{ root: string, store: any, phone: string, record: string, trash: string, run?: typeof admit }} pass
+ * @param {{ root: string, store: any, phone: string, record: string, trash: string, folders?: string[], run?: typeof admit }} pass
  */
 export const mac_door = async ({
   root,
@@ -23,9 +23,10 @@ export const mac_door = async ({
   phone,
   record,
   trash,
+  folders,
   run = admit
 }) => {
-  const pulled = await two_way({ root, store, phone, record })
+  const pulled = await two_way({ root, store, phone, record, folders })
   const admitted = await run({
     root,
     store: owner_store(store, phone),

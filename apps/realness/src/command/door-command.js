@@ -1,24 +1,21 @@
 /**
- * `realness door`: one pass of the Mac's door - pull the cloud both ways and
- * admit what waits. A turn of the harness runs this on its own; the command is
- * here for a person who wants the pull without an agent.
+ * `realness door`: one sync by hand, the same check a turn runs. It reads the
+ * hash pages, opens only the folders that moved, then admits what waits.
  */
-import { join } from 'node:path'
 import { create_gcs, gcloud_token } from '#root/src/can/gcs.js'
 import { flush_marks } from '#root/src/can/marks.js'
 import { store_of } from '#root/src/can/store.js'
-import { state_dir, trash_dir } from '#root/src/files/client.js'
-import { mac_door } from '#root/src/files/mac-door.js'
+import { turn_at } from '#root/src/files/sync-check.js'
 import { local_owner } from '#root/src/files/target.js'
-import { find_root, use_harness_state } from '#root/src/harness/harness.js'
+import { find_root } from '#root/src/harness/harness.js'
 import { person_settings } from '#root/src/settings/environments.js'
 
 /**
- * @param {string[]} args
- * @param {{ stdout?: NodeJS.WritableStream, root?: string, phone?: string, store?: any, door?: typeof mac_door }} [options]
+ * @param {string[]} _args
+ * @param {{ stdout?: NodeJS.WritableStream, root?: string, phone?: string, store?: any, turn?: typeof turn_at }} [options]
  */
 export const run_door = async (
-  args,
+  _args,
   {
     stdout = process.stdout,
     root = find_root(),
@@ -30,20 +27,20 @@ export const run_door = async (
       }),
       { marks: true }
     ),
-    door = mac_door
+    turn = turn_at
   } = {}
 ) => {
   if (!phone) {
     stdout.write('door: no owner on this machine\n')
     return 1
   }
-  const record = join(state_dir(root), 'two-way.json')
-  const trash = trash_dir(use_harness_state(root))
-  const { pulled, admitted } = await door({ root, store, phone, record, trash })
+  const line = await turn({
+    root,
+    phone,
+    store,
+    on_start: folders => stdout.write(`door: opening ${folders.join(', ')}\n`)
+  })
   await flush_marks()
-  stdout.write(
-    `door: pulled ${pulled.pulled.length}, moved ${admitted.moved.length}, ` +
-      `waiting ${admitted.waiting.length}\n`
-  )
+  stdout.write(`${line ?? 'door: nothing changed'}\n`)
   return 0
 }

@@ -23,10 +23,16 @@ import { style_local } from '#root/src/files/preview-styles.js'
 import { version_file } from '#root/src/files/version-file.js'
 import { version_sync } from '#root/src/files/version-node.js'
 import { orgs_of } from '#root/src/sync/orgs.js'
-/* eslint-disable no-await-in-loop -- one file at a time keeps the record and the guards in order */
+/* eslint-disable no-await-in-loop -- one folder at a time; files inside move in lanes */
 
 /** The folders that sync both ways, each at its own path on the Mac and in the store. */
 const TWO_WAY = ['vault', 'quarantine']
+
+/** An org's own pages: its member list and its hash page stay in the store. */
+const ORG_OWN = new Set(['members.html', 'sync-hash.html'])
+
+/** How many files move at the same time; each write is guarded by its own version. */
+const AT_ONCE = 16
 
 /** Where the cloud copy of a name lands on the Mac when both sides moved. */
 const conflict_path = name => {
@@ -142,15 +148,17 @@ const one_folder = async ({
     path.slice(folder.length + 1)
   )
   const names = [...new Set([...on_mac, ...remote.keys()])]
-    .filter(name => name.split('/').at(-1) !== 'members.html')
+    .filter(name => !ORG_OWN.has(name.split('/').at(-1) ?? ''))
     .filter(name => !skipped(name))
     .filter(name => !shallow || !name.includes('/'))
     .sort()
-  for (const name of names) {
+  const mine = new Set(on_mac)
+  /** @param {string} name */
+  const one_name = async name => {
     const key = `${folder}/${name}`
     const file = join(root, folder, name)
-    if (on_mac.includes(name)) await style_local(key, file)
-    const here = on_mac.includes(name) ? await local_version(file) : null
+    if (mine.has(name)) await style_local(key, file)
+    const here = mine.has(name) ? await local_version(file) : null
     const there = remote.get(name) ?? null
     const was = saved[key]
     if (wins === 'mac') {
@@ -160,46 +168,46 @@ const one_folder = async ({
         key,
         name,
         file,
-        on_mac: on_mac.includes(name),
+        on_mac: mine.has(name),
         here,
         there,
         was,
         next,
         report
       })
-      continue
+      return
     }
     if (here !== null && here === there) {
       next[key] = here
       report.unchanged.push(key)
-      continue
+      return
     }
-    if (!on_mac.includes(name) && was !== undefined && was === there) {
+    if (!mine.has(name) && was !== undefined && was === there) {
       try {
         await store.delete(`${prefix}${name}`, { if_version: there })
       } catch (error) {
         if (error.code !== 'conflict') throw error
         report.postponed.push(key)
-        continue
+        return
       }
       delete next[key]
       report.deleted.push(key)
-      continue
+      return
     }
     if (here === null) {
       const bytes = await store.get(`${prefix}${name}`)
-      if (!bytes) continue
+      if (!bytes) return
       await write_local(file, bytes.body)
       next[key] = there
       report.pulled.push(key)
-      continue
+      return
     }
     if (there === null) {
       if (was !== undefined && was === here) {
         await rm(file, { force: true })
         delete next[key]
         report.deleted.push(key)
-        continue
+        return
       }
       const version = await push({
         store,
@@ -208,18 +216,18 @@ const one_folder = async ({
         there,
         report
       })
-      if (version === null) continue
+      if (version === null) return
       next[key] = version
       report.pushed.push(key)
-      continue
+      return
     }
     if (was !== undefined && was === here) {
       const theirs = await store.get(`${prefix}${name}`)
-      if (!theirs) continue
+      if (!theirs) return
       await write_local(file, theirs.body)
       next[key] = there
       report.pulled.push(key)
-      continue
+      return
     }
     if (was !== undefined && was === there) {
       const version = await push({
@@ -229,13 +237,13 @@ const one_folder = async ({
         there,
         report
       })
-      if (version === null) continue
+      if (version === null) return
       next[key] = version
       report.pushed.push(key)
-      continue
+      return
     }
     const theirs = await store.get(`${prefix}${name}`)
-    if (!theirs) continue
+    if (!theirs) return
     await write_local(join(root, folder, conflict_path(name)), theirs.body)
     const version = await push({
       store,
@@ -244,10 +252,15 @@ const one_folder = async ({
       there,
       report
     })
-    if (version === null) continue
+    if (version === null) return
     next[key] = version
     report.kept_both.push(key)
   }
+  const queue = names.values()
+  const lane = async () => {
+    for (const name of queue) await one_name(name)
+  }
+  await Promise.all(Array.from({ length: AT_ONCE }, lane))
 }
 
 /**
@@ -282,8 +295,9 @@ const push = async ({ store, key, file, there, report }) => {
  * is a member of, at `orgs/+name/`. `vault/` goes up only (z4); `quarantine/`
  * and org folders move both ways. Members pages stay in the store; the founder
  * edits them through sync.
- * With `folders`, only those move: `vault` alone is its top files, and
- * `vault/X` is that folder whole. Orgs always move.
+ * With `folders`, only those move: `vault` alone is its top files,
+ * `vault/X` is that folder whole, and `orgs/+name/dir` is that org folder's
+ * own files. With no `folders`, everything moves, every org whole.
  * @param {{ root: string, store: any, phone: string, record: string, folders?: string[] }} run
  * @returns {Promise<{ pushed: string[], pulled: string[], deleted: string[], kept_both: string[], unchanged: string[], too_big: string[], postponed: string[] }>}
  */
@@ -300,7 +314,8 @@ export const two_way = async ({ root, store, phone, record, folders }) => {
     too_big: [],
     postponed: []
   }
-  for (const folder of folders ?? TWO_WAY)
+  const own = folders?.filter(folder => !folder.startsWith('orgs/')) ?? TWO_WAY
+  for (const folder of own)
     await one_folder({
       root,
       store,
@@ -312,12 +327,20 @@ export const two_way = async ({ root, store, phone, record, folders }) => {
       next,
       report
     })
-  for (const name of await orgs_of(store, phone))
+  const member = await orgs_of(store, phone)
+  const org_folders = folders
+    ? folders.filter(
+        folder =>
+          folder.startsWith('orgs/') && member.includes(folder.split('/')[1])
+      )
+    : member.map(name => `orgs/${name}`)
+  for (const folder of org_folders)
     await one_folder({
       root,
       store,
       base: '',
-      folder: `orgs/${name}`,
+      folder,
+      shallow: folders !== undefined,
       saved,
       next,
       report

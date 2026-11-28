@@ -265,3 +265,38 @@ it('x3: an org the Mac is not in never comes down', async t => {
   const report = await run.sync()
   assert.deepEqual(report.pulled, [])
 })
+
+it('named org folders move alone, and an org left unnamed stays', async t => {
+  const run = await mac(t)
+  await run.store.put(
+    'orgs/+family/members.html',
+    Buffer.from(
+      members_html({
+        name: '+family',
+        founder: { phone: PHONE },
+        members: [{ phone: PHONE }]
+      })
+    )
+  )
+  await run.store.put('orgs/+family/data/a/one.html', Buffer.from('a\n'))
+  await run.store.put('orgs/+family/data/b/two.html', Buffer.from('b\n'))
+  const named = await two_way({
+    root: run.root,
+    store: run.store,
+    phone: PHONE,
+    record: run.record,
+    folders: ['orgs/+family/data/a']
+  })
+  assert.deepEqual(named.pulled, ['orgs/+family/data/a/one.html'])
+  await assert.rejects(
+    read_file(join(run.root, 'orgs/+family/data/b/two.html'))
+  )
+  const none = await two_way({
+    root: run.root,
+    store: run.store,
+    phone: PHONE,
+    record: run.record,
+    folders: ['vault']
+  })
+  assert.deepEqual(none.pulled, [])
+})
